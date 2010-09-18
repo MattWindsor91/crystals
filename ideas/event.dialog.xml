@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dialog>
+    <requirements>
+        <events>
+            <event>E_0001</event>
+        </events>
+    </requirements>
+
+    <content>
+        <say who="self">Hi Yves, how do you do?</say>
+        <say who="player">Hi Duster. Well, not really good. The game sucks.</say>
+        <say who="self">Why this?</say>
+        <choices>
+            <choice id="code_sucks">Because the code sucks.</choice>
+            <choice id="graphic_sucks">Because the graphic sucks.</choice>
+            <choice id="nevermind">Nevermind.</choice>
+        </choices>
+    <!-- Have to test if statements are working after choices -->
+        <say who="player">I am going now.</say>
+        <say who="self">Bye.</say>
+        <set type="event">E_0002</set>
+    </content>
+
+    <subcontent id="code_sucks">
+        <say who="self">Because the code sucks.</say>
+        <say who="self">I will talk with Giselher about this problem. Maybe he can solve your problems. I will talk with Giselher about this problem. Maybe he can solve your problems. I will talk with Giselher about this problem. Maybe he can solve your problems. I will talk with Giselher about this problem. Maybe he can solve your problems.</say>
+    </subcontent>
+
+    <subcontent id="graphic_sucks">
+        <say who="self">Because the graphic sucks.</say>
+        <say who="self">Okay, i will talk with James. Maybe he can make the
+        graphics as you imagine.</say>
+    </subcontent>
+
+    <subcontent id="nevermind">
+        <say who="self">Nevermind.</say>
+        <say who="self">Okey.</say>
+     <!--   <goto>end</goto> -->
+    </subcontent>
+</dialog>
+<!--
+<subcontent id="end">
+</subcontent>
+-->
