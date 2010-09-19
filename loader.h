@@ -31,6 +31,8 @@ get_module_path (const char *module, char **out);
 void
 get_module_handle (const char *modulepath, void *lib_handle);
 void
+get_module_function (void *lib_handle, const char *function, void **func);
+void
 load_module_test (void);
 void
 close_modules(void);

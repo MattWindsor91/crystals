@@ -40,39 +40,34 @@ get_module_handle (const char* modulepath, void *lib_handle)
     }
 }
 
+/* This loads a pointer to a function from a module */
+void
+get_module_function (void *lib_handle, const char *function, void **func)
+{
+  char *error;
+
+  *(void**)(func) = dlsym(lib_handle, function);
+
+  if ((error = dlerror ()) != NULL)
+    {
+      fprintf (stderr, "%s\n", error);
+      exit (1);
+    }
+}
+
 /* This loads the test module and populates the global module struct */
 void
 load_module_test (void)
 {
-  char *error;
   /* Get the path of the module */
   char *modulepath;
   get_module_path ("test", &modulepath);
 
   if (modules.test.lib_handle == NULL)
     {
-      printf ("Loading module at %s.\n", modulepath);
       get_module_handle (modulepath, &modules.test.lib_handle);
-
-      *(void**)(&modules.test.hello) = dlsym (modules.test.lib_handle, "hello");
-      
-      if ((error = dlerror ()) != NULL)
-        {
-          fprintf (stderr, "%s\n", error);
-          exit (1);
-        }
-
-      *(void**)(&modules.test.sum_numbers) = dlsym (modules.test.lib_handle, "sum_numbers");
-      
-      if ((error = dlerror ()) != NULL)
-        {
-          fprintf (stderr, "%s\n", error);
-          exit (1);
-        }
-    }
-  else
-    {
-      fprintf(stderr, "Module already loaded. Perhaps this should just carry on silently...\n");
+      get_module_function(modules.test.lib_handle, "hello",       (void**) &modules.test.hello);
+      get_module_function(modules.test.lib_handle, "sum_numbers", (void**) &modules.test.sum_numbers);
     }
 }
 
