@@ -29,9 +29,9 @@ get_module_path (const char* module, char** out)
 
 /* This opens a module file */
 void
-get_module_handle (const char* modulepath, void *lib_handle)
+get_module_handle (const char* modulepath, void **lib_handle)
 {
-  lib_handle = dlopen(modulepath, RTLD_LAZY);
+  *lib_handle = dlopen(modulepath, RTLD_LAZY);
 
   if (!lib_handle)
     {
