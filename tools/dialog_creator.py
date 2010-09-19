@@ -34,13 +34,11 @@ from wx.lib.stattext import GenStaticText
 # locale support
 _ = wx.GetTranslation
 
-class XMLFile(wx.Panel):
-
-    def __init__(self, parent):
-        wx.Panel.__init__(self, parent)
-
 
 class Creator(wx.Frame):
+
+    # custom IDs | I prefer them to be here :-)
+    ID_ADD_LABEL = wx.NewId()
 
     def __init__(self):
         wx.Frame.__init__(self, None, -1, "Crystals Dialog Creator")
@@ -51,7 +49,7 @@ class Creator(wx.Frame):
         self.font_bold.SetWeight(wx.BOLD)
 
         # Style
-        self.SetMinSize((600, 400))
+        self.SetMinSize((750, 400))
         self.SetSize((800, 600))
 
         # Layout & Controls
@@ -76,8 +74,8 @@ class Creator(wx.Frame):
 
         # Menu
         mb = wx.MenuBar()
-        menu_file = wx.Menu()
 
+        menu_file = wx.Menu()
         menu_file.Append(wx.ID_NEW)# _("&New"))
         menu_file.Append(wx.ID_OPEN)#, _("&Open file(s)..."))
         menu_file.Append(wx.ID_SAVE)#, _("&Save"))
@@ -85,6 +83,8 @@ class Creator(wx.Frame):
         menu_file.Append(wx.ID_CLOSE)#, _("&Close file"))
         menu_file.AppendSeparator()
         menu_file.Append(wx.ID_EXIT)#, _("&Quit"))
+
+        menu_dialog = wx.Menu()
 
         menu_help = wx.Menu()
         menu_help.Append(wx.ID_ABOUT, _("About"))
@@ -116,6 +116,7 @@ class Creator(wx.Frame):
         pass
 
     def on_add_label(self, event):
+        """add a new label to the ListCtrl"""
         pass
 
     def on_new(self, event):
@@ -123,7 +124,8 @@ class Creator(wx.Frame):
         pass
 
     def _new_file(self):
-        self.tab_ctrl.AddPage(wx.Panel(self.tab_ctrl), "New")
+        self.tab_ctrl.AddPage(XMLFileCtrl(self.tab_ctrl), _("New"))
+        self.tab_ctrl.GetCurrentPage().new()
 
     def on_open(self, event):
         """load xml files"""
@@ -162,7 +164,153 @@ class Creator(wx.Frame):
         sys.exit(0)
 
 
+class XMLFileCtrl(wx.Panel):
+    """class to handle the XML files and manage the controls at once"""
+
+    ID_TEXT = wx.NewId()
+
+    def __init__(self, parent):
+        wx.Panel.__init__(self, parent)
+
+        self.data = {}
+
+        self.current_tag_type = "text"
+
+        #Layout & Controls
+        next_button = wx.Button(self, wx.ID_FORWARD, label="->")
+        prev_button = wx.Button(self, wx.ID_BACKWARD, label="<-")
+        rm_button = wx.Button(self, wx.ID_REMOVE, label=_("Remove Tag"))
+        self.addupdate_button = wx.Button(self)
+
+        actor_id_header = wx.StaticText(self, -1, _("Speakers Actor-ID:"))
+        actor_id_header.SetFont(parent.GetParent().font_bold)
+        self.actor_id_ctrl = wx.TextCtrl(self)
+
+        type_box = wx.StaticBox(self, -1, _("Content Type:"))
+        type_box.SetFont(parent.GetParent().font_bold)
+        # small hack to make StaticBoxSizer look nice
+        text_rb = wx.RadioButton(self, label="text                            "
+            , style=wx.RB_GROUP)
+        choice_rb = wx.RadioButton(self, label="choice")
+        set_rb = wx.RadioButton(self, label="set")
+        goto_rb = wx.RadioButton(self, label="goto")
+
+        # Just a dummy panel
+        self.controls = (0, 0)
+
+        # Controls for the text option
+        self.text_ctrls = wx.Panel(self, -1)
+        text_header = wx.StaticText(self.text_ctrls, label=_("Text:"))
+        text_header.SetFont(parent.GetParent().font_bold)
+        self.text_text = wx.TextCtrl(self.text_ctrls, self.ID_TEXT,
+            style=wx.TE_MULTILINE|wx.SUNKEN_BORDER)
+        tbox = wx.BoxSizer(wx.VERTICAL)
+        tbox.Add(text_header, 0, wx.LEFT, 5)
+        tbox.Add(self.text_text, 0, wx.ALL | wx.EXPAND, 5)
+        self.text_ctrls.SetSizer(tbox)
+        self.text_ctrls.Hide()
+
+        self.choice_ctrls = wx.Panel(self, -1)
+        self.choice_ctrls.Hide()
+        self.set_ctrls = wx.Panel(self, -1)
+        self.set_ctrls.Hide()
+        self.goto_ctrls = wx.Panel(self, -1)
+        self.goto_ctrls.Hide()
+
+        self.sizer = wx.BoxSizer(wx.VERTICAL) # lowest for everything
+        hbox1 = wx.BoxSizer(wx.HORIZONTAL) # sepparates radio buttons
+        stbox = wx.StaticBoxSizer(type_box, wx.VERTICAL) # radio buttons
+        vbox2 = wx.BoxSizer(wx.VERTICAL) # sepparate buttons and actor id
+        hbox2 = wx.BoxSizer(wx.HORIZONTAL) # buttons
+        hbox3 = wx.BoxSizer(wx.HORIZONTAL) # buttons
+
+        hbox2.Add(prev_button)
+        hbox2.Add(self.addupdate_button)
+        hbox2.Add(rm_button)
+        hbox2.Add(next_button)
+
+        vbox2.AddSizer(hbox2, 0, wx.EXPAND)
+        vbox2.AddSizer(hbox3)
+        vbox2.AddSpacer((30, 30))
+        vbox2.Add(actor_id_header, 0, wx.ALL, 5)
+        vbox2.Add(self.actor_id_ctrl, 0, wx.LEFT | wx.EXPAND, 5)
+
+        stbox.Add(text_rb)
+        stbox.Add(choice_rb)
+        stbox.Add(set_rb)
+        stbox.Add(goto_rb)
+
+        hbox1.AddSizer(vbox2, 0, wx.EXPAND)
+        hbox1.Add((20, 20), 1, wx.EXPAND)
+        hbox1.Add(stbox, 0, wx.ALL, 5)
+        self.sizer.AddSizer(hbox1, 0, wx.ALL | wx.EXPAND, 5)
+        self.sizer.Add(self.controls, 0, wx.ALL | wx.EXPAND, 5)
+
+        self.SetSizer(self.sizer)
+
+        # Events
+        self.Bind(wx.EVT_BUTTON, self.on_next, id=wx.ID_FORWARD)
+        self.Bind(wx.EVT_BUTTON, self.on_prev, id=wx.ID_BACKWARD)
+        self.Bind(wx.EVT_BUTTON, self.on_remove, id=wx.ID_REMOVE)
+        self.Bind(wx.EVT_BUTTON, self.on_add, id=wx.ID_ADD)
+        self.Bind(wx.EVT_BUTTON, self.on_update, id=wx.ID_REFRESH)
+        self.Bind(wx.EVT_RADIOBUTTON, self.on_change_type,
+            id=text_rb.GetId(), id2=choice_rb.GetId())
+        self.Bind(wx.EVT_RADIOBUTTON, self.on_change_type,
+            id=set_rb.GetId(), id2=goto_rb.GetId())
+
+    def _swap_addupdate_buttons(self, id):
+        if id == wx.ID_ADD:
+            self.addupdate_button.SetId(wx.ID_ADD)
+            self.addupdate_button.SetLabel(_("Add Tag"))
+        else:
+            self.addupdate_button.SetId(wx.ID_REFRESH)
+            self.addupdate_button.SetLabel(_("Update Tag"))
+
+    def new(self):
+        """set the default options for a new tag or file"""
+        self._swap_addupdate_buttons(wx.ID_ADD)
+        self.sizer.Remove(self.controls)
+        self.controls.Hide()
+        self.controls = self.text_ctrls
+        self.controls.Show(True)
+        self.sizer.Add(self.controls, 0, wx.ALL | wx.EXPAND, 5)
+
+    def load(self, tag_name):
+        """load the informations from a tag"""
+
+    def save(self, tag_name):
+        """save the informations in a tag"""
+
+    def on_change_type(self, event):
+        """changes the controls if the type is changed"""
+
+    def on_next(self, event):
+        """switch to the next tag in occurence order"""
+        pass
+
+    def on_prev(self, event):
+        """switch to the previous tag in occurence order"""
+        pass
+
+    def on_remove(self, event):
+        """remove tag"""
+        self._swap_addupdate_buttons(wx.ID_REFRESH)
+
+    def on_add(self, event):
+        """add new tag"""
+        _swap
+
+    def on_update(self, event):
+        """update tag"""
+        pass
+
+    def close(self, event):
+        """closes file, called by the parent"""
+        pass
+
 class AboutDialog(wx.Dialog):
+    """about dialog to display informations"""
 
     def __init__(self, parent):
         wx.Dialog.__init__(self, parent, -1, title=_("About"))
@@ -212,6 +360,8 @@ class AboutDialog(wx.Dialog):
         notebook.AddPage(listbox, _("Credits"))
 
     def add_page_licence(self, notebook):
+        font = self.GetFont()
+        font.SetFaceName('Monospace')
         licence = """Copyright (c) 2010, Alexander Preisinger
 All rights reserved.
 
@@ -240,6 +390,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
         txtcrtl = wx.TextCtrl(notebook, -1, size=(100, 100),
             style=wx.TE_MULTILINE|wx.TE_READONLY)
+        txtcrtl.SetFont(font)
         txtcrtl.SetValue(licence)
         notebook.AddPage(txtcrtl, _("Licence"))
 
