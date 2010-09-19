@@ -3,14 +3,20 @@ This is a plugin loader for Crystals (working title). There currently are no plu
 Usage
 -----
 
-init_modules (const char *path): Initialise the module handler, and set the default path to load modules from. This should be user-configurable, perhaps with a command-line flag.
-close_modules(): Close any open handles to modules.
+Initialise the module handler, and set the default path to load modules from. This should be user-configurable, perhaps with a command-line flag:
 
-When there are modules, you can load them as follows:
+    init_modules (const char *path)
 
-load_module_NAME(): Loads the functions specified in NAME and fills the struct modules.NAME with function pointers.
+Close any open handles to modules:
 
-Ideas for modules:
+    close_modules()
+
+When there are modules, you will be able to load them as follows:
+
+    load_module_NAME()
+
+Ideas for modules
+-----------------
 
  * Graphics:
    * graphics-sdl.so
