@@ -54,7 +54,7 @@ load_module_test (void)
       printf ("Loading module at %s.\n", modulepath);
       get_module_handle (modulepath, &modules.test.lib_handle);
 
-      modules.test.hello = dlsym (modules.test.lib_handle, "hello");
+      *(void**)(&modules.test.hello) = dlsym (modules.test.lib_handle, "hello");
       
       if ((error = dlerror ()) != NULL)
         {
@@ -62,7 +62,7 @@ load_module_test (void)
           exit (1);
         }
 
-      modules.test.sum_numbers = dlsym (modules.test.lib_handle, "sum_numbers");
+      *(void**)(&modules.test.sum_numbers) = dlsym (modules.test.lib_handle, "sum_numbers");
       
       if ((error = dlerror ()) != NULL)
         {
