@@ -1,11 +1,1 @@
-Crystals is a project to create a Free Software monster-battling game, similar 
-to a certain handheld game of the mid-90s.
-
--- Current Status --
-
-Early planning.  Several devteam idea branches have been made, and hopefully 
-the design will be a blend of the brainstorming going on in each.
-
--- Main decisions made so far: --
-
-* Will be programmed in C with scripting in Python.
+This is a proof-of-concept plugin loader for Crystals (working title). To use it, first set MODULEPATH in loader.h to the path of the modules directory on your machine.
