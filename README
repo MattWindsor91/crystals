@@ -1,1 +1,0 @@
-This is a proof-of-concept plugin loader for Crystals (working title). To use it, first set MODULEPATH in loader.h to the path of the modules directory on your machine.
