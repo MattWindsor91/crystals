@@ -1,7 +1,7 @@
 /* module.h - prototypes and global variables for the module loader. */
 
 #ifndef _MODULE_H
-#define _MODULE_H 1
+#define _MODULE_H
 
 /* The file suffix of modules */
 #define MODULESUFFIX ".so"
@@ -30,5 +30,4 @@ get_module_function (void *lib_handle, const char *function, void **func);
 void
 close_modules(void);
 
-
-#endif
+#endif /* _MODULE_H */
