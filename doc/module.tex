@@ -68,7 +68,14 @@ Before termination of the program, the \textbf{close\_modules} function should b
 
 \begin{lstlisting}
 void
-close_modules (void);
+cleanup_modules (void);
+\end{lstlisting}
+
+Finally, there are the functions to load the modules:
+
+\begin{lstlisting}
+void
+load_module_gfx (void);
 \end{lstlisting}
 
 \subsection{Internal-Use Functions}
@@ -88,9 +95,12 @@ get_module_path (const char* module,
                  char** out);
 \end{lstlisting}
 
-To open a module and run any initialisation code, the \textbf{get\_module} function is used.
+To open a module and run any initialisation code, there is a choice of \textbf{get\_module\_by\_name} and \textbf{get\_module}, which differ slightly.
 
 \begin{lstlisting}
+void
+get_module_by_name (const char* name,
+                    module_data *module);
 void
 get_module (const char* modulepath,
             module_data *module);
@@ -114,7 +124,7 @@ close_module (module_data *module);
 
 \section{Modules Struct, g\_modules}
 
-The global modules struct, \textbf{g\_modules}, contains function pointers and metadata for every module. It stores generics rather than specifics, and so can be used for many different modules which provide the same functionality. There are currently no modules, but let us consider an example possible \textbf{g\_modules}:
+The global modules struct, \textbf{g\_modules}, contains function pointers and metadata for every module. It stores generics rather than specifics, and so can be used for many different modules which provide the same functionality. Let us consider a simple example possible \textbf{g\_modules}:
 
 \begin{lstlisting}
 struct
@@ -157,12 +167,10 @@ The struct is populated by module loader functions, which have to be written for
 void
 load_module_graphics (void)
 {
-  char *modulepath;
-  get_module_path ("graphics", &modulepath);
-
   if (g_modules.graphics.metadata.lib_handle == NULL)
     {
-      get_module (modulepath, &g_modules.graphics.metadata);
+      get_module_by_name ("graphics",
+                          &g_modules.graphics.metadata);
       get_module_function (g_modules.graphics.metadata,
                            "draw_tile",
                            (void**) &g_modules.graphics.draw_tile);
@@ -173,8 +181,6 @@ load_module_graphics (void)
                            "blank_screen",
                            (void**) &g_modules.graphics.blank_screen);
     }
-
-  free(modulepath);
 }
 \end{lstlisting}
 
@@ -213,5 +219,45 @@ Let us now consider a very simple module, the test module from the testsuite:
 \lstinputlisting{../tests/modules/test.c}
 
 This module defines a number of functions, but the ones I want to talk about are \textbf{init} and \textbf{term}. The \textbf{init} function is called when the module is loaded, and so can be used for any initialisation that needs doing, like creating a SDL window. The \textbf{term} function is called when the module is closed, and so can be used for clean-up purposes, like freeing memory.
+
+\section{Test Suite}
+
+The module loader comes with a test suite, which depends on valgrind. Build and run it with the following:
+
+\begin{lstlisting}[language=bash]
+make tests
+\end{lstlisting}
+
+You should get output similar to the following:
+
+\begin{lstlisting}[language=bash]
+Compiling test suite:
+
+Running test suite:
+Loading 'test' module
+test init: Module test has been loaded!
+Loading 'foo' module
+Testing 'test' module:
+    Should be hello world: Hello, world.
+    2 + 3 = 5
+test term: Module test has been unloaded!
+
+Running memory leak check:
+==1657==    definitely lost: 0 bytes in 0 blocks
+==1657==    indirectly lost: 0 bytes in 0 blocks
+==1657==      possibly lost: 0 bytes in 0 blocks
+\end{lstlisting}
+
+If you get a segfault or something, you can use GDB:
+
+\begin{lstlisting}[language=bash]
+gdb -ex run -ex backtrace --args ./tests/module
+\end{lstlisting}
+
+If there is a memory leak, you can use valgrind:
+
+\begin{lstlisting}[language=bash]
+valgrind --tool=memcheck --leak-check=full --show-reachable=yes ./tests/module
+\end{lstlisting}
 
 \end{document}

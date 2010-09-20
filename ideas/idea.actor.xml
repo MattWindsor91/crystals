@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<actor>
+    <name>Duster</name>
+    <imageset>Duster.ani.gz</imageset>
+
+    <dialogs>
+        <dialog>duster_intro.dlg.xml</dialog>
+        <dialog>duster_event_test.dlg.xml</dialog>
+        <dialog>duster_fight_test_replacement.dlg.xml</dialog>
+    </dialogs>
+
+    <invetory>
+        <item amount="0">Item</item>
+    </invetory>
+    <!--
+    <daily_routine params="" use_default_globals="yes">
+        standing.ta.py
+    </daily_routine> -->
+</actor>

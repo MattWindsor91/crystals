@@ -28,7 +28,7 @@ main (int argc, char **argv)
 int
 init (void)
 {
-  if (init_modules (MODPATH) == FAILURE)
+  if (init_modules (DEFMODPATH) == FAILURE)
     {
       fprintf (stderr, "ERROR: Could not init modules!\n");
       return FAILURE;

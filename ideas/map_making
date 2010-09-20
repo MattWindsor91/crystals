@@ -1,0 +1,8 @@
+
+I strongly for xml as file format for levels, maps or whathever we will call
+it, because I used already xml and wrote some parsers for it, and there are
+also methods to make xml documents more strict. In my old game I used xml for 
+almost everything.
+
+The file idea.map.xml is from my previous game, don't mind the german-english
+mix.
