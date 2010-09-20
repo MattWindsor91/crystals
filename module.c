@@ -18,10 +18,20 @@ init_modules (const char *path)
 {
   modules.path = strdup (path);
   /* When we have modules, do this:
+  module_bare_init (&modules.MODULE.metadata);
   modules.MODULE.FUNCTION = null
   */
 }
 #endif /* TESTSUITE */
+
+/* This does the bare minimum initialisation for a module */
+void
+module_bare_init (module_data *module)
+{
+  module->lib_handle = NULL;
+  module->init       = NULL;
+  module->term       = NULL;
+}
 
 /* This gets the path of a module, storing it in out */
 void
@@ -37,9 +47,9 @@ get_module_path (const char* module, char** out)
   free (path);
 }
 
-/* This opens a module file */
+/* This opens a module file and runs any init code */
 void
-get_module_handle (const char* modulepath, void **lib_handle)
+get_module (const char* modulepath, module_data *module)
 {
   char *error;
 
@@ -47,7 +57,7 @@ get_module_handle (const char* modulepath, void **lib_handle)
   printf("Loading module: %s\n", modulepath);
 #endif /* TESTSUITE */
 
-  *lib_handle = dlopen (modulepath, RTLD_LAZY);
+  module->lib_handle = dlopen (modulepath, RTLD_LAZY);
 
   if ((error = dlerror ()) != NULL)
     {
@@ -57,15 +67,25 @@ get_module_handle (const char* modulepath, void **lib_handle)
       exit (1);
 #endif /* TESTSUITE */
     }
+
+  /* Get init and termination functions if present */
+  get_module_function (*module, "init", (void**) &module->init);
+  get_module_function (*module, "term", (void**) &module->term);
+  
+  /* Execute init function if present */
+  if (module->init != NULL)
+    {
+      (*module->init) ();
+    }
 }
 
 /* This loads a pointer to a function from a module */
 void
-get_module_function (void *lib_handle, const char *function, void **func)
+get_module_function (module_data module, const char *function, void **func)
 {
   char *error;
 
-  *(void**)(func) = dlsym (lib_handle, function);
+  *(void**)(func) = dlsym (module.lib_handle, function);
 
   if ((error = dlerror ()) != NULL)
     {
@@ -77,16 +97,29 @@ get_module_function (void *lib_handle, const char *function, void **func)
     }
 }
 
+/* This closes an individual module and runs any termination code */
+void
+close_module (module_data *module)
+{
+  if (module->lib_handle)
+    {
+      if (module->term)
+        {
+          /* Call any termination code */
+          (*module->term) ();
+        }
+      /* Close the libdl handle */
+      dlclose (module->lib_handle);
+    }
+}
+
 /* This closes any loaded modules, run before program termination */
 #ifndef TESTSUITE
 void
 close_modules (void)
 {
   /* No modules - but when we have some do this:
-  if (modules.MODULE.lib_handle)
-    {
-      dlclose (modules.MODULE.lib_handle);
-    }
+  close_module (&modules.MODULE.metadata);
   */
 }
 #endif /* TESTSUITE */

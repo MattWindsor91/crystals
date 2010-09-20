@@ -14,6 +14,9 @@ init_modules (const char *path)
 {
   modules.path = strdup (path);
 
+  module_bare_init (&modules.test.metadata);
+  module_bare_init (&modules.foo.metadata);
+
   modules.test.hello       = NULL;
   modules.test.sum_numbers = NULL;
   modules.foo.bar          = NULL;
@@ -22,15 +25,8 @@ init_modules (const char *path)
 void
 close_modules (void)
 {
-  if (modules.test.lib_handle)
-    {
-      dlclose (modules.test.lib_handle);
-    }
-
-  if (modules.foo.lib_handle)
-    {
-      dlclose (modules.foo.lib_handle);
-    }
+  close_module(&modules.test.metadata);
+  close_module(&modules.foo.metadata);
 }
 
 /* Function to load 'test' module. */
@@ -41,11 +37,11 @@ load_module_test (void)
   char *modulepath;
   get_module_path ("test", &modulepath);
 
-  if (modules.test.lib_handle == NULL)
+  if (modules.test.metadata.lib_handle == NULL)
     {
-      get_module_handle (modulepath, &modules.test.lib_handle);
-      get_module_function(modules.test.lib_handle, "hello",       (void**) &modules.test.hello);
-      get_module_function(modules.test.lib_handle, "sum_numbers", (void**) &modules.test.sum_numbers);
+      get_module          (modulepath, &modules.test.metadata);
+      get_module_function (modules.test.metadata, "hello",       (void**) &modules.test.hello);
+      get_module_function (modules.test.metadata, "sum_numbers", (void**) &modules.test.sum_numbers);
     }
 
   free(modulepath);
@@ -58,11 +54,11 @@ load_module_foo (void)
   char *modulepath;
   get_module_path ("foo", &modulepath);
 
-  if (modules.foo.lib_handle == NULL)
+  if (modules.foo.metadata.lib_handle == NULL)
     {
-      get_module_handle (modulepath, &modules.foo.lib_handle);
+      get_module (modulepath, &modules.foo.metadata);
       /* Normally, the program would have terminated before reaching this line */
-      get_module_function(modules.foo.lib_handle, "bar", (void**) &modules.foo.bar);
+      get_module_function(modules.foo.metadata, "bar", (void**) &modules.foo.bar);
     }
 
   free(modulepath);

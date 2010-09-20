@@ -9,15 +9,17 @@ struct
   char* path;
 
   /* This module exists */
-  struct {
-    void *lib_handle;
+  struct
+  {
+    module_data metadata;
     void (*hello)(void);
     void (*sum_numbers)(int a, int b, int *ans);
   } test;
 
   /* This one doesn't */
-  struct {
-    void *lib_handle;
+  struct
+  {
+    module_data metadata;
     void (*bar)(void);
   } foo;
 } modules;

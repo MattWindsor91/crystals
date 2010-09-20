@@ -24,5 +24,5 @@ tests: module.c tests/module.c tests/modules/test.so
 	@echo "Running test suite:"
 	@./tests/module
 	@echo
-	@echo "Running memory leack check:"
+	@echo "Running memory leak check:"
 	@valgrind --tool=memcheck --leak-check=full --show-reachable=yes ./tests/module 2>&1 | grep lost
