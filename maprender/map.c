@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "map.h"
+#include "main.h"
 #include "graphics.h"
 
 const char FN_TILESET[] = "tiles.png";
@@ -55,7 +56,7 @@ init_test_map (void)
 {
   struct Map *map;
 
-  map = init_map (10, 10, 2, 2);
+  map = init_map (10, 10, 4);
 
   if (map)
     {
@@ -73,8 +74,7 @@ init_test_map (void)
 struct Map *
 init_map (unsigned int width, 
           unsigned int height, 
-          unsigned int num_ground_layers, 
-          unsigned int num_overlay_layers)
+          unsigned int num_layers)
 {
   struct Map *map;
 
@@ -84,20 +84,20 @@ init_map (unsigned int width,
     {
       map->width = width;
       map->height = height;
-      map->num_ground_layers = num_ground_layers;
-      map->num_overlay_layers = num_overlay_layers;
+      map->num_layers = num_layers;
 
-      map->data_layers = malloc (sizeof (unsigned char*) * 
-                                 (num_ground_layers + num_overlay_layers));
+      map->data_layers = malloc (sizeof (unsigned char*) * num_layers);
 
       if (map->data_layers)
         {
           unsigned int i;
 
-          for (i = 0; i < (num_ground_layers + num_overlay_layers); i++)
+          for (i = 0; i < (num_layers); i++)
             {
+              /* Allocate one extra char for the layer tag (at the end of the
+                 data). */
               map->data_layers[i] = malloc (sizeof (unsigned char) * 
-                                            (width * height));
+                                            ((width * height) + 1));
             }
         }
       else
@@ -113,34 +113,51 @@ init_map (unsigned int width,
   return map;
 }
 
+struct MapView *
+init_mapview (struct Map *map)
+{
+  struct MapView *mapview;
+
+  mapview = malloc (sizeof (struct MapView));
+
+  if (mapview)
+    {              
+      mapview->x_offset = 0;
+      mapview->y_offset = 0;
+      mapview->map = map;
+      
+    }
+
+  return mapview;
+}
+
 void
-render_map (struct Map *map)
+render_map (struct MapView *mapview)
 {
   /* FIXME: only render dirty tiles. */
 
-  if (map)
+  if (mapview)
     {
-      unsigned int l;
-
-      /* Render ground layers. */
-      for (l = 0; l < map->num_ground_layers; l++)
+      if (mapview->map)
         {
-          render_map_layer (map, l);
-        }
+          struct Map *map;
+          unsigned int l;
 
-      /* FIXME: render objects. */
+          map = mapview->map;
 
-      /* Render overlay layers. */
-      for (l = map->num_ground_layers;
-           l < map->num_ground_layers + map->num_overlay_layers; l++)
-        {
-          render_map_layer (map, l);
+          /* Render a layer, then the objects tagged with that layer. */
+          for (l = 0; l < map->num_layers; l++)
+            {
+              render_map_layer (map, l, mapview->x_offset, mapview->y_offset);
+              /* FIXME: render objects. */
+            }
         }
     }
 }
 
 void
-render_map_layer (struct Map *map, unsigned int layer)
+render_map_layer (struct Map *map, unsigned int layer,
+                  int x_offset, int y_offset)
 {
   unsigned int x, y;
 
@@ -158,9 +175,25 @@ render_map_layer (struct Map *map, unsigned int layer)
 }
 
 void
-scroll_map (int direction)
+scroll_map (struct MapView *mapview, int direction)
 {
   /* FIXME: Render damage. */
+  switch (direction)
+    {
+    case NORTH:
+      mapview->y_offset -= 1;
+      break;
+    case EAST:
+      mapview->x_offset += 1;
+      break;
+    case SOUTH:
+      mapview->y_offset += 1;
+      break;
+    case WEST:
+      mapview->x_offset -= 1;
+      break;
+    }
+
 
   scroll_screen (direction);
 }
@@ -174,8 +207,7 @@ cleanup_map (struct Map *map)
         {
           unsigned int i;
 
-          for (i = 0; i < (map->num_ground_layers
-                           + map->num_overlay_layers); i++)
+          for (i = 0; i < (map->num_layers); i++)
             {
               if (map->data_layers[i])
                 free (map->data_layers[i]);

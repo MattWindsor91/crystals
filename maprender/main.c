@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include <stdio.h>
 
 #include "main.h"
@@ -6,6 +7,7 @@
 #include "map.h"
 
 struct Map *g_map;
+struct MapView *g_mapview;
 
 int g_running;
 
@@ -29,7 +31,18 @@ init (void)
 
       if (g_map)
         {
-          return 1;
+          g_mapview = init_mapview (g_map);
+
+          if (g_mapview)
+            {
+              init_events ();
+
+              return 1;
+            }
+          else
+            {
+              fprintf (stderr, "ERROR: Map view did not init!\n");
+            }
         }
       else
         fprintf (stderr, "ERROR: Map did not init!\n");
@@ -43,7 +56,7 @@ init (void)
 void
 main_loop (void)
 {
-  render_map (g_map);
+  render_map (g_mapview);
 
   while (g_running)
     {
@@ -55,6 +68,7 @@ main_loop (void)
 void
 cleanup (void)
 {
+  free (g_mapview);
   cleanup_map (g_map);
   cleanup_graphics ();
 }

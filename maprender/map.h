@@ -7,12 +7,18 @@ enum
     TILE_H = 32
   };
 
+struct MapView
+{
+  int x_offset;
+  int y_offset;
+  struct Map *map;
+};
+
 struct Map
 {
   unsigned int width;
   unsigned int height;
-  unsigned int num_ground_layers;
-  unsigned int num_overlay_layers;
+  unsigned int num_layers;
   unsigned char **data_layers;
 };
 
@@ -26,19 +32,25 @@ init_test_map (void);
 struct Map *
 init_map (unsigned int width, 
           unsigned int height, 
-          unsigned int num_ground_layers, 
-          unsigned int num_overlay_layers);
+          unsigned int num_layers);
+
+struct MapView *
+init_mapview (struct Map *map);
 
 void
-render_map (struct Map *map);
+render_map (struct MapView *mapview);
 
 void
-render_map_layer (struct Map *map, unsigned int layer);
+render_map_layer (struct Map *map, unsigned int layer,
+                  int x_offset, int y_offset);
 
 void
-scroll_map (int direction);
+scroll_map (struct MapView *mapview, int direction);
 
 void
 cleanup_map (struct Map *map);
+
+void
+cleanup_mapview (struct MapView *mapview);
 
 #endif /* _MAP_H */

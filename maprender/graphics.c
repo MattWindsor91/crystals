@@ -36,10 +36,10 @@ init_graphics (void)
 
 void
 draw_image (const char filename[], 
-            unsigned int image_x,
-            unsigned int image_y, 
-            unsigned int screen_x, 
-            unsigned int screen_y,
+            int image_x,
+            int image_y, 
+            int screen_x, 
+            int screen_y,
             unsigned int width, 
             unsigned int height)
 {
@@ -73,7 +73,7 @@ update_screen (void)
 }
 
 void
-scroll_screen (direction)
+scroll_screen (unsigned int direction)
 {
   SDL_Rect source, dest;
 

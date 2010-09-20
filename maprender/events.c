@@ -3,6 +3,14 @@
 #include "main.h"
 #include "map.h"
 
+unsigned char g_held_keys[256];
+
+void
+init_events (void)
+{
+  memset (g_held_keys, 0, sizeof (g_held_keys));
+}
+
 void
 handle_events (void)
 {
@@ -16,29 +24,35 @@ handle_events (void)
           g_running = 0;
           break;
         case SDL_KEYDOWN:
+          g_held_keys[event.key.keysym.sym] = 1;
           switch (event.key.keysym.sym)
             {
             case SDLK_ESCAPE:
               g_running = 0;
               break;
-            case SDLK_UP:
-              scroll_map (NORTH);
-              break;
-            case SDLK_RIGHT:
-              scroll_map (EAST);
-              break;
-            case SDLK_DOWN:
-              scroll_map (SOUTH);
-              break;
-            case SDLK_LEFT:
-              scroll_map (WEST);
-              break;
+            case SDLK_r:
+              render_map (g_mapview);
             default:
               break;
             }
+          break;
+        case SDL_KEYUP:
+          g_held_keys[event.key.keysym.sym] = 0;
           break;
         default:
           break;
         }
     }
+
+  if (g_held_keys[SDLK_UP])
+    scroll_map (g_mapview, NORTH);
+
+  if (g_held_keys[SDLK_RIGHT])
+    scroll_map (g_mapview, EAST);
+
+  if (g_held_keys[SDLK_DOWN])
+    scroll_map (g_mapview, SOUTH);
+
+  if (g_held_keys[SDLK_LEFT])
+    scroll_map (g_mapview, WEST);
 }

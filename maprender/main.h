@@ -2,6 +2,7 @@
 #define _MAIN_H
 
 extern int g_running;
+extern struct MapView *g_mapview;
 
 enum
   {
