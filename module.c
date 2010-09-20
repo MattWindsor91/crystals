@@ -10,32 +10,39 @@
 void
 init_modules (const char *path)
 {
-  modules.path = strdup(path);
+  modules.path = strdup (path);
+  /* When we have modules, do this:
+  modules.MODULE.FUNCTION = null
+  */
 }
 
 /* This gets the path of a module, storing it in out */
 void
 get_module_path (const char* module, char** out)
 {
-  char *path = strdup(modules.path);
+  char *path = strdup (modules.path);
 
-  strcat(path, module);
-  strcat(path, MODULESUFFIX);
+  strcat (path, module);
+  strcat (path, MODULESUFFIX);
 
-  *out = strdup(path);
+  *out = strdup (path);
 
-  free(path);
+  free (path);
 }
 
 /* This opens a module file */
 void
 get_module_handle (const char* modulepath, void **lib_handle)
 {
-  *lib_handle = dlopen(modulepath, RTLD_LAZY);
+  char *error;
 
-  if (!lib_handle)
+  *lib_handle = dlopen (modulepath, RTLD_LAZY);
+
+  if ((error = dlerror ()) != NULL)
     {
       fprintf (stderr, "%s\n", dlerror ());
+
+      free (error);
       exit (1);
     }
 }
@@ -46,23 +53,25 @@ get_module_function (void *lib_handle, const char *function, void **func)
 {
   char *error;
 
-  *(void**)(func) = dlsym(lib_handle, function);
+  *(void**)(func) = dlsym (lib_handle, function);
 
   if ((error = dlerror ()) != NULL)
     {
       fprintf (stderr, "%s\n", error);
+
+      free (error);
       exit (1);
     }
 }
 
 /* This closes any loaded modules, run before program termination */
 void
-close_modules(void)
+close_modules (void)
 {
   /* No modules - but when we have some do this:
   if (modules.MODULE.lib_handle)
     {
-      dlclose(modules.MODULE.lib_handle);
+      dlclose (modules.MODULE.lib_handle);
     }
   */
 }

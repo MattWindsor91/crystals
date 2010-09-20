@@ -28,6 +28,6 @@ get_module_handle (const char *modulepath, void **lib_handle);
 void
 get_module_function (void *lib_handle, const char *function, void **func);
 void
-close_modules(void);
+close_modules (void);
 
 #endif /* _MODULE_H */
