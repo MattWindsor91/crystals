@@ -74,7 +74,7 @@ init_test_map (void)
 struct Map *
 init_map (unsigned int width, 
           unsigned int height, 
-          unsigned int num_layers)
+          unsigned char num_layers)
 {
   struct Map *map;
 

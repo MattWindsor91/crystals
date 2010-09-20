@@ -3,6 +3,7 @@
 
 #include "mapview.h"
 #include "map.h"
+#include "module.h"
 #include "graphics.h"
 #include "main.h"
 
@@ -70,7 +71,8 @@ render_map (struct MapView *mapview)
 void
 render_map_layer (struct MapView *mapview, unsigned int layer)
 {
-  int x, y, true_x, true_y, x_offset, y_offset;
+  short x, y;
+  int true_x, true_y, x_offset, y_offset;
   struct Map *map;
 
   map = mapview->map;
@@ -96,8 +98,8 @@ render_map_layer (struct MapView *mapview, unsigned int layer)
                               map->data_layers[layer][true_x 
                                                       + (true_y * map->height)]
                               * TILE_W, 0,
-                              (x * TILE_W) + (x_offset % TILE_W),
-                              (y * TILE_H) + (y_offset % TILE_H),
+                              (x * TILE_W) + (short) (x_offset % TILE_W),
+                              (y * TILE_H) + (short) (y_offset % TILE_H),
                               TILE_W, TILE_H);
 
                   mapview->dirty_tiles[true_x + (true_y * map->height)]--;
@@ -144,7 +146,7 @@ scroll_map (struct MapView *mapview, int direction)
     }
 
 
-  scroll_screen (direction);
+  (*g_modules.gfx.scroll_screen) (direction);
   render_map (mapview);
 }
 
@@ -168,3 +170,14 @@ mark_dirty_rect (struct MapView *mapview,
     }
 }
 
+void
+cleanup_mapview (struct MapView *mapview)
+{
+  if (mapview)
+    {
+      if (mapview->dirty_tiles)
+        free (mapview->dirty_tiles);
+
+      free (mapview);
+    }
+}

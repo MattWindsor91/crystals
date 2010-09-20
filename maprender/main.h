@@ -6,6 +6,10 @@ extern struct MapView *g_mapview;
 
 enum
   {
+    SUCCESS = 1,
+    FAILURE = 0,
+    TRUE = 1,
+    FALSE = 0,
     NORTH = 0,
     EAST,
     SOUTH,

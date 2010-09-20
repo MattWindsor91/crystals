@@ -1,7 +1,9 @@
 #include <stdlib.h>
+#include <string.h>
 #include <stdio.h>
 
 #include "main.h"
+#include "module.h"
 #include "events.h"
 #include "graphics.h"
 #include "mapview.h"
@@ -15,9 +17,9 @@ int g_running;
 int
 main (int argc, char **argv)
 {
-  if (init ())
+  if (init () == SUCCESS)
     {
-      g_running = 1;
+      g_running = TRUE;
       main_loop ();
     }
   cleanup ();
@@ -26,33 +28,40 @@ main (int argc, char **argv)
 int
 init (void)
 {
-  if (init_graphics ())
+  if (init_modules (MODPATH) == FAILURE)
     {
-      g_map = init_test_map ();
-
-      if (g_map)
-        {
-          g_mapview = init_mapview (g_map);
-
-          if (g_mapview)
-            {
-              init_events ();
-
-              return 1;
-            }
-          else
-            {
-              fprintf (stderr, "ERROR: Map view did not init!\n");
-            }
-        }
-      else
-        fprintf (stderr, "ERROR: Map did not init!\n");
+      fprintf (stderr, "ERROR: Could not init modules!\n");
+      return FAILURE;
     }
-  else
-    fprintf (stderr, "ERROR: Could not init gfx!\n");
 
-  return 0;
+  if (init_graphics () == FAILURE)
+    {
+      fprintf (stderr, "ERROR: Could not init gfx!\n");
+      return FAILURE;
+    }
+
+  g_map = init_test_map ();
+
+  if (g_map == NULL)
+    {
+      fprintf (stderr, "ERROR: Map did not init!\n");
+      return FAILURE;
+    }
+
+  g_mapview = init_mapview (g_map);
+
+  if (g_mapview == NULL)
+    {
+      fprintf (stderr, "ERROR: Map view did not init!\n");
+      return FAILURE;
+    }
+
+  init_events ();
+
+  return SUCCESS;
 }
+
+
 
 void
 main_loop (void)
@@ -61,7 +70,7 @@ main_loop (void)
 
   while (g_running)
     {
-      update_screen ();
+      (*g_modules.gfx.update_screen) ();
       handle_events ();
     }
 }
@@ -72,16 +81,7 @@ cleanup (void)
   cleanup_mapview (g_mapview);
   cleanup_map (g_map);
   cleanup_graphics ();
+  cleanup_modules ();
 }
 
-void
-cleanup_mapview (struct MapView *mapview)
-{
-  if (mapview)
-    {
-      if (mapview->dirty_tiles)
-        free (mapview->dirty_tiles);
 
-      free (mapview);
-    }
-}

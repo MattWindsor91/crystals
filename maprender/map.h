@@ -11,7 +11,7 @@ struct Map
 {
   int width;
   int height;
-  unsigned int num_layers;
+  unsigned char num_layers;
   unsigned char **data_layers;
 };
 
@@ -23,7 +23,7 @@ init_test_map (void);
 struct Map *
 init_map (unsigned int width, 
           unsigned int height, 
-          unsigned int num_layers);
+          unsigned char num_layers);
 
 void
 cleanup_map (struct Map *map);

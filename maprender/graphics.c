@@ -1,41 +1,71 @@
-#include <SDL.h>
-#include <SDL/SDL_image.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 
 #include "main.h"
 #include "graphics.h"
+#include "module.h"
 
-static SDL_Surface *s_screen;
 static struct GfxImageNode *s_images[GFX_HASH_VALS];
 
 int
 init_graphics (void)
 {
-  if (SDL_Init (SDL_INIT_VIDEO) == 0)
-    {
-      s_screen = SDL_SetVideoMode (SCREEN_W,
-                                   SCREEN_H,
-                                   SCREEN_D,
-                                   SDL_SWSURFACE);
+  load_module_gfx ();
 
-      if (s_screen)
-        {
-          unsigned int i;
-          for (i = 0; i < GFX_HASH_VALS; i++)
-            s_images[i] = NULL;
-          return 1;
-        }
-      else
-        {
-          fprintf (stderr, "ERROR: Couldn't get screen!\n");
-        }
+  if ((*g_modules.gfx.init_screen) (SCREEN_W, SCREEN_H, SCREEN_D))
+    {
+      unsigned int i;
+
+      for (i = 0; i < GFX_HASH_VALS; i++)
+        s_images[i] = NULL;
+
+      return SUCCESS;
     } 
   else 
     {
-      fprintf (stderr, "ERROR: Could not init SDL!\n");
+      fprintf (stderr, "ERROR: Could not init gfx!\n");
     }
 
   cleanup_graphics ();
-  return 0;
+  return FAILURE;
+}
+
+void
+load_module_gfx (void)
+{
+  char *modulepath;
+
+  get_module_path ("gfx-sdl", &modulepath);
+
+  if (g_modules.gfx.metadata.lib_handle == NULL && 
+      modulepath)
+    {
+      get_module (modulepath, &g_modules.gfx.metadata);
+
+      get_module_function (g_modules.gfx.metadata, "init_screen",
+                           (void**) &g_modules.gfx.init_screen);
+
+      get_module_function (g_modules.gfx.metadata, "draw_rect", 
+                           (void**) &g_modules.gfx.draw_rect);
+
+      get_module_function (g_modules.gfx.metadata, "load_image_data", 
+                           (void**) &g_modules.gfx.load_image_data);
+
+      get_module_function (g_modules.gfx.metadata, "free_image_data", 
+                           (void**) &g_modules.gfx.free_image_data);
+
+      get_module_function (g_modules.gfx.metadata, "draw_image", 
+                           (void**) &g_modules.gfx.draw_image);
+
+      get_module_function (g_modules.gfx.metadata, "update_screen", 
+                           (void**) &g_modules.gfx.update_screen);
+
+      get_module_function (g_modules.gfx.metadata, "scroll_screen", 
+                           (void**) &g_modules.gfx.scroll_screen);
+
+      free (modulepath);
+    }
 }
 
 void
@@ -43,7 +73,7 @@ fill_screen (unsigned char red,
              unsigned char green, 
              unsigned char blue)
 {
-  SDL_FillRect (s_screen, NULL, SDL_MapRGB (s_screen->format, red, green, blue));
+  (*g_modules.gfx.draw_rect) (0, 0, SCREEN_W, SCREEN_H, red, green, blue);
 }
 
 struct GfxImageNode *
@@ -57,7 +87,7 @@ load_image (const char filename[])
     {
       /* Load data. */
       strncpy (ptr->name, filename, GFX_HASH_NAME_LEN);
-      ptr->data = load_image_data (filename); /* FIXME: Point to module function. */
+      ptr->data = (*g_modules.gfx.load_image_data) (filename);
 
       if (ptr->data) {
         /* Store the image. */
@@ -75,44 +105,22 @@ load_image (const char filename[])
     }
 }
 
-void *
-load_image_data (const char filename[])
-{ 
-  SDL_Surface *surf;
-
-  surf = IMG_Load (filename);
-
-  if (surf == NULL)
-    fprintf (stderr, "GFX-SDL: Couldn't load %s!\n", filename);
-
-  return (void*) surf;
-}
-
-
 void
 free_image (struct GfxImageNode *node)
 {
-  free_image_data(node->data); /* FIXME: Point to module function. */
-  free(node);
+  (*g_modules.gfx.free_image_data) (node->data);
+  free (node);
 }
 
-void
-free_image_data (void *data)
-{
-  if (data) {
-    SDL_FreeSurface(data);
-    data = NULL;
-  }
-}
 
 int
 draw_image (const char filename[],
-            int image_x,
-            int image_y,
-            int screen_x,
-            int screen_y,
-            unsigned int width,
-            unsigned int height)
+            short image_x,
+            short image_y,
+            short screen_x,
+            short screen_y,
+            unsigned short width,
+            unsigned short height)
 {
   struct GfxImageNode *img;
 
@@ -131,45 +139,13 @@ draw_image (const char filename[],
         }
     }
 
-  return mod_draw_image (img,
-                         image_x,
-                         image_y,
-                         screen_x,
-                         screen_y,
-                         width,
-                         height); /* FIXME: Point to module function. */
-}
-
-int
-mod_draw_image (struct GfxImageNode *image,
-                int image_x,
-                int image_y,
-                int screen_x,
-                int screen_y,
-                unsigned int width,
-                unsigned int height)
-{
-  SDL_Rect srcrect, destrect;
-  SDL_Surface *ptex;
-
-  ptex = (SDL_Surface*) image->data;
-
-  srcrect.x = image_x;
-  srcrect.y = image_y;
-
-  destrect.x = screen_x;
-  destrect.y = screen_y;
-
-  srcrect.w = destrect.w = width;
-  srcrect.h = destrect.h = height;
-
-  if (ptex)
-    {
-      SDL_BlitSurface (ptex, &srcrect, s_screen, &destrect);
-      return 1;
-    }
-  else
-    return 0;
+  return (*g_modules.gfx.draw_image) (img->data,
+                                      image_x,
+                                      image_y,
+                                      screen_x,
+                                      screen_y,
+                                      width,
+                                      height);
 }
 
 int
@@ -281,49 +257,11 @@ get_image (const char name[], struct GfxImageNode *add_pointer)
   return NULL;
 }
 
-void
-update_screen (void)
-{
-  SDL_Flip (s_screen);
-  SDL_Delay (30);
-}
 
-void
-scroll_screen (unsigned int direction)
-{
-  SDL_Rect source, dest;
-
-  source.x = dest.x = source.y = dest.y = 0;
-
-  source.w = dest.w = SCREEN_W;
-  source.h = dest.h = SCREEN_H;
-
-  switch (direction)
-    {
-    case NORTH:
-      source.y = 1;
-      source.h -= 1;
-      break;
-    case EAST:
-      dest.x = 1;
-      source.w -= 1;
-      break;
-    case SOUTH:
-      dest.y = 1;
-      source.h -= 1;
-      break;
-    case WEST:
-      source.x = 1;
-      source.w -= 1;
-      break;
-    }
-
-  SDL_BlitSurface (s_screen, &source, s_screen, &dest);
-}
 
 void
 cleanup_graphics (void)
 {
-  SDL_Quit ();
+  ;
 }
 

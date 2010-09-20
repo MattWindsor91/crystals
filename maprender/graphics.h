@@ -46,6 +46,9 @@ int
 init_graphics (void);
 
 void
+load_module_gfx (void);
+
+void
 fill_screen (unsigned char red,
              unsigned char green,
              unsigned char blue);
@@ -53,34 +56,18 @@ fill_screen (unsigned char red,
 struct GfxImageNode *
 load_image (const char filename[]);
 
-void *
-load_image_data (const char filename[]);
-
 void
 free_image (struct GfxImageNode *node);
 
-/* This will move to module */
-void
-free_image_data (void *data);
 
 int
 draw_image (const char filename[],
-            int image_x,
-            int image_y,
-            int screen_x,
-            int screen_y,
-            unsigned int width,
-            unsigned int height);
-
-/* This will move to module */
-int
-mod_draw_image (struct GfxImageNode *image,
-                int image_x,
-                int image_y,
-                int screen_x,
-                int screen_y,
-                unsigned int width,
-                unsigned int height);
+            short image_x,
+            short image_y,
+            short screen_x,
+            short screen_y,
+            unsigned short width,
+            unsigned short height);
 
 int
 ascii_hash (const char string[]);
