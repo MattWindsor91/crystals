@@ -58,8 +58,12 @@ class Creator(wx.Frame):
 
         dlg_header = wx.StaticText(self, -1, _("Content:"))
         dlg_header.SetFont(self.font_bold)
-        self.dlg_ctrl = wx.ListCtrl(self, size=(200, 0),
-            style=wx.SUNKEN_BORDER)
+
+        # The Dialog Control will be used by the XMLFileCtrls
+        self.dlg_ctrl = wx.TreeCtrl(self, size=(200, 0),
+            style=wx.SUNKEN_BORDER|wx.TR_HAS_BUTTONS|wx.TR_HIDE_ROOT|wx.TR_FULL_ROW_HIGHLIGHT
+            |wx.TR_TWIST_BUTTONS|wx.TR_EXTENDED)
+
         add_label_button = wx.Button(self, wx.ID_ADD, _("Add Label"))
         self.tab_ctrl = wx.Notebook(self)
         self._new_file()
@@ -176,7 +180,8 @@ class XMLFileCtrl(wx.Panel):
 
         self.data = {}
 
-        self.current_tag_type = "text"
+        self.font_bold = parent.GetParent().font_bold
+        self.dlg_ctrl = parent.GetParent().dlg_ctrl
 
         #Layout & Controls
         next_button = wx.Button(self, wx.ID_FORWARD, label="->")
@@ -185,12 +190,12 @@ class XMLFileCtrl(wx.Panel):
         self.addupdate_button = wx.Button(self)
 
         actor_id_header = wx.StaticText(self, -1, _("Speakers Actor-ID:"))
-        actor_id_header.SetFont(parent.GetParent().font_bold)
+        actor_id_header.SetFont(self.font_bold)
         self.actor_id_ctrl = wx.ComboBox(self)
         self.actor_id_ctrl.SetFocus()
 
         type_box = wx.StaticBox(self, -1, _("Content Type:"))
-        type_box.SetFont(parent.GetParent().font_bold)
+        type_box.SetFont(self.font_bold)
         self.text_rb = wx.RadioButton(self, label="text"
             , style=wx.RB_GROUP)
         self.choice_rb = wx.RadioButton(self, label="choice")
@@ -205,7 +210,7 @@ class XMLFileCtrl(wx.Panel):
         # Controls for the text option
         self.text_ctrls = wx.Panel(self)
         text_header = wx.StaticText(self.text_ctrls, label=_("Text:"))
-        text_header.SetFont(parent.GetParent().font_bold)
+        text_header.SetFont(self.font_bold)
         self.text_text = wx.TextCtrl(self.text_ctrls, self.ID_TEXT,
             style=wx.TE_MULTILINE|wx.SUNKEN_BORDER)
         tbox = wx.BoxSizer(wx.VERTICAL)
@@ -217,16 +222,16 @@ class XMLFileCtrl(wx.Panel):
         # Controls for the choice option
         self.choice_ctrls = wx.Panel(self)
         choices_header = wx.StaticText(self.choice_ctrls, label=_("Choices:"))
-        choices_header.SetFont(parent.GetParent().font_bold)
+        choices_header.SetFont(self.font_bold)
         self.choice_choices = wx.ListCtrl(self.choice_ctrls, size=(225, 200),
             style=wx.LC_REPORT|wx.SUNKEN_BORDER|wx.LC_AUTOARRANGE)
         self.choice_choices.InsertColumn(0, _("Label"), width=75)
         self.choice_choices.InsertColumn(1, _("Summary"), width=150)
         summary_header = wx.StaticText(self.choice_ctrls, label=_("Summary:"))
-        summary_header.SetFont(parent.GetParent().font_bold)
+        summary_header.SetFont(self.font_bold)
         self.choice_summary = wx.TextCtrl(self.choice_ctrls)
         label_header = wx.StaticText(self.choice_ctrls, label=_("Label:"))
-        label_header.SetFont(parent.GetParent().font_bold)
+        label_header.SetFont(self.font_bold)
         self.choice_label = wx.ComboBox(self.choice_ctrls)
         add_button = wx.Button(self.choice_ctrls, self.ID_CHOICE_ADD,
             _("Add Choice"))
@@ -317,10 +322,20 @@ class XMLFileCtrl(wx.Panel):
             self.addupdate_button.SetId(wx.ID_REFRESH)
             self.addupdate_button.SetLabel(_("Update Tag"))
 
+    def focus(self):
+        id = self.dlg_ctrl.AddRoot("dialog")
+        self.dlg_ctrl.AppendItem(id, "requirements")
+        c=self.dlg_ctrl.AppendItem(id, "content")
+        self.dlg_ctrl.AppendItem(c, "subcontent")
+
+#wx.TreeCtrl.InsertItem(
+
+
     def new(self):
         """set the default options for a new tag or file"""
         self._swap_addupdate_buttons(wx.ID_ADD)
         self._change_controls(self.text_ctrls)
+        self.focus()
 
     def load(self, tag_name):
         """load the informations from a tag"""
