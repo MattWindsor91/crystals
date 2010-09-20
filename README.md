@@ -89,9 +89,9 @@ You should get output similar to the following:
     ./tests/module: undefined symbol: term
     ./tests/module: undefined symbol: bar
     Testing 'test' module:
-    Should be hello world: Hello, world.
+        Should be hello world: Hello, world.
         2 + 3 = 5
-        test term: Module test has been unloaded!
+    test term: Module test has been unloaded!
     
     Running memory leak check:
     ==1113==    definitely lost: 0 bytes in 0 blocks
