@@ -35,6 +35,14 @@ init_graphics (void)
 }
 
 void
+fill_screen (unsigned char red, 
+             unsigned char green, 
+             unsigned char blue)
+{
+  SDL_FillRect (s_screen, NULL, SDL_MapRGB (s_screen->format, red, green, blue));
+}
+
+void
 draw_image (const char filename[], 
             int image_x,
             int image_y, 

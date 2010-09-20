@@ -12,12 +12,13 @@ struct MapView
   int x_offset;
   int y_offset;
   struct Map *map;
+  unsigned char *dirty_tiles;
 };
 
 struct Map
 {
-  unsigned int width;
-  unsigned int height;
+  int width;
+  int height;
   unsigned int num_layers;
   unsigned char **data_layers;
 };
@@ -41,11 +42,14 @@ void
 render_map (struct MapView *mapview);
 
 void
-render_map_layer (struct Map *map, unsigned int layer,
-                  int x_offset, int y_offset);
+render_map_layer (struct MapView *mapview, unsigned int layer);
 
 void
 scroll_map (struct MapView *mapview, int direction);
+
+void
+mark_dirty_rect (struct MapView *mapview,
+                 int start_x, int start_y, int width, int height);
 
 void
 cleanup_map (struct Map *map);

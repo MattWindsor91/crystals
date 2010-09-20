@@ -18,8 +18,8 @@ main (int argc, char **argv)
     {
       g_running = 1;
       main_loop ();
-      cleanup ();
     }
+  cleanup ();
 }
 
 int
@@ -68,7 +68,7 @@ main_loop (void)
 void
 cleanup (void)
 {
-  free (g_mapview);
+  cleanup_mapview (g_mapview);
   cleanup_map (g_map);
   cleanup_graphics ();
 }

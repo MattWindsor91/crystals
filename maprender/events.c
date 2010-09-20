@@ -1,6 +1,7 @@
 #include <SDL.h>
 
 #include "main.h"
+#include "graphics.h"
 #include "map.h"
 
 unsigned char g_held_keys[256];
@@ -31,6 +32,7 @@ handle_events (void)
               g_running = 0;
               break;
             case SDLK_r:
+              fill_screen (0, 0, 0);
               render_map (g_mapview);
             default:
               break;
