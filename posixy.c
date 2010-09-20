@@ -16,11 +16,9 @@ strdup (const char *string)
 char*
 strcat (char *dest, const char *string)
 {
-  char *newstr = (char*) malloc ((strlen (dest)  + strlen (string)) * sizeof (char) + 1);
+  realloc (dest, (size_t) (strlen (dest)  + strlen (string)) * sizeof (char) + 1);
 
-  strcpy (newstr, dest);
-  strcpy ((newstr + strlen (dest)), string);
-  dest = newstr;
+  strcpy ((dest + strlen (dest)), string);
 
   return dest;
 }
