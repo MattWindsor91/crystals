@@ -34,7 +34,9 @@ $(BIN): $(OBJ) $(SO)
 	$(CC) -c $< $(CFLAGS) -o $@
 
 clean:
-	rm -f $(BIN) *.o *.d *.so modules/*.so modules/*.o doc/*.{pdf, aux, log}
+	rm -f $(BIN) *.o *.d *.so 
+	rm -f modules/*.so modules/*.o 
+	rm -f doc/*.pdf doc/*.aux doc/*.log
 
 %.d: %.c
 	@echo "Generating dependency makefile for $<."
