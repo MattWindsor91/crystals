@@ -1,7 +1,7 @@
 Contributing
 ============
 
-Crystals is licensed under the three-clause BSD license, so feel free to dive in and start hacking. However, by doing so you agree that you surrender copyright over all code you contribute which is merged into the developers' own branches and/or the official distribution to the copyright holders mentioned in the license text.
+Crystals is licensed under the three-clause BSD license, so feel free to dive in and start hacking. However, by doing so you agree that you surrender copyright over all that you contribute which is merged into the developers' own branches and/or the official distribution to the copyright holders mentioned in the license text.
 
 Test Suite
 ==========
