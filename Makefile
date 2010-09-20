@@ -7,15 +7,21 @@ CC     = clang
 
 .PHONY: clean tests
 
-%.so : %.c
+%.so: %.c
 	@$(CC) $(CFLAGS) -Wall -fPIC -rdynamic -c $^ -o $(^:.c=.o)
 	@$(CC) -shared -Wl,-soname,$(^:.c=.so) -o $(^:.c=.so) $(^:.c=.o)
 
+%.pdf: %.tex
+	@pdflatex -output-directory=$(shell dirname $@) $^ >/dev/null
+
+doc: doc/module.pdf
+
 clean:
-	-@rm tests/module     &>/dev/null
-	-@rm *.o *.so         &>/dev/null
-	-@rm */*.o */*.so     &>/dev/null
-	-@rm */*/*.o */*/*.so &>/dev/null
+	-@rm tests/module        &>/dev/null
+	-@rm *.o *.so            &>/dev/null
+	-@rm */*.o */*.so        &>/dev/null
+	-@rm */*/*.o */*/*.so    &>/dev/null
+	-@rm doc/*.{pdf,aux,log} &>/dev/null
 
 tests: module.c tests/module.c tests/modules/test.so
 	@echo "Compiling test suite:"
