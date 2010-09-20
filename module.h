@@ -14,41 +14,78 @@ typedef struct
   void (*term)(void);
 } module_data;
 
-/* If making tests, we have another test module struct elsewhere. */
-#ifndef TESTSUITE
 /* Modules are stored in a struct of structs - each substruct containing function pointers, and a library pointer */
-struct
+struct ModuleSet
 {
-  char* path;
+  char *path;
 
-  /* No modules yet - but use this:
   struct
   {
     module_data metadata;
-    void (*FUNCTION)(PARAMETERS);
-  } MODULE;
-  */
-} modules;
-#endif /* TESTSUITE */
+
+    int
+    (*init_screen) (unsigned short width,
+                    unsigned short height, unsigned char depth);
+
+    void
+    (*draw_rect) (short x, 
+                  short y, 
+                  unsigned short width,
+                  unsigned short height, 
+                  unsigned char red,
+                  unsigned char green,
+                  unsigned char blue);
+
+    void *
+    (*load_image_data) (const char filename[]);
+
+    void 
+    (*free_image_data) (void *data);
+
+    int
+    (*draw_image) (void *image, 
+                   short image_x,
+                   short image_y,
+                   short screen_x,
+                   short screen_y,
+                   unsigned short width,
+                   unsigned short height);
+
+    void
+    (*update_screen) (void);
+
+    void
+    (*scroll_screen) (unsigned int direction);
+
+  } gfx;
+ 
+};
+
+extern struct ModuleSet g_modules;
 
 /* Function prototypes */
-#ifndef TESTSUITE
-void
+int
 init_modules (const char *path);
-#endif /* TESTSUITE */
+
 void
 module_bare_init (module_data *module);
+
 void
 get_module_path (const char *module, char **out);
+
 void
 get_module (const char* modulepath, module_data *module);
+
 void
 get_module_function (module_data metadata, const char *function, void **func);
+
+void
+load_module_gfx (void);
+
 void
 close_module (module_data *module);
-#ifndef TESTSUITE
+
 void
-close_modules (void);
-#endif /* TESTSUITE */
+cleanup_modules (void);
 
 #endif /* _MODULE_H */
