@@ -1,6 +1,6 @@
 BIN       = maprender-test
 
-SOURCES  = main.c graphics.c map.c events.c
+SOURCES  = main.c graphics.c map.c mapview.c events.c
 OBJ      = $(subst .c,.o,$(SOURCES))
 DEPFILES = $(subst .c,.d,$(SOURCES))
 

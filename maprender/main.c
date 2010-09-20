@@ -4,6 +4,7 @@
 #include "main.h"
 #include "events.h"
 #include "graphics.h"
+#include "mapview.h"
 #include "map.h"
 
 struct Map *g_map;
@@ -71,4 +72,16 @@ cleanup (void)
   cleanup_mapview (g_mapview);
   cleanup_map (g_map);
   cleanup_graphics ();
+}
+
+void
+cleanup_mapview (struct MapView *mapview)
+{
+  if (mapview)
+    {
+      if (mapview->dirty_tiles)
+        free (mapview->dirty_tiles);
+
+      free (mapview);
+    }
 }

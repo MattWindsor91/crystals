@@ -2,7 +2,7 @@
 
 #include "main.h"
 #include "graphics.h"
-#include "map.h"
+#include "mapview.h"
 
 unsigned char g_held_keys[256];
 
