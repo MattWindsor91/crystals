@@ -25,7 +25,6 @@ init_modules (const char *path)
     {
       strncpy (g_modules.path, path, strlen (path) + 1);
       
-#ifndef TESTSUITE
       module_bare_init (&g_modules.gfx.metadata);
       g_modules.gfx.init_screen = NULL;
       g_modules.gfx.draw_rect = NULL;
@@ -34,14 +33,6 @@ init_modules (const char *path)
       g_modules.gfx.draw_image = NULL;
       g_modules.gfx.update_screen = NULL;
       g_modules.gfx.scroll_screen = NULL;
-#else
-      module_bare_init (&g_modules.test.metadata);
-      module_bare_init (&g_modules.foo.metadata);
-      
-      g_modules.test.hello       = NULL;
-      g_modules.test.sum_numbers = NULL;
-      g_modules.foo.bar          = NULL;
-#endif /* TESTSUITE */
       return SUCCESS;
     }
   else
