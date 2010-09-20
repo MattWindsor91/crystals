@@ -13,7 +13,7 @@
 void
 init_modules (const char *path)
 {
-  g_modules.path = (char*) malloc (sizeof (char) * strlen (path));
+  g_modules.path = (char*) malloc (sizeof (char) * (strlen (path) + 1));
   strcpy (g_modules.path, path);
 
   module_bare_init (&g_modules.test.metadata);

@@ -17,7 +17,7 @@
 void
 init_modules (const char *path)
 {
-  g_modules.path = (char*) malloc (sizeof (char) * strlen (path));
+  g_modules.path = (char*) malloc (sizeof (char) * (strlen (path) + 1));
   strcpy (g_modules.path, path);
 
   /* When we have modules, do this:
@@ -42,7 +42,7 @@ get_module_path (const char* module, char** out)
 {
   char *path;
 
-  path = (char*) malloc (sizeof (char) * strlen (g_modules.path));
+  path = (char*) malloc (sizeof (char) * (strlen (g_modules.path) + strlen (module) + strlen (MODULESUFFIX) + 1));
 
   strcpy (path, g_modules.path);
   strcat (path, module);
