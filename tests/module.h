@@ -22,7 +22,7 @@ struct
     module_data metadata;
     void (*bar)(void);
   } foo;
-} modules;
+} g_modules;
 
 /* function prototypes */
 void

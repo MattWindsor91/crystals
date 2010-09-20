@@ -17,12 +17,12 @@
 void
 init_modules (const char *path)
 {
-  modules.path = (char*) malloc (sizeof (char) * strlen (path));
-  strcpy (modules.path, path);
+  g_modules.path = (char*) malloc (sizeof (char) * (strlen (path) + 1));
+  strcpy (g_modules.path, path);
 
   /* When we have modules, do this:
-  module_bare_init (&modules.MODULE.metadata);
-  modules.MODULE.FUNCTION = null
+  module_bare_init (&g_modules.MODULE.metadata);
+  g_modules.MODULE.FUNCTION = null
   */
 }
 #endif /* TESTSUITE */
@@ -42,9 +42,9 @@ get_module_path (const char* module, char** out)
 {
   char *path;
 
-  path = (char*) malloc (sizeof (char) * strlen (modules.path));
+  path = (char*) malloc (sizeof (char) * (strlen (g_modules.path) + strlen (module) + strlen (MODULESUFFIX) + 1));
 
-  strcpy (path, modules.path);
+  strcpy (path, g_modules.path);
   strcat (path, module);
   strcat (path, MODULESUFFIX);
 
@@ -123,7 +123,7 @@ void
 close_modules (void)
 {
   /* No modules - but when we have some do this:
-  close_module (&modules.MODULE.metadata);
+  close_module (&g_modules.MODULE.metadata);
   */
 }
 #endif /* TESTSUITE */
