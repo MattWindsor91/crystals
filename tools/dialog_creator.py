@@ -168,6 +168,8 @@ class XMLFileCtrl(wx.Panel):
     """class to handle the XML files and manage the controls at once"""
 
     ID_TEXT = wx.NewId()
+    ID_CHOICE_ADD = wx.NewId()
+    ID_CHOICE_REMOVE = wx.NewId()
 
     def __init__(self, parent):
         wx.Panel.__init__(self, parent)
@@ -184,22 +186,24 @@ class XMLFileCtrl(wx.Panel):
 
         actor_id_header = wx.StaticText(self, -1, _("Speakers Actor-ID:"))
         actor_id_header.SetFont(parent.GetParent().font_bold)
-        self.actor_id_ctrl = wx.TextCtrl(self)
+        self.actor_id_ctrl = wx.ComboBox(self)
+        self.actor_id_ctrl.SetFocus()
 
         type_box = wx.StaticBox(self, -1, _("Content Type:"))
         type_box.SetFont(parent.GetParent().font_bold)
-        # small hack to make StaticBoxSizer look nice
-        text_rb = wx.RadioButton(self, label="text                            "
+        self.text_rb = wx.RadioButton(self, label="text"
             , style=wx.RB_GROUP)
-        choice_rb = wx.RadioButton(self, label="choice")
-        set_rb = wx.RadioButton(self, label="set")
-        goto_rb = wx.RadioButton(self, label="goto")
+        self.choice_rb = wx.RadioButton(self, label="choice")
+        self.set_rb = wx.RadioButton(self, label="set")
+        self.goto_rb = wx.RadioButton(self, label="goto")
+        self.requ_rb = wx.RadioButton(self, label="requirement")
 
         # Just a dummy panel
-        self.controls = (0, 0)
+        self.controls = wx.Panel(self)
+        self.controls.Hide()
 
         # Controls for the text option
-        self.text_ctrls = wx.Panel(self, -1)
+        self.text_ctrls = wx.Panel(self)
         text_header = wx.StaticText(self.text_ctrls, label=_("Text:"))
         text_header.SetFont(parent.GetParent().font_bold)
         self.text_text = wx.TextCtrl(self.text_ctrls, self.ID_TEXT,
@@ -210,12 +214,49 @@ class XMLFileCtrl(wx.Panel):
         self.text_ctrls.SetSizer(tbox)
         self.text_ctrls.Hide()
 
-        self.choice_ctrls = wx.Panel(self, -1)
+        # Controls for the choice option
+        self.choice_ctrls = wx.Panel(self)
+        choices_header = wx.StaticText(self.choice_ctrls, label=_("Choices:"))
+        choices_header.SetFont(parent.GetParent().font_bold)
+        self.choice_choices = wx.ListCtrl(self.choice_ctrls, size=(225, 200),
+            style=wx.LC_REPORT|wx.SUNKEN_BORDER|wx.LC_AUTOARRANGE)
+        self.choice_choices.InsertColumn(0, _("Label"), width=75)
+        self.choice_choices.InsertColumn(1, _("Summary"), width=150)
+        summary_header = wx.StaticText(self.choice_ctrls, label=_("Summary:"))
+        summary_header.SetFont(parent.GetParent().font_bold)
+        self.choice_summary = wx.TextCtrl(self.choice_ctrls)
+        label_header = wx.StaticText(self.choice_ctrls, label=_("Label:"))
+        label_header.SetFont(parent.GetParent().font_bold)
+        self.choice_label = wx.ComboBox(self.choice_ctrls)
+        add_button = wx.Button(self.choice_ctrls, self.ID_CHOICE_ADD,
+            _("Add Choice"))
+        remove_button = wx.Button(self.choice_ctrls, self.ID_CHOICE_REMOVE,
+            _("Remove Choice"))
+        chbox = wx.BoxSizer(wx.HORIZONTAL)
+        cvbox1 = wx.BoxSizer(wx.VERTICAL)
+        cvbox1.Add(choices_header, 0, wx.LEFT, 5)
+        cvbox1.Add(self.choice_choices, 0, wx.EXPAND | wx.ALL, 5)
+        chbox.Add(cvbox1, 1, wx.ALL | wx.EXPAND)
+        cvbox2 = wx.BoxSizer(wx.VERTICAL)
+        cvbox2.Add(summary_header, 0, wx.LEFT | wx.BOTTOM, 5)
+        cvbox2.Add(self.choice_summary, 0, wx.EXPAND)
+        cvbox2.Add((0, 5))
+        cvbox2.Add(label_header, 0, wx.ALL, 5)
+        cvbox2.Add(self.choice_label, 0, wx.EXPAND)
+        bubox = wx.BoxSizer(wx.HORIZONTAL)
+        bubox.Add(add_button)
+        bubox.Add(remove_button)
+        cvbox2.Add(bubox, 0, wx.TOP, 5)
+        chbox.Add(cvbox2, 1, wx.EXPAND | wx.ALL)
+        self.choice_ctrls.SetSizer(chbox)
         self.choice_ctrls.Hide()
-        self.set_ctrls = wx.Panel(self, -1)
+
+        self.set_ctrls = wx.Panel(self)
         self.set_ctrls.Hide()
-        self.goto_ctrls = wx.Panel(self, -1)
+        self.goto_ctrls = wx.Panel(self)
         self.goto_ctrls.Hide()
+        self.requirement_ctrls = wx.Panel(self)
+        self.requirement_ctrls.Hide()
 
         self.sizer = wx.BoxSizer(wx.VERTICAL) # lowest for everything
         hbox1 = wx.BoxSizer(wx.HORIZONTAL) # sepparates radio buttons
@@ -235,10 +276,13 @@ class XMLFileCtrl(wx.Panel):
         vbox2.Add(actor_id_header, 0, wx.ALL, 5)
         vbox2.Add(self.actor_id_ctrl, 0, wx.LEFT | wx.EXPAND, 5)
 
-        stbox.Add(text_rb)
-        stbox.Add(choice_rb)
-        stbox.Add(set_rb)
-        stbox.Add(goto_rb)
+        # small hack to make StaticBoxSizer look nice
+        stbox.Add((160, 0))
+        stbox.Add(self.text_rb)
+        stbox.Add(self.choice_rb)
+        stbox.Add(self.set_rb)
+        stbox.Add(self.goto_rb)
+        stbox.Add(self.requ_rb)
 
         hbox1.AddSizer(vbox2, 0, wx.EXPAND)
         hbox1.Add((20, 20), 1, wx.EXPAND)
@@ -255,9 +299,15 @@ class XMLFileCtrl(wx.Panel):
         self.Bind(wx.EVT_BUTTON, self.on_add, id=wx.ID_ADD)
         self.Bind(wx.EVT_BUTTON, self.on_update, id=wx.ID_REFRESH)
         self.Bind(wx.EVT_RADIOBUTTON, self.on_change_type,
-            id=text_rb.GetId(), id2=choice_rb.GetId())
+            id=self.text_rb.GetId())
         self.Bind(wx.EVT_RADIOBUTTON, self.on_change_type,
-            id=set_rb.GetId(), id2=goto_rb.GetId())
+            id=self.choice_rb.GetId())
+        self.Bind(wx.EVT_RADIOBUTTON, self.on_change_type,
+            id=self.set_rb.GetId())
+        self.Bind(wx.EVT_RADIOBUTTON, self.on_change_type,
+            id=self.goto_rb.GetId())
+        self.Bind(wx.EVT_RADIOBUTTON, self.on_change_type,
+            id=self.requ_rb.GetId())
 
     def _swap_addupdate_buttons(self, id):
         if id == wx.ID_ADD:
@@ -270,11 +320,7 @@ class XMLFileCtrl(wx.Panel):
     def new(self):
         """set the default options for a new tag or file"""
         self._swap_addupdate_buttons(wx.ID_ADD)
-        self.sizer.Remove(self.controls)
-        self.controls.Hide()
-        self.controls = self.text_ctrls
-        self.controls.Show(True)
-        self.sizer.Add(self.controls, 0, wx.ALL | wx.EXPAND, 5)
+        self._change_controls(self.text_ctrls)
 
     def load(self, tag_name):
         """load the informations from a tag"""
@@ -282,8 +328,25 @@ class XMLFileCtrl(wx.Panel):
     def save(self, tag_name):
         """save the informations in a tag"""
 
+    def _change_controls(self, new_controls):
+        self.sizer.Detach(self.controls)
+        self.controls.Hide()
+        self.controls = new_controls
+        self.controls.Show()
+        self.sizer.Add(self.controls, 0, wx.ALL | wx.EXPAND, 5)
+        self.controls.Layout()
+        self.sizer.Layout()
+        self.Layout()
+
     def on_change_type(self, event):
         """changes the controls if the type is changed"""
+        label = event.GetEventObject().GetLabel().strip()
+        self._change_controls(eval("self.{0}_ctrls".format(label)))
+
+        if label == "text" or label == "choice":
+            self.actor_id_ctrl.Enable()
+        else:
+            self.actor_id_ctrl.Disable()
 
     def on_next(self, event):
         """switch to the next tag in occurence order"""
