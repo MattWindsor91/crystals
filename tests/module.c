@@ -13,22 +13,22 @@
 void
 init_modules (const char *path)
 {
-  modules.path = (char*) malloc (sizeof (char) * strlen (path));
-  strcpy (modules.path, path);
+  g_modules.path = (char*) malloc (sizeof (char) * strlen (path));
+  strcpy (g_modules.path, path);
 
-  module_bare_init (&modules.test.metadata);
-  module_bare_init (&modules.foo.metadata);
+  module_bare_init (&g_modules.test.metadata);
+  module_bare_init (&g_modules.foo.metadata);
 
-  modules.test.hello       = NULL;
-  modules.test.sum_numbers = NULL;
-  modules.foo.bar          = NULL;
+  g_modules.test.hello       = NULL;
+  g_modules.test.sum_numbers = NULL;
+  g_modules.foo.bar          = NULL;
 }
 
 void
 close_modules (void)
 {
-  close_module(&modules.test.metadata);
-  close_module(&modules.foo.metadata);
+  close_module(&g_modules.test.metadata);
+  close_module(&g_modules.foo.metadata);
 }
 
 /* Function to load 'test' module. */
@@ -39,11 +39,11 @@ load_module_test (void)
   char *modulepath;
   get_module_path ("test", &modulepath);
 
-  if (modules.test.metadata.lib_handle == NULL)
+  if (g_modules.test.metadata.lib_handle == NULL)
     {
-      get_module          (modulepath, &modules.test.metadata);
-      get_module_function (modules.test.metadata, "hello",       (void**) &modules.test.hello);
-      get_module_function (modules.test.metadata, "sum_numbers", (void**) &modules.test.sum_numbers);
+      get_module          (modulepath, &g_modules.test.metadata);
+      get_module_function (g_modules.test.metadata, "hello",       (void**) &g_modules.test.hello);
+      get_module_function (g_modules.test.metadata, "sum_numbers", (void**) &g_modules.test.sum_numbers);
     }
 
   free(modulepath);
@@ -56,11 +56,11 @@ load_module_foo (void)
   char *modulepath;
   get_module_path ("foo", &modulepath);
 
-  if (modules.foo.metadata.lib_handle == NULL)
+  if (g_modules.foo.metadata.lib_handle == NULL)
     {
-      get_module (modulepath, &modules.foo.metadata);
+      get_module (modulepath, &g_modules.foo.metadata);
       /* Normally, the program would have terminated before reaching this line */
-      get_module_function(modules.foo.metadata, "bar", (void**) &modules.foo.bar);
+      get_module_function(g_modules.foo.metadata, "bar", (void**) &g_modules.foo.bar);
     }
 
   free(modulepath);
@@ -93,8 +93,8 @@ main (int argc, char *argv[])
   /* Run test functions */
   printf ("Testing 'test' module:\n");
   printf ("    Should be hello world: ");
-  (*modules.test.hello) ();
-  (*modules.test.sum_numbers) (2, 3, &ans);
+  (*g_modules.test.hello) ();
+  (*g_modules.test.sum_numbers) (2, 3, &ans);
   printf("\n    2 + 3 = %i\n", ans);
   
   /* Tidy up and close */

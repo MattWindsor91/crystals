@@ -28,7 +28,7 @@ struct
     void (*FUNCTION)(PARAMETERS);
   } MODULE;
   */
-} modules;
+} g_modules;
 #endif /* TESTSUITE */
 
 /* Function prototypes */
