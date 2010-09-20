@@ -46,9 +46,6 @@ int
 init_graphics (void);
 
 void
-load_module_gfx (void);
-
-void
 fill_screen (unsigned char red,
              unsigned char green,
              unsigned char blue);

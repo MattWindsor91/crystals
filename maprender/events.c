@@ -5,12 +5,12 @@
 #include "graphics.h"
 #include "mapview.h"
 
-static unsigned char s_held_keys[256];
+static unsigned char sg_held_keys[256];
 
 void
 init_events (void)
 {
-  memset (s_held_keys, 0, sizeof (unsigned char) * 256);
+  memset (sg_held_keys, 0, sizeof (unsigned char) * 256);
 }
 
 void
@@ -26,7 +26,7 @@ handle_events (void)
           g_running = 0;
           break;
         case SDL_KEYDOWN:
-          s_held_keys[event.key.keysym.sym] = 1;
+          sg_held_keys[event.key.keysym.sym] = 1;
 
           switch (event.key.keysym.sym)
             {
@@ -42,22 +42,22 @@ handle_events (void)
             }
           break;
         case SDL_KEYUP:
-          s_held_keys[event.key.keysym.sym] = 0;
+          sg_held_keys[event.key.keysym.sym] = 0;
           break;
         default:
           break;
         }
     }
 
-  if (s_held_keys[SDLK_UP])
+  if (sg_held_keys[SDLK_UP])
     scroll_map (g_mapview, NORTH);
 
-  if (s_held_keys[SDLK_RIGHT])
+  if (sg_held_keys[SDLK_RIGHT])
     scroll_map (g_mapview, EAST);
 
-  if (s_held_keys[SDLK_DOWN])
+  if (sg_held_keys[SDLK_DOWN])
     scroll_map (g_mapview, SOUTH);
 
-  if (s_held_keys[SDLK_LEFT])
+  if (sg_held_keys[SDLK_LEFT])
     scroll_map (g_mapview, WEST);
 }

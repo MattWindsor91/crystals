@@ -6,7 +6,7 @@
 #include "graphics.h"
 #include "module.h"
 
-static struct GfxImageNode *s_images[GFX_HASH_VALS];
+static struct GfxImageNode *sg_images[GFX_HASH_VALS];
 
 int
 init_graphics (void)
@@ -18,7 +18,7 @@ init_graphics (void)
       unsigned int i;
 
       for (i = 0; i < GFX_HASH_VALS; i++)
-        s_images[i] = NULL;
+        sg_images[i] = NULL;
 
       return SUCCESS;
     } 
@@ -29,43 +29,6 @@ init_graphics (void)
 
   cleanup_graphics ();
   return FAILURE;
-}
-
-void
-load_module_gfx (void)
-{
-  char *modulepath;
-
-  get_module_path ("gfx-sdl", &modulepath);
-
-  if (g_modules.gfx.metadata.lib_handle == NULL && 
-      modulepath)
-    {
-      get_module (modulepath, &g_modules.gfx.metadata);
-
-      get_module_function (g_modules.gfx.metadata, "init_screen",
-                           (void**) &g_modules.gfx.init_screen);
-
-      get_module_function (g_modules.gfx.metadata, "draw_rect", 
-                           (void**) &g_modules.gfx.draw_rect);
-
-      get_module_function (g_modules.gfx.metadata, "load_image_data", 
-                           (void**) &g_modules.gfx.load_image_data);
-
-      get_module_function (g_modules.gfx.metadata, "free_image_data", 
-                           (void**) &g_modules.gfx.free_image_data);
-
-      get_module_function (g_modules.gfx.metadata, "draw_image", 
-                           (void**) &g_modules.gfx.draw_image);
-
-      get_module_function (g_modules.gfx.metadata, "update_screen", 
-                           (void**) &g_modules.gfx.update_screen);
-
-      get_module_function (g_modules.gfx.metadata, "scroll_screen", 
-                           (void**) &g_modules.gfx.scroll_screen);
-
-      free (modulepath);
-    }
 }
 
 void
@@ -181,12 +144,12 @@ delete_image (const char name[])
 
   /* Iterate through the hash bucket to find the correct image, then 
      delete its data and node. */
-  for (img = s_images[h]; img != NULL; img = prev->next)
+  for (img = sg_images[h]; img != NULL; img = prev->next)
     {
       if (strcmp(name, img->name) == 0)
         {
           if (prev == NULL)
-            s_images[h] = img->next;
+            sg_images[h] = img->next;
           else
             prev->next = img->next;
           
@@ -206,13 +169,13 @@ clear_images (void)
   
   for (i = 0; i < GFX_HASH_VALS; i++)
     {
-      for (p = s_images[i]; p != NULL; p = next)
+      for (p = sg_images[i]; p != NULL; p = next)
         {
           next = p->next;
           /* Delete the image data and node */
           free_image (p);
         }
-      s_images[i] = NULL;
+      sg_images[i] = NULL;
   }
 }
 
@@ -227,7 +190,7 @@ get_image (const char name[], struct GfxImageNode *add_pointer)
   h = ascii_hash (name);
 
   /* Now try to find the image. */
-  for (img = s_images[h]; img != NULL; img = img->next)
+  for (img = sg_images[h]; img != NULL; img = img->next)
     {
       if (strcmp (name, img->name) == 0)
         {
@@ -248,9 +211,9 @@ get_image (const char name[], struct GfxImageNode *add_pointer)
      exist, then add the image to the start of the linked list. */
   if (add_pointer)
     {
-      add_pointer->next = s_images[h];
-      s_images[h] = add_pointer;
-      return s_images[h];
+      add_pointer->next = sg_images[h];
+      sg_images[h] = add_pointer;
+      return sg_images[h];
     }
 
   /* Return NULL, if all else fails. */

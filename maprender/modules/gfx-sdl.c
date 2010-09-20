@@ -16,11 +16,11 @@ enum
     WEST
   };
 
-static SDL_Surface *s_screen;
+static SDL_Surface *sg_screen;
 
 /* We use a shadow buffer for things like copying the screen onto itself. */
 
-static SDL_Surface *s_shadow;
+static SDL_Surface *sg_shadow;
 
 /* Prototypes - we need to decide whether to use a separate header file for modules or not.
    Perhaps for multi-file modules. */
@@ -72,16 +72,16 @@ scroll_screen (unsigned int direction);
 void
 init (void)
 {
-  s_screen = NULL;
+  sg_screen = NULL;
 }
 
 void
 term (void)
 {
-  if (s_screen)
+  if (sg_screen)
     {
-      if (s_shadow)
-        SDL_FreeSurface (s_shadow);
+      if (sg_shadow)
+        SDL_FreeSurface (sg_shadow);
 
       SDL_Quit ();
     }
@@ -94,15 +94,15 @@ init_screen (unsigned short width,
 {
   if (SDL_Init (SDL_INIT_VIDEO) == 0)
     {
-      s_screen = SDL_SetVideoMode (width,
+      sg_screen = SDL_SetVideoMode (width,
                                    height,
                                    depth,
                                    SDL_SWSURFACE);
-      if (s_screen)
+      if (sg_screen)
         {
-          s_shadow = SDL_DisplayFormat (s_screen);
+          sg_shadow = SDL_DisplayFormat (sg_screen);
 
-          if (s_shadow)
+          if (sg_shadow)
             return TRUE;
           else
             {
@@ -138,7 +138,7 @@ draw_rect (short x,
   rect.w = width;
   rect.h = height;
 
-  SDL_FillRect (s_screen, &rect, SDL_MapRGB (s_screen->format,
+  SDL_FillRect (sg_screen, &rect, SDL_MapRGB (sg_screen->format,
                                              red, green, blue));
 }
 
@@ -187,7 +187,7 @@ draw_image (void *image,
 
   if (ptex)
     {
-      SDL_BlitSurface (ptex, &srcrect, s_screen, &destrect);
+      SDL_BlitSurface (ptex, &srcrect, sg_screen, &destrect);
       return 1;
     }
   else
@@ -197,7 +197,7 @@ draw_image (void *image,
 void
 update_screen (void)
 {
-  SDL_Flip (s_screen);
+  SDL_Flip (sg_screen);
   SDL_Delay (15);
 }
 
@@ -208,8 +208,8 @@ scroll_screen (unsigned int direction)
 
   source.x = dest.x = source.y = dest.y = 0;
 
-  source.w = dest.w = (Uint16) s_screen->w;
-  source.h = dest.h = (Uint16) s_screen->h;
+  source.w = dest.w = (Uint16) sg_screen->w;
+  source.h = dest.h = (Uint16) sg_screen->h;
 
   switch (direction)
     {
@@ -231,6 +231,6 @@ scroll_screen (unsigned int direction)
       break;
     }
 
-  SDL_BlitSurface (s_screen, &source, s_shadow, &dest);
-  SDL_BlitSurface (s_shadow, &dest, s_screen, &dest);
+  SDL_BlitSurface (sg_screen, &source, sg_shadow, &dest);
+  SDL_BlitSurface (sg_shadow, &dest, sg_screen, &dest);
 }

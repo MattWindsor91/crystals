@@ -8,7 +8,7 @@
 
 const char FN_TILESET[] = "tiles.png";
 
-static unsigned char s_test_layers[4][101] = 
+static unsigned char sg_test_layers[4][101] = 
   {{ 9,  5,  5,  5,  5,  5,  5,  5,  5, 10, 
      8,  2,  2,  2,  2,  2,  2,  2,  2,  7,
      8, 13, 13, 13, 13, 13, 13, 13, 13,  7,
@@ -63,7 +63,7 @@ init_test_map (void)
       unsigned int i;
       for (i = 0; i < 4; i++) 
         {
-          memcpy (map->data_layers[i], s_test_layers[i],
+          memcpy (map->data_layers[i], sg_test_layers[i],
                   sizeof (unsigned char) * (map->width * map->height + 1));
         }
     }

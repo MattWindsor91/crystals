@@ -80,6 +80,9 @@ void
 get_module_function (module_data metadata, const char *function, void **func);
 
 void
+load_module_gfx (void);
+
+void
 close_module (module_data *module);
 
 void

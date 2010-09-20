@@ -115,6 +115,43 @@ get_module_function (module_data module, const char *function, void **func)
     }
 }
 
+void
+load_module_gfx (void)
+{
+  char *modulepath;
+
+  get_module_path ("gfx-sdl", &modulepath);
+
+  if (g_modules.gfx.metadata.lib_handle == NULL && 
+      modulepath)
+    {
+      get_module (modulepath, &g_modules.gfx.metadata);
+
+      get_module_function (g_modules.gfx.metadata, "init_screen",
+                           (void**) &g_modules.gfx.init_screen);
+
+      get_module_function (g_modules.gfx.metadata, "draw_rect", 
+                           (void**) &g_modules.gfx.draw_rect);
+
+      get_module_function (g_modules.gfx.metadata, "load_image_data", 
+                           (void**) &g_modules.gfx.load_image_data);
+
+      get_module_function (g_modules.gfx.metadata, "free_image_data", 
+                           (void**) &g_modules.gfx.free_image_data);
+
+      get_module_function (g_modules.gfx.metadata, "draw_image", 
+                           (void**) &g_modules.gfx.draw_image);
+
+      get_module_function (g_modules.gfx.metadata, "update_screen", 
+                           (void**) &g_modules.gfx.update_screen);
+
+      get_module_function (g_modules.gfx.metadata, "scroll_screen", 
+                           (void**) &g_modules.gfx.scroll_screen);
+
+      free (modulepath);
+    }
+}
+
 /* This closes an individual module and runs any termination code */
 void
 close_module (module_data *module)
