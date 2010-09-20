@@ -1,5 +1,5 @@
 #!/usr/bin/python
-#Copyright (c) 2010, Alexander Preisinger
+#Copyright (c) 2010, Alexander Preisinger, Michael Walker and Matt Windsor
 #All rights reserved.
 #
 #Redistribution and use in source and binary forms, with or without
