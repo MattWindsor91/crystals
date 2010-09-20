@@ -78,6 +78,9 @@ void
 get_module_path (const char *module, char **out);
 
 void
+get_module_by_name (const char* name, module_data *module);
+
+void
 get_module (const char* modulepath, module_data *module);
 
 void

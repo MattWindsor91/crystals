@@ -72,9 +72,37 @@ get_module_path (const char* module, char** out)
   else
     {
       fprintf (stderr, "ERROR: couldn't allocate module path.\n");
+
+#ifndef TESTSUITE
+      exit (1);
+#endif /* TESTSUITE */
     }
 
   *out = path;
+}
+
+/* This finds the filename of a module and calls get_module */
+void
+get_module_by_name (const char* name, module_data *module)
+{
+  /* Get the name of the module */
+  char *modulepath;
+  get_module_path (name, &modulepath);
+
+  /* And get the module */
+  if (modulepath)
+    {
+      get_module (modulepath, module);
+      free (modulepath);
+    }
+  else
+    {
+      fprintf (stderr, "ERROR: couldn't find module path.\n");
+
+#ifndef TESTSUITE
+      exit (1);
+#endif /* TESTSUITE */
+    }
 }
 
 /* This opens a module file and runs any init code */
@@ -128,14 +156,9 @@ get_module_function (module_data module, const char *function, void **func)
 void
 load_module_gfx (void)
 {
-  char *modulepath;
-
-  get_module_path ("gfx-sdl", &modulepath);
-
-  if (g_modules.gfx.metadata.lib_handle == NULL && 
-      modulepath)
+  if (g_modules.gfx.metadata.lib_handle == NULL)
     {
-      get_module (modulepath, &g_modules.gfx.metadata);
+      get_module_by_name ("gfx-dsl", &g_modules.gfx.metadata);
 
       get_module_function (g_modules.gfx.metadata, "init_screen",
                            (void**) &g_modules.gfx.init_screen);
@@ -157,8 +180,6 @@ load_module_gfx (void)
 
       get_module_function (g_modules.gfx.metadata, "scroll_screen", 
                            (void**) &g_modules.gfx.scroll_screen);
-
-      free (modulepath);
     }
 }
 #endif /* TESTSUITE */

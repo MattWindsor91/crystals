@@ -47,35 +47,24 @@ cleanup_modules (void)
 void
 load_module_test (void)
 {
-  /* Get the path of the module */
-  char *modulepath;
-  get_module_path ("test", &modulepath);
-
   if (g_modules.test.metadata.lib_handle == NULL)
     {
-      get_module          (modulepath, &g_modules.test.metadata);
+      get_module_by_name  ("test", &g_modules.test.metadata);
       get_module_function (g_modules.test.metadata, "hello",       (void**) &g_modules.test.hello);
       get_module_function (g_modules.test.metadata, "sum_numbers", (void**) &g_modules.test.sum_numbers);
     }
-
-  free(modulepath);
 }
 
 /* Function to load 'foo' module. */
 void
 load_module_foo (void)
 {
-  char *modulepath;
-  get_module_path ("foo", &modulepath);
-
   if (g_modules.foo.metadata.lib_handle == NULL)
     {
-      get_module (modulepath, &g_modules.foo.metadata);
+      get_module_by_name ("foo", &g_modules.foo.metadata);
       /* Normally, the program would have terminated before reaching this line */
       get_module_function(g_modules.foo.metadata, "bar", (void**) &g_modules.foo.bar);
     }
-
-  free(modulepath);
 }
 
 /* Test the module loader:
