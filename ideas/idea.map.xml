@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map>
+    <name type="str">Test-Map</name>
+    <ground type="str">grounds/Teppich_Test_low.jpg</ground>
+    <player_start_position type="tuple">(900, 600)</player_start_position>
+
+    <objects>
+        <object>
+            <filename type="str">Wastepaperbasket.img.gz</filename>
+            <position type="tuple">(550, 500)</position>
+        </object>
+        <object>
+            <filename type="str">Wastepaperbasket.img.gz</filename>
+            <position type="tuple">(600, 500)</position>
+        </object>
+        <object>
+            <filename type="str">Wastepaperbasket.img.gz</filename>
+            <position type="tuple">(750, 500)</position>
+        </object>
+        <object>
+            <filename type="str">Desk.img.gz</filename>
+            <position type="tuple">(700, 600)</position>
+        </object>
+    </objects>
+
+    <actors>
+        <actor>
+            <filename type="str">Duster.act.xml</filename>
+            <position type="tuple">(500, 600)</position>
+        </actor>
+    </actors>
+</map>

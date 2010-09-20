@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<dialog>
+    <requirements>
+        <events>
+            <event>E_0001</event>
+            <event>E_0002</event>
+        </events>
+    </requirements>
+
+    <content>
+        <say who="self">Hi Yves. Do you want a practice battle?</say>
+        <choices>
+            <choice id="no_thanks">No thanks.</choice>
+            <choice id="fight">Why not.</choice>
+        </choices>
+    </content>
+
+    <subcontent id="fight">
+        <say who="self">[COMBAT FEATURE COMMING SOON.]</say>
+    </subcontent>
+
+    <subcontent id="no_thanks">
+        <say who="player">No thanks.</say>
+        <say who="self">Come again, if you want to fight.</say>
+        <say who="player">I will do that. Bye.</say>
+    </subcontent>
+</dialog>
