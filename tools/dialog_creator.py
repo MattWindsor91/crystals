@@ -324,11 +324,12 @@ class XMLFileCtrl(wx.Panel):
 
     def focus(self):
         id = self.dlg_ctrl.AddRoot("dialog")
-        self.dlg_ctrl.AppendItem(id, "requirements")
-        c=self.dlg_ctrl.AppendItem(id, "content")
-        self.dlg_ctrl.AppendItem(c, "subcontent")
+        requ = self.dlg_ctrl.AppendItem(id, "requirements")
+        content = self.dlg_ctrl.AppendItem(id, "content")
+        self.dlg_ctrl.AppendItem(content, "subcontent")
+        self.dlg_ctrl.ExpandAll()
 
-#wx.TreeCtrl.InsertItem(
+#wx.TreeCtrl.SetE
 
 
     def new(self):
@@ -377,7 +378,6 @@ class XMLFileCtrl(wx.Panel):
 
     def on_add(self, event):
         """add new tag"""
-        _swap
 
     def on_update(self, event):
         """update tag"""
