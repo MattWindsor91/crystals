@@ -56,7 +56,7 @@ class Creator(wx.Frame):
         hbox1 = wx.BoxSizer(wx.HORIZONTAL)
         vbox1 = wx.BoxSizer(wx.VERTICAL)
 
-        dlg_header = wx.StaticText(self, -1, _("Content:"))
+        dlg_header = wx.StaticText(self, -1, _("Dialog:"))
         dlg_header.SetFont(self.font_bold)
 
         # The Dialog Control will be used by the XMLFileCtrls
@@ -106,7 +106,6 @@ class Creator(wx.Frame):
         self.Bind(wx.EVT_MENU, self.on_save_as, id=wx.ID_SAVEAS)
         self.Bind(wx.EVT_MENU, self.on_close, id=wx.ID_CLOSE)
 
-        #self.Bind(wx.EVT_MENU, self., id=wx.ID_PREFERENCES
         self.Bind(wx.EVT_MENU, self.on_about, id=wx.ID_ABOUT)
         self.Bind(wx.EVT_MENU, self.on_exit, id=wx.ID_EXIT)
         self.Bind(wx.EVT_CLOSE, self.on_exit)
@@ -120,8 +119,8 @@ class Creator(wx.Frame):
         pass
 
     def on_add_label(self, event):
-        """add a new label to the ListCtrl"""
-        pass
+        """add a new label to the TreeCtrl call trough the child"""
+        self.tab_ctrl.GetCurrentPage().add_label()
 
     def on_new(self, event):
         """create a new file"""
@@ -175,13 +174,20 @@ class XMLFileCtrl(wx.Panel):
     ID_CHOICE_ADD = wx.NewId()
     ID_CHOICE_REMOVE = wx.NewId()
 
+    DATA = {}
+
     def __init__(self, parent):
         wx.Panel.__init__(self, parent)
 
         self.data = {}
+        self.labels = {}
 
         self.font_bold = parent.GetParent().font_bold
+        self.font_italic = self.GetFont()
+        self.font_italic.SetStyle(wx.FONTSTYLE_ITALIC)
+
         self.dlg_ctrl = parent.GetParent().dlg_ctrl
+        self.current_tag_type = "text"
 
         #Layout & Controls
         next_button = wx.Button(self, wx.ID_FORWARD, label="->")
@@ -323,14 +329,24 @@ class XMLFileCtrl(wx.Panel):
             self.addupdate_button.SetLabel(_("Update Tag"))
 
     def focus(self):
+        """clear and fill the TreeCtrl for the new focus"""
         id = self.dlg_ctrl.AddRoot("dialog")
         requ = self.dlg_ctrl.AppendItem(id, "requirements")
+        newr = self.dlg_ctrl.AppendItem(requ, "New Tag ...")
+        self.dlg_ctrl.SetItemFont(newr, self.font_italic)
+        self.dlg_ctrl.SetItemFont(requ, self.font_bold)
         content = self.dlg_ctrl.AppendItem(id, "content")
-        self.dlg_ctrl.AppendItem(content, "subcontent")
+        newc = self.dlg_ctrl.AppendItem(content, "New Tag ...")
+        self.dlg_ctrl.SetItemFont(newc, self.font_italic)
+        self.dlg_ctrl.SetItemFont(content, self.font_bold)
         self.dlg_ctrl.ExpandAll()
 
-#wx.TreeCtrl.SetE
+        self.dlg_ctrl.SelectItem(content)
 
+        self.labels.update({"requirements" : {"id" : requ, "children" : []},
+                            "content" : {"id" : content, "children" : []}})
+
+#wx.TreeCtrl.SetItemFont()
 
     def new(self):
         """set the default options for a new tag or file"""
@@ -343,6 +359,9 @@ class XMLFileCtrl(wx.Panel):
 
     def save(self, tag_name):
         """save the informations in a tag"""
+
+    def add_label(self):
+        """add a new label to the TreeCtrl, call from the parent"""
 
     def _change_controls(self, new_controls):
         self.sizer.Detach(self.controls)
@@ -358,6 +377,7 @@ class XMLFileCtrl(wx.Panel):
         """changes the controls if the type is changed"""
         label = event.GetEventObject().GetLabel().strip()
         self._change_controls(eval("self.{0}_ctrls".format(label)))
+        self.current_tag_type = label
 
         if label == "text" or label == "choice":
             self.actor_id_ctrl.Enable()
@@ -378,6 +398,8 @@ class XMLFileCtrl(wx.Panel):
 
     def on_add(self, event):
         """add new tag"""
+        if self.current_tag_type == "text":
+            self.dlg_crtl
 
     def on_update(self, event):
         """update tag"""
