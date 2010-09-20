@@ -148,7 +148,7 @@ Here we have a plausible \textbf{g\_modules} struct, containing modules for grap
 
 \begin{lstlisting}
 int key;
-(*g_modules.input.get_key_press) (\&key);
+(*g_modules.input.get_key_press) (&key);
 \end{lstlisting}
 
 The struct is populated by module loader functions, which have to be written for each class. For example:
@@ -163,16 +163,22 @@ load_module_graphics (void)
   if (g_modules.graphics.metadata.lib_handle == NULL)
     {
       get_module (modulepath, &g_modules.graphics.metadata);
-      get_module_function(g_modules.graphics.metadata, "draw_tile", (void**) &g_modules.graphics.draw_tile);
-      get_module_function(g_modules.graphics.metadata, "draw_text", (void**) &g_modules.graphics.draw_text);
-      get_module_function(g_modules.graphics.metadata, "blank_screen", (void**) &g_modules.graphics.blank_screen);
+      get_module_function (g_modules.graphics.metadata,
+                           "draw_tile",
+                           (void**) &g_modules.graphics.draw_tile);
+      get_module_function (g_modules.graphics.metadata,
+                           "draw_text",
+                           (void**) &g_modules.graphics.draw_text);
+      get_module_function (g_modules.graphics.metadata,
+                           "blank_screen",
+                           (void**) &g_modules.graphics.blank_screen);
     }
 
   free(modulepath);
 }
 \end{lstlisting}
 
-Of course, a more useful implementation would take a parameter containing the name of the module. This would allow users to load any modules, as long as they provided binary-compatible functions. When a module is implemented, the \textbf{init\_modules} and \textbf{close\_modules} need to be up[dated to handle it, for example:
+Of course, a more useful implementation would take a parameter containing the name of the module. This would allow users to load any modules, as long as they provided binary-compatible functions. When a module is implemented, the \textbf{init\_modules} and \textbf{close\_modules} need to be updated to handle it, for example:
 
 \begin{lstlisting}
 void
