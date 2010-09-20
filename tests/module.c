@@ -3,8 +3,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <dlfcn.h>
+#include <string.h>
 
-#include "../posixy.h"
 #include "../module.h"
 #include "module.h"
 
@@ -13,7 +13,8 @@
 void
 init_modules (const char *path)
 {
-  modules.path = strdup (path);
+  modules.path = (char*) malloc (sizeof (char) * strlen (path));
+  strcpy (modules.path, path);
 
   module_bare_init (&modules.test.metadata);
   module_bare_init (&modules.foo.metadata);

@@ -3,8 +3,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <dlfcn.h>
+#include <string.h>
 
-#include "posixy.h"
 #include "module.h"
 
 /* If making tests, we have redefined stuff in the tester. */
@@ -17,7 +17,9 @@
 void
 init_modules (const char *path)
 {
-  modules.path = strdup (path);
+  modules.path = (char*) malloc (sizeof (char) * strlen (path));
+  strcpy (modules.path, path);
+
   /* When we have modules, do this:
   module_bare_init (&modules.MODULE.metadata);
   modules.MODULE.FUNCTION = null
@@ -38,14 +40,15 @@ module_bare_init (module_data *module)
 void
 get_module_path (const char* module, char** out)
 {
-  char *path = strdup (modules.path);
+  char *path;
 
+  path = (char*) malloc (sizeof (char) * strlen (modules.path));
+
+  strcpy (path, modules.path);
   strcat (path, module);
   strcat (path, MODULESUFFIX);
 
-  *out = strdup (path);
-
-  free (path);
+  *out = path;
 }
 
 /* This opens a module file and runs any init code */
