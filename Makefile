@@ -1,7 +1,7 @@
 WARN   = -Wall -Wextra -pedantic -Wshadow -Wpointer-arith -Wcast-align \
          -Wwrite-strings -Wmissing-prototypes -Wmissing-declarations \
          -Wredundant-decls -Wnested-externs -Winline -Wno-long-long \
-         -Wconversion -Wstrict-prototypes
+         -Wconversion -Wstrict-prototypes -ansi
 CFLAGS = -ggdb -O2 $(WARN)
 CC     = clang
 

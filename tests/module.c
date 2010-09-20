@@ -2,8 +2,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <dlfcn.h>
+
+#include "../posixy.h"
 #include "../module.h"
 #include "module.h"
 

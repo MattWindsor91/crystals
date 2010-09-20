@@ -3,7 +3,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <dlfcn.h>
-#include <string.h>
+
+#include "posixy.h"
 #include "module.h"
 
 /* If making tests, we have redefined stuff in the tester. */
