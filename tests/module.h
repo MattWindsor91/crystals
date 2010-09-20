@@ -4,9 +4,9 @@
 #define _TEST_MODULE_H
 
 /* modules struct - stores details about modules and functions */
-struct
+struct ModuleSet
 {
-  char* path;
+  char *path;
 
   /* This module exists */
   struct
@@ -22,17 +22,16 @@ struct
     module_data metadata;
     void (*bar)(void);
   } foo;
-} g_modules;
+};
 
 /* function prototypes */
-void
+int
 init_modules (const char *path);
 void
-close_modules (void);
+cleanup_modules (void);
 void
 load_module_test (void);
 void
 load_module_foo (void);
-
 
 #endif /* _TEST_MODULE_H */

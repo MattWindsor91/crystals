@@ -5,30 +5,42 @@
 #include <dlfcn.h>
 #include <string.h>
 
+#include "../main.h"
 #include "../module.h"
 #include "module.h"
 
-/* The test module functions - in the main module loader these would reflect the
-   modules used in the real engine */
-void
+/* This initialises the struct of modules to NULL and sets the load path */
+int
 init_modules (const char *path)
 {
-  g_modules.path = (char*) malloc (sizeof (char) * (strlen (path) + 1));
-  strcpy (g_modules.path, path);
+  g_modules.path = malloc (sizeof (char) * (strlen (path) + 1));
 
-  module_bare_init (&g_modules.test.metadata);
-  module_bare_init (&g_modules.foo.metadata);
+  if (g_modules.path)
+    {
+      strncpy (g_modules.path, path, strlen (path) + 1);
+      
+      module_bare_init (&g_modules.test.metadata);
+      module_bare_init (&g_modules.foo.metadata);
+      
+      g_modules.test.hello       = NULL;
+      g_modules.test.sum_numbers = NULL;
+      g_modules.foo.bar          = NULL;
+      return SUCCESS;
+    }
+  else
+    {
+      fprintf (stderr, "ERROR: Couldn't alloc modules path!\n");
+    }
 
-  g_modules.test.hello       = NULL;
-  g_modules.test.sum_numbers = NULL;
-  g_modules.foo.bar          = NULL;
+  return FAILURE;
 }
 
+/* This closes any loaded modules, run before program termination */
 void
-close_modules (void)
+cleanup_modules (void)
 {
-  close_module(&g_modules.test.metadata);
-  close_module(&g_modules.foo.metadata);
+  close_module (&g_modules.test.metadata);
+  close_module (&g_modules.foo.metadata);
 }
 
 /* Function to load 'test' module. */
@@ -98,6 +110,6 @@ main (int argc, char *argv[])
   printf("\n    2 + 3 = %i\n", ans);
   
   /* Tidy up and close */
-  close_modules ();
+  cleanup_modules ();
   return 0;
 }

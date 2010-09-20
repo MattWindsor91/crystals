@@ -5,25 +5,51 @@
 #include <dlfcn.h>
 #include <string.h>
 
+#include "main.h"
 #include "module.h"
 
-/* If making tests, we have redefined stuff in the tester. */
 #ifdef TESTSUITE
 #include "tests/module.h"
 #endif /* TESTSUITE */
 
+struct ModuleSet g_modules;
+
 /* This initialises the struct of modules to NULL and sets the load path */
 #ifndef TESTSUITE
-void
+int
 init_modules (const char *path)
 {
-  g_modules.path = (char*) malloc (sizeof (char) * (strlen (path) + 1));
-  strcpy (g_modules.path, path);
+  g_modules.path = malloc (sizeof (char) * (strlen (path) + 1));
 
-  /* When we have modules, do this:
-  module_bare_init (&g_modules.MODULE.metadata);
-  g_modules.MODULE.FUNCTION = null
-  */
+  if (g_modules.path)
+    {
+      strncpy (g_modules.path, path, strlen (path) + 1);
+      
+#ifndef TESTSUITE
+      module_bare_init (&g_modules.gfx.metadata);
+      g_modules.gfx.init_screen = NULL;
+      g_modules.gfx.draw_rect = NULL;
+      g_modules.gfx.load_image_data = NULL;
+      g_modules.gfx.free_image_data = NULL;
+      g_modules.gfx.draw_image = NULL;
+      g_modules.gfx.update_screen = NULL;
+      g_modules.gfx.scroll_screen = NULL;
+#else
+      module_bare_init (&g_modules.test.metadata);
+      module_bare_init (&g_modules.foo.metadata);
+      
+      g_modules.test.hello       = NULL;
+      g_modules.test.sum_numbers = NULL;
+      g_modules.foo.bar          = NULL;
+#endif /* TESTSUITE */
+      return SUCCESS;
+    }
+  else
+    {
+      fprintf (stderr, "ERROR: Couldn't alloc modules path!\n");
+    }
+
+  return FAILURE;
 }
 #endif /* TESTSUITE */
 
@@ -42,11 +68,20 @@ get_module_path (const char* module, char** out)
 {
   char *path;
 
-  path = (char*) malloc (sizeof (char) * (strlen (g_modules.path) + strlen (module) + strlen (MODULESUFFIX) + 1));
+  path = (char*) malloc (sizeof (char) * (strlen (g_modules.path)
+                                          + strlen (module) 
+                                          + strlen (MODULESUFFIX) + 1));
 
-  strcpy (path, g_modules.path);
-  strcat (path, module);
-  strcat (path, MODULESUFFIX);
+  if (path)
+    {
+      strcpy (path, g_modules.path);
+      strcat (path, module);
+      strcat (path, MODULESUFFIX);
+    }
+  else
+    {
+      fprintf (stderr, "ERROR: couldn't allocate module path.\n");
+    }
 
   *out = path;
 }
@@ -57,15 +92,11 @@ get_module (const char* modulepath, module_data *module)
 {
   char *error;
 
-#ifdef TESTSUITE
-  printf("Loading module: %s\n", modulepath);
-#endif /* TESTSUITE */
-
   module->lib_handle = dlopen (modulepath, RTLD_LAZY);
 
   if ((error = dlerror ()) != NULL)
     {
-      fprintf (stderr, "%s\n", dlerror ());
+      fprintf (stderr, "DLERROR: %s\n", dlerror ());
 
 #ifndef TESTSUITE
       exit (1);
@@ -93,13 +124,53 @@ get_module_function (module_data module, const char *function, void **func)
 
   if ((error = dlerror ()) != NULL)
     {
-      fprintf (stderr, "%s\n", error);
+      fprintf (stderr, "DLERROR: %s\n", error);
 
 #ifndef TESTSUITE
       exit (1);
 #endif /* TESTSUITE */
     }
 }
+
+/* Load the default graphics module - todo: allow specifying an alternate module */
+#ifndef TESTSUITE
+void
+load_module_gfx (void)
+{
+  char *modulepath;
+
+  get_module_path ("gfx-sdl", &modulepath);
+
+  if (g_modules.gfx.metadata.lib_handle == NULL && 
+      modulepath)
+    {
+      get_module (modulepath, &g_modules.gfx.metadata);
+
+      get_module_function (g_modules.gfx.metadata, "init_screen",
+                           (void**) &g_modules.gfx.init_screen);
+
+      get_module_function (g_modules.gfx.metadata, "draw_rect", 
+                           (void**) &g_modules.gfx.draw_rect);
+
+      get_module_function (g_modules.gfx.metadata, "load_image_data", 
+                           (void**) &g_modules.gfx.load_image_data);
+
+      get_module_function (g_modules.gfx.metadata, "free_image_data", 
+                           (void**) &g_modules.gfx.free_image_data);
+
+      get_module_function (g_modules.gfx.metadata, "draw_image", 
+                           (void**) &g_modules.gfx.draw_image);
+
+      get_module_function (g_modules.gfx.metadata, "update_screen", 
+                           (void**) &g_modules.gfx.update_screen);
+
+      get_module_function (g_modules.gfx.metadata, "scroll_screen", 
+                           (void**) &g_modules.gfx.scroll_screen);
+
+      free (modulepath);
+    }
+}
+#endif /* TESTSUITE */
 
 /* This closes an individual module and runs any termination code */
 void
@@ -120,10 +191,8 @@ close_module (module_data *module)
 /* This closes any loaded modules, run before program termination */
 #ifndef TESTSUITE
 void
-close_modules (void)
+cleanup_modules (void)
 {
-  /* No modules - but when we have some do this:
-  close_module (&g_modules.MODULE.metadata);
-  */
+  close_module (&g_modules.gfx.metadata);
 }
 #endif /* TESTSUITE */
