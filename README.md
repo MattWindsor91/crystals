@@ -1,3 +1,19 @@
+Overview
+========
+
+Crystals is a project to create a Free Software monster-battling game, similar to a certain handheld game of the mid-90s.
+
+Current Status
+--------------
+
+Early planning.  Several devteam idea branches have been made, and hopefully the design will be a blend of the brainstorming going on in each.
+
+Main decisions made so far:
+--------------------------
+
+ * Will be programmed in C with scripting in Python.
+ * Will use a modular system for input/graphics/sound/etc.
+
 Contributing
 ============
 
