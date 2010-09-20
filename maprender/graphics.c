@@ -1,6 +1,7 @@
 #include <SDL.h>
 #include <SDL/SDL_image.h>
 
+#include "main.h"
 #include "graphics.h"
 
 static SDL_Surface *s_screen;
@@ -69,6 +70,35 @@ update_screen (void)
 {
   SDL_Flip (s_screen);
   SDL_Delay (30);
+}
+
+void
+scroll_screen (direction)
+{
+  SDL_Rect source, dest;
+
+  source.x = dest.x = source.y = dest.y = 0;
+
+  source.w = dest.w = SCREEN_W - 1;
+  source.h = dest.h = SCREEN_H - 1;
+
+  switch (direction)
+    {
+    case NORTH:
+      source.y = 1;
+      break;
+    case EAST:
+      dest.x = 1;
+      break;
+    case SOUTH:
+      dest.y = 1;
+      break;
+    case WEST:
+      source.x = 1;
+      break;
+    }
+
+  SDL_BlitSurface (s_screen, &source, s_screen, &dest);
 }
 
 void

@@ -1,7 +1,7 @@
-#ifndef __EVENT_H__
-#define __EVENT_H__
+#ifndef _EVENTS_H
+#define _EVENTS_H
 
 void
 handle_events (void);
 
-#endif /* __EVENT_H__ */
+#endif /* _EVENTS_H */

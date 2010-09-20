@@ -43,9 +43,10 @@ init (void)
 void
 main_loop (void)
 {
+  render_map (g_map);
+
   while (g_running)
     {
-      render_map (g_map);
       update_screen ();
       handle_events ();
     }

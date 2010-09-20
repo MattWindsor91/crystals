@@ -1,5 +1,5 @@
-#ifndef __GRAPHICS_H__
-#define __GRAPHICS_H__
+#ifndef _GRAPHICS_H
+#define _GRAPHICS_H
 
 enum
   {
@@ -24,6 +24,9 @@ void
 update_screen (void);
 
 void
+scroll_screen (int direction);
+
+void
 cleanup_graphics (void);
 
-#endif /* __GRAPHICS_H__ */
+#endif /* _GRAPHICS_H */

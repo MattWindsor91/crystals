@@ -114,26 +114,6 @@ init_map (unsigned int width,
 }
 
 void
-cleanup_map (struct Map *map)
-{
-  if (map)
-    {
-      if (map->data_layers)
-        {
-          unsigned int i;
-
-          for (i = 0; i < (map->num_ground_layers
-                           + map->num_overlay_layers); i++)
-            {
-              if (map->data_layers[i])
-                free (map->data_layers[i]);
-            }
-        }
-      free (map);
-    }
-}
-
-void
 render_map (struct Map *map)
 {
   /* FIXME: only render dirty tiles. */
@@ -174,5 +154,33 @@ render_map_layer (struct Map *map, unsigned int layer)
                       map->data_layers[layer][x + (y * map->height)] * TILE_W, 
                       0, x * TILE_W, y * TILE_H, TILE_W, TILE_H);
         }
+    }
+}
+
+void
+scroll_map (int direction)
+{
+  /* FIXME: Render damage. */
+
+  scroll_screen (direction);
+}
+
+void
+cleanup_map (struct Map *map)
+{
+  if (map)
+    {
+      if (map->data_layers)
+        {
+          unsigned int i;
+
+          for (i = 0; i < (map->num_ground_layers
+                           + map->num_overlay_layers); i++)
+            {
+              if (map->data_layers[i])
+                free (map->data_layers[i]);
+            }
+        }
+      free (map);
     }
 }

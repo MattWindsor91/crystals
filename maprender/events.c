@@ -1,6 +1,7 @@
 #include <SDL.h>
 
 #include "main.h"
+#include "map.h"
 
 void
 handle_events (void)
@@ -19,6 +20,18 @@ handle_events (void)
             {
             case SDLK_ESCAPE:
               g_running = 0;
+              break;
+            case SDLK_UP:
+              scroll_map (NORTH);
+              break;
+            case SDLK_RIGHT:
+              scroll_map (EAST);
+              break;
+            case SDLK_DOWN:
+              scroll_map (SOUTH);
+              break;
+            case SDLK_LEFT:
+              scroll_map (WEST);
               break;
             default:
               break;

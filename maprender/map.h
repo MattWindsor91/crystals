@@ -1,5 +1,5 @@
-#ifndef __MAP_H__
-#define __MAP_H__
+#ifndef _MAP_H
+#define _MAP_H
 
 enum
   {
@@ -18,6 +18,8 @@ struct Map
 
 extern const char FN_TILESET[];
 
+extern struct Map *g_map;
+
 struct Map *
 init_test_map (void);
 
@@ -34,6 +36,9 @@ void
 render_map_layer (struct Map *map, unsigned int layer);
 
 void
+scroll_map (int direction);
+
+void
 cleanup_map (struct Map *map);
 
-#endif /* __MAP_H__ */
+#endif /* _MAP_H */

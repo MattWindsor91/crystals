@@ -1,7 +1,15 @@
-#ifndef __MAIN_H__
-#define __MAIN_H__
+#ifndef _MAIN_H
+#define _MAIN_H
 
 extern int g_running;
+
+enum
+  {
+    NORTH = 0,
+    EAST,
+    SOUTH,
+    WEST
+  };
 
 int
 main (int argc, char **argv);
@@ -15,4 +23,4 @@ main_loop (void);
 void
 cleanup (void);
 
-#endif /* __MAIN_H__ */
+#endif /* _MAIN_H */
