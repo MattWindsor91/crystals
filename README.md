@@ -34,6 +34,41 @@ To get a pointer to a function in a module and store it in 'func':
 
     get_module_function (void *lib_handle, const char *function, void **func)
 
+Test Suite
+----------
+
+The module loader comes with a test suite, which depends on valgrind. Build and run it with the following:
+
+    make tests
+
+You should get output similar to the following:
+
+    Compiling test suite:
+    
+    Running test suite:
+    Loading 'test' module
+    Loading module: /home/barrucadu/projects/crystals/tests/modules/test.so
+    Loading 'foo' module
+    Loading module: /home/barrucadu/projects/crystals/tests/modules/foo.so
+    (null)
+    ./tests/module: undefined symbol: bar
+    Testing 'test' module:
+        Should be hello world: Hello, world.
+        2 + 3 = 5
+            
+    Running memory leack check:
+    ==29306==    definitely lost: 0 bytes in 0 blocks
+    ==29306==    indirectly lost: 0 bytes in 0 blocks
+    ==29306==      possibly lost: 0 bytes in 0 blocks
+
+If you get a segfault or something, you can use GDB:
+
+    gdb -ex run -ex backtrace --args ./tests/module
+
+If there is a memory leak, you can use valgrind:
+
+    valgrind --tool=memcheck --leak-check=full --show-reachable=yes ./tests/module
+
 Ideas for modules
 =================
 
