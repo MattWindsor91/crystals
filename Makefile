@@ -4,7 +4,7 @@ WARN := -Wall -Wextra -pedantic -Wshadow -Wpointer-arith -Wcast-align \
 	-Wconversion -Wstrict-prototypes
 CFLAGS := -ggdb $(WARN)
 
-.PHONY: clean
+.PHONY: clean tests
 
 %.so : %.c
 	@gcc $(CFLAGS) -Wall -fPIC -rdynamic -c $^ -o $(^:.c=.o)
@@ -15,3 +15,7 @@ clean:
 	-@rm *.so &>/dev/null
 	-@rm */*.o &>/dev/null
 	-@rm */*.so &>/dev/null
+
+tests: module.c tests/module.c tests/modules/test.so
+	@gcc $(CFLAGS) -ldl -o tests/module -DTESTSUITE -DMODPATH="\"$(shell pwd)/tests/modules/\"" module.c tests/module.c >/dev/null
+	@./tests/module

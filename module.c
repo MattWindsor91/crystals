@@ -6,7 +6,13 @@
 #include <string.h>
 #include "module.h"
 
+/* If making tests, we have redefined stuff in the tester. */
+#ifdef TESTSUITE
+#include "tests/module.h"
+#endif /* TESTSUITE */
+
 /* This initialises the struct of modules to NULL and sets the load path */
+#ifndef TESTSUITE
 void
 init_modules (const char *path)
 {
@@ -15,6 +21,7 @@ init_modules (const char *path)
   modules.MODULE.FUNCTION = null
   */
 }
+#endif /* TESTSUITE */
 
 /* This gets the path of a module, storing it in out */
 void
@@ -36,14 +43,19 @@ get_module_handle (const char* modulepath, void **lib_handle)
 {
   char *error;
 
+#ifdef TESTSUITE
+  printf("Loading module: %s\n", modulepath);
+#endif /* TESTSUITE */
+
   *lib_handle = dlopen (modulepath, RTLD_LAZY);
 
   if ((error = dlerror ()) != NULL)
     {
       fprintf (stderr, "%s\n", dlerror ());
 
-      free (error);
+#ifndef TESTSUITE
       exit (1);
+#endif /* TESTSUITE */
     }
 }
 
@@ -59,12 +71,14 @@ get_module_function (void *lib_handle, const char *function, void **func)
     {
       fprintf (stderr, "%s\n", error);
 
-      free (error);
+#ifndef TESTSUITE
       exit (1);
+#endif /* TESTSUITE */
     }
 }
 
 /* This closes any loaded modules, run before program termination */
+#ifndef TESTSUITE
 void
 close_modules (void)
 {
@@ -75,3 +89,4 @@ close_modules (void)
     }
   */
 }
+#endif /* TESTSUITE */
