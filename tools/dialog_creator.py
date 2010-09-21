@@ -339,15 +339,16 @@ class XMLFileCtrl(wx.Panel):
 
     def focus(self):
         """clear and fill the TreeCtrl for the new focus"""
+        self.dlg_ctrl.DeleteAllItems()
         id = self.dlg_ctrl.AddRoot("dialog")
         self.labels['root'] = id
 
         self._add_label("requirements")
         content = self._add_label("content")
 
-        self.dlg_ctrl.SelectItem(content)
+        self.dlg_ctrl.SelectItem(self.labels["content"]["children"][-1])
 
-#wx.TreeCtrl.Ex
+#wx.TreeCtrl.Del
 
     def new(self):
         """set the default options for a new tag or file"""
@@ -433,9 +434,25 @@ class XMLFileCtrl(wx.Panel):
 
     def on_add(self, event):
         """add new tag"""
-        if self.current_tag_type == "text":
-            self.dlg_crtl
+        sel_id = self.dlg_ctrl.GetSelection()
 
+        if self.dlg_ctrl.GetItemText(sel_id) not in self.labels:
+            label_id = self.dlg_ctrl.GetItemParent(sel_id)
+        else:
+            label_id = sel_id
+
+        label_name = self.dlg_ctrl.GetItemText(label_id)
+        if self.current_tag_type == "text":
+            if len(self.labels[label_name]["children"]) > 1:
+                prev_id = self.labels[label_name]["children"][-2]
+            else:
+                prev_id = label_id
+            string = "{0}->{1}".format(self.actor_id_ctrl.GetValue(),
+                self.text_text.GetValue())
+            id = self.dlg_ctrl.InsertItem(label_id, prev_id, string.strip())
+            self.labels[label_name]["children"].insert(-1, id)
+#wx.TreeCtrl.
+#list.
     def on_update(self, event):
         """update tag"""
         pass
