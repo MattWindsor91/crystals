@@ -3,17 +3,25 @@
 #ifndef _TEST_MODULE_H
 #define _TEST_MODULE_H
 
-/* modules struct - stores details about modules and functions */
-struct
+/* Not nice that I have to define this here as well */
+typedef struct
 {
-  char* path;
+  void *lib_handle;
+  void (*init)(void);
+  void (*term)(void);
+} module_data;
+
+/* modules struct - stores details about modules and functions */
+typedef struct
+{
+  char *path;
 
   /* This module exists */
   struct
   {
     module_data metadata;
-    void (*hello)(void);
     void (*sum_numbers)(int a, int b, int *ans);
+    int  (*mul_numbers)(int a, int b);
   } test;
 
   /* This one doesn't */
@@ -22,17 +30,16 @@ struct
     module_data metadata;
     void (*bar)(void);
   } foo;
-} modules;
+} module_set;
 
 /* function prototypes */
-void
+int
 init_modules (const char *path);
 void
-close_modules (void);
-void
+cleanup_modules (void);
+int
 load_module_test (void);
-void
+int
 load_module_foo (void);
-
 
 #endif /* _TEST_MODULE_H */

@@ -1,70 +1,23 @@
-This is a plugin loader for Crystals (working title). There currently are no plugins, so it's fairly useless.
+Overview
+========
 
-Usage
-=====
+Crystals is a project to create a Free Software monster-battling game, similar to a certain handheld game of the mid-90s.
 
-Initialise the module handler, and set the default path to load modules from. This should be user-configurable, perhaps with a command-line flag:
+Current Status
+--------------
 
-    init_modules (const char *path)
+Early planning.  Several devteam idea branches have been made, and hopefully the design will be a blend of the brainstorming going on in each.
 
-Close any open handles to modules:
+Main decisions made so far:
+--------------------------
 
-    close_modules()
+ * Will be programmed in C with scripting in Python.
+ * Will use a modular system for input/graphics/sound/etc.
 
-When there are modules, you will be able to load them as follows:
+Contributing
+============
 
-    load_module_NAME()
-
-That will populate the modules.NAME global struct with function pointers.
-
-Internal Functions
-------------------
-
-These are used by the above functions, and so shouldn't really be used anywhere else.
-
-To perform the bare minimum initialisation of a module:
-
-    module_bare_init (module_data *module)
-
-To get the path of a module and store it in a string 'out':
-
-    get_module_path (const char* module, char** out)
-
-To open a module and store a handle to it, as well as pointers to any 'init' and 'term' functions, and execite a 'init' function:
-
-    get_module (const char* modulepath, module_data *module)
-
-To get a pointer to a function in a module and store it in 'func':
-
-    get_module_function (module_data metadata, const char *function, void **func)
-
-To close the handle to a module and execute a 'term' function:
-
-    close_module (module_data *module)
-
-Modules
-=======
-
-Modules consist of a series of functions (currently only tested with the 'void' return type, but others should work) which are to be used by the engine.
-
-Modules may optionally contain the following functions:
-
-    void init (void);
-    void term (void);
-
-If present, the 'init' function is executed when the module is loaded, and the 'term' function when the module is unloaded.
-
-Ideas for modules
------------------
-
- * Graphics:
-   * graphics-sdl.so
-   * graphics-opengl.so
- * Sound
-   * sound-sdl.so
-   * sound-null.so (for the Hurd)
- * Input
-   * input-sdl.so
+Crystals is licensed under the three-clause BSD license, so feel free to dive in and start hacking. However, by doing so you agree that you surrender copyright over all that you contribute which is merged into the developers' own branches and/or the official distribution to the copyright holders mentioned in the license text.
 
 Test Suite
 ==========

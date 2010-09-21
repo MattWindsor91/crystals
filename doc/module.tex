@@ -55,12 +55,14 @@ Code examples will be presented as well as an explanation of how to add new clas
 
 The module loader contains a set of functions for external use, which are supplemented by internal-use functions. These should not be called upon by any other aspect of the engine, as their behaviour may change unpredictably and without warning as changes are made. However, the behaviour of the external-use functions will remain consistent, or at least compatible, to avoid anything breaking due to changes.
 
+Any functions which have the \textbf{int} return type return the defined constants \textbf{SUCCESS} or \textbf{FAILURE}.
+
 \subsection{External-Use Functions}
 
 To initialise the global structure, \textbf{g\_modules} (more on that later) with function pointers and suchlike, the \textbf{init\_modules} function must be called, specifying the path to the modules.
 
 \begin{lstlisting}
-void
+int
 init_modules (const char *path);
 \end{lstlisting}
 
@@ -68,7 +70,14 @@ Before termination of the program, the \textbf{close\_modules} function should b
 
 \begin{lstlisting}
 void
-close_modules (void);
+cleanup_modules (void);
+\end{lstlisting}
+
+Finally, there are the functions to load the modules:
+
+\begin{lstlisting}
+int
+load_module_gfx (char* name);
 \end{lstlisting}
 
 \subsection{Internal-Use Functions}
@@ -88,10 +97,13 @@ get_module_path (const char* module,
                  char** out);
 \end{lstlisting}
 
-To open a module and run any initialisation code, the \textbf{get\_module} function is used.
+To open a module and run any initialisation code, there is a choice of \textbf{get\_module\_by\_name} and \textbf{get\_module}, which differ slightly.
 
 \begin{lstlisting}
-void
+int
+get_module_by_name (const char* name,
+                    module_data *module);
+int
 get_module (const char* modulepath,
             module_data *module);
 \end{lstlisting}
@@ -99,7 +111,7 @@ get_module (const char* modulepath,
 Once a module has been opened, function pointers must be generated and stored in the \textbf{g\_modules} struct so that the provided functions can be used. These are found with the \textbf{get\_module\_function} function.
 
 \begin{lstlisting}
-void
+int
 get_module_function (module_data metadata,
                      const char *function,
                      void **func);
@@ -114,7 +126,7 @@ close_module (module_data *module);
 
 \section{Modules Struct, g\_modules}
 
-The global modules struct, \textbf{g\_modules}, contains function pointers and metadata for every module. It stores generics rather than specifics, and so can be used for many different modules which provide the same functionality. There are currently no modules, but let us consider an example possible \textbf{g\_modules}:
+The global modules struct, \textbf{g\_modules}, contains function pointers and metadata for every module. It stores generics rather than specifics, and so can be used for many different modules which provide the same functionality. Let us consider a simple example possible \textbf{g\_modules}:
 
 \begin{lstlisting}
 struct
@@ -157,12 +169,10 @@ The struct is populated by module loader functions, which have to be written for
 void
 load_module_graphics (void)
 {
-  char *modulepath;
-  get_module_path ("graphics", &modulepath);
-
   if (g_modules.graphics.metadata.lib_handle == NULL)
     {
-      get_module (modulepath, &g_modules.graphics.metadata);
+      get_module_by_name ("graphics",
+                          &g_modules.graphics.metadata);
       get_module_function (g_modules.graphics.metadata,
                            "draw_tile",
                            (void**) &g_modules.graphics.draw_tile);
@@ -173,8 +183,6 @@ load_module_graphics (void)
                            "blank_screen",
                            (void**) &g_modules.graphics.blank_screen);
     }
-
-  free(modulepath);
 }
 \end{lstlisting}
 
@@ -184,18 +192,13 @@ Of course, a more useful implementation would take a parameter containing the na
 void
 init_modules (const char *path)
 {
-  ...
   module_bare_init (&g_modules.input.metadata);
-  g_modules.input.get_key_press = NULL
-  ...
 }
 
 void
 close_modules (void)
 {
-  ...
   close_module(&g_modules.input.metadata);
-  ...
 }
 \end{lstlisting}
 
@@ -208,10 +211,30 @@ clang -Wall -fPIC -rdynamic -c module.c -o module.o
 clang -shared -Wl,-soname,module.so -o module.so module.o
 \end{lstlisting}
 
-Let us now consider a very simple module, the test module from the testsuite:
+Modules consist of a collection of functions (see the test module in tests/modules/ for an example) which are used by the main engine, via the module loader. Modules can, optionally, contain an \textbf{init} and \ \textbf{term} function, which are run when the module is loaded and unloaded, respectively. These should have the following prototypes:
 
-\lstinputlisting{../tests/modules/test.c}
+\begin{lstlisting}
+void
+init (void);
+void
+term (void);
+\end{lstlisting}
 
-This module defines a number of functions, but the ones I want to talk about are \textbf{init} and \textbf{term}. The \textbf{init} function is called when the module is loaded, and so can be used for any initialisation that needs doing, like creating a SDL window. The \textbf{term} function is called when the module is closed, and so can be used for clean-up purposes, like freeing memory.
+The return type is not essential, but any return values will be ignored, and no parameters will be passed. If you require a more flexible solution, you will have to define your own functions (perhaps named \textbf{start} and \textbf{stop}) and call them manually via the \textbf{g\_modules} struct.
+
+\section{Test Suite}
+
+The module loader comes with a test suite, and can be run with the following command:
+
+\begin{lstlisting}[language=bash]
+make tests
+\end{lstlisting}
+
+If the test fails, a notice will be displayed. In that case, you can debug further with GDB or Valgrind:
+
+\begin{lstlisting}[language=bash]
+gdb -ex run -ex backtrace --args ./tests/module
+valgrind --tool=memcheck --leak-check=full --show-reachable=yes ./tests/module
+\end{lstlisting}
 
 \end{document}

@@ -58,7 +58,7 @@ handle_held_keys (void)
 int
 init_events (void)
 {
-  if (load_module_event () == FAILURE)
+  if (load_module_event ("event-sdl") == FAILURE)
     {
       fprintf (stderr, "ERROR: Could not load events module.\n");
       return FAILURE;

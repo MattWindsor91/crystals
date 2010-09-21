@@ -1,2 +1,4 @@
+autodoc
 *.o
 *.so
+*.d

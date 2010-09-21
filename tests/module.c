@@ -5,70 +5,76 @@
 #include <dlfcn.h>
 #include <string.h>
 
-#include "../module.h"
 #include "module.h"
+#include "../main.h"
+#include "../module.h"
 
-/* The test module functions - in the main module loader these would reflect the
-   modules used in the real engine */
-void
+/* This initialises the struct of modules to NULL and sets the load path */
+int
 init_modules (const char *path)
 {
-  modules.path = (char*) malloc (sizeof (char) * strlen (path));
-  strcpy (modules.path, path);
+  g_modules.path = malloc (sizeof (char) * (strlen (path) + 1));
 
-  module_bare_init (&modules.test.metadata);
-  module_bare_init (&modules.foo.metadata);
+  if (g_modules.path)
+    {
+      strncpy (g_modules.path, path, strlen (path) + 1);
+      
+      module_bare_init (&g_modules.test.metadata);
+      module_bare_init (&g_modules.foo.metadata);
+      return SUCCESS;
+    }
+  else
+    {
+      fprintf (stderr, "ERROR: Couldn't alloc modules path!\n");
+    }
 
-  modules.test.hello       = NULL;
-  modules.test.sum_numbers = NULL;
-  modules.foo.bar          = NULL;
+  return FAILURE;
 }
 
+/* This closes any loaded modules, run before program termination */
 void
-close_modules (void)
+cleanup_modules (void)
 {
-  close_module(&modules.test.metadata);
-  close_module(&modules.foo.metadata);
+  close_module (&g_modules.test.metadata);
+  close_module (&g_modules.foo.metadata);
 }
 
 /* Function to load 'test' module. */
-void
+int
 load_module_test (void)
 {
-  /* Get the path of the module */
-  char *modulepath;
-  get_module_path ("test", &modulepath);
-
-  if (modules.test.metadata.lib_handle == NULL)
+  if (g_modules.test.metadata.lib_handle == NULL)
     {
-      get_module          (modulepath, &modules.test.metadata);
-      get_module_function (modules.test.metadata, "hello",       (void**) &modules.test.hello);
-      get_module_function (modules.test.metadata, "sum_numbers", (void**) &modules.test.sum_numbers);
-    }
+      if (get_module_by_name  ("test", &g_modules.test.metadata) == FAILURE) return FAILURE;
+      if (get_module_function (g_modules.test.metadata, "sum_numbers",
+                               (void**) &g_modules.test.sum_numbers) == FAILURE) return FAILURE;
+      if (get_module_function (g_modules.test.metadata, "mul_numbers",
+                               (void**) &g_modules.test.mul_numbers) == FAILURE) return FAILURE;
 
-  free(modulepath);
+      return SUCCESS;
+    }
+  return FAILURE;
 }
 
 /* Function to load 'foo' module. */
-void
+int
 load_module_foo (void)
 {
-  char *modulepath;
-  get_module_path ("foo", &modulepath);
-
-  if (modules.foo.metadata.lib_handle == NULL)
+  if (g_modules.foo.metadata.lib_handle == NULL)
     {
-      get_module (modulepath, &modules.foo.metadata);
-      /* Normally, the program would have terminated before reaching this line */
-      get_module_function(modules.foo.metadata, "bar", (void**) &modules.foo.bar);
-    }
+      if (get_module_by_name ("foo", &g_modules.foo.metadata) == FAILURE) return FAILURE;
+      if (get_module_function(g_modules.foo.metadata, "bar",
+                              (void**) &g_modules.foo.bar) == FAILURE) return FAILURE;
 
-  free(modulepath);
+      return SUCCESS;
+    }
+  return FAILURE;
 }
 
 /* Test the module loader:
    - Load a module and try to use it
    - Load a nonexistant module and try to use it
+   Returns 0 is the test succeded, 1 otherwise.
 */
 int
 main (int argc, char *argv[])
@@ -85,19 +91,19 @@ main (int argc, char *argv[])
 
   /* Load the modules */
   printf ("Loading 'test' module\n");
-  load_module_test ();
+  if (load_module_test () == FAILURE) return 1;
 
   printf ("Loading 'foo' module\n");
-  load_module_foo ();
+  if (load_module_foo () == SUCCESS) return 1;
 
   /* Run test functions */
-  printf ("Testing 'test' module:\n");
-  printf ("    Should be hello world: ");
-  (*modules.test.hello) ();
-  (*modules.test.sum_numbers) (2, 3, &ans);
-  printf("\n    2 + 3 = %i\n", ans);
+  (*g_modules.test.sum_numbers) (2, 3, &ans);
+  if (ans != 5) return 1;
+
+  ans = (*g_modules.test.mul_numbers) (4, 5);
+  if (ans != 20) return 1;
   
   /* Tidy up and close */
-  close_modules ();
+  cleanup_modules ();
   return 0;
 }
