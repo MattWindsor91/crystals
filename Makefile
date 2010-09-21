@@ -20,11 +20,11 @@ LIBS     := `sdl-config --libs` -lSDL_image -g
 CFLAGS   := `sdl-config --cflags` -ansi -pedantic -O2 -ggdb \
            -DMODPATH="\"$(MODPATH)\"" $(WARN)
 
-.PHONY: clean autodoc
+.PHONY: all doc autodoc clean clean-doc
+
+### Binaries
 
 all: $(BIN) doc autodoc
-
-doc: doc/module.pdf doc/mapformat-internal.pdf
 
 $(BIN): $(OBJ) $(SOBJ)
 	@echo -n "Linking... "
@@ -60,6 +60,17 @@ $(BIN): $(OBJ) $(SOBJ)
 
 	@echo "done."
 
+### Documentation
+
+doc: doc/module.pdf doc/mapformat-internal.pdf
+
+autodoc:
+	@echo -n "Running doxygen... "
+
+	@doxygen >/dev/null
+
+	@echo "done."
+
 %.pdf: %.tex
 	@echo -n "LaTeXing $<... "
 
@@ -67,19 +78,21 @@ $(BIN): $(OBJ) $(SOBJ)
 
 	@echo "done."
 
-clean:
-	@echo -n "Cleaning... "
+### Cleaning
 
-	-@$(RM) $(BIN) *.o *.d *.so
-	-@$(RM) modules/*.so modules/*.o
-	-@$(RM) doc/*.pdf doc/*.aux doc/*.log
-	-@$(RM) -r autodoc
+clean: clean-obj clean-doc
+
+clean-obj:
+	@echo -n "Cleaning (object files)... "
+
+	-@$(RM) $(BIN) *.o *.d *.so modules/*.so modules/*.o &
 
 	@echo "done."
 
-autodoc:
-	@echo -n "Running doxygen... "
+clean-doc:
+	@echo -n "Cleaning (documentation)... "
 
-	@doxygen >/dev/null
+	-@$(RM) doc/*.pdf doc/*.aux doc/*.log
+	-@$(RM) -r autodoc
 
 	@echo "done."
