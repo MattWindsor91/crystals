@@ -1,4 +1,7 @@
-/* module.c - functions to handle loading of the modules that make up the engine. */
+/** @file    module.c
+ *  @author  Michael Walker
+ *  @brief   Functions to handle loading and unloading of the modules that make up the engine.
+ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -12,10 +15,10 @@
 #include "tests/module.h"
 #endif /* TESTSUITE */
 
-struct ModuleSet g_modules;
+struct module_set g_modules; /* The set of all modules in use */
 
-/* This initialises the struct of modules to NULL and sets the load path */
 #ifndef TESTSUITE
+/* This initialises the struct of modules to NULL and sets the load path */
 int
 init_modules (const char *path)
 {
@@ -157,14 +160,14 @@ get_module_function (module_data module, const char *function, void **func)
   return SUCCESS;
 }
 
-/* Load the default graphics module - todo: allow specifying an alternate module */
 #ifndef TESTSUITE
+/* Load the default graphics module - todo: allow specifying an alternate module */
 int
 load_module_gfx (void)
 {
   if (g_modules.gfx.metadata.lib_handle == NULL)
     {
-      if (get_module_by_name ("gfx-dsl", &g_modules.gfx.metadata) == FAILURE) return FAILURE;
+      if (get_module_by_name ("gfx-sdl", &g_modules.gfx.metadata) == FAILURE) return FAILURE;
 
       if (get_module_function (g_modules.gfx.metadata, "init_screen",
                                (void**) &g_modules.gfx.init_screen) == FAILURE) return FAILURE;
@@ -209,8 +212,8 @@ close_module (module_data *module)
     }
 }
 
-/* This closes any loaded modules, run before program termination */
 #ifndef TESTSUITE
+/* This closes any loaded modules, run before program termination */
 void
 cleanup_modules (void)
 {
