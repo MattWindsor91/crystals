@@ -12,8 +12,8 @@ struct ModuleSet
   struct
   {
     module_data metadata;
-    void (*hello)(void);
     void (*sum_numbers)(int a, int b, int *ans);
+    int  (*mul_numbers)(int a, int b);
   } test;
 
   /* This one doesn't */
@@ -29,9 +29,9 @@ int
 init_modules (const char *path);
 void
 cleanup_modules (void);
-void
+int
 load_module_test (void);
-void
+int
 load_module_foo (void);
 
 #endif /* _TEST_MODULE_H */

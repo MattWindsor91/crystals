@@ -71,9 +71,8 @@ get_module_path (const char* module, char** out)
     }
   else
     {
-      fprintf (stderr, "ERROR: couldn't allocate module path.\n");
-
 #ifndef TESTSUITE
+      fprintf (stderr, "ERROR: couldn't allocate module path.\n");
       exit (1);
 #endif /* TESTSUITE */
     }
@@ -82,7 +81,7 @@ get_module_path (const char* module, char** out)
 }
 
 /* This finds the filename of a module and calls get_module */
-void
+int
 get_module_by_name (const char* name, module_data *module)
 {
   /* Get the name of the module */
@@ -92,21 +91,21 @@ get_module_by_name (const char* name, module_data *module)
   /* And get the module */
   if (modulepath)
     {
-      get_module (modulepath, module);
+      return get_module (modulepath, module);
       free (modulepath);
     }
   else
     {
-      fprintf (stderr, "ERROR: couldn't find module path.\n");
-
 #ifndef TESTSUITE
-      exit (1);
+      fprintf (stderr, "ERROR: couldn't find module path.\n");
 #endif /* TESTSUITE */
+
+      return FAILURE;
     }
 }
 
 /* This opens a module file and runs any init code */
-void
+int
 get_module (const char* modulepath, module_data *module)
 {
   char *error;
@@ -115,11 +114,11 @@ get_module (const char* modulepath, module_data *module)
 
   if ((error = dlerror ()) != NULL)
     {
-      fprintf (stderr, "DLERROR: %s\n", dlerror ());
-
 #ifndef TESTSUITE
-      exit (1);
+      fprintf (stderr, "DLERROR: %s\n", dlerror ());
 #endif /* TESTSUITE */
+
+      return FAILURE;
     }
 
   /* Get init and termination functions if present */
@@ -131,10 +130,12 @@ get_module (const char* modulepath, module_data *module)
     {
       (*module->init) ();
     }
+
+  return SUCCESS;
 }
 
 /* This loads a pointer to a function from a module */
-void
+int
 get_module_function (module_data module, const char *function, void **func)
 {
   char *error;
@@ -143,44 +144,49 @@ get_module_function (module_data module, const char *function, void **func)
 
   if ((error = dlerror ()) != NULL)
     {
-      fprintf (stderr, "DLERROR: %s\n", error);
-
 #ifndef TESTSUITE
-      exit (1);
+      fprintf (stderr, "DLERROR: %s\n", error);
 #endif /* TESTSUITE */
+
+      return FAILURE;
     }
+
+  return SUCCESS;
 }
 
 /* Load the default graphics module - todo: allow specifying an alternate module */
 #ifndef TESTSUITE
-void
+int
 load_module_gfx (void)
 {
   if (g_modules.gfx.metadata.lib_handle == NULL)
     {
-      get_module_by_name ("gfx-dsl", &g_modules.gfx.metadata);
+      if (get_module_by_name ("gfx-dsl", &g_modules.gfx.metadata) == FAILURE) return FAILURE;
 
-      get_module_function (g_modules.gfx.metadata, "init_screen",
-                           (void**) &g_modules.gfx.init_screen);
+      if (get_module_function (g_modules.gfx.metadata, "init_screen",
+                               (void**) &g_modules.gfx.init_screen) == FAILURE) return FAILURE;
 
-      get_module_function (g_modules.gfx.metadata, "draw_rect", 
-                           (void**) &g_modules.gfx.draw_rect);
+      if (get_module_function (g_modules.gfx.metadata, "draw_rect", 
+                               (void**) &g_modules.gfx.draw_rect) == FAILURE) return FAILURE;
 
-      get_module_function (g_modules.gfx.metadata, "load_image_data", 
-                           (void**) &g_modules.gfx.load_image_data);
+      if (get_module_function (g_modules.gfx.metadata, "load_image_data", 
+                               (void**) &g_modules.gfx.load_image_data) == FAILURE) return FAILURE;
 
-      get_module_function (g_modules.gfx.metadata, "free_image_data", 
-                           (void**) &g_modules.gfx.free_image_data);
+      if (get_module_function (g_modules.gfx.metadata, "free_image_data", 
+                               (void**) &g_modules.gfx.free_image_data) == FAILURE) return FAILURE;
 
-      get_module_function (g_modules.gfx.metadata, "draw_image", 
-                           (void**) &g_modules.gfx.draw_image);
+      if (get_module_function (g_modules.gfx.metadata, "draw_image", 
+                               (void**) &g_modules.gfx.draw_image) == FAILURE) return FAILURE;
 
-      get_module_function (g_modules.gfx.metadata, "update_screen", 
-                           (void**) &g_modules.gfx.update_screen);
+      if (get_module_function (g_modules.gfx.metadata, "update_screen", 
+                               (void**) &g_modules.gfx.update_screen) == FAILURE) return FAILURE;
 
-      get_module_function (g_modules.gfx.metadata, "scroll_screen", 
-                           (void**) &g_modules.gfx.scroll_screen);
+      if (get_module_function (g_modules.gfx.metadata, "scroll_screen", 
+                               (void**) &g_modules.gfx.scroll_screen) == FAILURE) return FAILURE;
+
+      return SUCCESS;
     }
+  return FAILURE;
 }
 #endif /* TESTSUITE */
 

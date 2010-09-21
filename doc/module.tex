@@ -55,12 +55,14 @@ Code examples will be presented as well as an explanation of how to add new clas
 
 The module loader contains a set of functions for external use, which are supplemented by internal-use functions. These should not be called upon by any other aspect of the engine, as their behaviour may change unpredictably and without warning as changes are made. However, the behaviour of the external-use functions will remain consistent, or at least compatible, to avoid anything breaking due to changes.
 
+Any functions which have the \textbf{int} return type return the defined constants \textbf{SUCCESS} or \textbf{FAILURE}.
+
 \subsection{External-Use Functions}
 
 To initialise the global structure, \textbf{g\_modules} (more on that later) with function pointers and suchlike, the \textbf{init\_modules} function must be called, specifying the path to the modules.
 
 \begin{lstlisting}
-void
+int
 init_modules (const char *path);
 \end{lstlisting}
 
@@ -74,7 +76,7 @@ cleanup_modules (void);
 Finally, there are the functions to load the modules:
 
 \begin{lstlisting}
-void
+int
 load_module_gfx (void);
 \end{lstlisting}
 
@@ -98,10 +100,10 @@ get_module_path (const char* module,
 To open a module and run any initialisation code, there is a choice of \textbf{get\_module\_by\_name} and \textbf{get\_module}, which differ slightly.
 
 \begin{lstlisting}
-void
+int
 get_module_by_name (const char* name,
                     module_data *module);
-void
+int
 get_module (const char* modulepath,
             module_data *module);
 \end{lstlisting}
@@ -109,7 +111,7 @@ get_module (const char* modulepath,
 Once a module has been opened, function pointers must be generated and stored in the \textbf{g\_modules} struct so that the provided functions can be used. These are found with the \textbf{get\_module\_function} function.
 
 \begin{lstlisting}
-void
+int
 get_module_function (module_data metadata,
                      const char *function,
                      void **func);
@@ -190,18 +192,14 @@ Of course, a more useful implementation would take a parameter containing the na
 void
 init_modules (const char *path)
 {
-  ...
   module_bare_init (&g_modules.input.metadata);
   g_modules.input.get_key_press = NULL
-  ...
 }
 
 void
 close_modules (void)
 {
-  ...
   close_module(&g_modules.input.metadata);
-  ...
 }
 \end{lstlisting}
 
@@ -214,49 +212,29 @@ clang -Wall -fPIC -rdynamic -c module.c -o module.o
 clang -shared -Wl,-soname,module.so -o module.so module.o
 \end{lstlisting}
 
-Let us now consider a very simple module, the test module from the testsuite:
+Modules consist of a collection of functions (see the test module in tests/modules/ for an example) which are used by the main engine, via the module loader. Modules can, optionally, contain an \textbf{init} and \ \textbf{term} function, which are run when the module is loaded and unloaded, respectively. These should have the following prototypes:
 
-\lstinputlisting{../tests/modules/test.c}
+\begin{lstlisting}
+void
+init (void);
+void
+term (void);
+\end{lstlisting}
 
-This module defines a number of functions, but the ones I want to talk about are \textbf{init} and \textbf{term}. The \textbf{init} function is called when the module is loaded, and so can be used for any initialisation that needs doing, like creating a SDL window. The \textbf{term} function is called when the module is closed, and so can be used for clean-up purposes, like freeing memory.
+The return type is not essential, but any return values will be ignored, and no parameters will be passed. If you require a more flexible solution, you will have to define your own functions (perhaps named \textbf{start} and \textbf{stop}) and call them manually via the \textbf{g\_modules} struct.
 
 \section{Test Suite}
 
-The module loader comes with a test suite, which depends on valgrind. Build and run it with the following:
+The module loader comes with a test suite, and can be run with the following command:
 
 \begin{lstlisting}[language=bash]
 make tests
 \end{lstlisting}
 
-You should get output similar to the following:
-
-\begin{lstlisting}[language=bash]
-Compiling test suite:
-
-Running test suite:
-Loading 'test' module
-test init: Module test has been loaded!
-Loading 'foo' module
-Testing 'test' module:
-    Should be hello world: Hello, world.
-    2 + 3 = 5
-test term: Module test has been unloaded!
-
-Running memory leak check:
-==1657==    definitely lost: 0 bytes in 0 blocks
-==1657==    indirectly lost: 0 bytes in 0 blocks
-==1657==      possibly lost: 0 bytes in 0 blocks
-\end{lstlisting}
-
-If you get a segfault or something, you can use GDB:
+If the test fails, a notice will be displayed. In that case, you can debug further with GDB or Valgrind:
 
 \begin{lstlisting}[language=bash]
 gdb -ex run -ex backtrace --args ./tests/module
-\end{lstlisting}
-
-If there is a memory leak, you can use valgrind:
-
-\begin{lstlisting}[language=bash]
 valgrind --tool=memcheck --leak-check=full --show-reachable=yes ./tests/module
 \end{lstlisting}
 

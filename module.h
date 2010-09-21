@@ -77,17 +77,17 @@ module_bare_init (module_data *module);
 void
 get_module_path (const char *module, char **out);
 
-void
+int
 get_module_by_name (const char* name, module_data *module);
 
-void
+int
 get_module (const char* modulepath, module_data *module);
 
-void
+int
 get_module_function (module_data metadata, const char *function, void **func);
 
 #ifndef TESTSUITE
-void
+int
 load_module_gfx (void);
 #endif /* TESTSUITE */
 

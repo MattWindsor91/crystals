@@ -1,5 +1,6 @@
 BIN      := maprender-test
 
+TESTS    := module
 SOURCES  := main.c graphics.c map.c mapview.c events.c module.c
 OBJ      := $(subst .c,.o,$(SOURCES))
 DEPFILES := $(subst .c,.d,$(SOURCES))
@@ -9,13 +10,13 @@ CC       := clang
 
 MODPATH  := $(shell pwd)/modules/\0
 
-WARN     := -Wall -Wextra -pedantic -Wshadow -Wpointer-arith -Wcast-align \
+WARN     := -Wall -Wextra -Wshadow -Wpointer-arith -Wcast-align \
             -Wwrite-strings -Wmissing-prototypes -Wmissing-declarations \
             -Wredundant-decls -Wnested-externs -Winline -Wno-long-long \
-            -Wconversion -Wstrict-prototypes -ansi
+            -Wconversion -Wstrict-prototypes
 
 LIBS     := `sdl-config --libs` -lSDL_image -g
-CFLAGS   := `sdl-config --cflags` -ansi -pedantic -O2 -ggdb -DDEBUG \
+CFLAGS   := `sdl-config --cflags` -ansi -pedantic -O2 -ggdb \
             -DDEFMODPATH="\"$(MODPATH)\"" $(WARN)
 
 .PHONY: all doc clean clean-tests clean-doc tests
@@ -41,15 +42,11 @@ clean-tests:
 clean-doc:
 	-@rm doc/*.{pdf,aux,log} &>/dev/null
 
-tests: module.c tests/module.c tests/modules/test.so
-	@echo "Compiling test suite:"
+tests: test-module
+	@for file in $(TESTS); do ./tests/$$file &>/dev/null || echo "Test '$$file' failed."; done
+
+test-module: module.c tests/module.c tests/modules/test.so
 	@$(CC) $(CFLAGS) -ldl -o tests/module -DTESTSUITE -DMODPATH="\"$(shell pwd)/tests/modules/\"" module.c tests/module.c
-	@echo
-	@echo "Running test suite:"
-	@./tests/module 2>/dev/null
-	@echo
-	@echo "Running memory leak check:"
-	@valgrind --tool=memcheck --leak-check=full --show-reachable=yes ./tests/module 2>&1 | grep lost
 
 %.d: %.c
 	@$(CC) -MM $(CFLAGS) $< > $@.$$$$; \
