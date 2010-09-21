@@ -12,9 +12,9 @@ RM       := rm -f
 MODPATH  := $(shell pwd)/modules/\0
 
 WARN     := -Wall -Wextra -pedantic -Wshadow -Wpointer-arith -Wcast-align \
-           -Wwrite-strings -Wmissing-prototypes -Wmissing-declarations \
-           -Wredundant-decls -Wnested-externs -Winline -Wno-long-long \
-           -Wconversion -Wstrict-prototypes -ansi
+            -Wwrite-strings -Wmissing-prototypes -Wmissing-declarations \
+            -Wredundant-decls -Wnested-externs -Winline -Wno-long-long \
+            -Wconversion -Wstrict-prototypes -ansi
 
 LIBS     := `sdl-config --libs` -lSDL_image -g
 CFLAGS   := `sdl-config --cflags` -ansi -pedantic -O2 -ggdb \
