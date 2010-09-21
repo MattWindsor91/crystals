@@ -30,6 +30,7 @@ import wx
 import xml.etree.ElementTree as etree
 
 from wx.lib.stattext import GenStaticText
+from wx.lib.dialogs import textEntryDialog
 
 # locale support
 _ = wx.GetTranslation
@@ -65,6 +66,7 @@ class Creator(wx.Frame):
             |wx.TR_TWIST_BUTTONS|wx.TR_EXTENDED)
 
         add_label_button = wx.Button(self, wx.ID_ADD, _("Add Label"))
+        remove_label_button = wx.Button(self, wx.ID_REMOVE, _("Remove Label"))
         self.tab_ctrl = wx.Notebook(self)
         self._new_file()
 
@@ -72,7 +74,9 @@ class Creator(wx.Frame):
         vbox1.Add(dlg_header, 0, wx.ALIGN_LEFT | wx.LEFT | wx.RIGHT | wx.TOP,
             5)
         vbox1.Add(self.dlg_ctrl, 1, wx.ALL | wx.EXPAND | wx.HORIZONTAL, 5)
-        vbox1.Add(add_label_button, 0, wx.ALL | wx.EXPAND | wx.VERTICAL, 5)
+        vbox1.Add(add_label_button, 0, wx.LEFT | wx.RIGHT | wx.EXPAND
+            | wx.VERTICAL, 5)
+        vbox1.Add(remove_label_button, 0, wx.ALL | wx.EXPAND | wx.VERTICAL, 5)
         hbox1.Add(vbox1, 0, wx.EXPAND)
         hbox1.Add(self.tab_ctrl, 1, wx.ALL | wx.EXPAND, 5)
 
@@ -98,7 +102,8 @@ class Creator(wx.Frame):
         self.SetMenuBar(mb)
 
         # Events
-        self.Bind(wx.EVT_BUTTON, self.on_add_label, id=101)
+        self.Bind(wx.EVT_BUTTON, self.on_add_label, id=wx.ID_ADD)
+        self.Bind(wx.EVT_BUTTON, self.on_remove_label, id=wx.ID_REMOVE)
 
         self.Bind(wx.EVT_MENU, self.on_new, id=wx.ID_NEW)
         self.Bind(wx.EVT_MENU, self.on_open, id=wx.ID_OPEN)
@@ -120,7 +125,11 @@ class Creator(wx.Frame):
 
     def on_add_label(self, event):
         """add a new label to the TreeCtrl call trough the child"""
-        self.tab_ctrl.GetCurrentPage().add_label()
+        self.tab_ctrl.GetCurrentPage().on_add_label(event)
+
+    def on_remove_label(self, event):
+        """removes label from the TreeCtrl call trough the child"""
+        self.tab_ctrl.GetCurrentPage().on_remove_label(event)
 
     def on_new(self, event):
         """create a new file"""
@@ -331,22 +340,14 @@ class XMLFileCtrl(wx.Panel):
     def focus(self):
         """clear and fill the TreeCtrl for the new focus"""
         id = self.dlg_ctrl.AddRoot("dialog")
-        requ = self.dlg_ctrl.AppendItem(id, "requirements")
-        newr = self.dlg_ctrl.AppendItem(requ, "New Tag ...")
-        self.dlg_ctrl.SetItemFont(newr, self.font_italic)
-        self.dlg_ctrl.SetItemFont(requ, self.font_bold)
-        content = self.dlg_ctrl.AppendItem(id, "content")
-        newc = self.dlg_ctrl.AppendItem(content, "New Tag ...")
-        self.dlg_ctrl.SetItemFont(newc, self.font_italic)
-        self.dlg_ctrl.SetItemFont(content, self.font_bold)
-        self.dlg_ctrl.ExpandAll()
+        self.labels['root'] = id
+
+        self._add_label("requirements")
+        content = self._add_label("content")
 
         self.dlg_ctrl.SelectItem(content)
 
-        self.labels.update({"requirements" : {"id" : requ, "children" : []},
-                            "content" : {"id" : content, "children" : []}})
-
-#wx.TreeCtrl.SetItemFont()
+#wx.TreeCtrl.Ex
 
     def new(self):
         """set the default options for a new tag or file"""
@@ -360,8 +361,42 @@ class XMLFileCtrl(wx.Panel):
     def save(self, tag_name):
         """save the informations in a tag"""
 
-    def add_label(self):
+    def _add_label(self, label_name):
+        root = self.labels['root']
+        lb_id = self.dlg_ctrl.AppendItem(root, label_name)
+        self.dlg_ctrl.SetItemFont(lb_id, self.font_bold)
+
+        add_new_tag = self.dlg_ctrl.AppendItem(lb_id, "New Tag ...")
+        self.dlg_ctrl.SetItemFont(add_new_tag, self.font_italic)
+
+        self.dlg_ctrl.Expand(lb_id)
+        self.labels.update({label_name : {"id" : lb_id,
+                                          "children" : [add_new_tag]},
+                           })
+
+        return lb_id
+
+    def on_add_label(self, event):
         """add a new label to the TreeCtrl, call from the parent"""
+        entry = textEntryDialog(self, _('Label Name:'),
+            _('Enter a name for the new label.'), style=wx.BORDER_NONE|wx.OK)
+        self._add_label(entry.text)
+        #wx.lib.dialogs.DialogResults.
+
+    def on_remove_label(self, event):
+        """removes a label from the TreeCtrl, call from the parent"""
+        item = self.dlg_ctrl.GetSelection()
+        name = self.dlg_ctrl.GetItemText(item)
+        if name == "content" or name == "requirements":
+            wx.MessageBox(_("You can't remove the {0} label.".format(name)),
+                _("Can't remove label."), style=wx.OK | wx.ICON_ERROR)
+        else:
+            if name not in self.labels:
+                wx.MessageBox(_("Please select a label ant NOT a tag."),
+                    _("No label selected."))
+            else:
+                self.dlg_ctrl.Delete(item)
+                self.labels.pop(name)
 
     def _change_controls(self, new_controls):
         self.sizer.Detach(self.controls)
