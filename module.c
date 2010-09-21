@@ -84,6 +84,8 @@ get_module_path (const char* module, char** out)
 int
 get_module_by_name (const char* name, module_data *module)
 {
+  /* Soon-to-be return value of get_module */
+  int out;
   /* Get the name of the module */
   char *modulepath;
   get_module_path (name, &modulepath);
@@ -91,8 +93,9 @@ get_module_by_name (const char* name, module_data *module)
   /* And get the module */
   if (modulepath)
     {
-      return get_module (modulepath, module);
+      out = get_module (modulepath, module);
       free (modulepath);
+      return out;
     }
   else
     {
