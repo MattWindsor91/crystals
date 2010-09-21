@@ -17,6 +17,10 @@ int g_running;
 int
 main (int argc, char **argv)
 {
+  /* Placeholder for command line stuff. */
+  argc = argc;
+  argv = argv;
+
   if (init () == SUCCESS)
     {
       g_running = TRUE;

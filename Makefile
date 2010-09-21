@@ -29,72 +29,56 @@ SOCFLAGS := $(CFLAGS) `sdl-config --cflags`
 all: $(BIN) doc autodoc
 
 $(BIN): $(OBJ) $(SOBJ)
-	@echo -n "Linking... "
+	@echo "Linking ${BIN}... "
 
 	@$(CC) $(OBJ) -o "$(BIN)" $(LIBS)
 	@rm -rf *.d
 
-	@echo "done."
-
 -include $(DEPFILES)
 
 %.d: %.c
-	@echo -n "Generating dependency makefile for $<... "
+	@echo "Generating dependency makefile for $<... "
 
 	@$(CC) -MM $(CFLAGS) $< > $@.$$$$; \
 	sed 's,\($*\)\.o[ :]*,\1.o $@ : ,g' < $@.$$$$ > $@; \
 	$(RM) -f $@.$$$$
 
-	@echo "done."
-
 %.so : %.c
-	@echo -n "Compiling $< to shared object... "
+	@echo "Compiling $< to shared object... "
 
 	@$(CC) $(SOCFLAGS) -Wall -fPIC -rdynamic -c $^ -o $(^:.c=.o)
 	@$(CC) $(SOLIBS) -shared -Wl,-soname,$(^:.c=.so) -o $(^:.c=.so) $(^:.c=.o)
 
-	@echo "done."
-
 %.o : %.c
-	@echo -n "Compiling $<... "
+	@echo "Compiling $<... "
 
 	@$(CC) -c $< $(CFLAGS) -o $@
-
-	@echo "done."
 
 ### Documentation
 
 doc: doc/module.pdf doc/mapformat-internal.pdf
 
 autodoc:
-	@echo -n "Running doxygen... "
+	@echo "Running doxygen... "
 
 	@doxygen >/dev/null
 
-	@echo "done."
-
 %.pdf: %.tex
-	@echo -n "LaTeXing $<... "
+	@echo "LaTeXing $<... "
 
 	@pdflatex -output-directory=$(shell dirname $@) $^ >/dev/null
-
-	@echo "done."
 
 ### Cleaning
 
 clean: clean-obj clean-doc
 
 clean-obj:
-	@echo -n "Cleaning (object files)... "
+	@echo "Cleaning (object files)... "
 
 	-@$(RM) $(BIN) *.o *.d *.so modules/*.so modules/*.o &
 
-	@echo "done."
-
 clean-doc:
-	@echo -n "Cleaning (documentation)... "
+	@echo "Cleaning (documentation)... "
 
 	-@$(RM) doc/*.pdf doc/*.aux doc/*.log
 	-@$(RM) -r autodoc
-
-	@echo "done."
