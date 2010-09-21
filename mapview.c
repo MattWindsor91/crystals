@@ -7,12 +7,12 @@
 #include "graphics.h"
 #include "main.h"
 
-struct MapView *
-init_mapview (struct Map *map)
+struct map_view *
+init_mapview (struct map *map)
 {
-  struct MapView *mapview;
+  struct map_view *mapview;
 
-  mapview = malloc (sizeof (struct MapView));
+  mapview = malloc (sizeof (struct map_view));
 
   if (mapview)
     {              
@@ -42,7 +42,7 @@ init_mapview (struct Map *map)
 }
 
 void
-render_map (struct MapView *mapview)
+render_map (struct map_view *mapview)
 {
   /* FIXME: only render dirty tiles. */
 
@@ -50,7 +50,7 @@ render_map (struct MapView *mapview)
     {
       if (mapview->map)
         {
-          struct Map *map;
+          struct map *map;
           unsigned int l;
 
           map = mapview->map;
@@ -69,11 +69,11 @@ render_map (struct MapView *mapview)
 }
 
 void
-render_map_layer (struct MapView *mapview, unsigned int layer)
+render_map_layer (struct map_view *mapview, unsigned int layer)
 {
   short x, y;
-  int true_x, true_y, x_offset, y_offset;
-  struct Map *map;
+  long true_x, true_y, x_offset, y_offset;
+  struct map *map;
 
   map = mapview->map;
   x_offset = mapview->x_offset;
@@ -110,7 +110,7 @@ render_map_layer (struct MapView *mapview, unsigned int layer)
 }
 
 void
-scroll_map (struct MapView *mapview, int direction)
+scroll_map (struct map_view *mapview, int direction)
 {
   /* FIXME: Render damage. */
   switch (direction)
@@ -151,10 +151,10 @@ scroll_map (struct MapView *mapview, int direction)
 }
 
 void
-mark_dirty_rect (struct MapView *mapview,
+mark_dirty_rect (struct map_view *mapview,
                  int start_x, int start_y, int width, int height)
 {
-  int x, y;
+  long x, y;
 
   for (x = start_x; x < start_x + width; x++)
     {
@@ -171,7 +171,7 @@ mark_dirty_rect (struct MapView *mapview,
 }
 
 void
-cleanup_mapview (struct MapView *mapview)
+cleanup_mapview (struct map_view *mapview)
 {
   if (mapview)
     {

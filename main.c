@@ -9,8 +9,8 @@
 #include "mapview.h"
 #include "map.h"
 
-struct Map *g_map;
-struct MapView *g_mapview;
+struct map *g_map;
+struct map_view *g_mapview;
 
 int g_running;
 
