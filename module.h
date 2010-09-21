@@ -161,12 +161,14 @@ get_module_function (module_data metadata, const char *function, void **func);
 #ifndef TESTSUITE
 /** Load the graphics module
  *  
- *  This loads the graphics module, currently gfx-sdl, and sets up g_modules.gfx
+ *  This loads a graphics module and sets up g_modules.gfx
+ *  
+ *  @param name The name of the module to load
  *  
  *  @return Either SUCCESS or FAILURE (defined in main.h)
  */
 int
-load_module_gfx (void);
+load_module_gfx (char* name);
 #endif /* TESTSUITE */
 
 /** Close an individual module

@@ -154,13 +154,13 @@ get_module_function (module_data module, const char *function, void **func)
 }
 
 #ifndef TESTSUITE
-/* Load the default graphics module - todo: allow specifying an alternate module */
+/* Load a graphics module */
 int
-load_module_gfx (void)
+load_module_gfx (char* name)
 {
   if (g_modules.gfx.metadata.lib_handle == NULL)
     {
-      if (get_module_by_name ("gfx-sdl", &g_modules.gfx.metadata) == FAILURE) return FAILURE;
+      if (get_module_by_name (name, &g_modules.gfx.metadata) == FAILURE) return FAILURE;
 
       if (get_module_function (g_modules.gfx.metadata, "init_screen",
                                (void**) &g_modules.gfx.init_screen) == FAILURE) return FAILURE;
