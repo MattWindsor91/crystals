@@ -16,29 +16,73 @@
 /* -- STRUCTURES -- */
 
 #ifndef TESTSUITE
-/** The module_data structure.
+/** The module metadata structure.
  *
  *  This contains the basic data that all modules require to function.
  */
+
 typedef struct
 {
-  void *lib_handle;
-  void (*init)(void);
-  void (*term)(void);
+  void *lib_handle; /**< The dynamic loading handle for the module. */
+
+  void
+  (*init) (void); /**< Pointer to the module's initialisation
+                     function. */
+  void
+  (*term) (void); /**< Pointer to the module's termination
+                     function. */
+
 } module_data;
 
-/** The module_gfx structure.
+/** The graphics module vtable.
  *  
- *  This contains function pointers for the graphics class of modules.
+ *  This contains function pointers for the graphics class of modules, 
+ *  along with module metadata.
  */
 typedef struct
 {
-  module_data metadata;
+  module_data metadata; /**< Metadata for the graphics module. */
   
+  /** Initialise a screen of a given width, height and depth.
+   *
+   *  The screen's data will automatically be deleted, if not sooner,
+   *  when the module is unloaded (ie, via the module's term
+   *  function).
+   *
+   *  @todo Fullscreen option?
+   *
+   *  @param width   Width of the screen, in pixels.
+   *  @param height  Height of the screen, in pixels.
+   *  @param depth   Colour depth of the screen, in bits per pixel.
+   *
+   *  @return  SUCCESS for success; FAILURE otherwise.
+   */
+
   int
   (*init_screen) (unsigned short width,
-                  unsigned short height, unsigned char depth);
+                  unsigned short height,
+                  unsigned char depth);
   
+  /** Draw a rectangle of colour on-screen.
+   *
+   *  Depending on the graphics module, the colour displayed on screen
+   *  may not exactly match the desired colour.
+   *
+   *  @param x       X co-ordinate of the left edge of the rectangle.
+   *
+   *  @param y       Y co-ordinate of the top edge of the rectangle.
+   *
+   *  @param width   The width of the rectangle, in pixels.
+   *
+   *  @param height  The height of the rectangle, in pixels.
+   *
+   *  @param red     The red component of the fill colour (0-255).
+   *
+   *  @param green   The green component of the fill colour (0-255).
+   *
+   *  @param blue    The blue component of the fill colour (0-255).
+   */
+
   void
   (*draw_rect) (short x, 
                 short y, 
@@ -48,11 +92,68 @@ typedef struct
                 unsigned char green,
                 unsigned char blue);
   
+  /** Load an image and return its data in the module's native
+   *  format. 
+   *
+   *  As the exact format returned varies from module to module, you
+   *  will likely only want to use this function through the graphics
+   *  subsystem's wrapper function, load_image, which also stores the
+   *  data into a cache.
+   *
+   *  @param filename  The path to the file to load.
+   *
+   *  @return  a pointer to a memory location containing image data
+   *  which can eventually be passed to the module's draw_image
+   *  function.
+   */
+
   void *
   (*load_image_data) (const char filename[]);
   
+  /** Frees image data retrieved by load_image_data.
+   *
+   *  Since the nature of the image data in question varies from
+   *  module to module, simply freeing the data directly may not be
+   *  sufficient to unload the image from memory, hence the existence
+   *  of this function.
+   *
+   *  @param data  A pointer to a memory location containing image
+   *               data (in the module's native format) to be freed.
+   */
+
   void 
   (*free_image_data) (void *data);
+
+  /** Draw a rectangular portion of an image on-screen.
+   *
+   *  This should not be called directly, but instead accessed through 
+   *  the graphics subsystem's draw_image function (see graphics.h).
+   *
+   *  @param image     The image data, in the graphics module-specific
+   *                   format returned by load_image_data.
+   *
+   *  @param image_x   The X-coordinate of the left edge of the
+   *                   on-image rectangle to display.
+   *
+   *  @param image_y   The Y-coordinate of the top edge of the
+   *                   on-image rectangle to display.
+   *
+   *  @param screen_x  The X-coordinate of the left edge of the
+   *                   on-screen rectangle to place the image in.
+   *
+   *  @param screen_y  The Y-coordinate of the top edge of the
+   *                   on-screen rectangle to place the image in.
+   *
+   *  @param image_y   The Y-coordinate of the top edge of the
+   *                   on-image rectangle to display.
+   *
+   *  @param width     The width of the rectangle.
+   *
+   *  @param height    The height of the rectangle.
+   *
+   *  @return  SUCCESS for success, FAILURE otherwise. In most
+   *           cases, a failure will simply cause the image to not appear.
+   */
   
   int
   (*draw_image) (void *image, 
@@ -63,43 +164,77 @@ typedef struct
                  unsigned short width,
                  unsigned short height);
   
+  /** Update the screen. */
+
   void
   (*update_screen) (void);
   
+  /** Scroll the entire screen one pixel in a given direction.
+   *
+   *  @param direction  The cardinal direction (NORTH, SOUTH, EAST or
+   *  WEST) to scroll in.
+   */
+
   void
   (*scroll_screen) (unsigned int direction);  
 
 } module_gfx;
 
-/** The module_event structure.
+/** The event module vtable.
  *  
- *  This contains function pointers for the event-handler class of modules.
+ *  This contains function pointers for the event-handler class of
+ *  modules, along with module metadata.
  */
 
 typedef struct
 {
-  module_data metadata;
+  module_data metadata; /**< Metadata for the event module. */
+
+  /** Process all waiting events.
+   *
+   *  This reads events from the module's events backend (for example,
+   *  SDL's events system) and then proceeds to pass them up to the
+   *  main events subsystem after being processed into the general
+   *  event format (see events.h).
+   */
 
   void
   (*process_events) (void);
+
+  /** Register an event release handle with the event module.
+   *
+   *  The event release handle is a function that the event module
+   *  calls once per event handled, and is expected to distribute the
+   *  event to registered callbacks.  It is necessary to supply a
+   *  pointer to this function, rather than directly calling it, due
+   *  to the nature of the module loading environment.
+   *
+   *  The function to be passed should, in all or almost all
+   *  circumstances, be event.c's implementation of event_release.
+   *
+   *  @param handle  The event release handle to register. This should
+   *                 be a function that takes an event_t pointer as
+   *                 its sole parameter and distributes that event to
+   *                 the rest of the system.
+   */
 
   void
   (*register_release_handle) (void (*handle) (event_t *event));
   
 } module_event;
 
-/** The module_set structure.
+/** The module set.
  *
  *  This contains the path to the module files, and additionally
- *  structs for each individual module type - currently graphics.
+ *  structs for each individual module type.
  */
 
 typedef struct
 {
-  char *path;
+  char *path;         /**< Path to the module directory. */
 
-  module_gfx gfx;
-  module_event event;
+  module_gfx gfx;     /**< The graphics module. */
+  module_event event; /**< The event module. */
 
 } module_set;
 
