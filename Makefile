@@ -1,52 +1,59 @@
-BIN       = maprender-test
+BIN      = maprender-test
 
-SOURCES  = main.c graphics.c map.c mapview.c events.c module.c
-OBJ      = $(subst .c,.o,$(SOURCES))
-DEPFILES = $(subst .c,.d,$(SOURCES))
-SO       = modules/gfx-sdl.so
+OBJ      = main.o graphics.o map.o mapview.o events.o module.o
+SOBJ     = modules/gfx-sdl.so
 
-CC        = clang
+SOURCES  = $(subst .o,.c,$(OBJ))
+DEPFILES = $(subst .o,.d,$(OBJ))
 
-MODPATH   = $(shell pwd)/modules/\0
+CC       = clang
+RM       = rm -f
 
-WARN   = -Wall -Wextra -pedantic -Wshadow -Wpointer-arith -Wcast-align \
-         -Wwrite-strings -Wmissing-prototypes -Wmissing-declarations \
-         -Wredundant-decls -Wnested-externs -Winline -Wno-long-long \
-         -Wconversion -Wstrict-prototypes -ansi
+MODPATH  = $(shell pwd)/modules/\0
 
-LIBS      = `sdl-config --libs` -lSDL_image -g
-CFLAGS    = `sdl-config --cflags` -ansi -pedantic -O2 -ggdb -DDEBUG \
-            -DMODPATH="\"$(MODPATH)\"" $(WARN)
+WARN     = -Wall -Wextra -pedantic -Wshadow -Wpointer-arith -Wcast-align \
+           -Wwrite-strings -Wmissing-prototypes -Wmissing-declarations \
+           -Wredundant-decls -Wnested-externs -Winline -Wno-long-long \
+           -Wconversion -Wstrict-prototypes -ansi
 
-.PHONY: clean
+LIBS     = `sdl-config --libs` -lSDL_image -g
+CFLAGS   = `sdl-config --cflags` -ansi -pedantic -O2 -ggdb \
+           -DMODPATH="\"$(MODPATH)\"" $(WARN)
 
-all: $(BIN)
+.PHONY: clean autodoc
+
+all: $(BIN) doc autodoc
 
 doc: doc/module.pdf doc/mapformat-internal.pdf
 
-$(BIN): $(OBJ) $(SO)
+$(BIN): $(OBJ) $(SOBJ)
 	$(CC) $(OBJ) -o "$(BIN)" $(LIBS)
 	rm -rf *.d
 
 -include $(DEPFILES)
 
-%.o : %.c
-	$(CC) -c $< $(CFLAGS) -o $@
-
-clean:
-	rm -f $(BIN) *.o *.d *.so 
-	rm -f modules/*.so modules/*.o 
-	rm -f doc/*.pdf doc/*.aux doc/*.log
-
 %.d: %.c
 	@echo "Generating dependency makefile for $<."
 	@$(CC) -MM $(CFLAGS) $< > $@.$$$$; \
 	sed 's,\($*\)\.o[ :]*,\1.o $@ : ,g' < $@.$$$$ > $@; \
-	rm -f $@.$$$$
+	$(RM) -f $@.$$$$
 
 %.so : %.c
-	$(CC) $(CFLAGS) -Wall -fPIC -rdynamic -c $^ -o $(^:.c=.o)
-	$(CC) $(LIBS) -shared -Wl,-soname,$(^:.c=.so) -o $(^:.c=.so) $(^:.c=.o)
+	@$(CC) $(CFLAGS) -Wall -fPIC -rdynamic -c $^ -o $(^:.c=.o)
+	@$(CC) $(LIBS) -shared -Wl,-soname,$(^:.c=.so) -o $(^:.c=.so) $(^:.c=.o)
+
+%.o : %.c
+	@$(CC) -c $< $(CFLAGS) -o $@
 
 %.pdf: %.tex
-	pdflatex -output-directory=$(shell dirname $@) $^ >/dev/null
+	@pdflatex -output-directory=$(shell dirname $@) $^ >/dev/null
+
+clean:
+	-@$(RM) $(BIN) *.o *.d *.so
+	-@$(RM) modules/*.so modules/*.o
+	-@$(RM) doc/*.pdf doc/*.aux doc/*.log
+	-@$(RM) -r autodoc
+
+autodoc:
+	@doxygen
+
