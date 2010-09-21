@@ -26,46 +26,56 @@ CFLAGS   := `sdl-config --cflags` -ansi -pedantic -O2 -ggdb \
 all: $(BIN) doc autodoc
 
 $(BIN): $(OBJ) $(SO)
+	@echo "Linking..."
 	@$(CC) $(OBJ) -o "$(BIN)" $(LIBS) >/dev/null
 
 -include $(DEPFILES)
 
 clean: clean-tests clean-doc
+	@echo "Cleaning..."
 	-@$(RM) $(BIN) *.o *.d *.so modules/*.so modules/*.o &>/dev/null
 
 ### Documentation
 doc: doc/module.pdf doc/mapformat-internal.pdf
 
 autodoc:
+	@echo "Running doxygen..."
 	@doxygen >/dev/null
 
 clean-doc:
+	@echo "Cleaning documentation..."
 	-@$(RM) doc/*.{pdf,aux,log} &>/dev/null
 	-@$(RM) -r autodoc
 
 ### Test Suite
 tests: CFLAGS += -DTESTSUITE -DMODPATH="\"$(shell pwd)/tests/modules/\""
 tests: $(TESTS)
+	@echo "Running tests..."
 	@for file in $(TESTS); do $$file &>/dev/null || echo "Test '$$file' failed."; done
 
 tests/module: module.o tests/module.o tests/modules/test.so
 	@$(CC) $(CFLAGS) module.o tests/module.o tests/modules/test.so -o $@ >/dev/null
 
 clean-tests:
+	@echo "Cleaning tests..."
 	-@$(RM) $(TESTS) tests/*.{o,so} tests/modules/*.{o,so} &>/dev/null
 
 ### File Types
 %.o : %.c
+	@echo "Compiling $<..."
 	@$(CC) -c $< $(CFLAGS) -o $@ >/dev/null
 
 %.d: %.c
+	@echo "Generating dependency makefile for $<..."
 	@$(CC) -MM $(CFLAGS) $< > $@.$$$$; \
 	sed 's,\($*\)\.o[ :]*,\1.o $@ : ,g' < $@.$$$$ > $@; \
 	$(RM) -f $@.$$$$
 
 %.so : %.c
+	@echo "Compiling $< to shared object..."
 	@$(CC) $(CFLAGS) -Wall -fPIC -rdynamic -c $^ -o $(^:.c=.o) >/dev/null
 	@$(CC) $(LIBS) -shared -Wl,-soname,$(^:.c=.so) -o $(^:.c=.so) $(^:.c=.o) >/dev/null
 
 %.pdf: %.tex
+	@echo "LaTeXing $<..."
 	@pdflatex -output-directory=$(shell dirname $@) $^ >/dev/null
