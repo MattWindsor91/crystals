@@ -25,7 +25,50 @@ typedef struct
   void (*term)(void);
 } module_data;
 
-/** The module_set struct
+/** The module_gfx structure.
+ *  
+ *  This contains function pointers for the graphics class of modules.
+ */
+typedef struct
+{
+  module_data metadata;
+  
+  int
+  (*init_screen) (unsigned short width,
+                  unsigned short height, unsigned char depth);
+  
+  void
+  (*draw_rect) (short x, 
+                short y, 
+                unsigned short width,
+                unsigned short height, 
+                unsigned char red,
+                unsigned char green,
+                unsigned char blue);
+  
+  void *
+  (*load_image_data) (const char filename[]);
+  
+  void 
+  (*free_image_data) (void *data);
+  
+  int
+  (*draw_image) (void *image, 
+                 short image_x,
+                 short image_y,
+                 short screen_x,
+                 short screen_y,
+                 unsigned short width,
+                 unsigned short height);
+  
+  void
+  (*update_screen) (void);
+  
+  void
+  (*scroll_screen) (unsigned int direction);  
+} module_gfx;
+
+/** The module_set structure.
  *
  *  This contains the path to the module files, and additionally
  *  structs for each individual module type - currently graphics.
@@ -33,47 +76,7 @@ typedef struct
 typedef struct
 {
   char *path;
-
-  struct
-  {
-    module_data metadata;
-
-    int
-    (*init_screen) (unsigned short width,
-                    unsigned short height, unsigned char depth);
-
-    void
-    (*draw_rect) (short x, 
-                  short y, 
-                  unsigned short width,
-                  unsigned short height, 
-                  unsigned char red,
-                  unsigned char green,
-                  unsigned char blue);
-
-    void *
-    (*load_image_data) (const char filename[]);
-
-    void 
-    (*free_image_data) (void *data);
-
-    int
-    (*draw_image) (void *image, 
-                   short image_x,
-                   short image_y,
-                   short screen_x,
-                   short screen_y,
-                   unsigned short width,
-                   unsigned short height);
-
-    void
-    (*update_screen) (void);
-
-    void
-    (*scroll_screen) (unsigned int direction);
-
-  } gfx;
- 
+  module_gfx gfx;
 } module_set;
 #endif /* TESTSUITE */
 
