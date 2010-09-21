@@ -8,6 +8,8 @@
 
 const char FN_TILESET[] = "tiles.png";
 
+/* FIXME: Remove the data below when map loaders are available. */
+
 static layer_t sg_test_layers[4][101] = 
   {{ 9,  5,  5,  5,  5,  5,  5,  5,  5, 10, 
      8,  2,  2,  2,  2,  2,  2,  2,  2,  7,
@@ -51,6 +53,10 @@ static layer_t sg_test_layers[4][101] =
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 0} 
   };
 
+/* Initialise the test map. */
+
+/* NOTE: This should be removed when map loading is implemented! */
+
 struct map *
 init_test_map (void)
 {
@@ -70,6 +76,8 @@ init_test_map (void)
 
   return map;
 }
+
+/* Initialise a map. */
 
 struct map *
 init_map (unsigned int width, 
@@ -94,7 +102,7 @@ init_map (unsigned int width,
 
           for (i = 0; i < (num_layers); i++)
             {
-              /* Allocate one extra char for the layer tag (at the end of the
+              /* Allocate one extra slot for the layer tag (at the end of the
                  data). */
               map->data_layers[i] = malloc (sizeof (layer_t) * 
                                             ((width * height) + 1));
@@ -113,11 +121,14 @@ init_map (unsigned int width,
   return map;
 }
 
+/* De-initialise a map. */
+
 void
 cleanup_map (struct map *map)
 {
   if (map)
     {
+      /* Make sure to clean up all the data layers. */
       if (map->data_layers)
         {
           unsigned int i;
