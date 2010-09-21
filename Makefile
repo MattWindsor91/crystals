@@ -17,13 +17,12 @@ WARN     := -Wall -Wextra -Wshadow -Wpointer-arith -Wcast-align \
             -Wredundant-decls -Wnested-externs -Winline -Wno-long-long \
             -Wconversion -Wstrict-prototypes
 
-LIBS     := `sdl-config --libs` -lSDL_image -g
-CFLAGS   := `sdl-config --cflags` -ansi -pedantic -O2 -ggdb \
-            -DDEFMODPATH="\"$(MODPATH)\"" $(WARN)
+LIBS     := -g
+CFLAGS   := -ansi -pedantic -O2 -ggdb -DDEFMODPATH="\"$(MODPATH)\"" $(WARN)
 
-.PHONY: all doc autodoc clean clean-tests clean-doc tests
+.PHONY: all doc autodoc clean clean-tests clean-doc clean-modules modules tests
 
-all: $(BIN) doc autodoc
+all: $(BIN) doc autodoc modules
 
 $(BIN): $(OBJ) $(SO)
 	@echo "Linking..."
@@ -31,9 +30,19 @@ $(BIN): $(OBJ) $(SO)
 
 -include $(DEPFILES)
 
-clean: clean-tests clean-doc
+clean: clean-tests clean-doc clean-modules
 	@echo "Cleaning..."
-	-@$(RM) $(BIN) *.o *.d *.so modules/*.so modules/*.o &>/dev/null
+	-@$(RM) $(BIN) *.o *.d *.so &>/dev/null
+
+### Modules
+modules/gfx-sdl.so: LIBS   += `sdl-config --libs` -lSDL_image
+modules/gfx-sdl.so: CFLAGS += `sdl-config --cflags`
+
+modules: $(SOBJ)
+
+clean-modules:
+	@echo "Cleaning modules..."
+	-@$(RM) modules/*.{so,o} &>/dev/null
 
 ### Documentation
 doc: doc/module.pdf doc/mapformat-internal.pdf
