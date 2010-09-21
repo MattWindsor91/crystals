@@ -1,6 +1,6 @@
 BIN      := maprender-test
 
-TESTS    := module
+TESTS    := tests/module
 SOURCES  := main.c graphics.c map.c mapview.c events.c module.c
 OBJ      := $(subst .c,.o,$(SOURCES))
 DEPFILES := $(subst .c,.d,$(SOURCES))
@@ -23,30 +23,34 @@ CFLAGS   := `sdl-config --cflags` -ansi -pedantic -O2 -ggdb \
 
 all: $(BIN)
 
-doc: doc/module.pdf doc/mapformat-internal.pdf
-
 $(BIN): $(OBJ) $(SO)
 	@$(CC) $(OBJ) -o "$(BIN)" $(LIBS) >/dev/null
 
 -include $(DEPFILES)
 
-%.o : %.c
-	@$(CC) -c $< $(CFLAGS) -o $@ >/dev/null
-
 clean: clean-tests clean-doc
 	-@rm $(BIN) *.o *.d *.so modules/*.so modules/*.o &>/dev/null
 
-clean-tests:
-	-@rm tests/*.{o,so} tests/modules/*.{o,so} &>/dev/null
+### Documentation
+doc: doc/module.pdf doc/mapformat-internal.pdf
 
 clean-doc:
 	-@rm doc/*.{pdf,aux,log} &>/dev/null
 
-tests: test-module
-	@for file in $(TESTS); do ./tests/$$file &>/dev/null || echo "Test '$$file' failed."; done
+### Test Suite
+tests: CFLAGS += -DTESTSUITE -DMODPATH="\"$(shell pwd)/tests/modules/\""
+tests: $(TESTS)
+	@for file in $(TESTS); do $$file &>/dev/null || echo "Test '$$file' failed."; done
 
-test-module: module.c tests/module.c tests/modules/test.so
-	@$(CC) $(CFLAGS) -ldl -o tests/module -DTESTSUITE -DMODPATH="\"$(shell pwd)/tests/modules/\"" module.c tests/module.c
+tests/module: module.o tests/module.o tests/modules/test.so
+	@$(CC) $(CFLAGS) module.o tests/module.o tests/modules/test.so -o $@ >/dev/null
+
+clean-tests:
+	-@rm $(TESTS) tests/*.{o,so} tests/modules/*.{o,so} &>/dev/null
+
+### File Types
+%.o : %.c
+	@$(CC) -c $< $(CFLAGS) -o $@ >/dev/null
 
 %.d: %.c
 	@$(CC) -MM $(CFLAGS) $< > $@.$$$$; \
