@@ -11,24 +11,24 @@ static struct GfxImageNode *sg_images[GFX_HASH_VALS];
 int
 init_graphics (void)
 {
-  load_module_gfx ();
+  unsigned int i;
 
-  if ((*g_modules.gfx.init_screen) (SCREEN_W, SCREEN_H, SCREEN_D))
+  if (load_module_gfx () == FAILURE)
     {
-      unsigned int i;
-
-      for (i = 0; i < GFX_HASH_VALS; i++)
-        sg_images[i] = NULL;
-
-      return SUCCESS;
-    } 
-  else 
-    {
-      fprintf (stderr, "ERROR: Could not init gfx!\n");
+      fprintf (stderr, "ERROR: Could not load graphics module.\n");
+      return FAILURE;
     }
 
-  cleanup_graphics ();
-  return FAILURE;
+  if ((*g_modules.gfx.init_screen) (SCREEN_W, SCREEN_H, SCREEN_D) == FAILURE)
+    {
+      fprintf (stderr, "ERROR: Could not init screen.!\n");
+      return FAILURE;
+    }
+ 
+  for (i = 0; i < GFX_HASH_VALS; i++)
+    sg_images[i] = NULL;
+
+  return SUCCESS;
 }
 
 void

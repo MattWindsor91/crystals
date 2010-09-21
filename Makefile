@@ -1,7 +1,7 @@
 BIN      := maprender-test
 
 OBJ      := main.o graphics.o map.o mapview.o events.o module.o
-SOBJ     := modules/gfx-sdl.so
+SOBJ     := modules/gfx-sdl.so modules/event-sdl.so
 
 SOURCES  := $(subst .o,.c,$(OBJ))
 DEPFILES := $(subst .o,.d,$(OBJ))
@@ -16,9 +16,11 @@ WARN     := -Wall -Wextra -pedantic -Wshadow -Wpointer-arith -Wcast-align \
             -Wredundant-decls -Wnested-externs -Winline -Wno-long-long \
             -Wconversion -Wstrict-prototypes -ansi
 
-LIBS     := `sdl-config --libs` -lSDL_image -g
-CFLAGS   := `sdl-config --cflags` -ansi -pedantic -O2 -ggdb \
-           -DMODPATH="\"$(MODPATH)\"" $(WARN)
+LIBS     := -ldl -g
+CFLAGS   := -ansi -pedantic -O2 -ggdb -DMODPATH="\"$(MODPATH)\"" $(WARN)
+
+SOLIBS   := $(LIBS) `sdl-config --libs` -lSDL_image
+SOCFLAGS := $(CFLAGS) `sdl-config --cflags`
 
 .PHONY: all doc autodoc clean clean-doc
 
@@ -48,8 +50,8 @@ $(BIN): $(OBJ) $(SOBJ)
 %.so : %.c
 	@echo -n "Compiling $< to shared object... "
 
-	@$(CC) $(CFLAGS) -Wall -fPIC -rdynamic -c $^ -o $(^:.c=.o)
-	@$(CC) $(LIBS) -shared -Wl,-soname,$(^:.c=.so) -o $(^:.c=.so) $(^:.c=.o)
+	@$(CC) $(SOCFLAGS) -Wall -fPIC -rdynamic -c $^ -o $(^:.c=.o)
+	@$(CC) $(SOLIBS) -shared -Wl,-soname,$(^:.c=.so) -o $(^:.c=.so) $(^:.c=.o)
 
 	@echo "done."
 

@@ -3,6 +3,8 @@
 #ifndef _MODULE_H
 #define _MODULE_H
 
+#include "events.h"
+
 /* The file suffix of modules */
 #define MODULESUFFIX ".so"
 
@@ -58,6 +60,18 @@ struct ModuleSet
     (*scroll_screen) (unsigned int direction);
 
   } gfx;
+
+  struct
+  {
+    module_data metadata;
+
+    void
+    (*process_events) (void);
+
+    void
+    (*register_release_handle) (void (*handle) (event_t *event));
+
+  } event;
  
 };
 
@@ -79,8 +93,11 @@ get_module (const char* modulepath, module_data *module);
 void
 get_module_function (module_data metadata, const char *function, void **func);
 
-void
+int
 load_module_gfx (void);
+
+int
+load_module_event (void);
 
 void
 close_module (module_data *module);

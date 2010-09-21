@@ -1,4 +1,4 @@
-/* test.c - a simple module to test the dynamic module-loader */
+/* gfx-sdl.c - SDL implementation of graphics backend. */
 
 #include <stdio.h>
 #include <SDL.h>

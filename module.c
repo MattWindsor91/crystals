@@ -30,6 +30,10 @@ init_modules (const char *path)
       g_modules.gfx.update_screen = NULL;
       g_modules.gfx.scroll_screen = NULL;
 
+      module_bare_init (&g_modules.event.metadata);
+      g_modules.event.process_events = NULL;
+      g_modules.event.register_release_handle = NULL;
+
       return SUCCESS;
     }
   else
@@ -115,7 +119,7 @@ get_module_function (module_data module, const char *function, void **func)
     }
 }
 
-void
+int
 load_module_gfx (void)
 {
   char *modulepath;
@@ -149,7 +153,35 @@ load_module_gfx (void)
                            (void**) &g_modules.gfx.scroll_screen);
 
       free (modulepath);
+
+      return SUCCESS;
     }
+  return FAILURE;
+}
+
+int
+load_module_event (void)
+{
+  char *modulepath;
+
+  get_module_path ("event-sdl", &modulepath);
+
+  if (g_modules.event.metadata.lib_handle == NULL && 
+      modulepath)
+    {
+      get_module (modulepath, &g_modules.event.metadata);
+
+      get_module_function (g_modules.event.metadata, "process_events",
+                           (void**) &g_modules.event.process_events);
+
+      get_module_function (g_modules.event.metadata, "register_release_handle",
+                           (void**) &g_modules.event.register_release_handle);
+
+      free (modulepath);
+
+      return SUCCESS;
+    }
+  return FAILURE;
 }
 
 /* This closes an individual module and runs any termination code */
@@ -172,5 +204,6 @@ close_module (module_data *module)
 void
 cleanup_modules (void)
 {
+  close_module (&g_modules.event.metadata);
   close_module (&g_modules.gfx.metadata);
 }

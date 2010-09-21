@@ -71,7 +71,8 @@ main_loop (void)
   while (g_running)
     {
       (*g_modules.gfx.update_screen) ();
-      handle_events ();
+      (*g_modules.event.process_events) ();
+      handle_held_keys ();
     }
 }
 
@@ -80,6 +81,7 @@ cleanup (void)
 {
   cleanup_mapview (g_mapview);
   cleanup_map (g_map);
+  cleanup_events ();
   cleanup_graphics ();
   cleanup_modules ();
 }
