@@ -55,5 +55,5 @@ clean:
 	-@$(RM) -r autodoc
 
 autodoc:
-	@doxygen
+	@doxygen >/dev/null
 
