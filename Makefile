@@ -1,12 +1,14 @@
 BIN      := maprender-test
 
 TESTS    := tests/module
-SOURCES  := main.c graphics.c map.c mapview.c events.c module.c
-OBJ      := $(subst .c,.o,$(SOURCES))
-DEPFILES := $(subst .c,.d,$(SOURCES))
-SO       := modules/gfx-sdl.so
+OBJ      := main.o graphics.o map.o mapview.o events.o module.o
+SOBJ     := modules/gfx-sdl.so
+
+SOURCES  := $(subst .o,.c,$(OBJ))
+DEPFILES := $(subst .o,.d,$(OBJ))
 
 CC       := clang
+RM       := rm -f
 
 MODPATH  := $(shell pwd)/modules/\0
 
@@ -19,9 +21,9 @@ LIBS     := `sdl-config --libs` -lSDL_image -g
 CFLAGS   := `sdl-config --cflags` -ansi -pedantic -O2 -ggdb \
             -DDEFMODPATH="\"$(MODPATH)\"" $(WARN)
 
-.PHONY: all doc clean clean-tests clean-doc tests
+.PHONY: all doc autodoc clean clean-tests clean-doc tests
 
-all: $(BIN)
+all: $(BIN) doc autodoc
 
 $(BIN): $(OBJ) $(SO)
 	@$(CC) $(OBJ) -o "$(BIN)" $(LIBS) >/dev/null
@@ -29,13 +31,17 @@ $(BIN): $(OBJ) $(SO)
 -include $(DEPFILES)
 
 clean: clean-tests clean-doc
-	-@rm $(BIN) *.o *.d *.so modules/*.so modules/*.o &>/dev/null
+	-@$(RM) $(BIN) *.o *.d *.so modules/*.so modules/*.o &>/dev/null
 
 ### Documentation
 doc: doc/module.pdf doc/mapformat-internal.pdf
 
+autodoc:
+	@doxygen >/dev/null
+
 clean-doc:
-	-@rm doc/*.{pdf,aux,log} &>/dev/null
+	-@$(RM) doc/*.{pdf,aux,log} &>/dev/null
+	-@$(RM) -r autodoc
 
 ### Test Suite
 tests: CFLAGS += -DTESTSUITE -DMODPATH="\"$(shell pwd)/tests/modules/\""
@@ -46,7 +52,7 @@ tests/module: module.o tests/module.o tests/modules/test.so
 	@$(CC) $(CFLAGS) module.o tests/module.o tests/modules/test.so -o $@ >/dev/null
 
 clean-tests:
-	-@rm $(TESTS) tests/*.{o,so} tests/modules/*.{o,so} &>/dev/null
+	-@$(RM) $(TESTS) tests/*.{o,so} tests/modules/*.{o,so} &>/dev/null
 
 ### File Types
 %.o : %.c
@@ -55,7 +61,7 @@ clean-tests:
 %.d: %.c
 	@$(CC) -MM $(CFLAGS) $< > $@.$$$$; \
 	sed 's,\($*\)\.o[ :]*,\1.o $@ : ,g' < $@.$$$$ > $@; \
-	rm -f $@.$$$$
+	$(RM) -f $@.$$$$
 
 %.so : %.c
 	@$(CC) $(CFLAGS) -Wall -fPIC -rdynamic -c $^ -o $(^:.c=.o) >/dev/null
