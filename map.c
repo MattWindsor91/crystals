@@ -8,7 +8,7 @@
 
 const char FN_TILESET[] = "tiles.png";
 
-static unsigned char sg_test_layers[4][101] = 
+static layer_t sg_test_layers[4][101] = 
   {{ 9,  5,  5,  5,  5,  5,  5,  5,  5, 10, 
      8,  2,  2,  2,  2,  2,  2,  2,  2,  7,
      8, 13, 13, 13, 13, 13, 13, 13, 13,  7,
@@ -51,10 +51,10 @@ static unsigned char sg_test_layers[4][101] =
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 0} 
   };
 
-struct Map *
+struct map *
 init_test_map (void)
 {
-  struct Map *map;
+  struct map *map;
 
   map = init_map (10, 10, 4);
 
@@ -64,21 +64,21 @@ init_test_map (void)
       for (i = 0; i < 4; i++) 
         {
           memcpy (map->data_layers[i], sg_test_layers[i],
-                  sizeof (unsigned char) * (map->width * map->height + 1));
+                  sizeof (unsigned short) * (map->width * map->height + 1));
         }
     }
 
   return map;
 }
 
-struct Map *
+struct map *
 init_map (unsigned int width, 
           unsigned int height, 
           unsigned char num_layers)
 {
-  struct Map *map;
+  struct map *map;
 
-  map = malloc (sizeof (struct Map));
+  map = malloc (sizeof (struct map));
 
   if (map) 
     {
@@ -86,7 +86,7 @@ init_map (unsigned int width,
       map->height = height;
       map->num_layers = num_layers;
 
-      map->data_layers = malloc (sizeof (unsigned char*) * num_layers);
+      map->data_layers = malloc (sizeof (layer_t*) * num_layers);
 
       if (map->data_layers)
         {
@@ -96,7 +96,7 @@ init_map (unsigned int width,
             {
               /* Allocate one extra char for the layer tag (at the end of the
                  data). */
-              map->data_layers[i] = malloc (sizeof (unsigned char) * 
+              map->data_layers[i] = malloc (sizeof (layer_t) * 
                                             ((width * height) + 1));
             }
         }
@@ -114,7 +114,7 @@ init_map (unsigned int width,
 }
 
 void
-cleanup_map (struct Map *map)
+cleanup_map (struct map *map)
 {
   if (map)
     {

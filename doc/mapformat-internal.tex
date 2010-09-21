@@ -1,0 +1,212 @@
+\documentclass [12pt,a4paper]{article}
+\pagestyle{headings}
+
+\usepackage [utf8x]{inputenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage [margin=0.9in]{geometry}
+\usepackage{ucs}
+\usepackage{listings}
+\usepackage{color}
+\usepackage{textcomp}
+
+\lstset{
+  language=C,
+  keywordstyle=\bfseries\ttfamily\color[rgb]{0,0,1},
+  identifierstyle=\ttfamily,
+  commentstyle=\color[rgb]{0.133,0.545,0.133},
+  stringstyle=\ttfamily\color[rgb]{0.627,0.126,0.941},
+  showstringspaces=false,
+  basicstyle=\small,
+  numberstyle=\footnotesize,
+  numbers=left,
+  stepnumber=1,
+  numbersep=10pt,
+  tabsize=2,
+  breaklines=true,
+  prebreak = \raisebox{0ex}[0ex][0ex]{\ensuremath{\hookleftarrow}},
+  breakatwhitespace=false,
+  aboveskip={1.5\baselineskip},
+  columns=fixed,
+  upquote=true,
+  extendedchars=true,
+}
+
+\newcommand{\superscript} [1]{\ensuremath{^{\textrm{#1}}}}
+\newcommand{\subscript} [1]{\ensuremath{_{\textrm{#1}}}}
+
+\author{Matt Windsor}
+\title{Internal Map Format Proposal}
+\date{}
+
+\begin{document}
+
+\maketitle{}
+
+\begin{abstract}
+  This \LaTeX file details a proposal for an internal map format, with
+  a test renderer available in the \emph{maprender} branch.
+
+  \emph{Note:} This is just a proposal, and is subject to heavy
+  change.
+
+\end{abstract}
+
+\section{The map structure}
+
+\subsection{C structure listing}
+
+Reproduced here is the internal map structure, at the time of writing.
+
+\begin{lstlisting}
+typedef unsigned short layer_t; /**< Type for layer data. */
+
+struct map
+{
+  unsigned int width;       /**< Width of the map, in tiles. */
+  unsigned int height;      /**< Height of the map, in tiles. */
+  unsigned char num_layers; /**< Number of arrays to store in the map. */
+  layer_t **data_layers;    /**< Pointers to map layer arrays. */
+};
+\end{lstlisting}
+
+\subsubsection{Forthcoming features}
+
+\begin{itemize}
+\item Objects (per-map, per-layer or per-tag? Linked list or
+  otherwise).
+\end{itemize}
+
+\subsubsection{A note on types}
+
+The data layer type is typedef'd as layer\_t to allow quick changes in
+the future, should a global limit on 65,536 tiles become too small, or
+if layer\_t needs to be changed to a compound structure later.
+
+\subsection{Layers}
+
+The map tiles are organised into \emph{layers}.  The theoretical upper
+bound on the number of layers that can be stored is 256 (the maximum
+value of an unsigned char).
+
+Layers consist of $(width * height) + 1$ unsigned chars, arranged in a
+dynamically allocated array of $num\_layers$ members at
+\textbf{num\_layers}.  Each char except the last in each layer
+represents one tile, and should be read left-to-right, top-to-bottom,
+bottom layer to top layer.
+
+\subsection{Tags}
+
+The last char in each layer is reserved as the \emph{tag byte}.  This
+is a number, 0 to 255, that is used to identify the layer to
+objects.
+
+Objects also have tag bytes (either by default or specified during
+their instantiation on the map) and, when an object is instantiated on
+a map, it will look for the first layer with a matching tag byte or,
+if the tag byte cannot be found, the first layer defined (the bottom
+layer).
+
+The layer found is then treated as the object's ``floor'', with all
+layers below the floor ignored and rendered beneath the object, and
+all layers above the floor ignored and rendered above the object.
+Barring exceptional circumstances, an object can only interact with,
+and be blocked by, objects on its ``floor'' layer.
+
+An example of the usage of this would be a scene in which there is a
+balcony floor (let us say tag 2) looking out on a floor below (let us
+say tag 1).  The player is tag 1 (see ``Defined Tags'' below), and
+positioned on the below floor, and another NPC is tag 2 and positioned
+on the floor above.  If the player moves underneath the floor, he will
+disappear underneath the floor as the balcony is a layer above the
+floor, and as the player is tagged with the lower floor's tag, the
+player will treat the lower floor as ground and the balcony as
+overlay.  At the same time, the NPC will be rendered on top of the
+balcony as its tag matches that of the balcony.
+
+\subsubsection{Defined Tags}
+
+\begin{tabular}{ l p{5in} }
+  ID & Purpose \\
+  \hline
+  0  & Inactive layer.  No objects can be instantiated on a tag-0
+       layer, and it will not be considered for object checking during 
+       rendering. \\
+  1  & Recommended default tag for the player and objects that will 
+       interact with the player. \\
+\end{tabular}
+
+\subsubsection{Changing Tag}
+
+A possible feature would be the ability to change the tag of an object
+temporarily on a map.  For example, if the player walks up a ladder,
+their tag could change so they consider a different layer as their
+floor.
+
+This, of course, would need some added complexities (see
+\emph{Arguments against tags} below).
+
+\subsubsection{Rationale for tags}
+
+Tags would allow objects to carry information on where they should, by
+default, be placed in a scene, without hardcoding the map layer number
+(which could change from map to map.)  For example, the player object
+would by default start each map with the tag 1, which could correspond
+to layer 0 on one map, layer 2 on another map, or even layer 63 on
+another map.
+
+While a particularly complex map may make use of many layers to
+achieve graphical effects, it will likely only have a few ``physical''
+layers (eg ground, mezzanines, overlay).  Tags would allow for objects
+to be placed based on physical layers rather than graphical layers.
+
+If layers are added to or removed from a map, the tags will likely
+remain the same while the layer IDs change.
+
+In addition, layers tagged 0 could be completely disregarded while
+rendering objects which (dependent on how the rendering system is
+implemented) could save effort.
+
+Tags could be used to place animating objects, for example flickering
+street lamps, above the player.
+
+\subsubsection{Arguments against tags}
+
+Though I believe that tags are a good idea, for completeness's sake
+and the purposes of debate some potential arguments against the
+aforementioned tag implementation are discussed.
+
+Tags are a complexity that will be thrust upon the map designer, and
+such could be an annoyance especially if all maps have the same layer
+layout anyway.
+
+Tags require an extra byte per layer for storage, which is a modest
+cost but a cost nonetheless.
+
+The numeric format of tags means that they are less intuitive than,
+say, a string-based system (the player treats the first layer named
+``player-floor'' as its floor, for example) - but this would add
+complexity and space consumption.
+
+If tag changing is made possible, this could become messy as objects
+move from their default tag to other tags.  Doors would have to be
+scripted to ensure that the player has the right tag when moving to a
+new map, and this would break the idea of tags allowing objects to
+ignore differences between maps.
+
+Only one tag can be stored per layer under the proposed system.  A
+system of being able to chain tags could be implemented, but would add
+more complexity to the map structures.
+
+\section {The tileset}
+
+The global tileset image, at time of writing, is located in
+\emph{tiles.png}.  Currently, all the layer data provides is an offset
+into this tileset image.
+
+Later, there will likely be metadata associated with each tile, such
+as collision information.
+
+\end{document}

@@ -3,33 +3,33 @@
 
 #include "map.h"
 
-struct MapView
+struct map_view
 {
   int x_offset;
   int y_offset;
-  struct Map *map;
+  struct map *map;
   unsigned char *dirty_tiles;
 };
 
-struct MapView *
-init_mapview (struct Map *map);
+struct map_view *
+init_mapview (struct map *map);
 
 extern const char FN_TILESET[];
 
 void
-render_map (struct MapView *mapview);
+render_map (struct map_view *mapview);
 
 void
-render_map_layer (struct MapView *mapview, unsigned int layer);
+render_map_layer (struct map_view *mapview, unsigned int layer);
 
 void
-scroll_map (struct MapView *mapview, int direction);
+scroll_map (struct map_view *mapview, int direction);
 
 void
-mark_dirty_rect (struct MapView *mapview,
+mark_dirty_rect (struct map_view *mapview,
                  int start_x, int start_y, int width, int height);
 
 void
-cleanup_mapview (struct MapView *mapview);
+cleanup_mapview (struct map_view *mapview);
 
 #endif /* _MAPVIEW_H */

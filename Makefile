@@ -23,7 +23,7 @@ CFLAGS   := `sdl-config --cflags` -ansi -pedantic -O2 -ggdb \
 
 all: $(BIN)
 
-doc: doc/module.pdf
+doc: doc/module.pdf doc/mapformat-internal.pdf
 
 $(BIN): $(OBJ) $(SO)
 	@$(CC) $(OBJ) -o "$(BIN)" $(LIBS) >/dev/null
