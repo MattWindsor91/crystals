@@ -8,14 +8,14 @@
 #include <dlfcn.h>
 #include <string.h>
 
-#include "main.h"
-#include "module.h"
-
 #ifdef TESTSUITE
 #include "tests/module.h"
 #endif /* TESTSUITE */
 
-struct module_set g_modules; /* The set of all modules in use */
+#include "main.h"
+#include "module.h"
+
+module_set g_modules; /* The set of all modules in use */
 
 #ifndef TESTSUITE
 /* This initialises the struct of modules to NULL and sets the load path */
@@ -29,13 +29,6 @@ init_modules (const char *path)
       strncpy (g_modules.path, path, strlen (path) + 1);
       
       module_bare_init (&g_modules.gfx.metadata);
-      g_modules.gfx.init_screen = NULL;
-      g_modules.gfx.draw_rect = NULL;
-      g_modules.gfx.load_image_data = NULL;
-      g_modules.gfx.free_image_data = NULL;
-      g_modules.gfx.draw_image = NULL;
-      g_modules.gfx.update_screen = NULL;
-      g_modules.gfx.scroll_screen = NULL;
       return SUCCESS;
     }
   else

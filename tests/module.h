@@ -3,8 +3,16 @@
 #ifndef _TEST_MODULE_H
 #define _TEST_MODULE_H
 
+/* Not nice that I have to define this here as well */
+typedef struct
+{
+  void *lib_handle;
+  void (*init)(void);
+  void (*term)(void);
+} module_data;
+
 /* modules struct - stores details about modules and functions */
-struct ModuleSet
+typedef struct
 {
   char *path;
 
@@ -22,7 +30,7 @@ struct ModuleSet
     module_data metadata;
     void (*bar)(void);
   } foo;
-};
+} module_set;
 
 /* function prototypes */
 int

@@ -13,6 +13,7 @@
 
 /* -- STRUCTURES -- */
 
+#ifndef TESTSUITE
 /** The module_data structure.
  *
  *  This contains the basic data that all modules require to function
@@ -24,7 +25,6 @@ typedef struct
   void (*term)(void);
 } module_data;
 
-#ifndef TESTSUITE
 /** The module_set struct
  *
  *  This contains the path to the module files, and additionally
@@ -80,7 +80,7 @@ typedef struct
 /* -- GLOBAL VARIABLES -- */
 
 /* The set of modules in use */
-extern struct module_set g_modules;
+extern module_set g_modules;
 
 /* -- PROTOTYPES -- */
 

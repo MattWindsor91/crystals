@@ -5,9 +5,9 @@
 #include <dlfcn.h>
 #include <string.h>
 
+#include "module.h"
 #include "../main.h"
 #include "../module.h"
-#include "module.h"
 
 /* This initialises the struct of modules to NULL and sets the load path */
 int
@@ -21,10 +21,6 @@ init_modules (const char *path)
       
       module_bare_init (&g_modules.test.metadata);
       module_bare_init (&g_modules.foo.metadata);
-      
-      g_modules.test.sum_numbers = NULL;
-      g_modules.test.mul_numbers = NULL;
-      g_modules.foo.bar          = NULL;
       return SUCCESS;
     }
   else
