@@ -380,8 +380,11 @@ class XMLFileCtrl(wx.Panel):
     def on_add_label(self, event):
         """add a new label to the TreeCtrl, call from the parent"""
         entry = textEntryDialog(self, _('Label Name:'),
-            _('Enter a name for the new label.'), style=wx.BORDER_NONE|wx.OK)
-        self._add_label(entry.text)
+            _('Enter a name for the new label.'),
+            style=wx.BORDER_NONE|wx.OK|wx.CANCEL)
+        text = entry.text.strip()
+        if text != "":
+            self._add_label(entry.text)
         #wx.lib.dialogs.DialogResults.
 
     def on_remove_label(self, event):
