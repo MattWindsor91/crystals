@@ -27,6 +27,7 @@
 import sys
 
 import wx
+import webbrowser
 import xml.etree.ElementTree as etree
 
 from wx.lib.stattext import GenStaticText
