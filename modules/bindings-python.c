@@ -77,5 +77,5 @@ void
 test (void)
 {
     /* a simple test */
-    PyRun_SimpleString(g);
+    PyRun_SimpleString("print 'Hello World'");
 }
