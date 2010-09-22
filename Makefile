@@ -17,8 +17,7 @@ WARN     := -Wall -Wextra -Wshadow -Wpointer-arith -Wcast-align \
             -Wredundant-decls -Wnested-externs -Winline -Wno-long-long \
             -Wconversion -Wstrict-prototypes
 
-LIBS     := -ldl -g -lpython2.6
-INCLUDES := 
+LIBS     := -ldl -g 
 CFLAGS   := -ansi -pedantic -O2 -ggdb -DDEFMODPATH="\"$(MODPATH)\"" $(WARN)
 
 .PHONY: all doc autodoc clean clean-tests clean-doc clean-modules modules tests
@@ -42,8 +41,8 @@ modules/gfx-sdl.so: CFLAGS += `sdl-config --cflags`
 modules/event-sdl.so: LIBS   += `sdl-config --libs`
 modules/event-sdl.so: CFLAGS += `sdl-config --cflags`
 
-modules/bindings-python.so: LIBS += -lpython2.6
-modules/bindings-python.so: INCLUDES += -I/usr/include/python2.6
+modules/bindings-python.so: LIBS += `python2.6-config --libs`
+modules/bindings-python.so: CFLAGS += `python2.6-config --cflags`
 
 modules: $(SOBJ)
 
