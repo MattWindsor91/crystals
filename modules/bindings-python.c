@@ -34,7 +34,7 @@ term (void)
 void
 test (void)
 {
-    PySys_SetPath("./test");
+    PySys_SetPath("./tests");
 
     char* test =    "import sys"
                     "print sys.argv"
