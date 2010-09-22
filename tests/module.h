@@ -34,10 +34,6 @@ typedef struct
 
 /* function prototypes */
 int
-init_modules (const char *path);
-void
-cleanup_modules (void);
-int
 load_module_test (void);
 int
 load_module_foo (void);

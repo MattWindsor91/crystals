@@ -247,7 +247,6 @@ extern module_set g_modules;
 
 /* -- PROTOTYPES -- */
 
-#ifndef TESTSUITE
 /** Initialise the g_modules structure.
  *  
  *  @todo Allow passing a structure by reference, perhaps? Would allow
@@ -262,7 +261,6 @@ extern module_set g_modules;
 
 int
 init_modules (const char *path);
-#endif /* TESTSUITE */
 
 /** Perform the minimum initialisation needed for a module
  *  
@@ -326,7 +324,6 @@ get_module (const char* modulepath, module_data *module);
 int
 get_module_function (module_data metadata, const char *function, void **func);
 
-#ifndef TESTSUITE
 /** Load the graphics module.
  *  
  *  This loads a graphics module and sets up g_modules.gfx.
@@ -351,8 +348,6 @@ load_module_gfx (char* name);
 int
 load_module_event (char* name);
 
-#endif /* TESTSUITE */
-
 /** Close an individual module.
  *  
  *  This runs any term function which is present in the module and closes
@@ -363,13 +358,11 @@ load_module_event (char* name);
 void
 close_module (module_data *module);
 
-#ifndef TESTSUITE
 /** Clean up all modules.
  *  
  *  This runs close_module on every module.
  */
 void
 cleanup_modules (void);
-#endif /* TESTSUITE */
 
 #endif /* _MODULE_H */
