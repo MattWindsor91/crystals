@@ -65,7 +65,7 @@ term (void);
  * */
 
 int
-run_file(const char* path);
+run_file (const char* path);
 
 
 /** Test the python module. */
@@ -86,7 +86,7 @@ term (void)
 }
 
 int
-run_file(const char* path)
+run_file (const char* path)
 {
   FILE *stream;
 
