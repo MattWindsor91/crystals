@@ -92,5 +92,6 @@ cleanup (void)
   cleanup_graphics ();
   cleanup_modules ();
 }
+/* vim: ts=2 sw=2 softtapstop=2: */
 
 

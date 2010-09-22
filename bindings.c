@@ -14,7 +14,5 @@ init_bindings (void)
       return FAILURE;
     }
 
-  (*g_modules.bindings.test)();
-
   return SUCCESS;
 }
