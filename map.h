@@ -111,6 +111,32 @@ init_map (unsigned int width,
           unsigned int height, 
           unsigned char num_layers);
 
+/** Get the tag number assigned to a particular layer.
+ *
+ *  @param map    Pointer to the map to query.
+ *
+ *  @param layer  ID of the layer to retrieve the tag number for.
+ *
+ *  @return  the highest tag number allocated on the map.
+ *           If the map pointer given is NULL, or the layer does not 
+ *           exist in the given map, 0 is returned and an error is raised.
+ */
+
+layer_t
+get_tag (struct map *map, unsigned int layer);
+
+/** Get the highest tag number allocated on a map.
+ *
+ *  @param map  Pointer to the map to query.
+ *
+ *  @return  the highest tag number allocated on the map.
+ *           If the map pointer given is NULL, 0 is returned and an 
+ *           error is raised.
+ */
+
+layer_t
+get_max_tag (struct map *map);
+
 /** De-initialise a map.
  *
  *  This de-allocates all memory consumed by the given map structure.

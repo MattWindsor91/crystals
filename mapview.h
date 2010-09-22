@@ -54,6 +54,37 @@
 
 /* -- STRUCTURES -- */
 
+/** An object render queue node. */
+
+struct object_image
+{
+  char *filename;        /**< Name of the image, used when looking up
+                            the image in the image cache. */
+
+  short image_x;         /**< X co-ordinate of the left edge of the
+                            on-image rectangle from which to source
+                            the rendered image, in pixels. */
+
+  short image_y;         /**< Y co-ordinate of the top edge of the
+                            on-image rectangle from which to source
+                            the rendered image, in pixels. */
+
+  short screen_x;        /**< X co-ordinate of the left edge of the
+                            on-screen rectangle in which to render the
+                            image, in pixels. */
+
+  short screen_y;        /**< Y co-ordinate of the top edge of the
+                            on-screen rectangle in which to render the
+                            image, in pixels. */
+
+  unsigned short width;  /**< Width of the object image, in pixels. */
+
+  unsigned short height; /**< Height of the object image, in
+                            pixels. */
+
+  struct object_image *next; /**< Next node in the queue. */
+};
+
 /** A map viewpoint.
  *
  *  This contains data required to render a map, including the offset
@@ -85,6 +116,16 @@ struct map_view
                                  Eventually there will be a function
                                  for setting tiles to dirty without
                                  needing to pay attention to this. */
+
+  unsigned int num_object_queues; /**< Number of object queues reserved
+                                     (equal to the highest tag used
+                                     by the map). */
+
+  struct object_image **object_queue; /**< The head array of queues of
+                                         object sprites to be rendered
+                                         on the next pass.  There will
+                                         be num_object_queues heads in
+                                         this block.*/
 };
 
 /* -- GLOBAL VARIABLES -- */
@@ -104,6 +145,66 @@ extern const char FN_TILESET[]; /**< Tileset filename. */
 struct map_view *
 init_mapview (struct map *map);
 
+/** Add an object sprite to the rendering queue. 
+ *
+ *  This should be called from a higher-level function, as it does not
+ *  take responsibility for making underlying tiles dirty, take into
+ *  consideration the object's baseline or translate from map X and Y
+ *  to screen X and Y.
+ *
+ *  @param mapview   Pointer to the map viewpoint to render on.
+ *
+ *  @param tag       Number of the layer tag to use. The object will
+ *                   be rendered on top of the first map layer to use
+ *                   the tag. This -must- be nonzero.
+ *
+ *  @param filename  Filename of the image.
+ *
+ *  @param image_x   X co-ordinate of the left edge of the on-image
+ *                   rectangle from which to source the rendered
+ *                   image, in pixels.
+ *
+ *  @param image_y   Y co-ordinate of the top edge of the on-image
+ *                   rectangle from which to source the rendered
+ *                   image, in pixels.
+ *
+ *  @param screen_x  X co-ordinate of the left edge of the on-screen
+ *                   rectangle in which to render the image, in
+ *                   pixels.
+ *
+ *  @param screen_y  Y co-ordinate of the top edge of the on-screen 
+ *                   rectangle in which to render the image, in
+ *                   pixels.
+ *
+ *  @param width     Width of the image rectangle to render, in
+ *                   pixels.
+ *
+ *  @param height    Height of the image rectangle to render, in
+ *                   pixels.
+ *
+ *  @return SUCCESS if there were no errors encountered; FAILURE
+ *  otherwise.
+ */
+
+int
+add_object_image (struct map_view *mapview,
+                  layer_t tag,
+                  const char filename[],
+                  short image_x,
+                  short image_y,
+                  short screen_x,
+                  short screen_y,
+                  unsigned short width,
+                  unsigned short height);
+
+/** Free an object image render queue node.
+ *
+ *  @param image  Pointer to the render node to free. 
+ */
+
+void
+free_object_image (struct object_image *image);
+
 /** Render the dirty tiles on a map.
  *
  *  @param mapview  Pointer to the map view to render.
@@ -121,6 +222,20 @@ render_map (struct map_view *mapview);
 
 void
 render_map_layer (struct map_view *mapview, unsigned char layer);
+
+/** Render any map objects to be placed on top of this layer.
+ *
+ *  This will, if this layer is the first defined with its tag, blit
+ *  all dirty objects of the same tag on top of this map layer in
+ *  z-order.
+ *
+ *  @param mapview  Pointer to the map view to render.
+ *
+ *  @param layer    The layer to render.
+ */
+
+void
+render_map_objects (struct map_view *mapview, unsigned char layer);
 
 /** Scroll the map on-screen, re-rendering it in its new position.
  *
