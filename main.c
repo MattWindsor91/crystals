@@ -92,6 +92,5 @@ cleanup (void)
   cleanup_graphics ();
   cleanup_modules ();
 }
-/* vim: ts=2 sw=2 softtapstop=2: */
 
-
+/* vim: set ts=2 sw=2 softtabstop=2: */
