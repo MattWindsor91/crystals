@@ -46,7 +46,7 @@
 
 /** Initialise the python module. */
 
-int
+void
 init (void);
 
 
@@ -60,8 +60,6 @@ term (void);
 
 void
 test (void);
-
-
 
 void
 init (void)
@@ -78,11 +76,6 @@ term (void)
 void
 test (void)
 {
-
-    char* test =    "import sys"
-                    "print sys.argv"
-                    "print sys.path";
-
     /* a simple test */
-    PyRun_SimpleString(test);
+    PyRun_SimpleString(g);
 }
