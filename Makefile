@@ -17,7 +17,8 @@ WARN     := -Wall -Wextra -Wshadow -Wpointer-arith -Wcast-align \
             -Wredundant-decls -Wnested-externs -Winline -Wno-long-long \
             -Wconversion -Wstrict-prototypes
 
-LIBS     := -ldl -g
+LIBS     := -ldl -g -lpython2.6
+INCLUDES := 
 CFLAGS   := -ansi -pedantic -O2 -ggdb -DDEFMODPATH="\"$(MODPATH)\"" $(WARN)
 
 .PHONY: all doc autodoc clean clean-tests clean-doc clean-modules modules tests
@@ -40,6 +41,9 @@ modules/gfx-sdl.so: CFLAGS += `sdl-config --cflags`
 
 modules/event-sdl.so: LIBS   += `sdl-config --libs`
 modules/event-sdl.so: CFLAGS += `sdl-config --cflags`
+
+modules/bindings-python.so: LIBS += -lpython2.6
+modules/bindings-python.so: INCLUDES += -I/usr/include/python2.6
 
 modules: $(SOBJ)
 
@@ -85,9 +89,11 @@ clean-tests:
 
 %.so : %.c
 	@echo "Compiling $< to shared object..."
-	@$(CC) $(CFLAGS) -Wall -fPIC -rdynamic -c $^ -o $(^:.c=.o) >/dev/null
+	@$(CC) $(CFLAGS) $(INCLUDES) -Wall -fPIC -rdynamic -c $^ -o $(^:.c=.o) >/dev/null
 	@$(CC) $(LIBS) -shared -Wl,-soname,$(^:.c=.so) -o $(^:.c=.so) $(^:.c=.o) >/dev/null
 
 %.pdf: %.tex
 	@echo "LaTeXing $<..."
 	@pdflatex -output-directory=$(shell dirname $@) $^ >/dev/null
+
+# vim: noexpandtab:
