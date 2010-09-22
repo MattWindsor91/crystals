@@ -90,27 +90,22 @@ run_file(const char* path)
 {
   FILE *stream;
 
+  short EXIT;
+
   stream = fopen(path, "r");
 
   if (stream)
     {
       if (PyRun_SimpleFile(stream, path) == 0)
-        {
-          fclose(stream);
-          return 1;
-        }
+        EXIT = 1;
       else
-        {
-          fclose(stream);
-          return 0;
-        }
+        EXIT = 0;
     }
   else
-    {
-      fclose(stream);
-      return 0;
-    }
+    EXIT = 0;
 
+  fclose(stream);
+  return EXIT;
 }
 
 void
