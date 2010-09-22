@@ -224,20 +224,31 @@ typedef struct
 } module_event;
 
 
-/** The bindings module vtable.
+/** The bindings module table.
  *
- *  This contains function pointers for the event-handler class of
- *  modules, along with module metadata.
+ *  This contains functions to handle bindings
+ *  for different programming languages.
  */
 
 typedef struct
 {
   module_data metadata; /**< Metadata for the bindings module. */
 
+  /** Executes the given file
+   *
+   *  @param path   Path to file.
+   *
+   *  @return Returns SUCCESS if success else FAILURE.
+   */
+
+  int
+  (*run_file) (const char *path);
+
   /** A Test */
 
   void
   (*test) (void);
+
 } module_bindings;
 
 /** The module set.
@@ -248,10 +259,10 @@ typedef struct
 
 typedef struct
 {
-  char *path;         /**< Path to the module directory. */
+  char *path;               /**< Path to the module directory. */
 
-  module_gfx gfx;     /**< The graphics module. */
-  module_event event; /**< The event module. */
+  module_gfx gfx;           /**< The graphics module. */
+  module_event event;       /**< The event module. */
   module_bindings bindings; /**< The bindings module */
 
 } module_set;

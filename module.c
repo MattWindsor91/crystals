@@ -246,7 +246,10 @@ load_module_bindings (char* name)
                                (void**)
                                &g_modules.bindings.test) == FAILURE)
         return FAILURE;
-
+      if (get_module_function (g_modules.bindings.metadata, "run_file",
+                               (void**)
+                               &g_modules.bindings.run_file) == FAILURE)
+        return FAILURE;
       return SUCCESS;
     }
   return FAILURE;

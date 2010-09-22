@@ -44,9 +44,28 @@
 #ifndef _BINDINGS_H
 #define _BINDINGS_H
 
-/** Init language bindings */
+/** Init language bindings
+ *
+ *  @return Return SUCCESS if success else FAILURE
+ */
 
 int
 init_bindings (void);
 
+/** Cleanup language bindings */
+
+void
+cleanup_bindings(void);
+
+/** Executes the given file.
+ *
+ *  @param path   Path to the file.
+ *
+ *  @return SUCCESS for success, FAILURE for failure.
+ */
+
+int
+run_file (const char *path);
+
 #endif /* _BINDINGS_H */
+/* vim: set ts=2 sw=2 softtabstop=2: */

@@ -90,6 +90,7 @@ cleanup (void)
   cleanup_map (g_map);
   cleanup_events ();
   cleanup_graphics ();
+  cleanup_bindings ();
   cleanup_modules ();
 }
 

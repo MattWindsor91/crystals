@@ -16,3 +16,16 @@ init_bindings (void)
 
   return SUCCESS;
 }
+
+int
+run_file(const char *path)
+{
+  return (*g_modules.bindings.run_file) (path);
+}
+
+void
+cleanup_bindings (void)
+{
+}
+
+/* vim: set ts=2 sw=2 softtabstop=2: */

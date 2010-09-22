@@ -56,6 +56,18 @@ void
 term (void);
 
 
+/** Execute the file
+ *  The file has to be a valid python source
+ *
+ *  @param path Path to the file.
+ *
+ *  @return Returns SUCCESS if success else FAILURE
+ * */
+
+int
+run_file(const char* path);
+
+
 /** Test the python module. */
 
 void
@@ -71,6 +83,34 @@ void
 term (void)
 {
     Py_Finalize();
+}
+
+int
+run_file(const char* path)
+{
+  FILE *stream;
+
+  stream = fopen(path, "r");
+
+  if (stream)
+    {
+      if (PyRun_SimpleFile(stream, path) == 0)
+        {
+          fclose(stream);
+          return 1;
+        }
+      else
+        {
+          fclose(stream);
+          return 0;
+        }
+    }
+  else
+    {
+      fclose(stream);
+      return 0;
+    }
+
 }
 
 void
