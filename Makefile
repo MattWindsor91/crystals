@@ -8,6 +8,8 @@ SOBJ     := modules/gfx-sdl.so modules/event-sdl.so modules/bindings-python.so
 SOURCES  := $(subst .o,.c,$(OBJ))
 DEPFILES := $(subst .o,.d,$(OBJ))
 
+DOC := doc/module.pdf doc/mapformat-internal.pdf doc/optionparser.pdf
+
 CC       := clang
 RM       := rm -f
 
@@ -52,7 +54,7 @@ clean-modules:
 	-@$(RM) modules/*.{so,o} &>/dev/null
 
 ### Documentation
-doc: doc/module.pdf doc/mapformat-internal.pdf
+doc: $(DOC)
 
 autodoc:
 	@echo "Running doxygen..."

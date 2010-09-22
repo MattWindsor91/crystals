@@ -1,0 +1,186 @@
+\documentclass[12pt,a4paper]{article}
+\pagestyle{headings}
+
+\usepackage[utf8x]{inputenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage[margin=0.9in]{geometry}
+\usepackage{ucs}
+\usepackage{listings}
+\usepackage{color}
+\usepackage{textcomp}
+
+\lstset{
+  language=C,
+  keywordstyle=\bfseries\ttfamily\color[rgb]{0,0,1},
+  identifierstyle=\ttfamily,
+  commentstyle=\color[rgb]{0.133,0.545,0.133},
+  stringstyle=\ttfamily\color[rgb]{0.627,0.126,0.941},
+  showstringspaces=false,
+  basicstyle=\small,
+  numberstyle=\footnotesize,
+  numbers=left,
+  stepnumber=1,
+  numbersep=10pt,
+  tabsize=2,
+  breaklines=true,
+  prebreak = \raisebox{0ex}[0ex][0ex]{\ensuremath{\hookleftarrow}},
+  breakatwhitespace=false,
+  aboveskip={1.5\baselineskip},
+  columns=fixed,
+  upquote=true,
+  extendedchars=true,
+}
+
+\newcommand{\superscript}[1]{\ensuremath{^{\textrm{#1}}}}
+\newcommand{\subscript}[1]{\ensuremath{_{\textrm{#1}}}}
+
+\author{Michael Walker}
+\title{Crystals Option Parser}
+\date{}
+
+\begin{document}
+
+\maketitle{}
+
+\begin{abstract}
+This \LaTeX file details the usage of the Crystals Option Parser, originally written by Michael Walker, for developers of the crystals engine.
+
+Code examples will be presented.
+\end{abstract}
+
+\section{Functions}
+
+The option parser presents one function which should be called by external functions, and also a range of internal functions which should only be called by the option parser.
+
+Any functions which have the \textbf{int} return type return the defined constants \textbf{SUCCESS} or \textbf{FAILURE}.
+
+\subsection{External Functions}
+
+To parse options, the unsurprisingly-named \textbf{parse\_options} function is used. See the sections named \textbf{Options} and \textbf{Usage} for more details.
+
+\begin{lstlisting}
+int
+parse_options (int argc, char* argv[], option options[]);
+\end{lstlisting}
+
+\subsection{Internal Functions}
+
+To check whether an option is the null end-of-list marker:
+
+\begin{lstlisting}
+int
+is_null_option (option check);
+\end{lstlisting}
+
+To get an option by either its short name or long name from a list of options:
+
+\begin{lstlisting}
+option
+get_option (char shortname, char* longname, option options[]);
+\end{lstlisting}
+
+To generate and display the help text, and then exit:
+
+\begin{lstlisting}
+void
+print_help_text (option options[]);
+\end{lstlisting}
+
+To generate and display the version text, and then exit:
+
+\begin{lstlisting}
+void
+print_version_text (void);
+\end{lstlisting}
+
+\section{Options}
+
+At its simplest, the option parser is simply a magic function which takes a list of strings, a list of options, and spits out values. It does this using pointers.
+
+The list of options which is passed to the parser is a list of \textbf{option} structures.
+
+\begin{lstlisting}
+option foo = {longname, shortname, type, pointer, helptext};
+\end{lstlisting}
+
+The \textbf{longname} of an option is a string. The \textbf{shortname} of an option is a character. An example of a long and short option follow:
+
+\begin{lstlisting}[language=bash]
+foo --bar -c
+\end{lstlisting}
+
+However, it would be fairly useless if the option parser could only check for the presence of an option, which is what the \textbf{type} field is for. This is one of a number of constants:
+
+\begin{itemize}
+  \item OPTION\_PARAM\_NONE
+  \item OPTION\_PARAM\_INT
+  \item OPTION\_PARAM\_FLOAT
+  \item OPTION\_PARAM\_STRING
+\end{itemize}
+
+Finally, the \textbf{pointer} is a pointer to the variable to store the value in, and the \textbf{helptext} is text to display when the \textbf{--help} parameter is passed. Here is a more in-depth example, taken from the option parser testsuite:
+
+\begin{lstlisting}
+option options[] = {{NULLC, 'a',   OPTION_PARAM_NONE,   &a,
+                        "Presence flag."},
+                    {NULLC, 'b',   OPTION_PARAM_INT,    &b,
+                        "Integer parameter."},
+                    {NULLC, 'c',   OPTION_PARAM_FLOAT,  &c,
+                        "Float parameter."},
+                    {"dah", 'd',   OPTION_PARAM_STRING, &d,
+                        "String parameter."},
+                    {NULLC, 'e',   OPTION_PARAM_INT,    &e,
+                        "Integer parameter."},
+                    {"foo", 'f',   OPTION_PARAM_NONE,   &foo,
+                        "Presence flag."},
+                    {"bar", NULLC, OPTION_PARAM_INT,    &bar,
+                        "Integer parameter."},
+                    {"baz", NULLC, OPTION_PARAM_FLOAT,  &baz,
+                        "Float parameter."},
+                    {"qux", 'q',   OPTION_PARAM_STRING, &qux,
+                        "String parameter."},
+                    {NULLC, NULLC, NULLC, NULLC, NULLC}};
+\end{lstlisting}
+
+Note that \textbf{NULLC} is the null character. The last entry in the list of options must be a null entry, to signify that it is the end to the option parser. The parser allows for flexibility with the short option type, for instance these two lines are equivalent:
+
+\begin{lstlisting}[language=bash]
+foo -b 1
+foo -b1
+\end{lstlisting}
+
+However, for the long options, there is only one syntax permitted:
+
+\begin{lstlisting}[language=bash]
+foo --bar=5
+\end{lstlisting}
+
+\section{Using}
+
+Once you define a list of options, as well as variables to house the results in, calling the option parser is incredibly simple:
+
+\begin{lstlisting}
+parse_options (argc, argv, options)
+\end{lstlisting}
+
+If there is a problem, \textbf{FAILURE} will be returned, and an error message will be displayed.
+
+\section{Test Suite}
+
+The option parser comes with a test suite, and can be run with the following command:
+
+\begin{lstlisting}[language=bash]
+make tests
+\end{lstlisting}
+
+If the test fails, a notice will be displayed. In that case, you can debug further with GDB or Valgrind:
+
+\begin{lstlisting}[language=bash]
+gdb -ex run -ex backtrace --args ./tests/optionparser
+valgrind --tool=memcheck --leak-check=full --show-reachable=yes ./tests/optionparser
+\end{lstlisting}
+
+\end{document}
