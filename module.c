@@ -27,7 +27,7 @@ init_modules (const char *path)
   if (g_modules.path)
     {
       strncpy (g_modules.path, path, strlen (path) + 1);
-      
+
       module_bare_init (&g_modules.gfx.metadata);
       module_bare_init (&g_modules.event.metadata);
 
@@ -58,7 +58,7 @@ get_module_path (const char* module, char** out)
   char *path;
 
   path = (char*) malloc (sizeof (char) * (strlen (g_modules.path)
-                                          + strlen (module) 
+                                          + strlen (module)
                                           + strlen (MODULESUFFIX) + 1));
 
   if (path)
@@ -125,7 +125,7 @@ get_module (const char* modulepath, module_data *module)
   /* Get init and termination functions if present */
   get_module_function (*module, "init", (void**) &module->init);
   get_module_function (*module, "term", (void**) &module->term);
-  
+
   /* Execute init function if present */
   if (module->init != NULL)
     {
@@ -172,32 +172,32 @@ load_module_gfx (char* name)
                                &g_modules.gfx.init_screen) == FAILURE)
         return FAILURE;
 
-      if (get_module_function (g_modules.gfx.metadata, "draw_rect", 
-                               (void**) 
+      if (get_module_function (g_modules.gfx.metadata, "draw_rect",
+                               (void**)
                                &g_modules.gfx.draw_rect) == FAILURE)
         return FAILURE;
 
-      if (get_module_function (g_modules.gfx.metadata, "load_image_data", 
+      if (get_module_function (g_modules.gfx.metadata, "load_image_data",
                                (void**)
                                &g_modules.gfx.load_image_data) == FAILURE)
         return FAILURE;
 
-      if (get_module_function (g_modules.gfx.metadata, "free_image_data", 
+      if (get_module_function (g_modules.gfx.metadata, "free_image_data",
                                (void**)
                                &g_modules.gfx.free_image_data) == FAILURE)
         return FAILURE;
 
-      if (get_module_function (g_modules.gfx.metadata, "draw_image", 
+      if (get_module_function (g_modules.gfx.metadata, "draw_image",
                                (void**)
                                &g_modules.gfx.draw_image) == FAILURE)
         return FAILURE;
 
-      if (get_module_function (g_modules.gfx.metadata, "update_screen", 
+      if (get_module_function (g_modules.gfx.metadata, "update_screen",
                                (void**)
                                &g_modules.gfx.update_screen)  == FAILURE)
         return FAILURE;
 
-      if (get_module_function (g_modules.gfx.metadata, "scroll_screen", 
+      if (get_module_function (g_modules.gfx.metadata, "scroll_screen",
                                (void**)
                                &g_modules.gfx.scroll_screen) == FAILURE)
         return FAILURE;
@@ -227,6 +227,24 @@ load_module_event (char* name)
                                (void**)
                                &g_modules.event.register_release_handle)
           == FAILURE)
+        return FAILURE;
+
+      return SUCCESS;
+    }
+  return FAILURE;
+}
+
+int
+load_module_bindings (char* name)
+{
+  if (g_modules.bindings.metadata.lib_handle == NULL)
+    {
+      if (get_module_by_name (name, &g_modules.bindings.metadata) == FAILURE)
+        return FAILURE;
+
+      if (get_module_function (g_modules.bindings.metadata, "test",
+                               (void**)
+                               &g_modules.bindings.test) == FAILURE)
         return FAILURE;
 
       return SUCCESS;

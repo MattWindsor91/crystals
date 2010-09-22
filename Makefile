@@ -1,7 +1,7 @@
 BIN      := maprender-test
 
 TESTS    := tests/module
-OBJ      := main.o graphics.o map.o mapview.o events.o module.o
+OBJ      := main.o graphics.o map.o mapview.o events.o module.o bindings.o
 SOBJ     := modules/gfx-sdl.so modules/event-sdl.so modules/bindings-python.so
 
 SOURCES  := $(subst .o,.c,$(OBJ))

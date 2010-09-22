@@ -35,14 +35,14 @@ typedef struct
 } module_data;
 
 /** The graphics module vtable.
- *  
- *  This contains function pointers for the graphics class of modules, 
+ *
+ *  This contains function pointers for the graphics class of modules,
  *  along with module metadata.
  */
 typedef struct
 {
   module_data metadata; /**< Metadata for the graphics module. */
-  
+
   /** Initialise a screen of a given width, height and depth.
    *
    *  The screen's data will automatically be deleted, if not sooner,
@@ -62,7 +62,7 @@ typedef struct
   (*init_screen) (unsigned short width,
                   unsigned short height,
                   unsigned char depth);
-  
+
   /** Draw a rectangle of colour on-screen.
    *
    *  Depending on the graphics module, the colour displayed on screen
@@ -84,16 +84,16 @@ typedef struct
    */
 
   void
-  (*draw_rect) (short x, 
-                short y, 
+  (*draw_rect) (short x,
+                short y,
                 unsigned short width,
-                unsigned short height, 
+                unsigned short height,
                 unsigned char red,
                 unsigned char green,
                 unsigned char blue);
-  
+
   /** Load an image and return its data in the module's native
-   *  format. 
+   *  format.
    *
    *  As the exact format returned varies from module to module, you
    *  will likely only want to use this function through the graphics
@@ -109,7 +109,7 @@ typedef struct
 
   void *
   (*load_image_data) (const char filename[]);
-  
+
   /** Frees image data retrieved by load_image_data.
    *
    *  Since the nature of the image data in question varies from
@@ -121,12 +121,12 @@ typedef struct
    *               data (in the module's native format) to be freed.
    */
 
-  void 
+  void
   (*free_image_data) (void *data);
 
   /** Draw a rectangular portion of an image on-screen.
    *
-   *  This should not be called directly, but instead accessed through 
+   *  This should not be called directly, but instead accessed through
    *  the graphics subsystem's draw_image function (see graphics.h).
    *
    *  @param image     The image data, in the graphics module-specific
@@ -154,21 +154,21 @@ typedef struct
    *  @return  SUCCESS for success, FAILURE otherwise. In most
    *           cases, a failure will simply cause the image to not appear.
    */
-  
+
   int
-  (*draw_image) (void *image, 
+  (*draw_image) (void *image,
                  short image_x,
                  short image_y,
                  short screen_x,
                  short screen_y,
                  unsigned short width,
                  unsigned short height);
-  
+
   /** Update the screen. */
 
   void
   (*update_screen) (void);
-  
+
   /** Scroll the entire screen one pixel in a given direction.
    *
    *  @param direction  The cardinal direction (NORTH, SOUTH, EAST or
@@ -176,12 +176,12 @@ typedef struct
    */
 
   void
-  (*scroll_screen) (unsigned int direction);  
+  (*scroll_screen) (unsigned int direction);
 
 } module_gfx;
 
 /** The event module vtable.
- *  
+ *
  *  This contains function pointers for the event-handler class of
  *  modules, along with module metadata.
  */
@@ -220,13 +220,30 @@ typedef struct
 
   void
   (*register_release_handle) (void (*handle) (event_t *event));
-  
+
 } module_event;
+
+
+/** The bindings module vtable.
+ *
+ *  This contains function pointers for the event-handler class of
+ *  modules, along with module metadata.
+ */
+
+typedef struct
+{
+  module_data metadata; /**< Metadata for the bindings module. */
+
+  /** A Test */
+
+  void
+  (*test) (void);
+} module_bindings;
 
 /** The module set.
  *
- *  This contains the path to the module files, and additionally
- *  structs for each individual module type.
+ *  This contains the functions for engine bindings to different
+ *  programming languages
  */
 
 typedef struct
@@ -235,6 +252,7 @@ typedef struct
 
   module_gfx gfx;     /**< The graphics module. */
   module_event event; /**< The event module. */
+  module_bindings bindings; /**< The bindings module */
 
 } module_set;
 
@@ -249,14 +267,14 @@ extern module_set g_modules;
 
 #ifndef TESTSUITE
 /** Initialise the g_modules structure.
- *  
+ *
  *  @todo Allow passing a structure by reference, perhaps? Would allow
  *  (with changes elsewhere) for multiple sets of modules to be loaded
  *  at once.
  *
- * 
+ *
  *  @param path The path to the modules.
- *   
+ *
  *  @return Either SUCCESS or FAILURE (defined in main.h).
  */
 
@@ -265,16 +283,16 @@ init_modules (const char *path);
 #endif /* TESTSUITE */
 
 /** Perform the minimum initialisation needed for a module
- *  
+ *
  *  This is called for every module as part of init_modules.
- *  
+ *
  *  @param module Pointer to the module_data structure to initialise.
  */
 void
 module_bare_init (module_data *module);
 
 /** Get the path to a module, given its name.
- *  
+ *
  *  @param module The name of the module
  *  @param out    A string to store the path in
  */
@@ -282,13 +300,13 @@ void
 get_module_path (const char *module, char **out);
 
 /** Find and load a module by name
- *  
+ *
  *  This finds and loads a module, initialising the module_data struct so it can be
  *  used by get_module_function.
- *  
+ *
  *  @param name   The name of the module
  *  @param module Pointer to the module_data structure to use
- *  
+ *
  *  @return Either SUCCESS or FAILURE (defined in main.h)
  */
 
@@ -296,13 +314,13 @@ int
 get_module_by_name (const char* name, module_data *module);
 
 /** Find and load a module by filename
- *  
+ *
  *  This finds and loads a module, initialising the module_data struct so it can be
  *  used by get_module_function.
- *  
+ *
  *  @param modulepath The filename of the module
  *  @param module     Pointer to the module_data structure to use
- *  
+ *
  *  @return Either SUCCESS or FAILURE (defined in main.h)
  */
 
@@ -310,14 +328,14 @@ int
 get_module (const char* modulepath, module_data *module);
 
 /** Find a pointer to a function within a module
- *  
+ *
  *  This finds a pointer to a named symbol (only tested for functions, currently) in
  *  a loaded module.
- *  
+ *
  *  @param metadata The module_data structure for the desired module.
  *  @param function The name of the symbol to be loaded.
  *  @param func     A pointer to where the symbol pointer will be stored.
- *  
+ *
  *  @return Either SUCCESS or FAILURE (defined in main.h)
  */
 
@@ -326,11 +344,11 @@ get_module_function (module_data metadata, const char *function, void **func);
 
 #ifndef TESTSUITE
 /** Load the graphics module.
- *  
+ *
  *  This loads a graphics module and sets up g_modules.gfx.
- *  
+ *
  *  @param name The name of the module to load (without the extension).
- *  
+ *
  *  @return Either SUCCESS or FAILURE (defined in main.h).
  */
 
@@ -338,24 +356,36 @@ int
 load_module_gfx (char* name);
 
 /** Load the event module.
- *  
+ *
  *  This loads an event module and sets up g_modules.event.
- *  
+ *
  *  @param name The name of the module to load (without the extension).
- *  
+ *
  *  @return Either SUCCESS or FAILURE (defined in main.h).
  */
 
 int
 load_module_event (char* name);
 
+/** Load the language binding module.
+ *
+ *  This loads an event module and sets up g_modules.event.
+ *
+ *  @param name The name of the module to load (without the extension).
+ *
+ *  @return Either SUCCESS or FAILURE (defined in main.h).
+ */
+
+int
+load_module_bindings (char* name);
+
 #endif /* TESTSUITE */
 
 /** Close an individual module.
- *  
+ *
  *  This runs any term function which is present in the module and closes
  *  the open libdl handle to it.
- *  
+ *
  *  @param module A pointer to the module_data struct to close.
  */
 void
@@ -363,7 +393,7 @@ close_module (module_data *module);
 
 #ifndef TESTSUITE
 /** Clean up all modules.
- *  
+ *
  *  This runs close_module on every module.
  */
 void

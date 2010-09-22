@@ -6,6 +6,7 @@
 #include "module.h"
 #include "events.h"
 #include "graphics.h"
+#include "bindings.h"
 #include "mapview.h"
 #include "map.h"
 
@@ -59,6 +60,8 @@ init (void)
       fprintf (stderr, "ERROR: Map view did not init!\n");
       return FAILURE;
     }
+
+  init_bindings();
 
   init_events ();
 
