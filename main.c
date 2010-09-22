@@ -28,6 +28,7 @@ main (int argc, char **argv)
       main_loop ();
     }
   cleanup ();
+  return 0;
 }
 
 int

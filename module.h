@@ -364,7 +364,7 @@ get_module_function (module_data metadata, const char *function, void **func);
  */
 
 int
-load_module_gfx (char* name);
+load_module_gfx (const char* name);
 
 /** Load the event module.
  *
@@ -376,7 +376,7 @@ load_module_gfx (char* name);
  */
 
 int
-load_module_event (char* name);
+load_module_event (const char* name);
 
 /** Load the language binding module.
  *
@@ -388,7 +388,7 @@ load_module_event (char* name);
  */
 
 int
-load_module_bindings (char* name);
+load_module_bindings (const char* name);
 
 #endif /* TESTSUITE */
 
