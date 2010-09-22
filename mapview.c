@@ -144,16 +144,23 @@ render_map_layer (struct map_view *mapview, unsigned char layer)
             {
               true_y = y + (y_offset / TILE_H);
 
-              if (true_y >= 0 && true_y < map->height
+              /* In order to blit an image, the true X and Y must be within the 
+                 map bounds, the tile must not be 0 (no tile) and the tile must 
+                 be dirty. */
+
+              if (true_y >= 0
+                  && true_y < map->height
                   && mapview->dirty_tiles[true_x + (true_y * map->height)] != 0)
                 {
-                  draw_image (FN_TILESET,
-                              map->data_layers[layer][true_x 
-                                                      + (true_y * map->height)]
-                              * TILE_W, 0,
-                              (x * TILE_W) - (short) (x_offset % TILE_W),
-                              (y * TILE_H) - (short) (y_offset % TILE_H),
-                              TILE_W, TILE_H);
+                  if (map->data_layers[layer][true_x + (true_y * map->height)] 
+                      != 0)
+                    draw_image (FN_TILESET,
+                                map->data_layers[layer][true_x 
+                                                        + (true_y * map->height)]
+                                * TILE_W, 0,
+                                (x * TILE_W) - (short) (x_offset % TILE_W),
+                                (y * TILE_H) - (short) (y_offset % TILE_H),
+                                TILE_W, TILE_H);
 
                   mapview->dirty_tiles[true_x + (true_y * map->height)]--;
                 }

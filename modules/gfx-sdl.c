@@ -97,7 +97,7 @@ init_screen (unsigned short width,
       sg_screen = SDL_SetVideoMode (width,
                                    height,
                                    depth,
-                                   SDL_SWSURFACE);
+                                   SDL_HWSURFACE);
       if (sg_screen)
         {
           sg_shadow = SDL_DisplayFormat (sg_screen);
