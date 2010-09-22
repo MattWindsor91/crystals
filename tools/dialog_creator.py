@@ -39,7 +39,7 @@ _ = wx.GetTranslation
 class Creator(wx.Frame):
 
     # custom IDs | I prefer them to be here :-)
-    ID_ADD_LABEL = wx.NewId()
+    ID_TREE = wx.NewId()
 
     def __init__(self):
         wx.Frame.__init__(self, None, -1, "Crystals Dialog Creator")
@@ -48,6 +48,7 @@ class Creator(wx.Frame):
         self.files = []
         self.font_bold = self.GetFont()
         self.font_bold.SetWeight(wx.BOLD)
+        self.dlg_ctrl_drag_item = None
 
         # Style
         self.SetMinSize((750, 400))
@@ -61,9 +62,9 @@ class Creator(wx.Frame):
         dlg_header.SetFont(self.font_bold)
 
         # The Dialog Control will be used by the XMLFileCtrls
-        self.dlg_ctrl = wx.TreeCtrl(self, size=(200, 0),
-            style=wx.SUNKEN_BORDER|wx.TR_HAS_BUTTONS|wx.TR_HIDE_ROOT|wx.TR_FULL_ROW_HIGHLIGHT
-            |wx.TR_TWIST_BUTTONS|wx.TR_EXTENDED)
+        self.dlg_ctrl = wx.TreeCtrl(self, self.ID_TREE, size=(200, 0),
+            style=wx.SUNKEN_BORDER|wx.TR_HAS_BUTTONS|wx.TR_HIDE_ROOT|
+            wx.TR_FULL_ROW_HIGHLIGHT|wx.TR_MULTIPLE)
 
         add_label_button = wx.Button(self, wx.ID_ADD, _("Add Label"))
         remove_label_button = wx.Button(self, wx.ID_REMOVE, _("Remove Label"))
@@ -92,7 +93,7 @@ class Creator(wx.Frame):
         menu_file.AppendSeparator()
         menu_file.Append(wx.ID_EXIT)#, _("&Quit"))
 
-        menu_dialog = wx.Menu()
+        #menu_dialog = wx.Menu()
 
         menu_help = wx.Menu()
         menu_help.Append(wx.ID_ABOUT, _("About"))
@@ -118,10 +119,6 @@ class Creator(wx.Frame):
         # Final touch
         self.SetSizer(hbox1)
         self.Show(True)
-
-
-    def xml_parse(self):
-        pass
 
     def on_add_label(self, event):
         """add a new label to the TreeCtrl call trough the child"""
@@ -192,6 +189,7 @@ class XMLFileCtrl(wx.Panel):
         self.labels = {}
 
         self.font_bold = parent.GetParent().font_bold
+        self.ID_TREE = parent.GetParent().ID_TREE
         self.font_italic = self.GetFont()
         self.font_italic.SetStyle(wx.FONTSTYLE_ITALIC)
 
@@ -329,6 +327,13 @@ class XMLFileCtrl(wx.Panel):
         self.Bind(wx.EVT_RADIOBUTTON, self.on_change_type,
             id=self.requ_rb.GetId())
 
+        self.dlg_ctrl.Bind(wx.EVT_TREE_BEGIN_DRAG, self.on_drag,
+            id=self.ID_TREE)
+        self.dlg_ctrl.Bind(wx.EVT_TREE_END_DRAG, self.on_drop,
+            id=self.ID_TREE)
+        self.dlg_ctrl.Bind(wx.EVT_TREE_SEL_CHANGED, self.on_change_selection,
+            id=self.ID_TREE)
+
     def _swap_addupdate_buttons(self, id):
         if id == wx.ID_ADD:
             self.addupdate_button.SetId(wx.ID_ADD)
@@ -348,8 +353,6 @@ class XMLFileCtrl(wx.Panel):
 
         self.dlg_ctrl.SelectItem(self.labels["content"]["children"][-1])
 
-#wx.TreeCtrl.Del
-
     def new(self):
         """set the default options for a new tag or file"""
         self._swap_addupdate_buttons(wx.ID_ADD)
@@ -363,6 +366,7 @@ class XMLFileCtrl(wx.Panel):
         """save the informations in a tag"""
 
     def _add_label(self, label_name):
+        """internal function to unify adding labels"""
         root = self.labels['root']
         lb_id = self.dlg_ctrl.AppendItem(root, label_name)
         self.dlg_ctrl.SetItemFont(lb_id, self.font_bold)
@@ -377,6 +381,69 @@ class XMLFileCtrl(wx.Panel):
 
         return lb_id
 
+    def on_drag(self, event):
+        """allow dragging items"""
+        item = event.GetItem()
+        if self.dlg_ctrl.GetChildrenCount(item) == 0 and self.labels \
+                [self.dlg_ctrl.GetItemText(self.dlg_ctrl.GetItemParent(item))]\
+                ["children"][-1] != item:
+            event.Allow()
+            self.dlg_ctrl_drag_item = event.GetItem()
+        else:
+            return
+
+    def on_drop(self, event):
+
+        # If we dropped somewhere that isn't on top of an item,
+        # ignore the event
+        if not event.GetItem().IsOk():
+            return
+
+        # Make sure this memeber exists.
+        try:
+            old = self.dlg_ctrl_drag_item
+        except:
+            return
+
+        # Get the other IDs that are involved
+        new = event.GetItem()
+        new_parent = self.dlg_ctrl.GetItemParent(new)
+        new_parent_text = self.dlg_ctrl.GetItemText(new_parent)
+
+        if self.labels["root"] == new_parent or self.labels["requirements"] \
+                ["id"] == new_parent:
+            return
+
+        # Move 'em
+        text = self.dlg_ctrl.GetItemText(old)
+        old_parent = self.dlg_ctrl.GetItemParent(old)
+        old_parent_text = self.dlg_ctrl.GetItemText(old_parent)
+
+        self.dlg_ctrl.Delete(old)
+        self.labels[old_parent_text]["children"].remove(old)
+
+
+        prev_idx = self.labels[new_parent_text]["children"].index(new) + 1
+
+        #prevent copying the NewTag tag
+        if len(self.labels[new_parent_text]["children"]) == 1:
+            prev_idx -= 1
+            new = new_parent
+        elif len(self.labels[new_parent_text]["children"]) == prev_idx:
+            prev_idx -= 1
+            new = self.labels[new_parent_text]["children"][prev_idx-1]
+
+        id = self.dlg_ctrl.InsertItem(new_parent, new, text)
+        self.labels[new_parent_text]["children"].insert(prev_idx, id)
+
+    def __debug_labels(self):
+        for i in self.labels:
+            if i != "root":
+                print "---"+i
+                for a in self.labels[i]["children"]:
+                    print self.dlg_ctrl.GetItemText(a)
+        print ""
+
     def on_add_label(self, event):
         """add a new label to the TreeCtrl, call from the parent"""
         entry = textEntryDialog(self, _('Label Name:'),
@@ -385,7 +452,6 @@ class XMLFileCtrl(wx.Panel):
         text = entry.text.strip()
         if text != "":
             self._add_label(entry.text)
-        #wx.lib.dialogs.DialogResults.
 
     def on_remove_label(self, event):
         """removes a label from the TreeCtrl, call from the parent"""
@@ -454,11 +520,13 @@ class XMLFileCtrl(wx.Panel):
                 self.text_text.GetValue())
             id = self.dlg_ctrl.InsertItem(label_id, prev_id, string.strip())
             self.labels[label_name]["children"].insert(-1, id)
-#wx.TreeCtrl.
-#list.
+
     def on_update(self, event):
         """update tag"""
         pass
+
+    def on_change_selection(self, event):
+        """switch radio buttons on changed selection of the dlg_ctrl"""
 
     def close(self, event):
         """closes file, called by the parent"""
