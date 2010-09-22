@@ -160,7 +160,7 @@ get_module_function (module_data module, const char *function, void **func)
 /* Load a graphics module. */
 
 int
-load_module_gfx (const char* name)
+load_module_gfx (char* name)
 {
   if (g_modules.gfx.metadata.lib_handle == NULL)
     {
@@ -210,7 +210,7 @@ load_module_gfx (const char* name)
 /* Load an event module. */
 
 int
-load_module_event (const char *name)
+load_module_event (char* name)
 {
   if (g_modules.event.metadata.lib_handle == NULL)
     {
@@ -235,7 +235,7 @@ load_module_event (const char *name)
 }
 
 int
-load_module_bindings (const char *name)
+load_module_bindings (char* name)
 {
   if (g_modules.bindings.metadata.lib_handle == NULL)
     {
