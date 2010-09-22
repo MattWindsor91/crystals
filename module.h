@@ -277,8 +277,10 @@ module_bare_init (module_data *module);
  *  
  *  @param module The name of the module
  *  @param out    A string to store the path in
+ *  
+ *  @return Either SUCCESS or FAILURE (defined in main.h).
  */
-void
+int
 get_module_path (const char *module, char **out);
 
 /** Find and load a module by name

@@ -1,11 +1,13 @@
 BIN      := maprender-test
 
-TESTS    := tests/module
-OBJ      := main.o graphics.o map.o mapview.o events.o module.o
+TESTS    := tests/module tests/optionparser
+OBJ      := main.o graphics.o map.o mapview.o events.o module.o optionparser.o
 SOBJ     := modules/gfx-sdl.so modules/event-sdl.so
 
 SOURCES  := $(subst .o,.c,$(OBJ))
 DEPFILES := $(subst .o,.d,$(OBJ))
+
+DOC := doc/module.pdf doc/mapformat-internal.pdf doc/optionparser.pdf
 
 CC       := clang
 RM       := rm -f
@@ -48,7 +50,7 @@ clean-modules:
 	-@$(RM) modules/*.{so,o} &>/dev/null
 
 ### Documentation
-doc: doc/module.pdf doc/mapformat-internal.pdf
+doc: $(DOC)
 
 autodoc:
 	@echo "Running doxygen..."
@@ -67,6 +69,9 @@ tests: $(TESTS)
 
 tests/module: module.o tests/module.o tests/modules/test.so
 	@$(CC) $(CFLAGS) module.o tests/module.o tests/modules/test.so -o $@ >/dev/null
+
+tests/optionparser: optionparser.o tests/optionparser.o
+	@$(CC) $(CFLAGS) optionparser.o tests/optionparser.o -o $@ >/dev/null
 
 clean-tests:
 	@echo "Cleaning tests..."
