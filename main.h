@@ -13,7 +13,8 @@ enum
     NORTH = 0,
     EAST,
     SOUTH,
-    WEST
+    WEST,
+    NULLC ='\0'
   };
 
 int
