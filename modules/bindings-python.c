@@ -123,13 +123,12 @@ static PyObject*
 crystals_test (PyObject *self, PyObject *args)
 {
   char *s;
-  PyObject *py_return = Py_BuildValue("i", 1);
   /* parse string and store it into the given pointers */
   if (!PyArg_ParseTuple(args, "s:test", &s))
     return NULL;
 
   printf("%s\n", s);
-  return py_return;
+  return PyBool_FromLong(1);
 }
 
 /* vim: set st=2 sw=2 softtabstop=2: */
