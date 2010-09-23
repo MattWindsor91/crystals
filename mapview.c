@@ -129,7 +129,7 @@ init_mapview (struct map *map)
   add_object_image (mapview, 1, "testobj.png", 0, 0, 60, 60, 16, 48);
   add_object_image (mapview, 1, "testobj.png", 0, 0, 70, 70, 16, 48);
 
-  add_object_image (mapview, 1, "testobj.png", 0, 0, 100, 100, 16, 48);
+  add_object_image (mapview, 1, "testobj.png", 16, 0, 100, 100, 16, 48);
   return mapview;
 }
 
