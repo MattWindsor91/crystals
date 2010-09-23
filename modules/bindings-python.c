@@ -45,7 +45,7 @@
 #include "Python.h"
 
 #include <stdio.h>
-
+#include "../util.h"
 /** Initialise the python module. */
 
 void
@@ -96,17 +96,16 @@ term (void)
 int
 run_file (const char* path)
 {
+  FILE *file_stream;
+  short EXIT;
+  
   Py_InitModule("crystals", CrystalsMethods);
 
-  FILE *stream;
+  file_stream = fopen(path, "r");
 
-  short EXIT;
-
-  stream = fopen(path, "r");
-
-  if (stream)
+  if (file_stream)
     {
-      if (PyRun_SimpleFile(stream, path) == 0)
+      if (PyRun_SimpleFile(file_stream, path) == 0)
         EXIT = 1;
       else
         EXIT = 0;
@@ -114,20 +113,21 @@ run_file (const char* path)
   else
     EXIT = 0;
 
-  fclose(stream);
+  fclose(file_stream);
   return EXIT;
 }
 
 static PyObject*
 crystals_test (PyObject *self, PyObject *args)
 {
+  self; /* to prevent unused error */
   char *s;
   /* parse string and store it into the given pointers */
   if (!PyArg_ParseTuple(args, "s:test", &s))
     return NULL;
 
   printf("%s\n", s);
-  return PyBool_FromLong(1);
+  return PyBool_FromLong(SUCCESS);
 }
 
 /* vim: set st=2 sw=2 softtabstop=2: */
