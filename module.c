@@ -12,7 +12,7 @@
 #include "tests/module.h"
 #endif /* TESTSUITE */
 
-#include "main.h"
+#include "util.h"
 #include "module.h"
 
 module_set g_modules; /* The set of all modules in use */

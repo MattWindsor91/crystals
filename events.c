@@ -2,11 +2,12 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "main.h"
 #include "events.h"
 #include "module.h"
 #include "graphics.h"
 #include "mapview.h"
+#include "util.h"
+#include "main.h"
 
 static struct event_base *sg_event_base;
 static unsigned char sg_held_special_keys[256];

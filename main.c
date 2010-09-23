@@ -3,6 +3,7 @@
 #include <stdio.h>
 
 #include "main.h"
+#include "util.h"
 #include "module.h"
 #include "events.h"
 #include "graphics.h"

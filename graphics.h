@@ -3,27 +3,14 @@
 
 enum
   {
-    GFX_HASH_NAME_LEN = 100, /**< Maximum size of the part of the
-                                image filename used by the hashing
-                                function. If the filename (relative
-                                to the image directory) is larger,
-                                then an error will be tripped. */
+    SCREEN_W = 640, /**< Width of the screen (in pixels). 
+                       @todo FIXME: Make this changeable at runtime. */
 
-    GFX_HASH_VALS = 10, /**< Number of hash values used in the image
-                           hash table, and therefore the number of
-                           separate linked lists. Increasing this
-                           may increase performance. */
+    SCREEN_H = 480, /**< Height of the screen (in pixels).
+                       @todo FIXME: Make this changeable at runtime. */
 
-    GFX_HASH_MUL  = 31, /**< Hash value used in the image hash table
-                           algorithms. This value is taken from
-                           Kernighan and Pike's ``The Practice of
-                           Programming'', as is the algorithmic
-                           concept. */
-
-
-    SCREEN_W = 640,
-    SCREEN_H = 480,
-    SCREEN_D = 32
+    SCREEN_D = 32   /**< Colour depth of the screen (in bits per
+                       pixel.) */
   };
 
 /** An image node in the image hash table.
@@ -34,12 +21,12 @@ enum
  *
  *  This will inevitably have to be changed!
  */
-struct GfxImageNode
+
+struct image_t
 {
-  char name[GFX_HASH_NAME_LEN]; /**< Name used to identify the
-                                      image. */
-  void *data;                   /**< Driver-dependent image data. */
-  struct GfxImageNode *next; /**< The next node, if any. */
+  char *filename;       /**< Filename of the image. */
+  void *data;           /**< Driver-dependent image data. */
+  struct image_t *next; /**< The next node, if any. */
 };
 
 int
@@ -50,12 +37,11 @@ fill_screen (unsigned char red,
              unsigned char green,
              unsigned char blue);
 
-struct GfxImageNode *
+struct image_t *
 load_image (const char filename[]);
 
 void
-free_image (struct GfxImageNode *node);
-
+free_image (struct image_t *image);
 
 int
 draw_image (const char filename[],
@@ -66,17 +52,16 @@ draw_image (const char filename[],
             unsigned short width,
             unsigned short height);
 
-int
-ascii_hash (const char string[]);
+
 
 int
-delete_image (const char name[]);
+delete_image (const char filename[]);
 
 void
 clear_images (void);
 
-struct GfxImageNode *
-get_image (const char name[], struct GfxImageNode *add_pointer);
+struct image_t *
+get_image (const char filename[], struct image_t *add_pointer);
 
 void
 update_screen (void);

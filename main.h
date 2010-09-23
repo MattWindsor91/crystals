@@ -4,19 +4,6 @@
 extern int g_running;
 extern struct map_view *g_mapview;
 
-enum
-  {
-    SUCCESS = 1,
-    FAILURE = 0,
-    TRUE = 1,
-    FALSE = 0,
-    NORTH = 0,
-    EAST,
-    SOUTH,
-    WEST,
-    NULLC ='\0'
-  };
-
 int
 main (int argc, char **argv);
 
