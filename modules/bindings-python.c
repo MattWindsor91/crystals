@@ -46,6 +46,11 @@
 
 #include <stdio.h>
 
+/* never prefix your functions or variables with py
+ * except this :-P  */
+static PyObject *PY_SUCCESS = Py_BuildValue("i", 1);
+static PyObject *PY_FAILURE = Py_BuildValue("i", 0);
+
 
 /** Initialise the python module. */
 
@@ -98,6 +103,8 @@ term (void)
 int
 run_file (const char* path)
 {
+  Py_InitModule("crystals", CrystalsMethods);
+
   FILE *stream;
 
   short EXIT;
@@ -122,7 +129,7 @@ static PyObject*
 crystals_test (PyObject *self, PyObject *args)
 {
   char *s;
-  PyObject *py_return;
+  PyObject *py_return = Py_BuildValue("i", 1);
   /* parse string and store it into the given pointers */
   if (!PyArg_ParseTuple(args, "s:test", &s))
     return 0;

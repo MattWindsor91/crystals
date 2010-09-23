@@ -62,8 +62,8 @@ init (void)
       return FAILURE;
     }
 
-  init_bindings();
-
+  init_bindings ();
+  run_file ("tests/python.py");
   init_events ();
 
   return SUCCESS;
