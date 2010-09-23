@@ -46,12 +46,6 @@
 
 #include <stdio.h>
 
-/* never prefix your functions or variables with py
- * except this :-P  */
-static PyObject *PY_SUCCESS = Py_BuildValue("i", 1);
-static PyObject *PY_FAILURE = Py_BuildValue("i", 0);
-
-
 /** Initialise the python module. */
 
 void
@@ -135,7 +129,7 @@ crystals_test (PyObject *self, PyObject *args)
     return NULL;
 
   printf("%s\n", s);
-  return PY_SUCCESS;
+  return py_return;
 }
 
 /* vim: set st=2 sw=2 softtabstop=2: */
