@@ -254,8 +254,6 @@ parse_options(int argc, char* argv[], option options[])
 
                   opt = get_option (NULLC, optname, options);
 
-                  printf("%s (%s) %i\n", optname, optparam, opt.paramtype);
-
                   if (is_null_option (opt) == SUCCESS)
                     {
                       fprintf (stderr, "OPTIONS: Unknown option --%s (parameter '%s').\n", optname, optparam);

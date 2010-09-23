@@ -539,6 +539,14 @@ class XMLFileCtrl(wx.Panel):
 
     def on_change_selection(self, event):
         """switch radio buttons on changed selection of the dlg_ctrl"""
+        id = self.dlg_ctrl.GetSelection()
+        if id == self.labels["requirements"]["id"] or id == self.labels \
+            ["requirements"]["children"][-1]:
+            event.SetEventObject(self.requ_rb)
+            self.on_change_type(event)
+            self.requ_rb.SetValue(True)
+            #wx.RadioButton.SetValue()
+
 
     def close(self, event):
         """closes file, called by the parent"""
