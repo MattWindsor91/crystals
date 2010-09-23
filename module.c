@@ -267,7 +267,9 @@ close_module (module_data *module)
 void
 cleanup_modules (void)
 {
+  close_module (&g_modules.bindings.metadata);
   close_module (&g_modules.event.metadata);
   close_module (&g_modules.gfx.metadata);
 }
 #endif /* TESTSUITE */
+/* vim: set ts=2 sw=2 softtabstop=2: */
