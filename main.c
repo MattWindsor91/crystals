@@ -6,6 +6,7 @@
 #include "module.h"
 #include "events.h"
 #include "graphics.h"
+#include "bindings.h"
 #include "mapview.h"
 #include "map.h"
 
@@ -27,6 +28,7 @@ main (int argc, char **argv)
       main_loop ();
     }
   cleanup ();
+  return 0;
 }
 
 int
@@ -60,6 +62,8 @@ init (void)
       return FAILURE;
     }
 
+  init_bindings();
+
   init_events ();
 
   return SUCCESS;
@@ -87,7 +91,8 @@ cleanup (void)
   cleanup_map (g_map);
   cleanup_events ();
   cleanup_graphics ();
+  cleanup_bindings ();
   cleanup_modules ();
 }
 
-
+/* vim: set ts=2 sw=2 softtabstop=2: */

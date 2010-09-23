@@ -1,8 +1,9 @@
 BIN      := maprender-test
 
+
 TESTS    := tests/module tests/optionparser
-OBJ      := main.o graphics.o map.o mapview.o events.o module.o optionparser.o
-SOBJ     := modules/gfx-sdl.so modules/event-sdl.so
+OBJ      := main.o graphics.o map.o mapview.o events.o module.o bindings.o optionparser.o
+SOBJ     := modules/gfx-sdl.so modules/event-sdl.so modules/bindings-python.so
 
 SOURCES  := $(subst .o,.c,$(OBJ))
 DEPFILES := $(subst .o,.d,$(OBJ))
@@ -19,7 +20,7 @@ WARN     := -Wall -Wextra -Wshadow -Wpointer-arith -Wcast-align \
             -Wredundant-decls -Wnested-externs -Winline -Wno-long-long \
             -Wconversion -Wstrict-prototypes
 
-LIBS     := -ldl -g
+LIBS     := -ldl -g 
 CFLAGS   := -ansi -pedantic -O2 -ggdb -DDEFMODPATH="\"$(MODPATH)\"" $(WARN)
 
 .PHONY: all doc autodoc clean clean-tests clean-doc clean-modules modules tests
@@ -42,6 +43,9 @@ modules/gfx-sdl.so: CFLAGS += `sdl-config --cflags`
 
 modules/event-sdl.so: LIBS   += `sdl-config --libs`
 modules/event-sdl.so: CFLAGS += `sdl-config --cflags`
+
+modules/bindings-python.so: LIBS += `python2.6-config --libs`
+modules/bindings-python.so: CFLAGS += `python2.6-config --cflags`
 
 modules: $(SOBJ)
 
@@ -90,9 +94,11 @@ clean-tests:
 
 %.so : %.c
 	@echo "Compiling $< to shared object..."
-	@$(CC) $(CFLAGS) -Wall -fPIC -rdynamic -c $^ -o $(^:.c=.o) >/dev/null
+	@$(CC) $(CFLAGS) $(INCLUDES) -Wall -fPIC -rdynamic -c $^ -o $(^:.c=.o) >/dev/null
 	@$(CC) $(LIBS) -shared -Wl,-soname,$(^:.c=.so) -o $(^:.c=.so) $(^:.c=.o) >/dev/null
 
 %.pdf: %.tex
 	@echo "LaTeXing $<..."
 	@pdflatex -output-directory=$(shell dirname $@) $^ >/dev/null
+
+# vim: noexpandtab:
