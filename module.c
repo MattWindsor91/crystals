@@ -52,7 +52,7 @@ module_bare_init (module_data *module)
 }
 
 /* This gets the path of a module, storing it in out */
-void
+int
 get_module_path (const char* module, char** out)
 {
   char *path;
@@ -69,13 +69,12 @@ get_module_path (const char* module, char** out)
     }
   else
     {
-#ifndef TESTSUITE
       fprintf (stderr, "ERROR: couldn't allocate module path.\n");
-      exit (1);
-#endif /* TESTSUITE */
+      return FAILURE;
     }
 
   *out = path;
+  return SUCCESS;
 }
 
 /* This finds the filename of a module and calls get_module */
@@ -86,7 +85,7 @@ get_module_by_name (const char* name, module_data *module)
   int out;
   /* Get the name of the module */
   char *modulepath;
-  get_module_path (name, &modulepath);
+  if (get_module_path (name, &modulepath) == FAILURE) return FAILURE;
 
   /* And get the module */
   if (modulepath)
@@ -97,10 +96,7 @@ get_module_by_name (const char* name, module_data *module)
     }
   else
     {
-#ifndef TESTSUITE
       fprintf (stderr, "ERROR: couldn't find module path.\n");
-#endif /* TESTSUITE */
-
       return FAILURE;
     }
 }
@@ -115,10 +111,7 @@ get_module (const char* modulepath, module_data *module)
 
   if ((error = dlerror ()) != NULL)
     {
-#ifndef TESTSUITE
       fprintf (stderr, "DLERROR: %s\n", dlerror ());
-#endif /* TESTSUITE */
-
       return FAILURE;
     }
 
@@ -145,10 +138,7 @@ get_module_function (module_data module, const char *function, void **func)
 
   if ((error = dlerror ()) != NULL)
     {
-#ifndef TESTSUITE
       fprintf (stderr, "DLERROR: %s\n", error);
-#endif /* TESTSUITE */
-
       return FAILURE;
     }
 

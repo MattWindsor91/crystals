@@ -63,7 +63,7 @@ static layer_t sg_test_layers[4][101] =
      8, 13, 13, 13, 13, 13, 13, 13, 13,  7,
      8, 13, 13, 13, 13, 13, 13, 13, 13,  7,
     11, 13, 13, 13, 13, 13, 13, 13, 13, 12,
-     1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 1},
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 0},
    { 0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
@@ -73,7 +73,7 @@ static layer_t sg_test_layers[4][101] =
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 0}, 
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 1}, 
    { 0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
@@ -93,7 +93,7 @@ static layer_t sg_test_layers[4][101] =
      0,  0,  0,  0,  4,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  4,  0,  0,  0,  0,  0,
      0,  6,  6,  6,  6,  6,  6,  6,  6,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 0} 
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 2} 
   };
 
 /* Initialise the test map. */
@@ -162,6 +162,46 @@ init_map (unsigned int width,
     }
 
   return map;
+}
+
+layer_t
+get_tag (struct map *map, unsigned int layer)
+{
+  if (map == NULL)
+    {
+      fprintf (stderr, "MAP: Error: Tried to get tag for a NULL map.\n");
+      return 0;
+    }
+
+  if (layer >= map->num_layers)
+    {
+      fprintf (stderr, "MAP: Error: Tried to get tag for an invalid layer.\n");
+      return 0;
+    }
+
+  return map->data_layers[layer][map->width * map->height];
+}
+
+/* Get the highest tag number allocated on a map. */
+
+layer_t
+get_max_tag (struct map *map)
+{
+  unsigned int l;
+  layer_t result;
+
+  result = 0;
+
+  if (map)
+    {
+      for (l = 0; l < map->num_layers; l++)
+        {
+          if (get_tag (map, l) > result)
+            result = get_tag (map, l);
+        }
+    }
+
+  return result;
 }
 
 /* De-initialise a map. */
