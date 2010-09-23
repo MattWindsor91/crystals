@@ -75,9 +75,8 @@ crystals_test (PyObject *self, PyObject *args);
 /* -- DEFINITIONS -- */
 
 static PyMethodDef
-CrystalsMethods[] =
-{
-/* name, C func, flags, docstring */
+CrystalsMethods[] = {
+  /* name, C func,        flags,        docstring */
   {"test", crystals_test, METH_VARARGS, "Test the Crystal Module."},
   {NULL, NULL, 0, NULL}
 };

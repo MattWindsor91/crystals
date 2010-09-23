@@ -36,6 +36,9 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "mapview.h"
+
+
 /** @file     events.h
  *  @author   Alexander Preisinger
  *  @brief    Prototypes and declarations for generic language bindings.
@@ -43,6 +46,28 @@
 
 #ifndef _BINDINGS_H
 #define _BINDINGS_H
+
+/* -- STRUCTURES -- */
+
+/** Game Data struct
+ *
+ * Contains all information that will be passed to the bindings
+ * for scripting purpose.
+ *
+ * @todo don't forget to add more here and asking hayashi what else to add.
+ */
+
+struct game_data
+{
+  struct map_view *map_view; /**< Pointer to the mapview */
+};
+
+/* -- GLOBAL VARIABLES -- */
+
+extern struct game_data g_game_data; /**< global variable for the game_data
+                                          struct */
+
+/* -- PROTOTYPES -- */
 
 /** Init language bindings
  *
