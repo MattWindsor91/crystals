@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "main.h"
+#include "util.h"
 #include "module.h"
 #include "bindings.h"
 
