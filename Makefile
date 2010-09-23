@@ -45,8 +45,8 @@ modules/gfx-sdl.so: CFLAGS += `sdl-config --cflags`
 modules/event-sdl.so: LIBS   += `sdl-config --libs`
 modules/event-sdl.so: CFLAGS += `sdl-config --cflags`
 
-modules/bindings-python.so: LIBS   += `python-config-2.6 --libs`
-modules/bindings-python.so: CFLAGS += `python-config-2.6 --cflags`
+modules/bindings-python.so: LIBS   += `python2.6-config --libs`
+modules/bindings-python.so: CFLAGS += `python2.6-config --cflags`
 
 modules: $(SOBJ)
 

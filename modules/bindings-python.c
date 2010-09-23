@@ -106,12 +106,12 @@ run_file (const char* path)
   if (file_stream)
     {
       if (PyRun_SimpleFile(file_stream, path) == 0)
-        EXIT = 1;
+        EXIT = SUCCESS;
       else
-        EXIT = 0;
+        EXIT = FAILURE;
     }
   else
-    EXIT = 0;
+    EXIT = FAILURE;
 
   fclose(file_stream);
   return EXIT;
@@ -129,7 +129,7 @@ crystals_test (PyObject *self, PyObject *args)
     return NULL;
 
   printf("%s\n", s);
-  return PyBool_FromLong(SUCCESS);
+  return Py_None;
 }
 
 /* vim: set st=2 sw=2 softtabstop=2: */
