@@ -120,8 +120,10 @@ run_file (const char* path)
 static PyObject*
 crystals_test (PyObject *self, PyObject *args)
 {
-  self; /* to prevent unused error */
   char *s;
+
+  self = self; /* to prevent unused error */
+
   /* parse string and store it into the given pointers */
   if (!PyArg_ParseTuple(args, "s:test", &s))
     return NULL;
