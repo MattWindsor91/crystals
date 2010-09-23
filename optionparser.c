@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "main.h"
+#include "util.h"
 #include "optionparser.h"
 
 /* This returns whether the option is null or not */

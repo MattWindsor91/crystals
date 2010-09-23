@@ -47,9 +47,9 @@
 
 #include "mapview.h"
 #include "map.h"
+#include "util.h"
 #include "module.h"
 #include "graphics.h"
-#include "main.h"
 
 struct map_view *
 init_mapview (struct map *map)
@@ -184,6 +184,7 @@ add_object_image (struct map_view *mapview,
   if (filename == NULL)
     {
       fprintf (stderr, "MAPVIEW: Error: Filename is NULL.\n");
+      return FAILURE;
     }
 
   if (width == 0 || height == 0)

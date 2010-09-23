@@ -2,11 +2,11 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "main.h"
 #include "graphics.h"
+#include "util.h"
 #include "module.h"
 
-static struct GfxImageNode *sg_images[GFX_HASH_VALS];
+static struct image_t *sg_images[HASH_VALS];
 
 int
 init_graphics (void)
@@ -25,7 +25,7 @@ init_graphics (void)
       return FAILURE;
     }
  
-  for (i = 0; i < GFX_HASH_VALS; i++)
+  for (i = 0; i < HASH_VALS; i++)
     sg_images[i] = NULL;
 
   return SUCCESS;
@@ -39,40 +39,85 @@ fill_screen (unsigned char red,
   (*g_modules.gfx.draw_rect) (0, 0, SCREEN_W, SCREEN_H, red, green, blue);
 }
 
-struct GfxImageNode *
+struct image_t *
 load_image (const char filename[])
 {
-  struct GfxImageNode *ptr;
+  struct image_t *image;
+  struct image_t *result;
 
-  ptr = malloc (sizeof (struct GfxImageNode));
+  /* Check to see if the filename is sane. */
 
-  if (ptr)
+  if (filename == NULL)
     {
-      /* Load data. */
-      strncpy (ptr->name, filename, GFX_HASH_NAME_LEN);
-      ptr->data = (*g_modules.gfx.load_image_data) (filename);
-
-      if (ptr->data) {
-        /* Store the image. */
-        return get_image (filename, ptr);
-      } else {
-        fprintf (stderr, "GFX: Could not load data for image %s", filename);
-        return NULL;
-      }
+      fprintf (stderr, "GFX: Error: Filename is NULL.\n");
+      return NULL;
     }
-  else
+
+  /* If so, first try to allocate space for the image. */
+
+  image = malloc (sizeof (struct image_t));
+
+  if (image == NULL)
     {
-      fprintf (stderr, "GFX: Could not allocate space for image %s", 
+      fprintf (stderr, "GFX: Error: Allocation failed for %s.\n", 
                filename);
       return NULL;
     }
+
+  /* Try to copy the filename over. */
+
+  image->filename = malloc (sizeof (char) * (strlen (filename) + 1));
+
+  if (image->filename == NULL)
+    {
+      fprintf (stderr, "GFX: Error: FN allocation failed for %s.\n", 
+               filename);
+      free_image (image);
+      return NULL;
+    }
+
+  strncpy (image->filename, filename, sizeof (char) * strlen (filename) + 1);
+
+  /* Finally, try to load data. */
+
+  image->data = (*g_modules.gfx.load_image_data) (filename);
+
+  if (image->data == NULL)
+    {
+      fprintf (stderr, "GFX: Error: Data load failed for %s.\n", 
+               filename);
+      free_image (image);
+      return NULL;
+    }
+
+  /* Try to store the image. */
+
+  result = get_image (filename, image);
+
+  if (result == NULL)
+    {
+      fprintf (stderr, "GFX: Error: Store failed for %s.\n", 
+               filename);
+      free_image (image);
+      return NULL;
+    }
+
+  return result;
 }
 
 void
-free_image (struct GfxImageNode *node)
+free_image (struct image_t *image)
 {
-  (*g_modules.gfx.free_image_data) (node->data);
-  free (node);
+  if (image)
+    {
+      if (image->filename)
+        free (image->filename);
+
+      if (image->data)
+        (*g_modules.gfx.free_image_data) (image->data);
+
+      free (image);
+    }
 }
 
 
@@ -85,7 +130,7 @@ draw_image (const char filename[],
             unsigned short width,
             unsigned short height)
 {
-  struct GfxImageNode *img;
+  struct image_t *img;
 
   img = get_image (filename, NULL);
 
@@ -112,48 +157,26 @@ draw_image (const char filename[],
 }
 
 int
-ascii_hash (const char string[])
-{
-  unsigned char *p;
-  int h;
-
-  h = 0;
-
-  /* For each character in the string, multiply the current hash value by the 
-   * hash multiplier and then add the value of the next character.
-   *
-   *  (derived from Kernighan and Pike, ``The Practice of Programming'')
-   */
-
-  for (p = (unsigned char*) string; *p != '\0'; p++)
-    h = (GFX_HASH_MUL * h) + *p;
-
-  /* Return the modulus so that the value is in between 0 and the hash 
-     value upper bound. */
-  return h % GFX_HASH_VALS;
-}
-
-int
-delete_image (const char name[])
+delete_image (const char filename[])
 {
   int h;
-  struct GfxImageNode *img, *prev;
+  struct image_t *image, *prev;
 
-  h = ascii_hash (name);
+  h = ascii_hash (filename);
   prev = NULL;
 
   /* Iterate through the hash bucket to find the correct image, then 
      delete its data and node. */
-  for (img = sg_images[h]; img != NULL; img = prev->next)
+  for (image = sg_images[h]; image != NULL; image = prev->next)
     {
-      if (strcmp(name, img->name) == 0)
+      if (strcmp (filename, image->filename) == 0)
         {
           if (prev == NULL)
-            sg_images[h] = img->next;
+            sg_images[h] = image->next;
           else
-            prev->next = img->next;
+            prev->next = image->next;
           
-          free_image (img);
+          free_image (image);
           return 1;
       }
     }
@@ -165,9 +188,9 @@ void
 clear_images (void)
 {
   int i;
-  struct GfxImageNode *p, *next;
+  struct image_t *p, *next;
   
-  for (i = 0; i < GFX_HASH_VALS; i++)
+  for (i = 0; i < HASH_VALS; i++)
     {
       for (p = sg_images[i]; p != NULL; p = next)
         {
@@ -179,31 +202,31 @@ clear_images (void)
   }
 }
 
-struct GfxImageNode *
-get_image (const char name[], struct GfxImageNode *add_pointer)
+struct image_t *
+get_image (const char filename[], struct image_t *add_pointer)
 {
   int h; 
-  struct GfxImageNode *img;
+  struct image_t *image;
 
   /* Get the hash of the image's filename so we can search in the correct 
      bucket. */
-  h = ascii_hash (name);
+  h = ascii_hash (filename);
 
   /* Now try to find the image. */
-  for (img = sg_images[h]; img != NULL; img = img->next)
+  for (image = sg_images[h]; image != NULL; image = image->next)
     {
-      if (strcmp (name, img->name) == 0)
+      if (strcmp (filename, image->filename) == 0)
         {
           /* If there is a pointer to add, then replace the found image's 
              data with the new pointer's data. */
 
           if (add_pointer)
             {
-              free_image (img->data);
-              img->data = add_pointer->data;
+               (*g_modules.gfx.free_image_data) (image->data);
+              image->data = add_pointer->data;
             }
 
-          return img;
+          return image;
         }
     }
 
