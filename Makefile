@@ -1,6 +1,5 @@
 BIN      := maprender-test
 
-
 TESTS    := tests/module tests/optionparser
 OBJ      := main.o graphics.o map.o mapview.o events.o module.o optionparser.o
 OBJ      += util.o bindings.o
@@ -13,6 +12,7 @@ DOC      := doc/module.pdf doc/mapformat-internal.pdf doc/optionparser.pdf
 
 CC       := clang
 RM       := rm -f
+DIST	 := $(shell uname -r | sed "s/.*-//")
 
 MODPATH  := $(shell pwd)/modules/\0
 
@@ -42,11 +42,16 @@ clean: clean-tests clean-doc clean-modules
 modules/gfx-sdl.so: LIBS   += `sdl-config --libs` -lSDL_image
 modules/gfx-sdl.so: CFLAGS += `sdl-config --cflags`
 
-modules/event-sdl.so: LIBS   += `sdl-config --libs`
+modules/event-sdl.so: LIBS   += `sdl-config --libs` 
 modules/event-sdl.so: CFLAGS += `sdl-config --cflags`
 
+ifeq ($(DIST),ARCH)
 modules/bindings-python.so: LIBS   += `python2.6-config --libs`
 modules/bindings-python.so: CFLAGS += `python2.6-config --cflags`
+else
+modules/bindings-python.so: LIBS   += `python-config-2.6 --libs` 
+modules/bindings-python.so: CFLAGS += `python-config-2.6 --cflags`
+endif
 
 modules: $(SOBJ)
 
