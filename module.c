@@ -232,10 +232,6 @@ load_module_bindings (const char *name)
       if (get_module_by_name (name, &g_modules.bindings.metadata) == FAILURE)
         return FAILURE;
 
-      if (get_module_function (g_modules.bindings.metadata, "test",
-                               (void**)
-                               &g_modules.bindings.test) == FAILURE)
-        return FAILURE;
       if (get_module_function (g_modules.bindings.metadata, "run_file",
                                (void**)
                                &g_modules.bindings.run_file) == FAILURE)

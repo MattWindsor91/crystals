@@ -41,7 +41,10 @@
  * @brief Python module for scripting
  */
 
+/* the python header should always be first */
 #include "Python.h"
+
+#include <stdio.h>
 
 
 /** Initialise the python module. */
@@ -50,7 +53,7 @@ void
 init (void);
 
 
-/** De-initialise the python module. */
+/** Terminate the python module. */
 
 void
 term (void);
@@ -67,22 +70,29 @@ term (void);
 int
 run_file (const char* path);
 
+static PyObject*
+crystals_test (PyObject *self, PyObject *args);
 
-/** Test the python module. */
+/* -- DEFINITIONS -- */
 
-void
-test (void);
+static PyMethodDef
+CrystalsMethods[] =
+{
+/* name, C func, flags, docstring */
+  {"test", crystals_test, METH_VARARGS, "Test the Crystal Module."},
+  {NULL, NULL, 0, NULL}
+};
 
 void
 init (void)
 {
-    Py_Initialize();
+  Py_Initialize();
 }
 
 void
 term (void)
 {
-    Py_Finalize();
+  Py_Finalize();
 }
 
 int
@@ -108,9 +118,17 @@ run_file (const char* path)
   return EXIT;
 }
 
-void
-test (void)
+static PyObject*
+crystals_test (PyObject *self, PyObject *args)
 {
-    /* a simple test */
-    PyRun_SimpleString("print 'Hello World'");
+  char *s;
+  PyObject *py_return;
+  /* parse string and store it into the given pointers */
+  if (!PyArg_ParseTuple(args, "s:test", &s))
+    return 0;
+
+  printf("%s\n", s);
+  return py_return;
 }
+
+/* vim: set st=2 sw=2 softtabstop=2: */

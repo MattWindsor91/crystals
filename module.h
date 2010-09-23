@@ -244,11 +244,6 @@ typedef struct
   int
   (*run_file) (const char *path);
 
-  /** A Test */
-
-  void
-  (*test) (void);
-
 } module_bindings;
 
 /** The module set.
@@ -306,7 +301,7 @@ module_bare_init (module_data *module);
  *
  *  @param module The name of the module
  *  @param out    A string to store the path in
- *  
+ *
  *  @return Either SUCCESS or FAILURE (defined in main.h).
  */
 int
