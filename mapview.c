@@ -381,7 +381,7 @@ render_map_objects (struct map_view *mapview, unsigned char layer)
 void
 scroll_map (struct map_view *mapview, int direction)
 {
-  int adirection;
+  int adirection = -1;
 
   /* FIXME: Render damage. */
   switch (direction)
