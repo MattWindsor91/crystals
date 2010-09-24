@@ -3,12 +3,17 @@
 #ifndef _TEST_MODULE_H
 #define _TEST_MODULE_H
 
-/* Not nice that I have to define this here as well */
+/* Annoying I have to define this here, too... */
 typedef struct
 {
-  void *lib_handle;
-  void (*init)(void);
-  void (*term)(void);
+  void *lib_handle; /**< The dynamic loading handle for the module. */
+
+  void
+  (*init) (void); /**< Pointer to the module's initialisation
+                     function. */
+  void
+  (*term) (void); /**< Pointer to the module's termination
+                     function. */
 } module_data;
 
 /* modules struct - stores details about modules and functions */
@@ -30,12 +35,16 @@ typedef struct
     module_data metadata;
     void (*bar)(void);
   } foo;
-} module_set;
+} test_module_set;
 
 /* function prototypes */
 int
-load_module_test (void);
+init_test_modules (const char *path);
+void
+cleanup_test_modules (void);
 int
-load_module_foo (void);
+load_module_test (test_module_set* modules);
+int
+load_module_foo (test_module_set* modules);
 
 #endif /* _TEST_MODULE_H */
