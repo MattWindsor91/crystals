@@ -109,7 +109,7 @@ get_module (const char* modulepath, module_data *module)
 
   if ((error = dlerror ()) != NULL)
     {
-      fprintf (stderr, "DLERROR: %s\n", dlerror ());
+      fprintf (stderr, "DLERROR: %s\n", error);
       return FAILURE;
     }
 
