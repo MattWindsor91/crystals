@@ -52,7 +52,7 @@ is_null_option (option check);
  *  @return Either the matching option, or the null option if not found.
  */
 option
-get_option (char shortname, char* longname, option options[]);
+get_option (const char shortname, const char* longname, option options[]);
 
 /** Prints help text and exits.
  *  
@@ -79,6 +79,6 @@ print_version_text (void);
  *  @return Either SUCCESS or FAILURE, defined in main.h
  */
 int
-parse_options (int argc, char* argv[], option options[]);
+parse_options (int argc, const char* argv[], option options[]);
 
 #endif /* _OPTIONPARSER_H */

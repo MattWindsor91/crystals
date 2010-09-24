@@ -63,7 +63,7 @@ To parse options, the unsurprisingly-named \textbf{parse\_options} function is u
 
 \begin{lstlisting}
 int
-parse_options (int argc, char* argv[], option options[]);
+parse_options (int argc, const char* argv[], option options[]);
 \end{lstlisting}
 
 \subsection{Internal Functions}
@@ -79,7 +79,7 @@ To get an option by either its short name or long name from a list of options:
 
 \begin{lstlisting}
 option
-get_option (char shortname, char* longname, option options[]);
+get_option (const char shortname, const char* longname, option options[]);
 \end{lstlisting}
 
 To generate and display the help text, and then exit:

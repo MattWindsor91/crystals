@@ -6,7 +6,7 @@
 #include <string.h>
 
 #include "module.h"
-#include "../main.h"
+#include "../util.h"
 #include "../module.h"
 
 /* This initialises the struct of modules to NULL and sets the load path */

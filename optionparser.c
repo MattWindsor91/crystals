@@ -25,7 +25,7 @@ is_null_option (option check)
 
 /* This returns an option that matches a given criteria */
 option
-get_option (char shortname, char* longname, option options[])
+get_option (const char shortname, const char* longname, option options[])
 {
   int i       = -1;
   int looping = TRUE;
@@ -95,7 +95,7 @@ print_version_text (void)
 
 /* This parses a set of options */
 int
-parse_options(int argc, char* argv[], option options[])
+parse_options(int argc, const char* argv[], option options[])
 {
   int sopt    = TRUE;
   int looping = TRUE;
