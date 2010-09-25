@@ -133,6 +133,9 @@ config_parse_file (const char *path_name)
                 }
             }
         }
+
+    fclose (stream);
+
     }
   else
     {
@@ -140,7 +143,6 @@ config_parse_file (const char *path_name)
       return FAILURE;
     }
 
-  fclose (stream);
   free (key);
   free (value);
 
