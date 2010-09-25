@@ -15,12 +15,12 @@
 
 /* -- STRUCTURES -- */
 
-#ifndef TESTSUITE
 /** The module metadata structure.
  *
  *  This contains the basic data that all modules require to function.
  */
 
+#ifndef TESTSUITE
 typedef struct
 {
   void *lib_handle; /**< The dynamic loading handle for the module. */
@@ -31,8 +31,8 @@ typedef struct
   void
   (*term) (void); /**< Pointer to the module's termination
                      function. */
-
 } module_data;
+#endif /* TESTSUITE */
 
 /** The graphics module vtable.
  *
@@ -262,8 +262,6 @@ typedef struct
 
 } module_set;
 
-#endif /* TESTSUITE */
-
 /* -- GLOBAL VARIABLES -- */
 
 /** The set of modules in use. */
@@ -272,11 +270,6 @@ extern module_set g_modules;
 /* -- PROTOTYPES -- */
 
 /** Initialise the g_modules structure.
- *
- *  @todo Allow passing a structure by reference, perhaps? Would allow
- *  (with changes elsewhere) for multiple sets of modules to be loaded
- *  at once.
- *
  *
  *  @param path The path to the modules.
  *
@@ -297,27 +290,29 @@ module_bare_init (module_data *module);
 
 /** Get the path to a module, given its name.
  *
- *  @param module The name of the module
- *  @param out    A string to store the path in
+ *  @param module      The name of the module
+ *  @param modulespath The path where modules are stored
+ *  @param out         A string to store the path in
  *
  *  @return Either SUCCESS or FAILURE (defined in main.h).
  */
 int
-get_module_path (const char *module, char **out);
+get_module_path (const char *module, const char *modulespath, char **out);
 
 /** Find and load a module by name
  *
  *  This finds and loads a module, initialising the module_data struct so it can be
  *  used by get_module_function.
  *
- *  @param name   The name of the module
- *  @param module Pointer to the module_data structure to use
+ *  @param name        The name of the module
+ *  @param modulespath The path where modules are stored
+ *  @param module      Pointer to the module_data structure to use
  *
  *  @return Either SUCCESS or FAILURE (defined in main.h)
  */
 
 int
-get_module_by_name (const char* name, module_data *module);
+get_module_by_name (const char* name, const char *modulespath, module_data *module);
 
 /** Find and load a module by filename
  *
@@ -352,37 +347,40 @@ get_module_function (module_data metadata, const char *function, void **func);
  *
  *  This loads a graphics module and sets up g_modules.gfx.
  *
- *  @param name The name of the module to load (without the extension).
+ *  @param name    The name of the module to load (without the extension).
+ *  @param modules The module_set structure to use
  *
  *  @return Either SUCCESS or FAILURE (defined in main.h).
  */
 
 int
-load_module_gfx (const char* name);
+load_module_gfx (const char* name, module_set* modules);
 
 /** Load the event module.
  *
  *  This loads an event module and sets up g_modules.event.
  *
- *  @param name The name of the module to load (without the extension).
+ *  @param name    The name of the module to load (without the extension).
+ *  @param modules The module_set structure to use
  *
  *  @return Either SUCCESS or FAILURE (defined in main.h).
  */
 
 int
-load_module_event (const char* name);
+load_module_event (const char* name, module_set* modules);
 
 /** Load the language binding module.
  *
  *  This loads an event module and sets up g_modules.event.
  *
- *  @param name The name of the module to load (without the extension).
+ *  @param name    The name of the module to load (without the extension).
+ *  @param modules The module_set structure to use
  *
  *  @return Either SUCCESS or FAILURE (defined in main.h).
  */
 
 int
-load_module_bindings (const char* name);
+load_module_bindings (const char* name, module_set* modules);
 
 /** Close an individual module.
  *
@@ -394,7 +392,7 @@ load_module_bindings (const char* name);
 void
 close_module (module_data *module);
 
-/** Clean up all modules.
+/** Clean up all modules in the g_modules structure.
  *
  *  This runs close_module on every module.
  */

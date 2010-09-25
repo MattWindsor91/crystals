@@ -4,16 +4,16 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../main.h"
+#include "../util.h"
 #include "../optionparser.h"
 
 int
 main (int argc, char* argv[])
 {
   /* Options and stuff */
-  int   argn   = 10;
-  char* args[] = {"-a",    "-b5",     "-c1.3",     "-dhello", "-e", "8",
-                  "--foo", "--bar=8", "--baz=9.6", "--qux=world"};
+  int         argn   = 10;
+  const char* args[] = {"-a",    "-b5",     "-c1.3",     "-dhello", "-e", "8",
+                        "--foo", "--bar=8", "--baz=9.6", "--qux=world"};
 
   int    a;
   int    b;
@@ -25,16 +25,26 @@ main (int argc, char* argv[])
   double baz;
   char*  qux;
 
-  option options[] = {{NULLC, 'a',   OPTION_PARAM_NONE,   &a,   "Presence flag."},
-                      {NULLC, 'b',   OPTION_PARAM_INT,    &b,   "Integer parameter."},
-                      {NULLC, 'c',   OPTION_PARAM_FLOAT,  &c,   "Float parameter."},
-                      {"dah", 'd',   OPTION_PARAM_STRING, &d,   "String parameter."},
-                      {NULLC, 'e',   OPTION_PARAM_INT,    &e,   "Integer parameter."},
-                      {"foo", 'f',   OPTION_PARAM_NONE,   &foo, "Presence flag."},
-                      {"bar", NULLC, OPTION_PARAM_INT,    &bar, "Integer parameter."},
-                      {"baz", NULLC, OPTION_PARAM_FLOAT,  &baz, "Float parameter."},
-                      {"qux", 'q',   OPTION_PARAM_STRING, &qux, "String parameter."},
+  option options[] = {{NULLC,         'a',   OPTION_PARAM_NONE,   NULL, (char*) "Presence flag."},
+                      {NULLC,         'b',   OPTION_PARAM_INT,    NULL, (char*) "Integer parameter."},
+                      {NULLC,         'c',   OPTION_PARAM_FLOAT,  NULL, (char*) "Float parameter."},
+                      {(char*) "dah", 'd',   OPTION_PARAM_STRING, NULL, (char*) "String parameter."},
+                      {NULLC,         'e',   OPTION_PARAM_INT,    NULL, (char*) "Integer parameter."},
+                      {(char*) "foo", 'f',   OPTION_PARAM_NONE,   NULL, (char*) "Presence flag."},
+                      {(char*) "bar", NULLC, OPTION_PARAM_INT,    NULL, (char*) "Integer parameter."},
+                      {(char*) "baz", NULLC, OPTION_PARAM_FLOAT,  NULL, (char*) "Float parameter."},
+                      {(char*) "qux", 'q',   OPTION_PARAM_STRING, NULL, (char*) "String parameter."},
                       {NULLC, NULLC, NULLC, NULLC, NULLC}};
+
+  options[0].variable = &a;
+  options[1].variable = &b;
+  options[2].variable = &c;
+  options[3].variable = &d;
+  options[4].variable = &e;
+  options[5].variable = &foo;
+  options[6].variable = &bar;
+  options[7].variable = &baz;
+  options[8].variable = &qux;
 
   /* Don't want these */
   (void) argc;
@@ -51,6 +61,9 @@ main (int argc, char* argv[])
   if (bar != 8)                   return 8;
   if (baz != 9.6)                 return 9;
   if (strcmp (qux, "world") != 0) return 10;
+
+  free (d);
+  free (qux);
 
   return 0;
 }

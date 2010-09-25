@@ -13,7 +13,7 @@ init_graphics (void)
 {
   unsigned int i;
 
-  if (load_module_gfx ("gfx-sdl") == FAILURE)
+  if (load_module_gfx ("gfx-sdl", &g_modules) == FAILURE)
     {
       fprintf (stderr, "ERROR: Could not load graphics module.\n");
       return FAILURE;

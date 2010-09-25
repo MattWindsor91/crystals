@@ -77,7 +77,11 @@ Finally, there are the functions to load the modules:
 
 \begin{lstlisting}
 int
-load_module_gfx (char* name);
+load_module_gfx (const char* name, module_set* modules);
+int
+load_module_event (const char *name, module_set *modules);
+int
+load_module_bindings (const char *name, module_set* modules);
 \end{lstlisting}
 
 \subsection{Internal-Use Functions}
@@ -89,11 +93,12 @@ void
 module_bare_init (module_data *module);
 \end{lstlisting}
 
-To find the path of a module and store it in a variable \textbf{out}, the \textbf{get\_module\_path} function is used.
+To find the path of a module and store it in a variable \textbf{out}, the \textbf{get\_module\_path} function is used. \textbf{modulespath} is where the modules live in the system.
 
 \begin{lstlisting}
 int
 get_module_path (const char* module,
+                 const char* modulespath,
                  char** out);
 \end{lstlisting}
 
@@ -102,6 +107,7 @@ To open a module and run any initialisation code, there is a choice of \textbf{g
 \begin{lstlisting}
 int
 get_module_by_name (const char* name,
+                    const char* modulespath,
                     module_data *module);
 int
 get_module (const char* modulepath,
