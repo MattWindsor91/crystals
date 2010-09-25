@@ -260,5 +260,7 @@ cleanup_modules (void)
   close_module (&g_modules.bindings.metadata);
   close_module (&g_modules.event.metadata);
   close_module (&g_modules.gfx.metadata);
+
+  free (g_modules.path);
 }
 /* vim: set ts=2 sw=2 softtabstop=2: */

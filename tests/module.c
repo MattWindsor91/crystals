@@ -39,6 +39,8 @@ cleanup_test_modules (void)
 {
   close_module (&g_test_modules.test.metadata);
   close_module (&g_test_modules.foo.metadata);
+
+  free (g_test_modules.path);
 }
 
 /* Function to load 'test' module. */
