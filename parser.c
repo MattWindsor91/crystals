@@ -14,22 +14,23 @@ config_parse_file (const char *path_name)
   char b_whitespace = FALSE;
 
   char c;
+  int line_counter = 1;
 
-  char *key="k", *sk;
-  char *value="v", *sv;
+  char *key, *sk;
+  char *value, *sv;
 
+  FILE *stream;
+  
+  
   sk = key = malloc ((sizeof (char)) * 100);
   sv = value = malloc ((sizeof (char)) * 100);
 
-  FILE *stream;
-
-  int line_counter = 1;
 
   stream = fopen (path_name, "r");
 
   if (stream != NULL)
     {
-      while ((c = fgetc (stream)) != EOF)
+      while ((c = (char) fgetc (stream)) != EOF)
         {
           if (b_ignore)
             {
@@ -157,6 +158,8 @@ static int
 add_pair (char *key, char *value)
 {
   /* FIXME */
+  (void) key;
+  (void) value;
   return 0;
 }
 
