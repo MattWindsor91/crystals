@@ -55,7 +55,7 @@ int
 config_parse_file (const char *path_name);
 
 char*
-config_get_value(const char *key);
+config_get_value (const char *key);
 
 static int
 add_pair (char *key, char *value);

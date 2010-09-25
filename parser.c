@@ -18,8 +18,8 @@ config_parse_file (const char *path_name)
   char *key="k", *sk;
   char *value="v", *sv;
 
-  sk = key = malloc((sizeof (char)) * 100);
-  sv = value = malloc((sizeof (char)) * 100);
+  sk = key = malloc ((sizeof (char)) * 100);
+  sv = value = malloc ((sizeof (char)) * 100);
 
   FILE *stream;
 
@@ -40,7 +40,7 @@ config_parse_file (const char *path_name)
                       *value = '\0';
                       key = key - (key - sk);
                       value = value - (value - sv);
-                      add_pair(key, value);
+                      add_pair (key, value);
                       b_value = FALSE;
                     }
                   ++line_counter;
@@ -56,7 +56,7 @@ config_parse_file (const char *path_name)
                     /* key is present but not a value */
                     if (key - sk > 0 && value - sv == 0)
                       {
-                        fprintf(stderr, "Invalid config syntax at line %d \n",
+                        fprintf (stderr, "Invalid config syntax at line %d \n",
                           line_counter);
                         return FAILURE;
                       }
@@ -69,7 +69,7 @@ config_parse_file (const char *path_name)
                     /* key is present but not a value */
                     if (key - sk > 0 && value - sv == 0)
                       {
-                        fprintf(stderr, "Invalid config syntax at line %d \n",
+                        fprintf (stderr, "Invalid config syntax at line %d \n",
                           line_counter);
                         return FAILURE;
                       }
@@ -96,8 +96,7 @@ config_parse_file (const char *path_name)
                       }
                     else
                       {
-                        printf("before\n");
-                        fprintf(stderr, "Invalid config syntax at line %d \n",
+                        fprintf (stderr, "Invalid config syntax at line %d \n",
                           line_counter);
                         return FAILURE;
                       }
@@ -111,7 +110,7 @@ config_parse_file (const char *path_name)
                   default:
                     if (b_whitespace == TRUE && value - sv > 0)
                       {
-                        fprintf(stderr, "Invalid config syntax at line %d \n",
+                        fprintf (stderr, "Invalid config syntax at line %d \n",
                           line_counter);
                         return FAILURE;
                       }
@@ -139,14 +138,16 @@ config_parse_file (const char *path_name)
       fprintf(stderr, "Couldn't open the file");
       return FAILURE;
     }
-  fclose(stream);
-  free(key);
-  free(value);
+
+  fclose (stream);
+  free (key);
+  free (value);
+
   return SUCCESS;
 }
 
 char*
-config_get_value(const char *key)
+config_get_value (const char *key)
 {
   /* FIXME */
   return (char*) key;
