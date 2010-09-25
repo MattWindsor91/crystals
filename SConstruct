@@ -1,6 +1,4 @@
-import os.path
-
-from subprocess import Popen, PIPE
+import os
 
 # Change Module Path
 MODPATH = os.environ['PWD']+'/modules/'
@@ -31,8 +29,16 @@ warn_flags = Split("""
                    """)
 
 # Configure Main Program
-crystals = Environment(ENV=os.environ)
-crystals.SetDefault(CC='clang') # Set default compiler to clang
+crystals = Environment(
+    ENV=os.environ,
+    CC=[os.environ['CC'] if 'CC' in os.environ else 'cc'],
+    CCCOMSTR='Compiling $TARGET',
+    LINKCOMSTR='Linking $TARGET',
+    SHCCCOMSTR='Compiling shared object $TARGET',
+    SHLINKCOMSTR='Linking shared $TARGET'
+)
+crystals.MergeFlags([os.environ['CFLAGS'] if 'CFLAGS' in os.environ else ''])
+crystals.MergeFlags([os.environ['LDFLAGS'] if 'LDFLAGS' in os.environ else ''])
 crystals.Replace(SHLIBPREFIX='') # Build modules without 'lib' prefix
 crystals.Append(
     CCFLAGS = Split('-ansi -pedantic -O2 -ggdb -DDEFMODPATH=\\"{mp}\\"'
@@ -42,13 +48,13 @@ crystals.Append(CCFLAGS=warn_flags)
 crystals.Append(CPPPATH=[''])
 crystals.Append(LIBS=['dl'])
 crystals.Append(LDFLAGS=['-g'])
-
 # Build Main Programm
 crystals.Program('maprender-test', objs)
+
+
 # -- MODULES --
 # 
 # Build crystals modules
-
 event_sdl = crystals.Clone()
 event_sdl.ParseConfig('sdl-config --cflags')
 event_sdl.ParseConfig('sdl-config --libs')
