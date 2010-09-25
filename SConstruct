@@ -123,6 +123,7 @@ objs = Split("""
     mapview.c
     module.c
     optionparser.c
+    parser.c
     util.c
              """)
 
