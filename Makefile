@@ -2,7 +2,7 @@ BIN      := maprender-test
 
 TESTS    := tests/module tests/optionparser
 OBJ      := main.o graphics.o map.o mapview.o events.o module.o optionparser.o
-OBJ      += util.o bindings.o
+OBJ      += util.o bindings.o parser.o
 SOBJ     := modules/gfx-sdl.so modules/event-sdl.so modules/bindings-python.so
 
 SOURCES  := $(subst .o,.c,$(OBJ))
@@ -45,13 +45,8 @@ modules/gfx-sdl.so: CFLAGS += `sdl-config --cflags`
 modules/event-sdl.so: LIBS   += `sdl-config --libs` 
 modules/event-sdl.so: CFLAGS += `sdl-config --cflags`
 
-ifeq ($(DIST),ARCH)
-modules/bindings-python.so: LIBS   += `python2.6-config --libs`
-modules/bindings-python.so: CFLAGS += `python2.6-config --cflags`
-else
-modules/bindings-python.so: LIBS   += `python-config-2.6 --libs` 
-modules/bindings-python.so: CFLAGS += `python-config-2.6 --cflags`
-endif
+modules/bindings-python.so: LIBS   += `python-config --libs`
+modules/bindings-python.so: CFLAGS += `python-config --cflags`
 
 modules: $(SOBJ)
 
