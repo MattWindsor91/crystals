@@ -105,6 +105,8 @@ get_module (const char* modulepath, module_data *module)
 {
   char *error;
 
+  if (module->lib_handle != NULL) return FAILURE;
+
   module->lib_handle = dlopen (modulepath, RTLD_LAZY);
 
   if ((error = dlerror ()) != NULL)
@@ -148,49 +150,45 @@ get_module_function (module_data module, const char *function, void **func)
 int
 load_module_gfx (const char* name, module_set* modules)
 {
-  if (modules->gfx.metadata.lib_handle == NULL)
-    {
-      if (get_module_by_name (name, modules->path, &modules->gfx.metadata) == FAILURE)
-        return FAILURE;
-
-      if (get_module_function (modules->gfx.metadata, "init_screen",
-                               (void**)
-                               &modules->gfx.init_screen) == FAILURE)
-        return FAILURE;
-
-      if (get_module_function (modules->gfx.metadata, "draw_rect",
-                               (void**)
-                               &modules->gfx.draw_rect) == FAILURE)
-        return FAILURE;
-
-      if (get_module_function (modules->gfx.metadata, "load_image_data",
-                               (void**)
-                               &modules->gfx.load_image_data) == FAILURE)
-        return FAILURE;
-
-      if (get_module_function (modules->gfx.metadata, "free_image_data",
-                               (void**)
-                               &modules->gfx.free_image_data) == FAILURE)
-        return FAILURE;
-
-      if (get_module_function (modules->gfx.metadata, "draw_image",
-                               (void**)
-                               &modules->gfx.draw_image) == FAILURE)
-        return FAILURE;
-
-      if (get_module_function (modules->gfx.metadata, "update_screen",
-                               (void**)
-                               &modules->gfx.update_screen)  == FAILURE)
-        return FAILURE;
-
-      if (get_module_function (modules->gfx.metadata, "scroll_screen",
-                               (void**)
-                               &modules->gfx.scroll_screen) == FAILURE)
-        return FAILURE;
-
-      return SUCCESS;
-    }
-  return FAILURE;
+  if (get_module_by_name (name, modules->path, &modules->gfx.metadata) == FAILURE)
+    return FAILURE;
+  
+  if (get_module_function (modules->gfx.metadata, "init_screen",
+                           (void**)
+                           &modules->gfx.init_screen) == FAILURE)
+    return FAILURE;
+  
+  if (get_module_function (modules->gfx.metadata, "draw_rect",
+                           (void**)
+                           &modules->gfx.draw_rect) == FAILURE)
+    return FAILURE;
+  
+  if (get_module_function (modules->gfx.metadata, "load_image_data",
+                           (void**)
+                           &modules->gfx.load_image_data) == FAILURE)
+    return FAILURE;
+  
+  if (get_module_function (modules->gfx.metadata, "free_image_data",
+                           (void**)
+                           &modules->gfx.free_image_data) == FAILURE)
+    return FAILURE;
+  
+  if (get_module_function (modules->gfx.metadata, "draw_image",
+                           (void**)
+                           &modules->gfx.draw_image) == FAILURE)
+    return FAILURE;
+  
+  if (get_module_function (modules->gfx.metadata, "update_screen",
+                           (void**)
+                           &modules->gfx.update_screen)  == FAILURE)
+    return FAILURE;
+  
+  if (get_module_function (modules->gfx.metadata, "scroll_screen",
+                           (void**)
+                           &modules->gfx.scroll_screen) == FAILURE)
+    return FAILURE;
+  
+  return SUCCESS;
 }
 
 /* Load an event module. */
@@ -198,43 +196,35 @@ load_module_gfx (const char* name, module_set* modules)
 int
 load_module_event (const char *name, module_set *modules)
 {
-  if (modules->event.metadata.lib_handle == NULL)
-    {
-      if (get_module_by_name (name, modules->path, &modules->event.metadata) == FAILURE)
-        return FAILURE;
-
-      if (get_module_function (modules->event.metadata, "process_events",
-                               (void**)
-                               &modules->event.process_events) == FAILURE)
-        return FAILURE;
-
-      if (get_module_function (modules->event.metadata,
-                               "register_release_handle",
-                               (void**)
-                               &modules->event.register_release_handle)
-          == FAILURE)
-        return FAILURE;
-
-      return SUCCESS;
-    }
-  return FAILURE;
+  if (get_module_by_name (name, modules->path, &modules->event.metadata) == FAILURE)
+    return FAILURE;
+  
+  if (get_module_function (modules->event.metadata, "process_events",
+                           (void**)
+                           &modules->event.process_events) == FAILURE)
+    return FAILURE;
+  
+  if (get_module_function (modules->event.metadata,
+                           "register_release_handle",
+                           (void**)
+                           &modules->event.register_release_handle)
+      == FAILURE)
+    return FAILURE;
+  
+  return SUCCESS;
 }
 
 int
 load_module_bindings (const char *name, module_set* modules)
 {
-  if (modules->bindings.metadata.lib_handle == NULL)
-    {
-      if (get_module_by_name (name, modules->path, &modules->bindings.metadata) == FAILURE)
-        return FAILURE;
-
-      if (get_module_function (modules->bindings.metadata, "run_file",
-                               (void**)
-                               &modules->bindings.run_file) == FAILURE)
-        return FAILURE;
-      return SUCCESS;
-    }
-  return FAILURE;
+  if (get_module_by_name (name, modules->path, &modules->bindings.metadata) == FAILURE)
+    return FAILURE;
+  
+  if (get_module_function (modules->bindings.metadata, "run_file",
+                           (void**)
+                           &modules->bindings.run_file) == FAILURE)
+    return FAILURE;
+  return SUCCESS;
 }
 
 /* This closes an individual module and runs any termination code */

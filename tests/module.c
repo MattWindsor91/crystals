@@ -47,32 +47,24 @@ cleanup_test_modules (void)
 int
 load_module_test (test_module_set* modules)
 {
-  if (modules->test.metadata.lib_handle == NULL)
-    {
-      if (get_module_by_name  ("test", modules->path, &modules->test.metadata) == FAILURE) return FAILURE;
-      if (get_module_function (modules->test.metadata, "sum_numbers",
-                               (void**) &modules->test.sum_numbers) == FAILURE) return FAILURE;
-      if (get_module_function (modules->test.metadata, "mul_numbers",
-                               (void**) &modules->test.mul_numbers) == FAILURE) return FAILURE;
-
-      return SUCCESS;
-    }
-  return FAILURE;
+  if (get_module_by_name  ("test", modules->path, &modules->test.metadata) == FAILURE) return FAILURE;
+  if (get_module_function (modules->test.metadata, "sum_numbers",
+                           (void**) &modules->test.sum_numbers) == FAILURE) return FAILURE;
+  if (get_module_function (modules->test.metadata, "mul_numbers",
+                           (void**) &modules->test.mul_numbers) == FAILURE) return FAILURE;
+  
+  return SUCCESS;
 }
 
 /* Function to load 'foo' module. */
 int
 load_module_foo (test_module_set* modules)
 {
-  if (modules->foo.metadata.lib_handle == NULL)
-    {
-      if (get_module_by_name ("foo", modules->path, &modules->foo.metadata) == FAILURE) return FAILURE;
-      if (get_module_function(modules->foo.metadata, "bar",
-                              (void**) &modules->foo.bar) == FAILURE) return FAILURE;
-
-      return SUCCESS;
-    }
-  return FAILURE;
+  if (get_module_by_name ("foo", modules->path, &modules->foo.metadata) == FAILURE) return FAILURE;
+  if (get_module_function(modules->foo.metadata, "bar",
+                          (void**) &modules->foo.bar) == FAILURE) return FAILURE;
+  
+  return SUCCESS;
 }
 
 /* Test the module loader:
