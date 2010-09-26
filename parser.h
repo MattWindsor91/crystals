@@ -41,6 +41,8 @@
  *  @brief    Prototypes and declarations for the configuration parser.
  */
 
+typedef struct node_t node_t;
+
 /** Node struct for a key-value tree
  *
  * Stores key, value and two branches
@@ -55,13 +57,13 @@ struct node_t
   char *key;            /**< key item of the node. */
   char *value;          /**< value item of the node. */
   /* strcmp == -1 */
-  struct node_t *left;  /**< Left branch of the node. */
+  node_t *left;  /**< Left branch of the node. */
   /* strcmp == 1 */
-  struct node_t *right; /**< Right branch of the node. */
+  node_t *right; /**< Right branch of the node. */
 };
 
 /* GLOBAL VARIABLES */
-static struct node_t sg_root;
+static node_t sg_root;
 
 
 /* FUNCTION PROTOTYPES */
