@@ -220,10 +220,12 @@ get_image (const char filename[], struct image_t *add_pointer)
           /* If there is a pointer to add, then replace the found image's 
              data with the new pointer's data. */
 
-          if (add_pointer)
+          if (add_pointer != NULL)
             {
-               (*g_modules.gfx.free_image_data) (image->data);
+              (*g_modules.gfx.free_image_data) (image->data);
               image->data = add_pointer->data;
+
+              free_image (add_pointer);
             }
 
           return image;
@@ -243,11 +245,9 @@ get_image (const char filename[], struct image_t *add_pointer)
   return NULL;
 }
 
-
-
 void
 cleanup_graphics (void)
 {
-  ;
+  clear_images ();
 }
 

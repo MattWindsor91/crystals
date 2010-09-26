@@ -78,6 +78,11 @@ enum
     NULLC = '\0' /**< Null character (necessary?) */
   };
 
+/* -- FUNCTION MACROS -- */
+
+#define MAX(x, y) ((x) > (y) ? (x) : (y)) /**< Get the maximum of two
+                                             values. */
+
 /* -- PROTOTYPES -- */
 
 /** Return a basic hash of the given ASCII string, suitable for use in

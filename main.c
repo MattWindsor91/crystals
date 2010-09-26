@@ -4,6 +4,7 @@
 
 #include "main.h"
 #include "util.h"
+#include "object.h"
 #include "module.h"
 #include "events.h"
 #include "graphics.h"
@@ -47,6 +48,12 @@ init (void)
       return FAILURE;
     }
 
+  if (init_objects () == FAILURE)
+    {
+      fprintf (stderr, "ERROR: Could not init objects!\n");
+      return FAILURE;
+    }
+
   g_map = init_test_map ();
 
   if (g_map == NULL)
@@ -63,8 +70,8 @@ init (void)
       return FAILURE;
     }
 
-  init_bindings ();
-  run_file ("tests/python.py");
+  /*init_bindings ();
+    run_file ("tests/python.py");*/
   init_events ();
 
   return SUCCESS;
@@ -90,6 +97,7 @@ cleanup (void)
 {
   cleanup_mapview (g_mapview);
   cleanup_map (g_map);
+  cleanup_objects ();
   cleanup_events ();
   cleanup_graphics ();
   cleanup_bindings ();

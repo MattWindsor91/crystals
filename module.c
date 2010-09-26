@@ -28,6 +28,7 @@ init_modules (const char *path)
     {
       strncpy (g_modules.path, path, strlen (path) + 1);
 
+      module_bare_init (&g_modules.bindings.metadata);
       module_bare_init (&g_modules.gfx.metadata);
       module_bare_init (&g_modules.event.metadata);
 
@@ -236,6 +237,7 @@ load_module_bindings (const char *name)
                                (void**)
                                &g_modules.bindings.run_file) == FAILURE)
         return FAILURE;
+
       return SUCCESS;
     }
   return FAILURE;

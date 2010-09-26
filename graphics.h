@@ -24,7 +24,10 @@ enum
 
 struct image_t
 {
-  char *filename;       /**< Filename of the image. */
+  char *filename;       /**< Filename of the image (must be unique).
+                           @todo FIXME: add code to check duplicates.
+                        */
+
   void *data;           /**< Driver-dependent image data. */
   struct image_t *next; /**< The next node, if any. */
 };

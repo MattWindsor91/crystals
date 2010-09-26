@@ -2,8 +2,8 @@ BIN      := maprender-test
 
 
 TESTS    := tests/module tests/optionparser
-OBJ      := main.o graphics.o map.o mapview.o events.o module.o optionparser.o
-OBJ      += util.o bindings.o
+OBJ      := main.o object.o graphics.o map.o mapview.o events.o optionparser.o
+OBJ      += util.o bindings.o module.o
 SOBJ     := modules/gfx-sdl.so modules/event-sdl.so modules/bindings-python.so
 
 SOURCES  := $(subst .o,.c,$(OBJ))
@@ -21,7 +21,7 @@ WARN     := -Wall -Wextra -Wshadow -Wpointer-arith -Wcast-align \
             -Wredundant-decls -Wnested-externs -Winline -Wno-long-long \
             -Wconversion -Wstrict-prototypes
 
-LIBS     := -ldl -g 
+LIBS     := -ldl 
 CFLAGS   := -ansi -pedantic -O2 -ggdb -DDEFMODPATH="\"$(MODPATH)\"" $(WARN)
 
 .PHONY: all doc autodoc clean clean-tests clean-doc clean-modules modules tests
