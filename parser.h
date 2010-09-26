@@ -41,6 +41,9 @@
  *  @brief    Prototypes and declarations for the configuration parser.
  */
 
+#ifndef _PARSER_H
+#define _PARSER_H
+
 typedef struct node_t node_t;
 
 /** Node struct for a key-value tree
@@ -151,4 +154,5 @@ node_init (struct node_t *node);
 static void
 free_node (struct node_t *node);
 
+#endif /* _PARSER_H */
 /* vim: set ts=2 sw=2 softtabstop=2: */
