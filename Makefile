@@ -4,6 +4,7 @@ TESTS    := tests/module tests/optionparser
 OBJ      := main.o graphics.o map.o mapview.o events.o module.o optionparser.o
 OBJ      += util.o bindings.o parser.o
 SOBJ     := modules/gfx-sdl.so modules/event-sdl.so modules/bindings-python.so
+SOBJ	 += modules/bindings-lua.so
 
 SOURCES  := $(subst .o,.c,$(OBJ))
 DEPFILES := $(subst .o,.d,$(OBJ))
@@ -47,6 +48,8 @@ modules/event-sdl.so: CFLAGS += `sdl-config --cflags`
 
 modules/bindings-python.so: LIBS   += `python-config --libs`
 modules/bindings-python.so: CFLAGS += `python-config --cflags`
+
+modules/bindings-lua.so: LIBS += `pkg-config --libs`
 
 modules: $(SOBJ)
 

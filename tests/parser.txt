@@ -1,6 +1,5 @@
 
-
+aieaeaoiasannnhnsiaueeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee = 23
 wer = ich
-#wo = hier
+wo = hier
 wann = jetzt
-

@@ -8,7 +8,7 @@
 int
 init_bindings (void)
 {
-  if (load_module_bindings ("bindings-python", &g_modules) == FAILURE)
+  if (load_module_bindings ("bindings-lua", &g_modules) == FAILURE)
     {
       fprintf (stderr, "ERROR: Could not load bindings module.\n");
       return FAILURE;

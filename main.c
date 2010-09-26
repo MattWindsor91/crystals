@@ -64,12 +64,9 @@ init (void)
     }
 
   init_bindings ();
-  run_file ("tests/python.py");
+  run_file ("tests/lua.lua");
   init_events ();
-
-  return SUCCESS;
 }
-
 
 
 void
