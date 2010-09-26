@@ -27,6 +27,7 @@ init_modules (const char *path)
     {
       strncpy (g_modules.path, path, strlen (path) + 1);
 
+      module_bare_init (&g_modules.bindings.metadata);
       module_bare_init (&g_modules.gfx.metadata);
       module_bare_init (&g_modules.event.metadata);
 
@@ -215,15 +216,17 @@ load_module_event (const char *name, module_set *modules)
 }
 
 int
-load_module_bindings (const char *name, module_set* modules)
+load_module_bindings (const char *name, module_set *modules)
 {
-  if (get_module_by_name (name, modules->path, &modules->bindings.metadata) == FAILURE)
-    return FAILURE;
-  
+  if (get_module_by_name (name, modules->path, &modules->bindings.metadata) 
+        == FAILURE)
+        return FAILURE;
+
   if (get_module_function (modules->bindings.metadata, "run_file",
-                           (void**)
-                           &modules->bindings.run_file) == FAILURE)
-    return FAILURE;
+                               (void**)
+                               &modules->bindings.run_file) == FAILURE)
+        return FAILURE;
+
   return SUCCESS;
 }
 

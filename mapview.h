@@ -69,18 +69,20 @@ struct object_image
                             on-image rectangle from which to source
                             the rendered image, in pixels. */
 
-  short screen_x;        /**< X co-ordinate of the left edge of the
-                            on-screen rectangle in which to render the
+  unsigned int map_x;    /**< X co-ordinate of the left edge of the
+                            on-map rectangle in which to render the
                             image, in pixels. */
 
-  short screen_y;        /**< Y co-ordinate of the top edge of the
-                            on-screen rectangle in which to render the
+  unsigned int map_y;    /**< Y co-ordinate of the top edge of the
+                            on-map rectangle in which to render the
                             image, in pixels. */
 
   unsigned short width;  /**< Width of the object image, in pixels. */
 
   unsigned short height; /**< Height of the object image, in
                             pixels. */
+
+  struct object_t *parent; /**< Pointer to the object parent, if any. */
 
   struct object_image *next; /**< Next node in the queue. */
 };
@@ -128,6 +130,9 @@ struct map_view
                                          this block.*/
 };
 
+#include "object.h" /* object_t; cannot be included before
+                       structures. */
+
 /* -- GLOBAL VARIABLES -- */
 
 extern const char FN_TILESET[]; /**< Tileset filename. */
@@ -145,6 +150,19 @@ extern const char FN_TILESET[]; /**< Tileset filename. */
 struct map_view *
 init_mapview (struct map *map);
 
+/** Set all the parameters of an object image node to default values.
+ *
+ *  @param image   Pointer to the object render queue node.
+ *
+ *  @param parent  Pointer to the parent object of the object image.
+ *
+ *  @return SUCCESS if there were no errors encountered; FAILURE
+ *  otherwise.
+ */
+
+int
+init_object_image (struct object_image *image, struct object_t *parent);
+
 /** Add an object sprite to the rendering queue. 
  *
  *  This should be called from a higher-level function, as it does not
@@ -158,29 +176,8 @@ init_mapview (struct map *map);
  *                   be rendered on top of the first map layer to use
  *                   the tag. This -must- be nonzero.
  *
- *  @param filename  Filename of the image.
- *
- *  @param image_x   X co-ordinate of the left edge of the on-image
- *                   rectangle from which to source the rendered
- *                   image, in pixels.
- *
- *  @param image_y   Y co-ordinate of the top edge of the on-image
- *                   rectangle from which to source the rendered
- *                   image, in pixels.
- *
- *  @param screen_x  X co-ordinate of the left edge of the on-screen
- *                   rectangle in which to render the image, in
- *                   pixels.
- *
- *  @param screen_y  Y co-ordinate of the top edge of the on-screen 
- *                   rectangle in which to render the image, in
- *                   pixels.
- *
- *  @param width     Width of the image rectangle to render, in
- *                   pixels.
- *
- *  @param height    Height of the image rectangle to render, in
- *                   pixels.
+ *  @param image     Pointer to the object render queue node to add to
+ *                   the rendering queue.
  *
  *  @return SUCCESS if there were no errors encountered; FAILURE
  *  otherwise.
@@ -189,13 +186,7 @@ init_mapview (struct map *map);
 int
 add_object_image (struct map_view *mapview,
                   layer_t tag,
-                  const char filename[],
-                  short image_x,
-                  short image_y,
-                  short screen_x,
-                  short screen_y,
-                  unsigned short width,
-                  unsigned short height);
+                  struct object_image *image);
 
 /** Free an object image render queue node.
  *
@@ -254,6 +245,9 @@ scroll_map (struct map_view *mapview, int direction);
  *  tile (0, 0) rather than the tile currently shown at the top-left 
  *  of the screen.
  *
+ *  This will also render any objects whose images fall into the
+ *  rectangle.
+ *
  *  @param mapview  Pointer to the map view to render.
  *
  *  @param start_x  The X co-ordinate of the start of the rectangle,
@@ -265,11 +259,17 @@ scroll_map (struct map_view *mapview, int direction);
  *  @param width    Width of the tile rectangle, in tiles.
  *
  *  @param height   Height of the tile rectangle, in tiles.
+ *
+ *  @return SUCCESS if there were no errors encountered; FAILURE
+ *  otherwise.
  */
 
-void
+int
 mark_dirty_rect (struct map_view *mapview,
-                 int start_x, int start_y, int width, int height);
+                 long start_x,
+                 long start_y,
+                 unsigned int width,
+                 unsigned int height);
 
 /** De-initialise a mapview.
  *

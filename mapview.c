@@ -41,6 +41,7 @@
  *  @brief   Map rendering functions.
  */
 
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -50,6 +51,8 @@
 #include "util.h"
 #include "module.h"
 #include "graphics.h"
+
+#include "object.h"
 
 struct map_view *
 init_mapview (struct map *map)
@@ -90,16 +93,12 @@ init_mapview (struct map *map)
       return NULL;
     }
 
-  /* Blank out the dirty tiles array. */
-
-  memset (mapview->dirty_tiles, mapview->map->num_layers,
-          sizeof (unsigned char) * (width * height));
-
   /* Get the number of object queues to reserve, by finding the
      highest tag number in the map. */
 
   mapview->num_object_queues = get_max_tag (mapview->map);
   
+
   /* There should be at least one tag! */
 
   if (mapview->num_object_queues == 0)
@@ -124,27 +123,54 @@ init_mapview (struct map *map)
   for (i = 0; i < mapview->num_object_queues; i++)
     mapview->object_queue[i] = NULL;
 
-  /* TEST DATA */
+  /* Set all tiles as dirty. */
 
-  add_object_image (mapview, 1, "testobj.png", 0, 0, 60, 60, 16, 48);
+  mark_dirty_rect (mapview, 0, 0, map->width, map->height);
+
+  /*add_object_image (mapview, 1, "testobj.png", 0, 0, 60, 60, 16, 48);
   add_object_image (mapview, 1, "testobj.png", 0, 0, 70, 70, 16, 48);
 
-  add_object_image (mapview, 1, "testobj.png", 16, 0, 100, 100, 16, 48);
+  add_object_image (mapview, 1, "testobj.png", 16, 0, 100, 100, 16, 48);*/
   return mapview;
+}
+
+int
+init_object_image (struct object_image *image, struct object_t *parent)
+{
+  /* Sanity checking. */
+
+  if (image == NULL)
+    {
+      fprintf (stderr, "MAPVIEW: Error: Tried to init null object image.\n");
+      return FAILURE;
+    }
+
+  if (parent == NULL)
+    {
+      fprintf (stderr, "MAPVIEW: Error: Object image has no parent.\n");
+      return FAILURE;
+    }
+
+  image->parent = parent;
+  image->filename = NULL;
+  image->next = NULL;
+
+  image->image_x = 0;
+  image->image_y = 0;
+  image->map_x = 0;
+  image->map_y = 0;
+  image->width = 0;
+  image->height = 0;
+
+  return SUCCESS;
 }
 
 int
 add_object_image (struct map_view *mapview,
                   layer_t tag,
-                  const char filename[],
-                  short image_x,
-                  short image_y,
-                  short screen_x,
-                  short screen_y,
-                  unsigned short width,
-                  unsigned short height)
+                  struct object_image *image)
 {
-  struct object_image *image;
+  struct object_image *new_image;
 
   /* First, error checking! */
 
@@ -153,6 +179,14 @@ add_object_image (struct map_view *mapview,
   if (mapview == NULL)
     {
       fprintf (stderr, "MAPVIEW: Error: Tried to render to NULL mapview.\n");
+      return FAILURE;
+    }
+
+  /* Also, the image should exist. */
+
+  if (image == NULL)
+    {
+      fprintf (stderr, "MAPVIEW: Error: Tried to render a NULL rnode.\n");
       return FAILURE;
     }
 
@@ -181,51 +215,45 @@ add_object_image (struct map_view *mapview,
       return FAILURE;
     }
 
-  if (filename == NULL)
+  if (image->filename == NULL)
     {
       fprintf (stderr, "MAPVIEW: Error: Filename is NULL.\n");
       return FAILURE;
     }
 
-  if (width == 0 || height == 0)
+  if (image->width == 0 || image->height == 0)
     {
       fprintf (stderr, "MAPVIEW: Error: Zero object render width/height.\n");
       return FAILURE;
     }
 
-  /* Now that we've weeded out possible errors, try to create a render
-     node. */
+  /* Now copy the image, if possible. */
 
-  image = malloc (sizeof (struct object_image));
+  new_image = malloc (sizeof (struct object_image));
 
-  if (image == NULL)
+  if (new_image == NULL)
     {
-      fprintf (stderr, "MAPVIEW: Error: Could not allocate render node.\n");
+      fprintf (stderr, "MAPVIEW: Error: Allocation failed for dupe rnode.\n");
       return FAILURE;
     }
 
-  /* Try to copy the filename over. */
+  /* Blindly copy the existing stuff, then allocate new space for the
+     filename and copy that over. */
 
-  image->filename = malloc (sizeof (char) * (strlen (filename) + 1));
+  memcpy (new_image, image, sizeof (struct object_image));
 
-  if (image->filename == NULL)
+  new_image->filename = malloc (sizeof (char)
+                                * (strlen (image->filename) + 1));
+
+  if (new_image->filename == NULL)
     {
-      fprintf (stderr, "MAPVIEW: Error: Could not allocate rnode filename.\n");
-      free_object_image (image);
+      fprintf (stderr, "MAPVIEW: Error: Couldn't alloc new image FN.");
+      free_object_image (new_image);
       return FAILURE;
     }
 
-  strncpy (image->filename, filename, sizeof (char) * strlen (filename) + 1);
-
-  /* Now we can set everything else up. */
-
-  image->image_x = image_x;
-  image->image_y = image_y;
-  image->screen_x = screen_x;
-  image->screen_y = screen_y;
-  image->width = width;
-  image->height = height;
-  image->next = NULL;
+  strncpy (new_image->filename, image->filename,
+           (strlen (image->filename) + 1));
 
   /* Finally, add to the proper tag queue.
 
@@ -237,7 +265,7 @@ add_object_image (struct map_view *mapview,
   
   if (mapview->object_queue[tag - 1] == NULL)
     {
-      mapview->object_queue[tag - 1] = image;
+      mapview->object_queue[tag - 1] = new_image;
       return SUCCESS;
     }
   else
@@ -245,17 +273,19 @@ add_object_image (struct map_view *mapview,
       struct object_image *ptr;
       
       /* Skip to the first item that either has a null neighbour 
-         or a neighbour whose screen_y is bigger. */
+         or a neighbour whose screen_y + width is bigger. */
 
-      for (ptr = mapview->object_queue[tag-1]; 
-           ptr->next != NULL && ptr->next->screen_y <= screen_y; 
+      for (ptr = mapview->object_queue[tag - 1]; 
+           ptr->next != NULL
+             && ((ptr->next->map_y + ptr->next->height)
+                 <= (new_image->map_y + new_image->height)); 
            ptr = ptr->next)
         ;
 
       /* Insert the new image here. */
 
-      image->next = ptr->next;
-      ptr->next = image;
+      new_image->next = ptr->next;
+      ptr->next = new_image;
 
       return SUCCESS;
     }
@@ -366,10 +396,16 @@ render_map_objects (struct map_view *mapview, unsigned char layer)
           draw_image (mapview->object_queue[tag - 1]->filename,
                       mapview->object_queue[tag - 1]->image_x,
                       mapview->object_queue[tag - 1]->image_y,
-                      mapview->object_queue[tag - 1]->screen_x,
-                      mapview->object_queue[tag - 1]->screen_y,
+                      (short) (mapview->object_queue[tag - 1]->map_x 
+                       - mapview->x_offset),
+                      (short) (mapview->object_queue[tag - 1]->map_y
+                       - mapview->y_offset),
                       mapview->object_queue[tag - 1]->width,
                       mapview->object_queue[tag - 1]->height);
+
+          /* Mark the parent object as no longer dirty. */
+          if (mapview->object_queue[tag - 1]->parent != NULL)
+            mapview->object_queue[tag - 1]->parent->is_dirty = FALSE;
 
           free_object_image (mapview->object_queue[tag - 1]);
 
@@ -425,11 +461,32 @@ scroll_map (struct map_view *mapview, int direction)
   render_map (mapview);
 }
 
-void
+int
 mark_dirty_rect (struct map_view *mapview,
-                 int start_x, int start_y, int width, int height)
+                 long start_x,
+                 long start_y,
+                 unsigned int width,
+                 unsigned int height)
 {
   long x, y;
+  int i;
+  struct object_t *object;
+
+  /* Sanity checking. */
+
+  if (mapview == NULL)
+    {
+      fprintf (stderr, "MAPVIEW: Error: Rect dirtying passed NULL mapview.\n");
+      return FAILURE;
+    }
+
+  if (width == 0 || height == 0)
+    {
+      fprintf (stderr, "MAPVIEW: Error: Rect dirtying passed insane W/H.\n");
+      return FAILURE;
+    }
+
+  /* Mark dirty tiles. */
 
   for (x = start_x; x < start_x + width; x++)
     {
@@ -443,6 +500,41 @@ mark_dirty_rect (struct map_view *mapview,
               mapview->map->num_layers;
         }
     }
+
+  /* Mark dirty objects. */
+
+  for (i = 0; i < HASH_VALS; i++)
+    {
+      for (object = g_objects[i]; object != NULL; object = object->next)
+        {
+
+          /** @todo FIXME: information hiding. */
+
+          /* Separating axis theorem, sort of. */
+
+          if (object->is_dirty == FALSE
+              && (object->image->map_x <= (start_x + width) * TILE_W)
+              && (object->image->map_x
+                  + object->image->width >= start_x * TILE_W)
+              && (object->image->map_y <= (start_y + height) * TILE_H)
+              && (object->image->map_y
+                  + object->image->height >= start_y * TILE_H))
+            {
+              set_object_dirty (object, mapview);
+
+              /* Mark the nearby tiles. */
+
+              mark_dirty_rect (mapview,
+                               (object->image->map_x / TILE_W) - 1, 
+                               (object->image->map_y / TILE_H) - 1, 
+                               MAX (3, object->image->width / TILE_W), 
+                               MAX (3, object->image->height / TILE_H));
+              
+            }
+        }
+    }
+ 
+  return SUCCESS;
 }
 
 void
