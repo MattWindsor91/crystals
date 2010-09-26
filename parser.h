@@ -45,6 +45,7 @@
 #define _PARSER_H
 
 typedef struct node_t node_t;
+typedef char bool_t;
 
 /** Node struct for a key-value tree
  *
