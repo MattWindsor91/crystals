@@ -8,6 +8,39 @@ import os
 HAS_SDL = False
 HAS_SDL_IMAGE = False
 HAS_PYTHON2 = False
+HAS_LUA = False
+
+# -- OBJECTS AND FLASG --
+#
+
+# NOTE: Do not use this if changes within 
+# a second after building is possible
+Decider('MD5-timestamp')
+
+# Executeable name
+prog = 'maprender-test'
+
+# Files to build
+objs = Split("""
+    bindings.c
+    events.c
+    graphics.c
+    main.c
+    map.c
+    mapview.c
+    module.c
+    optionparser.c
+    parser.c
+    util.c
+             """)
+
+# Add flags for warnings
+warn_flags = Split(""" 
+    -Wall -Wextra -Wshadow -Wpointer-arith -Wcast-align -Wwrite-strings 
+    -Wmissing-prototypes -Wmissing-declarations -Wredundant-decls 
+    -Wnested-externs -Winline -Wno-long-long -Wconversion 
+    -Wstrict-prototypes
+                   """)
 
 # -- OPTIONS --
 #
@@ -78,6 +111,12 @@ AddOption('--with-sdl',
     help='Force to build with SDL, exits build if not possible'
 )
 
+AddOption('--with-lua',
+    dest='with_lua',
+    action='store_true',
+    help='Force to build with Lua, exits build if not possible'
+)
+
 AddOption('--with-python',
     dest='with_python',
     action='store_true',
@@ -106,35 +145,6 @@ AddOption('--python-version',
 # FIXME: only temporary 
 MODPATH = os.environ['PWD']+'/modules/'
 
-# NOTE: Do not use this if changes within 
-# a second after building is possible
-Decider('MD5-timestamp')
-
-# Executeable name
-prog = 'maprender-test'
-
-# Files to build
-objs = Split("""
-    bindings.c
-    events.c
-    graphics.c
-    main.c
-    map.c
-    mapview.c
-    module.c
-    optionparser.c
-    parser.c
-    util.c
-             """)
-
-# Add flags for warnings
-warn_flags = Split(""" 
-    -Wall -Wextra -Wshadow -Wpointer-arith -Wcast-align -Wwrite-strings 
-    -Wmissing-prototypes -Wmissing-declarations -Wredundant-decls 
-    -Wnested-externs -Winline -Wno-long-long -Wconversion 
-    -Wstrict-prototypes
-                   """)
-
 # Configure Main Program
 crystals = Environment(
     ENV=os.environ,
@@ -156,7 +166,7 @@ crystals.MergeFlags([os.environ['CFLAGS'] if 'CFLAGS' in os.environ else ''])
 crystals.MergeFlags([os.environ['LDFLAGS'] if 'LDFLAGS' in os.environ else ''])
 crystals.Replace(SHLIBPREFIX='') # Build modules without 'lib' prefix
 crystals.Append(
-    CCFLAGS = Split('-ansi -pedantic -O2 -ggdb -DDEFMODPATH=\\"{mp}\\"'
+    CCFLAGS = Split('-ansi -pedantic -O2 -ggb -DDEFMODPATH=\\"{mp}\\"'
     .format(mp=MODPATH))
 )
 crystals.Append(CCFLAGS=warn_flags)
@@ -167,6 +177,7 @@ crystals.Append(LINKFLAGS=['-g'])
 event_sdl = crystals.Clone()
 gfx_sdl = event_sdl.Clone()
 python = crystals.Clone()
+lua = crystals.Clone()
 
 # -- CONFIGURE --
 #
@@ -220,17 +231,34 @@ else:
                   """ % GetOption('py_ver')
             Exit()
     
+    python = config.Finish()
     python.ParseConfig('%s --cflags' % py_conf)
-    python.ParseConfig('%s --ldflags' % py_conf )
+    python.ParseConfig('%s --ldflags' % py_conf)
 
     HAS_PYTHON2 = True
 
-python = config.Finish()
+
+# Lua
+config = Configure(lua)
+if not config.CheckLibWithHeader('lua', 'lua.h', ''):
+    if GetOption("with-lua"):
+        print "Lua not found, exit build"
+        Exit()
+    else:
+        print "Lua not found, skip lua module"
+else:
+    lua = config.Finish()
+    lua.ParseConfig('pkg-config lua --libs')
+    HAS_LUA = True
 
 # SDL
 config = Configure(event_sdl)
 if not config.CheckLibWithHeader('SDL', 'SDL/SDL.h', 'c'):
-    print "SDL not found, skip sdl modules"
+    if GetOption("with-sdl"):
+        print "SDL not found, exit build"
+        Exit()
+    else:
+        print "SDL not found, skip sdl modules"
 else:
     HAS_SDL = True
     event_sdl = config.Finish()
@@ -244,10 +272,8 @@ else:
     if not config.CheckLib('SDL_image'):
         print "SDL_image not found, skip gfx sdl module"
     else:
+        gfx_sdl = config.Finish()
         HAS_SDL_IMAGE = True
-
-gfx_sdl = config.Finish()
-
 
 # -- MAIN BUILD --
 #
@@ -268,18 +294,25 @@ if HAS_SDL:
 if HAS_PYTHON2:
     py_so = python.SharedLibrary('modules/bindings-python.c')
 
+# Lua
+if HAS_LUA:
+    lua_so = lua.SharedLibrary('modules/bindings-lua.c')
+
 # -- INSTALL --
 #
+MODULEDIR='$DESTDIR/$LIBDIR'
 Alias('install', crystals.Install('$DESTDIR/$BINDIR', prog))
 
 if HAS_SDL:
-    Alias('install', event_sdl.Install('$DESTDIR/$LIBDIR', evt_sdl_so))
+    Alias('install', event_sdl.Install(MODULEDIR, evt_sdl_so))
     
     if HAS_SDL_IMAGE:
-        Alias('install', gfx_sdl.Install('$DESTDIR/$LIBDIR', gfx_sdl_so))
-
+        Alias('install', gfx_sdl.Install(MODULEDIR, gfx_sdl_so))
 
 if HAS_PYTHON2:
-    Alias('install', python.Install('$DESTDIR/$LIBDIR', py_so))
+    Alias('install', python.Install(MODULEDIR, py_so))
+
+if HAS_LUA:
+    Alias('install', lua.Install(MODULEDIR, lua_so))
 
 # vim: set filetype=python:
