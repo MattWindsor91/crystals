@@ -39,7 +39,7 @@
 #include "mapview.h"
 
 
-/** @file     events.h
+/** @file     bindings.h
  *  @author   Alexander Preisinger
  *  @brief    Prototypes and declarations for generic language bindings.
  */

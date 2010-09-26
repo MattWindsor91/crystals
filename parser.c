@@ -180,7 +180,7 @@ cleanup_parser (void)
 }
 
 static char*
-get_value(const char *key, struct node_t *node)
+get_value(const char *key, node_t *node)
 {
   if (node->key != NULL)
     {
@@ -204,10 +204,10 @@ get_value(const char *key, struct node_t *node)
 }
 
 static int
-add_pair (char *key, char *value, struct node_t *node)
+add_pair (char *key, char *value, node_t *node)
 {
-  struct node_t *n_left;
-  struct node_t *n_right;
+  node_t *n_left;
+  node_t *n_right;
 
   if (node->key == NULL)
     {
@@ -217,8 +217,8 @@ add_pair (char *key, char *value, struct node_t *node)
       node->value = malloc (sizeof (char) * strlen (value) + 1);
       strcpy (node->value, value);
 
-      n_left = malloc (sizeof (struct node_t));
-      n_right = malloc (sizeof (struct node_t));
+      n_left = malloc (sizeof (node_t));
+      n_right = malloc (sizeof (node_t));
 
       node->left = node_init (n_left);
       node->right = node_init (n_right);
@@ -241,8 +241,8 @@ add_pair (char *key, char *value, struct node_t *node)
     }
 }
 
-static struct node_t*
-node_init (struct node_t *node)
+static node_t*
+node_init (node_t *node)
 {
   node->key = NULL;
   node->value = NULL;
@@ -252,7 +252,7 @@ node_init (struct node_t *node)
 }
 
 static void
-free_node (struct node_t *node)
+free_node (node_t *node)
 {
   if (node->key == NULL)
     {

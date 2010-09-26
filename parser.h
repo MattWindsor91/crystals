@@ -41,38 +41,112 @@
  *  @brief    Prototypes and declarations for the configuration parser.
  */
 
+typedef struct node_t node_t;
+
+/** Node struct for a key-value tree
+ *
+ * Stores key, value and two branches
+ *
+ * If the key to add or the key you want to get is smaller
+ * it will stored or searche in the left branch, if the key is bigger
+ * it will be stored or searched in the right brach.
+ */
+
 struct node_t
 {
-  char *key;
-  char *value;
+  char *key;            /**< key item of the node. */
+  char *value;          /**< value item of the node. */
   /* strcmp == -1 */
-  struct node_t *left;
+  node_t *left;  /**< Left branch of the node. */
   /* strcmp == 1 */
-  struct node_t *right;
+  node_t *right; /**< Right branch of the node. */
 };
 
-static struct node_t sg_root;
+/* GLOBAL VARIABLES */
+static node_t sg_root;
+
+
+/* FUNCTION PROTOTYPES */
+
+/** Initializes the parser. */
 
 void
 parser_init (void);
 
+
+/** Clean up the parser
+ *
+ * Free all allocated memory.
+ */
+
 void
 cleanup_parser (void);
+
+
+/** Parse configuration file.
+ *
+ * @param path_name The path to the configuration file.
+ *
+ * @return Returns SUCCESS, if file has valid syntax and can be parsed, else
+ * it returns FAILURE. (Defined in util.h)
+ */
 
 int
 config_parse_file (const char *path_name);
 
+
+/** Get the value of the appropriate key.
+ *
+ * @param key Pass a string, which will be searched in the tree.
+ *
+ * @return Return the value to the appropriate key or NULL if none is found.
+ */
+
 char*
 config_get_value (const char *key);
+
+
+/** Internal Funtion for getting the value.
+ *
+ * @param key   The key to search for.
+ * @param node  The next branch to search in.
+ *
+ * @return Return the value to the appropriate key or NULL if none is found.
+ */
 
 static char*
 get_value (const char *key, struct node_t *node);
 
+
+/** Internal Funtion for adding a key-value pair to the tree.
+ *
+ * @param key   The string which will be added as key.
+ * @param value The string which will be added as key.
+ * @param node  The branch in which the key-value pair will be added.
+ *
+ * @return Returns SUCCESS, if the key-value pair can be added, if not or
+ * the key already exists return FAILURE. (Defined in util.h)
+ */
+
 static int
 add_pair (char *key, char *value, struct node_t *node);
 
+
+/** Internal Function for initializing a node.
+ *
+ * @param node The node which will be initialized.
+ *
+ * @param Return the initialized node.
+ */
+
 static struct node_t*
 node_init (struct node_t *node);
+
+
+/** Internal Function for freeing allocated memory in nodes.
+ *
+ * @param node The data in the node will be freed.
+ */
 
 static void
 free_node (struct node_t *node);
