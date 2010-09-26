@@ -45,11 +45,19 @@ struct node_t
 {
   char *key;
   char *value;
+  /* strcmp == -1 */
   struct node_t *left;
+  /* strcmp == 1 */
   struct node_t *right;
 };
 
 static struct node_t sg_root;
+
+void
+parser_init (void);
+
+void
+cleanup_parser (void);
 
 int
 config_parse_file (const char *path_name);
@@ -57,7 +65,16 @@ config_parse_file (const char *path_name);
 char*
 config_get_value (const char *key);
 
+static char*
+get_value (const char *key, struct node_t *node);
+
 static int
-add_pair (char *key, char *value);
+add_pair (char *key, char *value, struct node_t *node);
+
+static struct node_t*
+node_init (struct node_t *node);
+
+static void
+free_node (struct node_t *node);
 
 /* vim: set ts=2 sw=2 softtabstop=2: */

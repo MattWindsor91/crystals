@@ -1,4 +1,6 @@
-hallo =hey # some comment
 
-# Comment
-du    =     da
+
+wer = ich
+#wo = hier
+wann = jetzt
+

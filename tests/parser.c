@@ -1,9 +1,18 @@
 
 #include "../parser.h"
+#include "../util.h"
+#include <stdio.h>
 
-int 
+int
 main (int argc, char *argv[])
 {
-  config_parse_file ("parser.txt");
+  parser_init ();
+  if (config_parse_file ("parser.txt") == SUCCESS)
+  {
+    printf("SUCCESS\n");
+    printf ("%s\n", config_get_value ("wo"));
+  }
+  cleanup_parser ();
   return 0;
 }
+
