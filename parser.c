@@ -15,9 +15,12 @@ int
 config_parse_file (const char *path_name)
 {
   /* simple booleans b_* */
-  char b_ignore = FALSE;
-  char b_value = FALSE;
-  char b_whitespace = FALSE;
+  bool_t b_key = FALSE;
+  bool_t b_value = FALSE;
+  bool_t b_switch = FALSE;
+  bool_t b_ignore = FALSE;
+  bool_t b_whitespace = FALSE;
+  bool_t b_error = FALSE;
 
   char c;
   int line_counter = 1;
@@ -27,20 +30,26 @@ config_parse_file (const char *path_name)
 
   FILE *stream;
 
-  sk = key = malloc ((sizeof (char)) * 100);
-  sv = value = malloc ((sizeof (char)) * 100);
+  sk = key = malloc (sizeof (char) * 100);
+  sv = value = malloc (sizeof (char) * 100);
 
   stream = fopen (path_name, "r");
 
   if (stream != NULL)
     {
-      while ((c = (char) fgetc (stream)) != EOF)
+      while ((c = (char) fgetc (stream)) != EOF && b_error == FALSE)
         {
+          /* check if someone wants to exploit us */
+          if (key - sk == 99)
+            {
+              fprintf (stderr, "Key is too long: %d \n", line_counter);
+              b_error = TRUE;
+            }
           if (b_ignore)
             {
               if (c == '\n')
                 {
-                  if (key - sk > 0 && value - sv > 0)
+                  if (b_key && b_value)
                     {
                       *value = '\0';
                       key = sk;
@@ -49,11 +58,13 @@ config_parse_file (const char *path_name)
                         {
                           fprintf (stderr, "Key is already present: %d \n",
                             line_counter);
-                          return FAILURE;
+                          b_error = TRUE;
                         }
-                      b_value = FALSE;
                     }
                   ++line_counter;
+                  b_key = FALSE;
+                  b_value = FALSE;
+                  b_switch = FALSE;
                   b_ignore = FALSE;
                   b_whitespace = FALSE;
                 }
@@ -64,11 +75,11 @@ config_parse_file (const char *path_name)
                 {
                   case '#':
                     /* key is present but not a value */
-                    if (key - sk > 0 && value - sv == 0)
+                    if (b_key == TRUE && b_value == FALSE)
                       {
                         fprintf (stderr, "Invalid config syntax at line %d \n",
                           line_counter);
-                        return FAILURE;
+                        b_error = TRUE;
                       }
                     else
                       {
@@ -77,15 +88,15 @@ config_parse_file (const char *path_name)
                     break;
                   case '\n':
                     /* key is present but not a value */
-                    if (key - sk > 0 && value - sv == 0)
+                    if (b_key == TRUE && b_value == FALSE)
                       {
                         fprintf (stderr, "Invalid config syntax at line %d \n",
                           line_counter);
-                        return FAILURE;
+                        b_error = TRUE;
                       }
                     else
                       {
-                        if (key - sk > 0)
+                        if (b_key)
                           {
                             *value = '\0';
                             key = sk;
@@ -95,26 +106,28 @@ config_parse_file (const char *path_name)
                                 fprintf (stderr,
                                   "Key is already present: %d \n",
                                   line_counter);
-                                return FAILURE;
+                                b_error = TRUE;
                               }
-                            b_whitespace = FALSE;
                           }
                       }
+                    b_key = FALSE;
                     b_value = FALSE;
+                    b_switch = FALSE;
+                    b_whitespace = FALSE;
                     ++line_counter;
                     break;
                   case '=':
-                    if (b_value == FALSE)
+                    if (b_switch == FALSE)
                       {
                         *key = '\0';
-                        b_value = TRUE;
                         b_whitespace = FALSE;
+                        b_switch = TRUE;
                       }
                     else
                       {
                         fprintf (stderr, "Invalid config syntax at line %d \n",
                           line_counter);
-                        return FAILURE;
+                        b_error = TRUE;
                       }
                     break;
                   case ' ':
@@ -124,21 +137,23 @@ config_parse_file (const char *path_name)
                       }
                     break;
                   default:
-                    if (b_whitespace == TRUE && value - sv > 0)
+                    if (b_whitespace == TRUE && b_value == TRUE)
                       {
                         fprintf (stderr, "Invalid config syntax at line %d \n",
                           line_counter);
-                        return FAILURE;
+                        b_error = TRUE;
                       }
                     else
                       {
-                        if (b_value == FALSE)
+                        if (b_switch == FALSE)
                           {
+                            b_key = TRUE;
                             *key = c;
                             ++key;
                           }
                         else
                           {
+                            b_value = TRUE;
                             *value = c;
                             ++value;
                           }
@@ -155,13 +170,16 @@ config_parse_file (const char *path_name)
   else
     {
       fprintf(stderr, "Couldn't open the file");
-      return FAILURE;
+      b_error = TRUE;
     }
 
   free (key);
   free (value);
 
-  return SUCCESS;
+  if (b_error)
+    return FAILURE;
+  else
+    return SUCCESS;
 }
 
 char*
@@ -256,7 +274,6 @@ free_node (node_t *node)
 {
   if (node->key == NULL)
     {
-
       free (node);
     }
   else
