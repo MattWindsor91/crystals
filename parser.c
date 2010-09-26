@@ -5,6 +5,12 @@
 #include "util.h"
 #include "parser.h"
 
+void
+parser_init (void)
+{
+  node_init (&sg_root);
+}
+
 int
 config_parse_file (const char *path_name)
 {
@@ -20,11 +26,9 @@ config_parse_file (const char *path_name)
   char *value, *sv;
 
   FILE *stream;
-  
-  
+
   sk = key = malloc ((sizeof (char)) * 100);
   sv = value = malloc ((sizeof (char)) * 100);
-
 
   stream = fopen (path_name, "r");
 
@@ -39,9 +43,14 @@ config_parse_file (const char *path_name)
                   if (key - sk > 0 && value - sv > 0)
                     {
                       *value = '\0';
-                      key = key - (key - sk);
-                      value = value - (value - sv);
-                      add_pair (key, value);
+                      key = sk;
+                      value = sv;
+                      if (add_pair (key, value, &sg_root) == FAILURE)
+                        {
+                          fprintf (stderr, "Key is already present: %d \n",
+                            line_counter);
+                          return FAILURE;
+                        }
                       b_value = FALSE;
                     }
                   ++line_counter;
@@ -79,9 +88,15 @@ config_parse_file (const char *path_name)
                         if (key - sk > 0)
                           {
                             *value = '\0';
-                            key = key - (key - sk);
-                            value = value - (value - sv);
-                            add_pair (key, value);
+                            key = sk;
+                            value = sv;
+                            if (add_pair (key, value, &sg_root) == FAILURE)
+                              {
+                                fprintf (stderr,
+                                  "Key is already present: %d \n",
+                                  line_counter);
+                                return FAILURE;
+                              }
                             b_whitespace = FALSE;
                           }
                       }
@@ -152,17 +167,106 @@ config_parse_file (const char *path_name)
 char*
 config_get_value (const char *key)
 {
-  /* FIXME */
-  return (char*) key;
+  return get_value (key, &sg_root);
+}
+
+void
+cleanup_parser (void)
+{
+  free_node (sg_root.left);
+  free_node (sg_root.right);
+  free (sg_root.key);
+  free (sg_root.value);
+}
+
+static char*
+get_value(const char *key, struct node_t *node)
+{
+  if (node->key != NULL)
+    {
+      if (strcmp (key, node->key) == -1)
+        {
+          return get_value (key, node->left);
+        }
+      else if (strcmp (key, node->key) == 1)
+        {
+          return get_value (key, node->right);
+        }
+      else
+        {
+          return node->value;
+        }
+    }
+  else
+    {
+      return NULL;
+    }
 }
 
 static int
-add_pair (char *key, char *value)
+add_pair (char *key, char *value, struct node_t *node)
 {
-  /* FIXME */
-  (void) key;
-  (void) value;
-  return 0;
+  struct node_t *n_left;
+  struct node_t *n_right;
+
+  if (node->key == NULL)
+    {
+      node->key = malloc (sizeof (char) * strlen (key) + 1);
+      strcpy (node->key, key);
+
+      node->value = malloc (sizeof (char) * strlen (value) + 1);
+      strcpy (node->value, value);
+
+      n_left = malloc (sizeof (struct node_t));
+      n_right = malloc (sizeof (struct node_t));
+
+      node->left = node_init (n_left);
+      node->right = node_init (n_right);
+      return SUCCESS;
+    }
+  else
+    {
+      if (strcmp (key, node->key) == -1)
+        {
+          return add_pair (key, value, node->left);
+        }
+      else if (strcmp (key, node->key) == 1)
+        {
+          return add_pair (key, value, node->right);
+        }
+      else
+        {
+          return FAILURE;
+        }
+    }
+}
+
+static struct node_t*
+node_init (struct node_t *node)
+{
+  node->key = NULL;
+  node->value = NULL;
+  node->left = NULL;
+  node->right = NULL;
+  return node;
+}
+
+static void
+free_node (struct node_t *node)
+{
+  if (node->key == NULL)
+    {
+
+      free (node);
+    }
+  else
+    {
+      free_node (node->left);
+      free_node (node->right);
+      free (node->key);
+      free (node->value);
+      free (node);
+    }
 }
 
 /* vim: set ts=2 sw=2 softtabstop=2: */
