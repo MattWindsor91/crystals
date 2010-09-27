@@ -46,6 +46,7 @@
 
 #include <stdio.h>
 #include "../util.h"
+
 /** Initialise the python module. */
 
 void
@@ -68,6 +69,8 @@ term (void);
 
 int
 run_file (const char* path);
+
+/** Run a test */
 
 static PyObject*
 crystals_test (PyObject *self, PyObject *args);
@@ -98,7 +101,7 @@ run_file (const char* path)
 {
   FILE *file_stream;
   short EXIT;
-  
+
   Py_InitModule("crystals", CrystalsMethods);
 
   file_stream = fopen(path, "r");

@@ -71,7 +71,7 @@ init (void)
     }
 
   init_bindings ();
-  run_file ("tests/lua.lua"); 
+  run_file ("tests/lua.lua");
   init_events ();
 
   return SUCCESS;

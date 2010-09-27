@@ -50,38 +50,41 @@
 
 lua_State *g_lua;
 
-/** Initialise the python module. */
+enum {
+  L_SUCCESS,
+  L_FAILURE
+};
+
+
+/** Initialise the lua module. */
 
 void
 init (void);
 
 
-/** Terminate the python module. */
+/** Terminate the lua module. */
 
 void
 term (void);
 
 
 /** Execute the file
- *  The file has to be a valid python source
+ *  The file has to be a valid lua source
  *
  *  @param path Path to the file.
  *
  *  @return Returns SUCCESS if success else FAILURE
  * */
 
-enum {
-  L_SUCC,
-  L_FAIL
-};
-
 int
 run_file (const char* path);
 
+/** Run a test */
 
-/* -- DEFINITIONS -- */
 int
 crystals_test (lua_State *L);
+
+/* -- DEFINITIONS -- */
 
 void
 init (void)
@@ -98,11 +101,10 @@ term (void)
   lua_close(g_lua);
 }
 
-
 int
 run_file (const char *path)
 {
-  if (luaL_loadfile(g_lua, path) == L_SUCC)
+  if (luaL_loadfile(g_lua, path) == L_SUCCESS)
     {
       lua_pcall(g_lua, 0, 0, 0);
       return SUCCESS;
@@ -117,8 +119,9 @@ run_file (const char *path)
 int
 crystals_test (lua_State *L)
 {
-  (void) L;
-  printf("Crystals is the most awesome game ever.\n");
+  const char *s;
+  s = lua_tostring(L, -1);
+  printf("%s\n", s);
   return 1;
 }
 
