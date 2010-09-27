@@ -64,7 +64,7 @@ parameter_check(lua_State *L, const char *func_name, const char sig[])
 
   for (i = 1; i <= pars; ++i)
     {
-      switch (sig[i])
+      switch (sig[i-1])
         {
           case 's':
             if (lua_type(L, i) != LUA_TSTRING)
