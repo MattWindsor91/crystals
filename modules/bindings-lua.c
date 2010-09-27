@@ -91,7 +91,6 @@ parameter_check(lua_State *L, const char *func_name, const char sig[])
               }
             break;
           default:
-            printf("%s\n", sig);
             fprintf(stderr, "LUA: parameter_check: Uknown sig character %c\n",
               sig[i]);
             return 0;
