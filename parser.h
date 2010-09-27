@@ -75,7 +75,7 @@ static node_t sg_root;
 /** Initializes the parser. */
 
 void
-parser_init (void);
+init_parser (void);
 
 
 /** Clean up the parser

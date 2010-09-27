@@ -119,9 +119,20 @@ run_file (const char *path)
 int
 crystals_test (lua_State *L)
 {
-  const char *s;
-  s = lua_tostring(L, -1);
-  printf("%s\n", s);
+  /* Uff, I have to implement a generic argument check function. */
+  if (lua_gettop(L) != 1)
+    {
+      fprintf(stderr, "LUA: crystals_tests: Only takes 1 argument.\n");
+      return 0;
+    }
+  if (lua_type(L, 1) != LUA_TSTRING)
+    {  
+      fprintf(stderr, "LUA: crystals_tests: Argument has to be a string.\n");
+      return 0;
+    }
+  /* END ARGUMENT CHECK */
+
+  printf("%s\n", lua_tostring(L, 1));
   return 1;
 }
 

@@ -6,13 +6,18 @@
 int
 main (int argc, char *argv[])
 {
-  parser_init ();
-  if (config_parse_file ("parser.txt") == SUCCESS)
-  {
-    printf("SUCCESS\n");
-    printf ("%s\n", config_get_value ("wo"));
-  }
-  cleanup_parser ();
+  if (argc > 1)
+    {
+      parser_init ();
+      
+      if (config_parse_file ("../config/default.cfg") == SUCCESS)
+        {
+          printf ("%s\n", config_get_value ((const char*) argv[1]));
+        }
+     
+     cleanup_parser ();
+    
+    }
   return 0;
 }
 

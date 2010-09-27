@@ -5,6 +5,7 @@
 #include "main.h"
 #include "util.h"
 #include "object.h"
+#include "parser.h"
 #include "module.h"
 #include "events.h"
 #include "graphics.h"
@@ -36,7 +37,20 @@ main (int argc, char **argv)
 int
 init (void)
 {
-  if (init_modules (DEFMODPATH) == FAILURE)
+  char *module_path;
+
+  init_parser ();
+
+  if (config_parse_file ("config/default.cfg") == SUCCESS)
+    {
+      module_path = config_get_value ("module_path");
+    }
+  else
+    {
+      module_path = DEFMODPATH;
+    }
+
+  if (init_modules (module_path) == FAILURE)
     {
       fprintf (stderr, "ERROR: Could not init modules!\n");
       return FAILURE;
@@ -101,6 +115,7 @@ cleanup (void)
   cleanup_graphics ();
   cleanup_bindings ();
   cleanup_modules ();
+  cleanup_parser ();
 }
 
 /* vim: set ts=2 sw=2 softtabstop=2: */

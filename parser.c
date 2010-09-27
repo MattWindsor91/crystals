@@ -6,7 +6,7 @@
 #include "parser.h"
 
 void
-parser_init (void)
+init_parser (void)
 {
   node_init (&sg_root);
 }
@@ -42,8 +42,9 @@ config_parse_file (const char *path_name)
           /* check if someone wants to exploit us */
           if (key - sk == 99)
             {
-              fprintf (stderr, "Key is too long: %d \n", line_counter);
+              fprintf (stderr, "PARSER: Key is too long: %d \n", line_counter);
               b_error = TRUE;
+              break;
             }
           if (b_ignore)
             {
@@ -56,7 +57,7 @@ config_parse_file (const char *path_name)
                       value = sv;
                       if (add_pair (key, value, &sg_root) == FAILURE)
                         {
-                          fprintf (stderr, "Key is already present: %d \n",
+                          fprintf (stderr, "PARSER: Key is already present: %d \n",
                             line_counter);
                           b_error = TRUE;
                         }
@@ -77,7 +78,7 @@ config_parse_file (const char *path_name)
                     /* key is present but not a value */
                     if (b_key == TRUE && b_value == FALSE)
                       {
-                        fprintf (stderr, "Invalid config syntax at line %d \n",
+                        fprintf (stderr, "PARSER: Invalid config syntax at line %d \n",
                           line_counter);
                         b_error = TRUE;
                       }
@@ -90,7 +91,7 @@ config_parse_file (const char *path_name)
                     /* key is present but not a value */
                     if (b_key == TRUE && b_value == FALSE)
                       {
-                        fprintf (stderr, "Invalid config syntax at line %d \n",
+                        fprintf (stderr, "PARSER: Invalid config syntax at line %d \n",
                           line_counter);
                         b_error = TRUE;
                       }
@@ -104,7 +105,7 @@ config_parse_file (const char *path_name)
                             if (add_pair (key, value, &sg_root) == FAILURE)
                               {
                                 fprintf (stderr,
-                                  "Key is already present: %d \n",
+                                  "PARSER: Key is already present: %d \n",
                                   line_counter);
                                 b_error = TRUE;
                               }
@@ -125,7 +126,7 @@ config_parse_file (const char *path_name)
                       }
                     else
                       {
-                        fprintf (stderr, "Invalid config syntax at line %d \n",
+                        fprintf (stderr, "PARSER: Invalid config syntax at line %d \n",
                           line_counter);
                         b_error = TRUE;
                       }
@@ -139,7 +140,7 @@ config_parse_file (const char *path_name)
                   default:
                     if (b_whitespace == TRUE && b_value == TRUE)
                       {
-                        fprintf (stderr, "Invalid config syntax at line %d \n",
+                        fprintf (stderr, "PARSER: Invalid config syntax at line %d \n",
                           line_counter);
                         b_error = TRUE;
                       }
@@ -169,7 +170,7 @@ config_parse_file (const char *path_name)
     }
   else
     {
-      fprintf(stderr, "Couldn't open the file");
+      fprintf(stderr, "PARSER: Could not open the file %s .\n", path_name);
       b_error = TRUE;
     }
 
