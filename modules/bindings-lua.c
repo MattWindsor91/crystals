@@ -62,31 +62,31 @@ parameter_check(lua_State *L, const char *func_name, const char sig[])
       return 0;
     }
 
-  for (i = 0; i < pars; ++i)
+  for (i = 1; i <= pars; ++i)
     {
       switch (sig[i])
         {
           case 's':
-            if (lua_type(L, i + 1) != LUA_TSTRING)
+            if (lua_type(L, i) != LUA_TSTRING)
               {
                 fprintf(stderr, "LUA: %s: Parameter %d has to be a string.\n",
-                  func_name, i + 1);
+                  func_name, i);
                 return 0;
               }
             break;
           case 'd':
-            if (lua_type(L, i + 1) != LUA_TNUMBER)
+            if (lua_type(L, i) != LUA_TNUMBER)
               {
                 fprintf(stderr, "LUA: %s: Parameter %d has to be a number.\n",
-                  func_name, i + 1);
+                  func_name, i);
                 return 0;
               }
             break;
           case 'b':
-            if (lua_type(L, i + 1) != LUA_TBOOLEAN)
+            if (lua_type(L, i) != LUA_TBOOLEAN)
               {
                 fprintf(stderr, "LUA: %s: Parameter %d has to be a boolean.\n",
-                  func_name, i + 1);
+                  func_name, i);
                 return 0;
               }
             break;
