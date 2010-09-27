@@ -50,7 +50,7 @@ modules/event-sdl.so: CFLAGS += `sdl-config --cflags`
 modules/bindings-python.so: LIBS   += `python-config --libs`
 modules/bindings-python.so: CFLAGS += `python-config --cflags`
 
-modules/bindings-lua.so: LIBS += `pkg-config --libs`
+modules/bindings-lua.so: LIBS += `pkg-config --libs lua`
 
 modules: $(SOBJ)
 

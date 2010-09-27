@@ -38,7 +38,7 @@
 
 /** @file bindings-lua.c
  * @author Alexander Preisinger
- * @brief Lau module for scripting
+ * @brief Lua module for scripting
  */
 
 #include <lua.h>
