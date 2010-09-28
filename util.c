@@ -43,24 +43,4 @@
 
 #include "util.h"
 
-int
-ascii_hash (const char string[])
-{
-  unsigned char *p;
-  int h;
-
-  h = 0;
-
-  /* For each character in the string, multiply the current hash value by the 
-   * hash multiplier and then add the value of the next character.
-   *
-   *  (derived from Kernighan and Pike, ``The Practice of Programming'')
-   */
-
-  for (p = (unsigned char*) string; *p != '\0'; p++)
-    h = (HASH_MUL * h) + *p;
-
-  /* Return the modulus so that the value is in between 0 and the hash 
-     value upper bound. */
-  return h % HASH_VALS;
-}
+/* Space for rent */

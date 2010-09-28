@@ -1,8 +1,8 @@
 BIN      := maprender-test
 
 TESTS    := tests/module tests/optionparser
-OBJ      := main.o object.o graphics.o map.o mapview.o events.o optionparser.o
-OBJ      += util.o bindings.o module.o parser.o
+OBJ      := main.o hash.o object.o graphics.o map.o mapview.o events.o
+OBJ      += util.o bindings.o module.o optionparser.o parser.o
 
 SOBJ     := modules/gfx-sdl.so modules/event-sdl.so modules/bindings-python.so
 SOBJ	 += modules/bindings-lua.so
