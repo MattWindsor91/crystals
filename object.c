@@ -375,7 +375,67 @@ get_object (const char object_name[], struct hash_object *add_pointer)
   else
     return (struct object_t*) result->data;
 } 
-            
+
+int
+dirty_object_test (struct hash_object *hash_object, va_list ap)
+{
+  struct object_t *object;
+  struct map_view *mapview;
+  long start_x;
+  long start_y;
+  unsigned int width;
+  unsigned int height;
+
+  /* Sanity-check the hash object. */
+
+  if (hash_object == NULL)
+    {
+      fprintf (stderr, "OBJECT: Error: Given hash object is NULL.\n");
+      return FAILURE;
+    }
+
+  if (hash_object->data == NULL)
+    {
+      fprintf (stderr, "OBJECT: Error: Hash object has no data.\n");
+      return FAILURE;
+    }
+
+  object = (struct object_t *) hash_object->data;
+
+ /* If an object is already dirty, don't bother checking. */
+
+  if (object->is_dirty == TRUE)
+    return SUCCESS;
+
+  mapview = va_arg (ap, struct map_view *);
+  start_x = va_arg (ap, long);
+  start_y = va_arg (ap, long);
+  width   = va_arg (ap, unsigned int);
+  height  = va_arg (ap, unsigned int);
+
+  /* Use separating axis theorem, sort of, to decide whether the
+     object rect and the dirty rect intersect. */
+
+  if ((object->image->map_x <= (start_x + width) * TILE_W)
+      && (object->image->map_x
+          + object->image->width >= start_x * TILE_W)
+      && (object->image->map_y <= (start_y + height) * TILE_H)
+      && (object->image->map_y
+          + object->image->height >= start_y * TILE_H))
+    {
+      set_object_dirty (object, mapview);
+
+      /* Mark the nearby tiles. */
+
+      mark_dirty_rect (mapview,
+                       (object->image->map_x / TILE_W) - 1, 
+                       (object->image->map_y / TILE_H) - 1, 
+                       MAX (3, object->image->width / TILE_W), 
+                       MAX (3, object->image->height / TILE_H));
+    }
+  return SUCCESS;
+}
+
 void
 cleanup_objects (void)
 {

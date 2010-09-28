@@ -59,6 +59,12 @@ enum
                        pixel.) */
   };
 
+/** Initialise the graphics subsystem.
+ *
+ *  @return  SUCCESS if the graphics subsystem was initialised
+ *  successfully; FAILURE otherwise.
+ */
+
 int
 init_graphics (void);
 

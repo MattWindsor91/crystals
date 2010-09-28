@@ -150,7 +150,7 @@ delete_hash_object (struct hash_object *head[],
 void
 clear_hash_objects (struct hash_object *head[]);
 
-/** Retrieve an hash table node, or one to a hash table.
+/** Retrieve an hash table node, or add one to a hash table.
  *
  *  @param head  Double-pointer to the head of the hash table. 
  *
@@ -170,5 +170,36 @@ struct hash_object *
 get_hash_object (struct hash_object *head[], 
                  const char name[],
                  struct hash_object *add_pointer);
+
+/** Wrapper to get_hash_object for use in finding hash objects.
+ *
+ *  @param head  Double-pointer to the head of the hash table. 
+ *
+ *  @param name  Unique name/identifier of the object.
+ */
+
+struct hash_object *
+find_hash_object (struct hash_object *head[], 
+                  const char name[]);
+
+/** Apply the given function to all members of the hash table.
+ *
+ *  @param head      Double-pointer to the head of the hash table.
+ *
+ *  @param function  Pointer to the function to apply to the
+ *                   object.  The function must take the hash object
+ *                   as first parameter followed by a variadic
+ *                   parameter set (va_list), and return a
+ *                   SUCCESS/FAILURE int.
+ *
+ *  @return SUCCESS if all applications of the function succeeded,
+ *  FAILURE otherwise.
+ */
+
+int
+apply_to_hash_objects (struct hash_object *head[], 
+                       int (*function) (struct hash_object *object, 
+                                        va_list ap),
+                       ...);
 
 #endif /* not _HASH_H */

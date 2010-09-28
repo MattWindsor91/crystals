@@ -146,7 +146,7 @@ draw_image (const char filename[],
 {
   struct hash_object *img;
 
-  img = get_image (filename, NULL);
+  img = find_hash_object (sg_images, filename);
 
   /* Image not preloaded - try to load it now. */
 
