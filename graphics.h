@@ -68,16 +68,81 @@ enum
 int
 init_graphics (void);
 
+/** Fill the screen with the given colour.
+ *
+ *  Depending on the graphics module, the colour displayed on screen
+ *  may not exactly match the desired colour.
+ *
+ *  @param red     The red component of the fill colour (0-255).
+ *
+ *  @param green   The green component of the fill colour (0-255).
+ *
+ *  @param blue    The blue component of the fill colour (0-255).
+ */
+
 void
 fill_screen (unsigned char red,
              unsigned char green,
              unsigned char blue);
 
+/** Load an image.
+ *
+ *  This does not need to be called directly in normal circumstances,
+ *  as draw_image automatically loads its requested image if it is not
+ *  present in the image cache.  Still, this function may be useful on
+ *  its own for pre-caching images, especially on systems with
+ *  noticeably slow disk access.
+ *
+ *  @warning  This function presently assumes that the image has not
+ *  already been loaded.  Functions calling load_image should check
+ *  beforehand that the image has not been loaded.
+ *
+ *  @param filename  The filename of the image to load.
+ *
+ *  @return  a hash_object encapsulating the image data if
+ *  successfully loaded and stored in the image cache; NULL otherwise.
+ */
+
 struct hash_object *
 load_image (const char filename[]);
 
+/** Free image data.
+ *
+ *  This is, at time of writing, merely a wrapper for the driver
+ *  free_image_data function.
+ *
+ *  @param image  Pointer to the image data to free.
+ */
+
 void
 free_image (void *image);
+
+/** Draw a rectangular portion of an image on-screen.
+ *
+ *  This will pre-load the image into the cache, if it does not
+ *  already exist there.
+ *
+ *  @param filename  The filename of the image.
+ *
+ *  @param image_x   The X-coordinate of the left edge of the
+ *                   on-image rectangle to display.
+ *
+ *  @param image_y   The Y-coordinate of the top edge of the
+ *                   on-image rectangle to display.
+ *
+ *  @param screen_x  The X-coordinate of the left edge of the
+ *                   on-screen rectangle to place the image in.
+ *
+ *  @param screen_y  The Y-coordinate of the top edge of the
+ *                   on-screen rectangle to place the image in.
+ *
+ *  @param width     The width of the rectangle.
+ *
+ *  @param height    The height of the rectangle.
+ *
+ *  @return  SUCCESS for success, FAILURE otherwise. In most
+ *           cases, a failure will simply cause the image to not appear.
+ */
 
 int
 draw_image (const char filename[],
@@ -99,11 +164,25 @@ clear_images (void);
 struct hash_object *
 get_image (const char filename[], struct hash_object *add_pointer);
 
+/** Update the screen. */
+
 void
 update_screen (void);
 
+/** Scroll the screen one pixel in the given direction.
+ *
+ *  This does NOT repair the damage done to the screen - it is
+ *  expected that subsequent functions will fill in the gap left by
+ *  the scroll with colour or image data.
+ *
+ *  @param direction  The direction (NORTH, SOUTH, EAST or WEST) in
+ *                     which to scroll the screen.
+ */
+
 void
 scroll_screen (unsigned int direction);
+
+/** Clean up the graphics subsystem. */
 
 void
 cleanup_graphics (void);
