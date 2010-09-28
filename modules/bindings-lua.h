@@ -36,9 +36,9 @@
 * OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-/** @file bindings-lua.h
- * @author Alexander Preisinger
- * @brief Lua module for scripting
+/** @file   bindings-lua.h
+ *  @author Alexander Preisinger
+ *  @brief  Lua module for scripting
  */
 
 #ifndef _H_BINDINGS_LUA
