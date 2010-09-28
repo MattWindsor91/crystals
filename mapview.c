@@ -470,6 +470,7 @@ mark_dirty_rect (struct map_view *mapview,
 {
   long x, y;
   int i;
+  struct hash_object *hash_object;
   struct object_t *object;
 
   /* Sanity checking. */
@@ -503,10 +504,15 @@ mark_dirty_rect (struct map_view *mapview,
 
   /* Mark dirty objects. */
 
+  /** @todo FIXME: Have a generic apply function. */
+
   for (i = 0; i < HASH_VALS; i++)
     {
-      for (object = g_objects[i]; object != NULL; object = object->next)
+      for (hash_object = g_objects[i];
+           hash_object != NULL;
+           hash_object = hash_object->next)
         {
+          object = (struct object_t *) hash_object->data;
 
           /** @todo FIXME: information hiding. */
 
@@ -528,8 +534,7 @@ mark_dirty_rect (struct map_view *mapview,
                                (object->image->map_x / TILE_W) - 1, 
                                (object->image->map_y / TILE_H) - 1, 
                                MAX (3, object->image->width / TILE_W), 
-                               MAX (3, object->image->height / TILE_H));
-              
+                               MAX (3, object->image->height / TILE_H));   
             }
         }
     }

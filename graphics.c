@@ -1,3 +1,46 @@
+/*
+ * Crystals (working title) 
+ *
+ * Copyright (c) 2010 Matt Windsor, Michael Walker and Alexander
+ *                    Preisinger.
+ *
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ *   * Redistributions of source code must retain the above copyright
+ *     notice, this list of conditions and the following disclaimer.
+ *
+ *   * Redistributions in binary form must reproduce the above
+ *     copyright notice, this list of conditions and the following
+ *     disclaimer in the documentation and/or other materials provided
+ *     with the distribution.
+ *
+ *   * The names of contributors may not be used to endorse or promote
+ *     products derived from this software without specific prior
+ *     written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+ * AFOREMENTIONED COPYRIGHT HOLDERS BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+ * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
+ * OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+/** @file    graphics.c
+ *  @author  Matt Windsor
+ *  @brief   Generic graphics system.
+ */
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -6,7 +49,7 @@
 #include "util.h"
 #include "module.h"
 
-static struct image_t *sg_images[HASH_VALS];
+static struct hash_object *sg_images[HASH_VALS];
 
 int
 init_graphics (void)
@@ -39,13 +82,13 @@ fill_screen (unsigned char red,
   (*g_modules.gfx.draw_rect) (0, 0, SCREEN_W, SCREEN_H, red, green, blue);
 }
 
-struct image_t *
+struct hash_object *
 load_image (const char filename[])
 {
-  struct image_t *image;
-  struct image_t *result;
+  struct hash_object *image;
+  void *data;
 
-  /* Check to see if the filename is sane. */
+  /* Sanity-check the filename. */
 
   if (filename == NULL)
     {
@@ -53,70 +96,41 @@ load_image (const char filename[])
       return NULL;
     }
 
-  /* If so, first try to allocate space for the image. */
+  /* First, try to load the image data. */
 
-  image = malloc (sizeof (struct image_t));
+  data = (*g_modules.gfx.load_image_data) (filename);
+
+  if (data == NULL)
+    {
+      fprintf (stderr, "GFX: Error: Couldn't load image data for %s.\n", 
+               filename);
+      return NULL;
+    }
+
+  /* Then try to allocate a hash object. */
+
+  image = create_hash_object (sg_images, 
+                              filename, 
+                              DATA_IMAGE, 
+                              data);
 
   if (image == NULL)
     {
-      fprintf (stderr, "GFX: Error: Allocation failed for %s.\n", 
+      fprintf (stderr, "GFX: Error: Hash object create failed for %s.\n", 
                filename);
+      free_image (data);
       return NULL;
     }
 
-  /* Try to copy the filename over. */
-
-  image->filename = malloc (sizeof (char) * (strlen (filename) + 1));
-
-  if (image->filename == NULL)
-    {
-      fprintf (stderr, "GFX: Error: FN allocation failed for %s.\n", 
-               filename);
-      free_image (image);
-      return NULL;
-    }
-
-  strncpy (image->filename, filename, sizeof (char) * strlen (filename) + 1);
-
-  /* Finally, try to load data. */
-
-  image->data = (*g_modules.gfx.load_image_data) (filename);
-
-  if (image->data == NULL)
-    {
-      fprintf (stderr, "GFX: Error: Data load failed for %s.\n", 
-               filename);
-      free_image (image);
-      return NULL;
-    }
-
-  /* Try to store the image. */
-
-  result = get_image (filename, image);
-
-  if (result == NULL)
-    {
-      fprintf (stderr, "GFX: Error: Store failed for %s.\n", 
-               filename);
-      free_image (image);
-      return NULL;
-    }
-
-  return result;
+  return image;
 }
 
 void
-free_image (struct image_t *image)
+free_image (void *image)
 {
   if (image)
     {
-      if (image->filename)
-        free (image->filename);
-
-      if (image->data)
-        (*g_modules.gfx.free_image_data) (image->data);
-
-      free (image);
+      (*g_modules.gfx.free_image_data) (image);
     }
 }
 
@@ -130,7 +144,7 @@ draw_image (const char filename[],
             unsigned short width,
             unsigned short height)
 {
-  struct image_t *img;
+  struct hash_object *img;
 
   img = get_image (filename, NULL);
 
@@ -159,90 +173,20 @@ draw_image (const char filename[],
 int
 delete_image (const char filename[])
 {
-  int h;
-  struct image_t *image, *prev;
-
-  h = ascii_hash (filename);
-  prev = NULL;
-
-  /* Iterate through the hash bucket to find the correct image, then 
-     delete its data and node. */
-  for (image = sg_images[h]; image != NULL; image = prev->next)
-    {
-      if (strcmp (filename, image->filename) == 0)
-        {
-          if (prev == NULL)
-            sg_images[h] = image->next;
-          else
-            prev->next = image->next;
-          
-          free_image (image);
-          return 1;
-      }
-    }
-  return 0;
+  return delete_hash_object (sg_images, filename);
 }
 
 /* Delete all images. */
 void
 clear_images (void)
 {
-  int i;
-  struct image_t *p, *next;
-  
-  for (i = 0; i < HASH_VALS; i++)
-    {
-      for (p = sg_images[i]; p != NULL; p = next)
-        {
-          next = p->next;
-          /* Delete the image data and node */
-          free_image (p);
-        }
-      sg_images[i] = NULL;
-  }
+  clear_hash_objects (sg_images);
 }
 
-struct image_t *
-get_image (const char filename[], struct image_t *add_pointer)
+struct hash_object *
+get_image (const char filename[], struct hash_object *add_pointer)
 {
-  int h; 
-  struct image_t *image;
-
-  /* Get the hash of the image's filename so we can search in the correct 
-     bucket. */
-  h = ascii_hash (filename);
-
-  /* Now try to find the image. */
-  for (image = sg_images[h]; image != NULL; image = image->next)
-    {
-      if (strcmp (filename, image->filename) == 0)
-        {
-          /* If there is a pointer to add, then replace the found image's 
-             data with the new pointer's data. */
-
-          if (add_pointer != NULL)
-            {
-              (*g_modules.gfx.free_image_data) (image->data);
-              image->data = add_pointer->data;
-
-              free_image (add_pointer);
-            }
-
-          return image;
-        }
-    }
-
-  /* If we are given a pointer to add, and the image doesn't already 
-     exist, then add the image to the start of the linked list. */
-  if (add_pointer)
-    {
-      add_pointer->next = sg_images[h];
-      sg_images[h] = add_pointer;
-      return sg_images[h];
-    }
-
-  /* Return NULL, if all else fails. */
-  return NULL;
+  return get_hash_object (sg_images, filename, add_pointer);
 }
 
 void

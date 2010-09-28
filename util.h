@@ -52,21 +52,6 @@
 
 enum
   {
-    GFX_HASH_NAME_LEN = 100, /**< Maximum size of the part of the
-                                image filename used by the hashing
-                                function. If the filename (relative
-                                to the image directory) is larger,
-                                then an error will be tripped. */
-
-    HASH_VALS = 10, /**< Number of hash values used in a hash table,
-                       and therefore the number of separate linked
-                       lists. Increasing this may increase performance. */
-
-    HASH_MUL  = 31, /**< Hash value used in the hash table
-                       algorithms. This value is taken from Kernighan
-                       and Pike's ``The Practice of Programming'', as
-                       is the algorithmic concept. */
-
     SUCCESS = 1, /**< Value raised by functions upon success. */
     FAILURE = 0, /**< Value raised by functions upon failure. */
     TRUE = 1,    /**< Boolean true value. */
@@ -83,18 +68,4 @@ enum
 #define MAX(x, y) ((x) > (y) ? (x) : (y)) /**< Get the maximum of two
                                              values. */
 
-/* -- PROTOTYPES -- */
-
-/** Return a basic hash of the given ASCII string, suitable for use in
- *  indexing for a hash table.
- *
- *  @param string  The sequence of characters to hash. 
- *
- *  @return  A hash of the input string, from 0 to HASH_VALS - 1
- *  inclusive.
- */
-
-int
-ascii_hash (const char string[]);
-
-#endif /* _UTIL_H */
+#endif /* not _UTIL_H */

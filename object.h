@@ -45,7 +45,7 @@
 #ifndef _OBJECT_H
 #define _OBJECT_H
 
-#include "util.h"    /* Hash stuff. */
+#include "hash.h"    /* Hash stuff. */
 #include "map.h"     /* layer_t */
 #include "mapview.h" /* struct object_image, struct map_view */
 
@@ -82,14 +82,12 @@ struct object_t
 
   struct object_image *image; /**< Pointer to the object's associated
                                  image data. */
-
-  struct object_t *next;      /**< The next node, if any. */
 };
 
 /* -- GLOBAL VARIABLES -- */
 
-extern struct object_t *g_objects[HASH_VALS]; /**< The object hash
-                                                 table. */
+extern struct hash_object *g_objects[HASH_VALS]; /**< The object hash
+                                                    table. */
 
 /* -- PROTOTYPES -- */
 
@@ -266,11 +264,11 @@ clear_objects (void);
  */
 
 struct object_t *
-get_object (const char object_name[], struct object_t *add_pointer);
+get_object (const char object_name[], struct hash_object *add_pointer);
 
 /** Clean up the objects subsystem. */
 
 void
 cleanup_objects (void);
 
-#endif /* _GRAPHICS_H */
+#endif /* not _GRAPHICS_H */

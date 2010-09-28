@@ -49,7 +49,7 @@
 #include "main.h"
 #include "util.h"
 
-struct object_t *g_objects[HASH_VALS];
+struct hash_object *g_objects[HASH_VALS];
 
 int
 init_objects (void)
@@ -82,20 +82,20 @@ add_object (const char object_name[],
             const char script_filename[])
 {
   struct object_t *object;
-  struct object_t *result;
+  struct hash_object *result;
 
   /* Sanity-check passed strings. */
 
   if (object_name == NULL)
     {
       fprintf (stderr, "OBJECT: Error: Object name is NULL.\n");
-      return FAILURE;
+      return NULL;
     }
 
   if (script_filename == NULL)
     {
       fprintf (stderr, "OBJECT: Error: Script filename is NULL.\n");
-      return FAILURE;
+      return NULL;
     }
 
   /* Try to allocate an object. */
@@ -153,13 +153,15 @@ add_object (const char object_name[],
 
   object->tag = 0;
   object->is_dirty = 0;
-  object->next = NULL;
 
   init_object_image (object->image, object);
 
   /* Try to store the object. */
 
-  result = get_object (object_name, object);
+  result = create_hash_object (g_objects, 
+                               object_name,
+                               DATA_OBJECT, 
+                               object);
 
   if (result == NULL)
     {
@@ -169,7 +171,7 @@ add_object (const char object_name[],
       return NULL;
     }
 
-  return result;
+  return (struct object_t*) result->data;
 }
 
 int
@@ -357,97 +359,25 @@ free_object (struct object_t *object)
 int
 delete_object (const char object_name[])
 {
-  int h;
-  struct object_t *object, *prev;
-
-  h = ascii_hash (object_name);
-  prev = NULL;
-
-  /* Iterate through the hash bucket to find the correct object, then 
-     delete its data and node. */
-  for (object = g_objects[h]; object != NULL; object = prev->next)
-    {
-      if (strcmp (object_name, object->name) == 0)
-        {
-          if (prev == NULL)
-            g_objects[h] = object->next;
-          else
-            prev->next = object->next;
-          
-          free_object (object);
-          return 1;
-      }
-    }
-  return 0;
+  return delete_hash_object (g_objects, object_name);
 }
 
-/* Delete all objects. */
-void
-clear_objects (void)
-{
-  int i;
-  struct object_t *p, *next;
-  
-  for (i = 0; i < HASH_VALS; i++)
-    {
-      for (p = g_objects[i]; p != NULL; p = next)
-        {
-          next = p->next;
-          /* Delete the object data and node */
-          free_object (p);
-        }
-      g_objects[i] = NULL;
-  }
-}
 
 struct object_t *
-get_object (const char object_name[], struct object_t *add_pointer)
+get_object (const char object_name[], struct hash_object *add_pointer)
 {
-  int h; 
-  struct object_t *object;
+  struct hash_object *result;
 
-  /* Get the hash of the object's filename so we can search in the correct 
-     bucket. */
-  h = ascii_hash (object_name);
+  result = get_hash_object (g_objects, object_name, add_pointer);
 
-  /* Now try to find the object. */
-  for (object = g_objects[h]; object != NULL; object = object->next)
-    {
-      if (strcmp (object_name, object->name) == 0)
-        {
-          /* If there is a pointer to add, and there's already a node
-             with this object name, then raise an error.  Names
-             should be unique. */
-
-          if (add_pointer != NULL)
-            {
-              fprintf (stderr, "OBJECT: Error: Duplicate object %s!\n", 
-                       object_name);
-
-              free_object (add_pointer);
-              return NULL;
-            }
-
-          return object;
-        }
-    }
-
-  /* If we are given a pointer to add, and the object doesn't already 
-     exist, then add the object to the start of the linked list. */
-  if (add_pointer)
-    {
-      add_pointer->next = g_objects[h];
-      g_objects[h] = add_pointer;
-
-      return g_objects[h];
-    }
-
-  /* Return NULL, if all else fails. */
-  return NULL;
+  if (result == NULL)
+    return NULL;
+  else
+    return (struct object_t*) result->data;
 } 
             
 void
 cleanup_objects (void)
 {
-  clear_objects ();
+  clear_hash_objects (g_objects);
 }
