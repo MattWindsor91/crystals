@@ -328,7 +328,7 @@ void
 render_map_layer (struct map_view *mapview, unsigned char layer)
 {
   short x, y;
-  long true_x, true_y, x_offset, y_offset;
+  int true_x, true_y, x_offset, y_offset;
   struct map *map;
 
   map = mapview->map;
@@ -463,12 +463,12 @@ scroll_map (struct map_view *mapview, int direction)
 
 int
 mark_dirty_rect (struct map_view *mapview,
-                 long start_x,
-                 long start_y,
-                 unsigned int width,
-                 unsigned int height)
+                 int start_x,
+                 int start_y,
+                 int width,
+                 int height)
 {
-  long x, y;
+  int x, y;
 
   /* Sanity checking. */
 
@@ -478,7 +478,7 @@ mark_dirty_rect (struct map_view *mapview,
       return FAILURE;
     }
 
-  if (width == 0 || height == 0)
+  if (width <= 0 || height <= 0)
     {
       fprintf (stderr, "MAPVIEW: Error: Rect dirtying passed insane W/H.\n");
       return FAILURE;

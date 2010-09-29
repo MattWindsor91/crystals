@@ -381,10 +381,10 @@ dirty_object_test (struct hash_object *hash_object, va_list ap)
 {
   struct object_t *object;
   struct map_view *mapview;
-  long start_x;
-  long start_y;
-  unsigned int width;
-  unsigned int height;
+  int start_x;
+  int start_y;
+  int width;
+  int height;
 
   /* Sanity-check the hash object. */
 
@@ -408,8 +408,8 @@ dirty_object_test (struct hash_object *hash_object, va_list ap)
     return SUCCESS;
 
   mapview = va_arg (ap, struct map_view *);
-  start_x = va_arg (ap, long);
-  start_y = va_arg (ap, long);
+  start_x = va_arg (ap, int);
+  start_y = va_arg (ap, int);
   width   = va_arg (ap, unsigned int);
   height  = va_arg (ap, unsigned int);
 
