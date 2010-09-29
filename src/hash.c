@@ -301,3 +301,47 @@ get_hash_object (struct hash_object *head[],
   /* Return NULL, if all else fails. */
   return NULL;
 } 
+
+/* Wrapper to get_hash_object for use in finding hash objects. */
+
+struct hash_object *
+find_hash_object (struct hash_object *head[], 
+                  const char name[])
+{
+  return get_hash_object (head, name, NULL);
+}
+
+/* Apply the given function to all members of the hash table. */
+
+int
+apply_to_hash_objects (struct hash_object *head[], 
+                       int (*function) (struct hash_object *object, 
+                                        va_list ap),
+                       ...)
+{
+  int i;
+  int result;
+  int temp_result;
+  va_list ap;
+  struct hash_object *hash_object;
+
+  result = SUCCESS;
+  va_start (ap, function);
+
+  for (i = 0; i < HASH_VALS; i++)
+    {
+      for (hash_object = head[i];
+           hash_object != NULL;
+           hash_object = hash_object->next)
+        {
+          temp_result = function (hash_object, ap);
+
+          if (temp_result == FAILURE)
+            result = FAILURE;
+        }
+    }
+
+  va_end (ap);
+
+  return result;
+}

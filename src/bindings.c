@@ -1,5 +1,5 @@
 /*
- * Crystals (working title) 
+ * Crystals (working title)
  *
  * Copyright (c) 2010 Matt Windsor, Michael Walker and Alexander
  *                    Preisinger.
@@ -36,70 +36,39 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/** @file    graphics.h
- *  @author  Matt Windsor
- *  @brief   Prototypes and declarations for generic graphics system.
+/** @file     bindings.c
+ *  @author   Alexander Preisinger
+ *  @brief    Generic language bindings.
  */
 
-#ifndef _GRAPHICS_H
-#define _GRAPHICS_H
+#include <stdlib.h>
+#include <stdio.h>
 
-#include "hash.h"    /* Hash stuff. */
-
-
-enum
-  {
-    SCREEN_W = 640, /**< Width of the screen (in pixels). 
-                       @todo FIXME: Make this changeable at runtime. */
-
-    SCREEN_H = 480, /**< Height of the screen (in pixels).
-                       @todo FIXME: Make this changeable at runtime. */
-
-    SCREEN_D = 32   /**< Colour depth of the screen (in bits per
-                       pixel.) */
-  };
+#include "util.h"
+#include "module.h"
+#include "bindings.h"
 
 int
-init_graphics (void);
+init_bindings (void)
+{
+  if (load_module_bindings ("bindings-lua", &g_modules) == FAILURE)
+    {
+      fprintf (stderr, "ERROR: Could not load bindings module.\n");
+      return FAILURE;
+    }
 
-void
-fill_screen (unsigned char red,
-             unsigned char green,
-             unsigned char blue);
-
-struct hash_object *
-load_image (const char filename[]);
-
-void
-free_image (void *image);
+  return SUCCESS;
+}
 
 int
-draw_image (const char filename[],
-            short image_x,
-            short image_y,
-            short screen_x,
-            short screen_y,
-            unsigned short width,
-            unsigned short height);
-
-
-
-int
-delete_image (const char filename[]);
+run_file(const char *path)
+{
+  return (*g_modules.bindings.run_file) (path);
+}
 
 void
-clear_images (void);
+cleanup_bindings (void)
+{
+}
 
-struct hash_object *
-get_image (const char filename[], struct hash_object *add_pointer);
-
-void
-update_screen (void);
-
-void
-scroll_screen (unsigned int direction);
-
-void
-cleanup_graphics (void);
-
-#endif /* _GRAPHICS_H */
+/* vim: set ts=2 sw=2 softtabstop=2: */

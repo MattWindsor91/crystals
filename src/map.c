@@ -49,7 +49,7 @@
 #include "main.h"
 #include "graphics.h"
 
-const char FN_TILESET[] = "tiles.png";
+const char FN_TILESET[] = "gfx/tiles.png";
 
 /* FIXME: Remove the data below when map loaders are available. */
 

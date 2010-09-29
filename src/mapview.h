@@ -45,6 +45,8 @@
  *  functions and structures related to the former are available in 
  *  map.c and map.h, the map viewpoint system is described in this 
  *  and mapview.c.
+ *
+ *  @todo FIXME: Remove recursion in dirty tile rectangle code.
  */
 
 #ifndef _MAPVIEW_H

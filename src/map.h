@@ -66,6 +66,7 @@ typedef unsigned short layer_t; /**< Type for layer data. */
  *  This contains the tile data and eventually the object list for a
  *  map.
  */
+
 struct map
 {
   unsigned int width;       /**< Width of the map, in tiles. */

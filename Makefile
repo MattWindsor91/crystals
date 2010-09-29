@@ -1,22 +1,58 @@
-BIN      := maprender-test
+BIN      := crystals
 
-TESTS    := tests/module tests/optionparser
+## Directories ##
+
+SRCDIR   := src
+MODDIR   := modules
+DOCDIR   := doc
+TESTDIR  := tests
+
+## Test directories ##
+
+TESTS    := module optionparser
+
+# Add TESTDIR to all test paths #
+
+TESTS    := $(addprefix $(TESTDIR)/,$(TESTS))
+
+## Objects to link into main executable ##
+
 OBJ      := main.o hash.o object.o graphics.o map.o mapview.o events.o
 OBJ      += util.o bindings.o module.o optionparser.o parser.o
 
-SOBJ     := modules/gfx-sdl.so modules/event-sdl.so modules/bindings-python.so
-SOBJ	 += modules/bindings-lua.so
+# Add SRCDIR to all object paths #
+
+OBJ      := $(addprefix $(SRCDIR)/,$(OBJ))
+
+## Shared objects (modules) ##
+
+SOBJ     := gfx-sdl.so event-sdl.so bindings-python.so bindings-lua.so
+
+# Add SRCDIR and MODDIR to all shared object paths #
+
+SOBJ     := $(addprefix $(MODDIR)/,$(SOBJ))
+SOBJ     := $(addprefix $(SRCDIR)/,$(SOBJ))
+
+## Sources and dependency files ##
 
 SOURCES  := $(subst .o,.c,$(OBJ))
 DEPFILES := $(subst .o,.d,$(OBJ))
 
-DOC      := doc/module.pdf doc/mapformat-internal.pdf doc/optionparser.pdf
+## Documentation ##
+
+DOC      := module.pdf mapformat-internal.pdf optionparser.pdf
+
+# Add DOCDIR to all documentation paths #
+
+DOC      := $(addprefix $(DOCDIR)/,$(DOC))
+
+## Compilation toolchain ##
 
 CC       := clang
 RM       := rm -f
 DIST	 := $(shell uname -r | sed "s/.*-//")
 
-MODPATH  := $(shell pwd)/modules/\0
+MODPATH  := $(shell pwd)/$(MODDIR)/\0
 
 WARN     := -Wall -Wextra -Wshadow -Wpointer-arith -Wcast-align \
             -Wwrite-strings -Wmissing-prototypes -Wmissing-declarations \
@@ -26,6 +62,8 @@ WARN     := -Wall -Wextra -Wshadow -Wpointer-arith -Wcast-align \
 LIBS     := -ldl 
 CFLAGS   := -ansi -pedantic -O2 -ggdb -DDEFMODPATH="\"$(MODPATH)\"" $(WARN)
 
+## Rules ##
+
 .PHONY: all doc autodoc clean clean-tests clean-doc clean-modules modules tests
 
 all: $(BIN) doc autodoc modules
@@ -34,6 +72,14 @@ $(BIN): $(OBJ) $(SO)
 	@echo "Linking..."
 	@$(CC) $(OBJ) -o "$(BIN)" $(LIBS) >/dev/null
 
+	@echo "Copying modules to destination..."
+	-@mkdir -p modules
+	@cp -r $(SRCDIR)/$(MODDIR)/* $(MODDIR)
+
+	@echo "Copying tests to destination..."
+	-@mkdir -p tests
+	@cp -r $(SRCDIR)/$(TESTDIR)/* $(TESTDIR)
+
 -include $(DEPFILES)
 
 clean: clean-tests clean-doc clean-modules
@@ -41,22 +87,23 @@ clean: clean-tests clean-doc clean-modules
 	-@$(RM) $(BIN) *.o *.d *.so &>/dev/null
 
 ### Modules
-modules/gfx-sdl.so: LIBS   += `sdl-config --libs` -lSDL_image
-modules/gfx-sdl.so: CFLAGS += `sdl-config --cflags`
+$(SRCDIR)/$(MODDIR)/gfx-sdl.so: LIBS   += `sdl-config --libs` -lSDL_image
+$(SRCDIR)/$(MODDIR)/gfx-sdl.so: CFLAGS += `sdl-config --cflags`
 
-modules/event-sdl.so: LIBS   += `sdl-config --libs` 
-modules/event-sdl.so: CFLAGS += `sdl-config --cflags`
+$(SRCDIR)/$(MODDIR)/event-sdl.so: LIBS   += `sdl-config --libs` 
+$(SRCDIR)/$(MODDIR)/event-sdl.so: CFLAGS += `sdl-config --cflags`
 
-modules/bindings-python.so: LIBS   += `python-config --libs`
-modules/bindings-python.so: CFLAGS += `python-config --cflags`
+$(SRCDIR)/$(MODDIR)/bindings-python.so: LIBS   += `python-config --libs`
+$(SRCDIR)/$(MODDIR)/bindings-python.so: CFLAGS += `python-config --cflags`
 
-modules/bindings-lua.so: LIBS += `pkg-config --libs lua`
+$(SRCDIR)/$(MODDIR)/bindings-lua.so: LIBS += `pkg-config --libs lua`
 
 modules: $(SOBJ)
 
 clean-modules:
 	@echo "Cleaning modules..."
-	-@$(RM) modules/*.{so,o} &>/dev/null
+	-@$(RM) $(MODDIR)/*.{so,o} &>/dev/null
+	-@$(RM) $(SRCDIR)/$(MODDIR)/*.{so,o} &>/dev/null
 
 ### Documentation
 doc: $(DOC)
@@ -71,20 +118,20 @@ clean-doc:
 	-@$(RM) -r autodoc
 
 ### Test Suite
-tests: CFLAGS += -DTESTSUITE -DMODPATH="\"$(shell pwd)/tests/modules/\""
+tests: CFLAGS += -DTESTSUITE -DMODPATH="\"$(shell pwd)/$(TESTDIR)/$(MODDIR)\""
 tests: $(TESTS)
 	@echo "Running tests..."
 	@for file in $(TESTS); do $$file &>/dev/null || echo "Test '$$file' failed."; done
 
-tests/module: module.o tests/module.o tests/modules/test.so
-	@$(CC) $(CFLAGS) module.o tests/module.o tests/modules/test.so -o $@ >/dev/null
+$(TESTDIR)/module: module.o $(TESTDIR)/module.o $(TESTDIR)/$(MODDIR)/test.so
+	@$(CC) $(CFLAGS) module.o $(TESTDIR)/module.o $(TESTDIR)/$(MODDIR)/test.so -o $@ >/dev/null
 
-tests/optionparser: optionparser.o tests/optionparser.o
-	@$(CC) $(CFLAGS) optionparser.o tests/optionparser.o -o $@ >/dev/null
+$(TESTDIR)/optionparser: optionparser.o $(TESTDIR)/optionparser.o
+	@$(CC) $(CFLAGS) optionparser.o $(TESTDIR)/optionparser.o -o $@ >/dev/null
 
 clean-tests:
 	@echo "Cleaning tests..."
-	-@$(RM) $(TESTS) tests/*.{o,so} tests/modules/*.{o,so} &>/dev/null
+	-@$(RM) $(TESTS) $(TESTDIR)/*.{o,so} $(TESTDIR)/$(MODDIR)/*.{o,so} &>/dev/null
 
 ### File Types
 %.o : %.c

@@ -40,8 +40,8 @@ init (void)
   char *module_path;
 
   init_parser ();
-
-  if (config_parse_file ("config/default.cfg") == SUCCESS)
+  /* yeah I know that needs someting better */
+  if (config_parse_file ("../config/default.cfg") == SUCCESS)
     {
       module_path = config_get_value ("module_path");
     }

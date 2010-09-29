@@ -469,9 +469,6 @@ mark_dirty_rect (struct map_view *mapview,
                  unsigned int height)
 {
   long x, y;
-  int i;
-  struct hash_object *hash_object;
-  struct object_t *object;
 
   /* Sanity checking. */
 
@@ -504,40 +501,15 @@ mark_dirty_rect (struct map_view *mapview,
 
   /* Mark dirty objects. */
 
-  /** @todo FIXME: Have a generic apply function. */
+  /* Check to see if each object in the hash table is going to be dirtied. */
 
-  for (i = 0; i < HASH_VALS; i++)
-    {
-      for (hash_object = g_objects[i];
-           hash_object != NULL;
-           hash_object = hash_object->next)
-        {
-          object = (struct object_t *) hash_object->data;
-
-          /** @todo FIXME: information hiding. */
-
-          /* Separating axis theorem, sort of. */
-
-          if (object->is_dirty == FALSE
-              && (object->image->map_x <= (start_x + width) * TILE_W)
-              && (object->image->map_x
-                  + object->image->width >= start_x * TILE_W)
-              && (object->image->map_y <= (start_y + height) * TILE_H)
-              && (object->image->map_y
-                  + object->image->height >= start_y * TILE_H))
-            {
-              set_object_dirty (object, mapview);
-
-              /* Mark the nearby tiles. */
-
-              mark_dirty_rect (mapview,
-                               (object->image->map_x / TILE_W) - 1, 
-                               (object->image->map_y / TILE_H) - 1, 
-                               MAX (3, object->image->width / TILE_W), 
-                               MAX (3, object->image->height / TILE_H));   
-            }
-        }
-    }
+  apply_to_hash_objects (g_objects, 
+                         dirty_object_test, 
+                         mapview, 
+                         start_x,
+                         start_y,
+                         width,
+                         height);
  
   return SUCCESS;
 }

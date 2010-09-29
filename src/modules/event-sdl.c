@@ -1,4 +1,45 @@
-/* event-sdl.c - SDL implementation of events backend. */
+/*
+ * Crystals (working title) 
+ *
+ * Copyright (c) 2010 Matt Windsor, Michael Walker and Alexander
+ *                    Preisinger.
+ *
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ *   * Redistributions of source code must retain the above copyright
+ *     notice, this list of conditions and the following disclaimer.
+ *
+ *   * Redistributions in binary form must reproduce the above
+ *     copyright notice, this list of conditions and the following
+ *     disclaimer in the documentation and/or other materials provided
+ *     with the distribution.
+ *
+ *   * The names of contributors may not be used to endorse or promote
+ *     products derived from this software without specific prior
+ *     written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+ * AFOREMENTIONED COPYRIGHT HOLDERS BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+ * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
+ * OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+/** @file    modules/event-sdl.c
+ *  @author  Matt Windsor
+ *  @brief   SDL implementation of event system backend.
+ */
 
 #include <stdio.h>
 #include <SDL.h>
@@ -7,12 +48,21 @@
 #include "../events.h"
 #include "../graphics.h"
 
-/** Initialise the input module. */
+/* -- STATIC GLOBAL VARIABLES -- */
+
+static void
+(*sg_event_release) (event_t *event); /**< Event release function
+                                         pointer. */
+
+/* -- PROTOTYPES -- */
+
+/** Initialise the events module. */
 
 int
 init (void);
 
-/** De-initialise the input module. */
+/** Terminate the events module, freeing any remaining data
+    dynamically allocated by the module. */
 
 void
 term (void);
@@ -32,10 +82,11 @@ register_release_handle (void (*handle) (event_t *event));
  *  any pending input events, and trigger any relevant callbacks.
  *
  */
+
 void
 process_events (void);
 
-/** Handle a SDL mouse motion event.
+/** Handle an SDL mouse motion event.
  *
  *  @param event     Event union to populate with information.
  *  @param sdlevent  SDL event to extract motion data from.
@@ -44,10 +95,9 @@ process_events (void);
 static void
 mouse_motion (event_t *event, SDL_Event *sdlevent);
 
-/* Definitions follow. */
+/* -- DEFINITIONS -- */
 
-static void
-(*sg_event_release) (event_t *event);
+/* Initialise the events module. */
 
 int
 init (void)
@@ -62,17 +112,24 @@ init (void)
   return 1;
 }
 
+/* Terminate the events module, freeing any remaining data
+   dynamically allocated by the module. */
+
 void
 term (void)
 {
   SDL_Quit ();
 }
 
+/* Register a function for handling event releases. */
+
 void
 register_release_handle (void (*handle) (event_t *event))
 {
   sg_event_release = handle;
 }
+
+/* Process one frame of input. */
 
 void
 process_events (void)
@@ -177,6 +234,8 @@ process_events (void)
         (*sg_event_release) (&event);
     }
 }
+
+/* Handle an SDL mouse motion event. */
 
 void
 mouse_motion (event_t *event, SDL_Event *sdlevent)

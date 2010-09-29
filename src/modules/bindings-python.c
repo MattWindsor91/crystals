@@ -37,8 +37,8 @@
 */
 
 /** @file bindings-python.c
- * @author Alexander Preisinger
- * @brief Python module for scripting
+ *  @author Alexander Preisinger
+ *  @brief Python module for scripting
  */
 
 /* the python header should always be first */

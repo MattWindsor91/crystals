@@ -45,6 +45,8 @@
 #ifndef _OBJECT_H
 #define _OBJECT_H
 
+#include <stdarg.h>
+
 #include "hash.h"    /* Hash stuff. */
 #include "map.h"     /* layer_t */
 #include "mapview.h" /* struct object_image, struct map_view */
@@ -265,6 +267,23 @@ clear_objects (void);
 
 struct object_t *
 get_object (const char object_name[], struct hash_object *add_pointer);
+
+/** Check to see whether the given object falls within the given dirty
+ *  rectangle and, if so, mark the object as dirty.
+ *
+ *  @param hash_object  The hash container of the object to test.
+ *
+ *  @param ap           Variadic argument list.  This should be
+ *                      composed of the mapview concerned followed by
+ *                      the start X, start Y, width and height of the
+ *                      dirty rectangle, in order.
+ *
+ *  @return SUCCESS if there were no errors encountered; FAILURE
+ *  otherwise.
+ */
+
+int
+dirty_object_test (struct hash_object *hash_object, va_list ap);
 
 /** Clean up the objects subsystem. */
 
