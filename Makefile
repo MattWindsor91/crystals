@@ -59,7 +59,7 @@ WARN     := -Wall -Wextra -Wshadow -Wpointer-arith -Wcast-align \
             -Wredundant-decls -Wnested-externs -Winline -Wno-long-long \
             -Wconversion -Wstrict-prototypes
 
-LIBS     := -ldl 
+LIBS     := -ldl -lpthread 
 CFLAGS   := -ansi -pedantic -O2 -ggdb -DDEFMODPATH="\"$(MODPATH)\"" $(WARN)
 
 ## Rules ##
