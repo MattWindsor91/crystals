@@ -41,6 +41,7 @@
  *  @brief  Lua module for scripting.
  */
 
+#include <stdio.h>
 #include <string.h>
 
 #include "bindings-lua.h"
@@ -93,7 +94,7 @@ parameter_check (lua_State *L, const char *func_name, const char sig[])
   int pars;
   int pas_pars;
 
-  pars = strlen (sig);
+  pars = (int) strlen (sig);
   pas_pars = lua_gettop (L);
 
   if (pars != pas_pars)

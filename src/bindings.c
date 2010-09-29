@@ -74,6 +74,7 @@ run_file(const char *path)
 void
 cleanup_bindings (void)
 {
+  ;
 }
 
 /* vim: set ts=2 sw=2 softtabstop=2: */
