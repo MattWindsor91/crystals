@@ -70,8 +70,8 @@ init_objects (void)
     
     set_object_tag (test, 1);
     set_object_tag (test2, 1);
-    set_object_image (test, "testobj.png", 0, 0, 60, 60, 16, 48);
-    set_object_image (test2, "testobj.png", 16, 0, 70, 70, 16, 48);
+    set_object_image (test, "gfx/testobj.png", 0, 0, 60, 60, 16, 48);
+    set_object_image (test2, "gfx/testobj.png", 16, 0, 70, 70, 16, 48);
   }
 
   return SUCCESS;

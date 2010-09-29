@@ -1,4 +1,4 @@
-BIN      := maprender-test
+BIN      := crystals
 
 ## Directories ##
 

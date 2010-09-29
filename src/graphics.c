@@ -39,6 +39,9 @@
 /** @file    graphics.c
  *  @author  Matt Windsor
  *  @brief   Generic graphics system.
+ *
+ *  @todo FIXME: Add graphics location to graphics paths at run-time 
+ *               instead of hard-coding it.
  */
 
 #include <stdlib.h>
