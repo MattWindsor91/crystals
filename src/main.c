@@ -41,7 +41,7 @@ init (void)
 
   init_parser ();
   /* yeah I know that needs someting better */
-  if (config_parse_file ("../config/default.cfg") == SUCCESS)
+  if (config_parse_file ("config/default.cfg") == SUCCESS)
     {
       module_path = config_get_value ("module_path");
     }

@@ -40,7 +40,11 @@
  *  @author Alexander Preisinger
  *  @brief  Lua module for scripting.
  */
+
+#include <string.h>
+
 #include "bindings-lua.h"
+#include "../util.h"
 
 void
 init (void)

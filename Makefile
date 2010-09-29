@@ -52,7 +52,7 @@ CC       := clang
 RM       := rm -f
 DIST	 := $(shell uname -r | sed "s/.*-//")
 
-MODPATH  := $(shell pwd)/$(MODDIR)/\0
+MODPATH  := $(shell pwd)/$(SRCDIR)/$(MODDIR)/\0
 
 WARN     := -Wall -Wextra -Wshadow -Wpointer-arith -Wcast-align \
             -Wwrite-strings -Wmissing-prototypes -Wmissing-declarations \
