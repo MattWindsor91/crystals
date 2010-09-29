@@ -36,9 +36,9 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/** @file     bindings.c
- *  @author   Alexander Preisinger
- *  @brief    Generic language bindings.
+/** @file   src/bindings.c
+ *  @author Alexander Preisinger
+ *  @brief  Generic language bindings.
  */
 
 #include <stdlib.h>
@@ -47,6 +47,7 @@
 #include "util.h"
 #include "module.h"
 #include "bindings.h"
+
 
 int
 init_bindings (void)
@@ -60,11 +61,15 @@ init_bindings (void)
   return SUCCESS;
 }
 
+
+/* Run a source file */
+
 int
 run_file(const char *path)
 {
   return (*g_modules.bindings.run_file) (path);
 }
+
 
 void
 cleanup_bindings (void)

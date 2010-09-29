@@ -36,9 +36,9 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/** @file     src/parser.c
- *  @author   Alexander Preisinger
- *  @brief    Configuration parser.
+/** @file   src/parser.c
+ *  @author Alexander Preisinger
+ *  @brief  Configuration parser.
  */
 
 #include <stdio.h>

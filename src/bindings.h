@@ -36,16 +36,15 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "mapview.h"
-
-
-/** @file     bindings.h
- *  @author   Alexander Preisinger
- *  @brief    Prototypes and declarations for generic language bindings.
+/** @file   src/bindings.h
+ *  @author Alexander Preisinger
+ *  @brief  Prototypes and declarations for generic language bindings.
  */
 
 #ifndef _BINDINGS_H
 #define _BINDINGS_H
+
+#include "mapview.h"
 
 /* -- STRUCTURES -- */
 
@@ -74,13 +73,16 @@ extern struct game_data g_game_data; /**< global variable for the game_data
  *  @return Return SUCCESS if success else FAILURE
  */
 
+
 int
 init_bindings (void);
+
 
 /** Cleanup language bindings */
 
 void
 cleanup_bindings(void);
+
 
 /** Executes the given file.
  *
@@ -93,4 +95,5 @@ int
 run_file (const char *path);
 
 #endif /* _BINDINGS_H */
+
 /* vim: set ts=2 sw=2 softtabstop=2: */

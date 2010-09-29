@@ -36,15 +36,15 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/** @file     parser.h
- *  @author   Alexander Preisinger
- *  @brief    Prototypes and declarations for the configuration parser.
+/** @file   src/parser.h
+ *  @author Alexander Preisinger
+ *  @brief  Prototypes and declarations for the configuration parser.
  */
 
 #ifndef _PARSER_H
 #define _PARSER_H
 
-typedef struct node_t node_t; /**< Node type. */
+typedef struct node_t node_t; /**< Node type for the key-value tree. */
 typedef char bool_t;          /**< Boolean type.
                                  @todo FIXME: Universal bool type? */
 
@@ -62,14 +62,14 @@ struct node_t
   char *key;            /**< key item of the node. */
   char *value;          /**< value item of the node. */
   /* strcmp == -1 */
-  node_t *left;  /**< Left branch of the node. */
+  node_t *left;         /**< Left branch of the node. */
   /* strcmp == 1 */
-  node_t *right; /**< Right branch of the node. */
+  node_t *right;        /**< Right branch of the node. */
 };
 
 /* -- GLOBAL VARIABLES -- */
 
-static node_t sg_root;
+node_t sg_root;         /**< Root node for the key-value tree */
 
 
 /* -- FUNCTION PROTOTYPES -- */
