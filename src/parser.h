@@ -102,53 +102,6 @@ config_parse_file (const char *path_name);
 char*
 config_get_value (const char *key);
 
-
-/** Internal function for getting the value.
- *
- *  @param key   The key to search for.
- *  @param node  The next branch to search in.
- *
- *  @return Return the value to the appropriate key or NULL if none is found.
- */
-
-static char*
-get_value (const char *key, struct node_t *node);
-
-
-/** Internal function for adding a key-value pair to the tree.
- *
- *  @param key   The string which will be added as key.
- *  @param value The string which will be added as key.
- *  @param node  The branch in which the key-value pair will be added.
- *
- *  @return Returns SUCCESS, if the key-value pair can be added, if not or
- *  the key already exists return FAILURE. (Defined in util.h)
- */
-
-static int
-add_pair (char *key, char *value, struct node_t *node);
-
-
-/** Internal function for initializing a node.
- *
- *  @param node The node which will be initialized.
- *
- *  @param Return the initialized node.
- */
-
-static struct node_t*
-node_init (struct node_t *node);
-
-
-/** Internal function for freeing allocated memory in nodes.
- *
- * @param node The data in the node will be freed.
- */
-
-static void
-free_node (struct node_t *node);
-
-
 /** Clean up the parser.
  *
  *  Free all allocated memory.
