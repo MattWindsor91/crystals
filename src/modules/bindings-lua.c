@@ -36,9 +36,9 @@
 * OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-/** @file bindings-lua.c
- * @author Alexander Preisinger
- * @brief Lau module for scripting
+/** @file   src/modules/bindings-lua.c
+ *  @author Alexander Preisinger
+ *  @brief  Lua module for scripting.
  */
 
 #include <lua.h>
@@ -48,7 +48,7 @@
 #include <stdio.h>
 #include "../util.h"
 
-lua_State *g_lua;
+lua_State *g_lua; /**< The Lua state pointer. */
 
 /** Initialise the python module. */
 
@@ -80,6 +80,14 @@ run_file (const char* path);
 
 
 /* -- DEFINITIONS -- */
+
+/** The crystals test function, in Lua.
+ *
+ *  @param L  Pointer to the Lua state. (?)
+ *
+ *  @return 1, at time of writing.
+ */
+
 int
 crystals_test (lua_State *L);
 

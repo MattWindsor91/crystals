@@ -177,17 +177,22 @@ delete_image (const char filename[])
 }
 
 /* Delete all images. */
+
 void
 clear_images (void)
 {
   clear_hash_objects (sg_images);
 }
 
+/* Retrieve an image from the image cache. */
+
 struct hash_object *
-get_image (const char filename[], struct hash_object *add_pointer)
+find_image (const char filename[])
 {
-  return get_hash_object (sg_images, filename, add_pointer);
+  return get_hash_object (sg_images, filename, NULL);
 }
+
+/* Clean up the graphics subsystem. */
 
 void
 cleanup_graphics (void)

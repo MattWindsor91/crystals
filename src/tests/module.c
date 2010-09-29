@@ -1,4 +1,45 @@
-/* tests/module - a sanity-test for the module loader */
+/*
+ * Crystals (working title) 
+ *
+ * Copyright (c) 2010 Matt Windsor, Michael Walker and Alexander
+ *                    Preisinger.
+ *
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ *   * Redistributions of source code must retain the above copyright
+ *     notice, this list of conditions and the following disclaimer.
+ *
+ *   * Redistributions in binary form must reproduce the above
+ *     copyright notice, this list of conditions and the following
+ *     disclaimer in the documentation and/or other materials provided
+ *     with the distribution.
+ *
+ *   * The names of contributors may not be used to endorse or promote
+ *     products derived from this software without specific prior
+ *     written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+ * AFOREMENTIONED COPYRIGHT HOLDERS BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+ * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
+ * OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+/** @file    src/tests/module.c
+ *  @author  Michael Walker
+ *  @brief   Sanity-test for the module loader.
+ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -9,9 +50,10 @@
 #include "../util.h"
 #include "../module.h"
 
-test_module_set g_test_modules; /* The set of all modules in use */
+test_module_set g_test_modules; /**< The set of all modules in use. */
 
-/* This initialises the struct of modules to NULL and sets the load path */
+/* This initialises the struct of modules to NULL and sets the load path. */
+
 int
 init_test_modules (const char *path)
 {
@@ -34,6 +76,7 @@ init_test_modules (const char *path)
 }
 
 /* This closes any loaded modules, run before program termination */
+
 void
 cleanup_test_modules (void)
 {
@@ -44,6 +87,7 @@ cleanup_test_modules (void)
 }
 
 /* Function to load 'test' module. */
+
 int
 load_module_test (test_module_set* modules)
 {
@@ -57,6 +101,7 @@ load_module_test (test_module_set* modules)
 }
 
 /* Function to load 'foo' module. */
+
 int
 load_module_foo (test_module_set* modules)
 {
@@ -67,11 +112,15 @@ load_module_foo (test_module_set* modules)
   return SUCCESS;
 }
 
-/* Test the module loader:
-   - Load a module and try to use it
-   - Load a nonexistant module and try to use it
-   Returns 0 is the test succeded, 1 otherwise.
-*/
+/** Test the module loader.
+ *  - Load a module and try to use it
+ *  - Load a nonexistant module and try to use it
+ *
+ *  @param argc  Argument count.
+ *  @param argv  Argument vector.
+ *
+ *  @return 0 is the test succeded, 1 otherwise.
+ */
 int
 main (int argc, char *argv[])
 {

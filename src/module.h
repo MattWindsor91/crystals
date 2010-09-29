@@ -36,7 +36,7 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/** @file    /module.h
+/** @file    src/module.h
  *  @author  Michael Walker
  *  @brief   Prototypes and declarations for module loading and
  *           unloading functions.

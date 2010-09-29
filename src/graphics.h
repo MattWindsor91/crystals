@@ -46,7 +46,6 @@
 
 #include "hash.h"    /* Hash stuff. */
 
-
 enum
   {
     SCREEN_W = 640, /**< Width of the screen (in pixels). 
@@ -153,16 +152,31 @@ draw_image (const char filename[],
             unsigned short width,
             unsigned short height);
 
-
+/** Delete an image previously loaded into the image cache.
+ *
+ *  @param filename  Filename of the image.
+ *
+ *  @return  SUCCESS if the deletion succeeded; FAILURE otherwise. 
+ */
 
 int
 delete_image (const char filename[]);
 
+/** Delete all images in the image cache. */
+
 void
 clear_images (void);
 
+/** Retrieve an image from the image cache.
+ *
+ *  @param filename  The filename of the image to retrieve.
+ *
+ *  @return  A pointer to the struct hash_object encapsulating the
+ *  image if found, or NULL otherwise.
+ */
+
 struct hash_object *
-get_image (const char filename[], struct hash_object *add_pointer);
+find_image (const char filename[]);
 
 /** Update the screen. */
 

@@ -36,7 +36,7 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/** @file    module.c
+/** @file    src/module.c
  *  @author  Michael Walker
  *  @brief   Functions to handle loading and unloading of the modules
  *           that make up the engine.
