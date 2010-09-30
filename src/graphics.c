@@ -52,7 +52,13 @@
 #include "util.h"
 #include "module.h"
 
+/* -- STATIC GLOBAL VARIABLES -- */
+
 static struct hash_object *sg_images[HASH_VALS];
+
+/* -- DEFINITIONS -- */
+
+/* Initialise the graphics subsystem. */
 
 int
 init_graphics (void)
@@ -77,6 +83,8 @@ init_graphics (void)
   return SUCCESS;
 }
 
+/* Fill the screen with the given colour. */
+
 void
 fill_screen (unsigned char red, 
              unsigned char green, 
@@ -85,11 +93,24 @@ fill_screen (unsigned char red,
   (*g_modules.gfx.draw_rect) (0, 0, SCREEN_W, SCREEN_H, red, green, blue);
 }
 
+/* Load an image. */
+
 struct hash_object *
 load_image (const char filename[])
 {
   struct hash_object *image;
+  struct hash_object *get_try;
   void *data;
+
+  /* First, check to see if the image isn't already there. */
+
+  get_try = find_hash_object (sg_images, filename);
+
+  if (get_try != NULL)
+    return get_try;
+
+  /* At this point in execution, we have deduced that the image isn't
+     there, so try to load it. */
 
   /* Sanity-check the filename. */
 
@@ -128,15 +149,21 @@ load_image (const char filename[])
   return image;
 }
 
+/* Free image data. */
+
 void
 free_image (void *image)
 {
-  if (image)
+  if (image == NULL)
     {
-      (*g_modules.gfx.free_image_data) (image);
+      fprintf (stderr, "GRAPHICS: Error: Tried to free NULL image.\n");
     }
+
+  (*g_modules.gfx.free_image_data) (image);
 }
 
+
+/* Draw a rectangular portion of an image on-screen. */
 
 int
 draw_image (const char filename[],
@@ -149,22 +176,41 @@ draw_image (const char filename[],
 {
   struct hash_object *img;
 
-  img = find_hash_object (sg_images, filename);
+  /* Try to load the image if it isn't already loaded. */
 
-  /* Image not preloaded - try to load it now. */
+  img = load_image (filename);
 
   if (img == NULL)
     {
-      img = load_image (filename);
+      fprintf (stderr, "GFX: Error: Draw-time image load failure for %s.\n", 
+               filename);
 
-      if (img == NULL)
-        {
-          fprintf (stderr, "GFX: Cannot load non-preloaded image.");
-          return 0;
-        }
+      return FAILURE;
     }
 
-  return (*g_modules.gfx.draw_image) (img->data,
+  return draw_image_direct (img->data, 
+                            image_x, 
+                            image_y, 
+                            screen_x, 
+                            screen_y,
+                            width,
+                            height);
+}
+
+
+/* Draw a rectangular portion of an image on-screen, using a direct
+   pointer to the driver-specific image data. */
+
+int
+draw_image_direct (void *data,
+                   short image_x,
+                   short image_y,
+                   short screen_x,
+                   short screen_y,
+                   unsigned short width,
+                   unsigned short height)
+{
+  return (*g_modules.gfx.draw_image) (data,
                                       image_x,
                                       image_y,
                                       screen_x,
@@ -173,13 +219,17 @@ draw_image (const char filename[],
                                       height);
 }
 
+
+/* Delete an image previously loaded into the image cache. */
+
 int
 delete_image (const char filename[])
 {
   return delete_hash_object (sg_images, filename);
 }
 
-/* Delete all images. */
+
+/* Delete all images in the image cache. */
 
 void
 clear_images (void)

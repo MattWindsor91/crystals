@@ -330,6 +330,26 @@ render_map_layer (struct map_view *mapview, unsigned char layer)
   short x, y;
   int true_x, true_y, x_offset, y_offset;
   struct map *map;
+  struct hash_object *tileset_object;
+  void *tileset;
+
+  /* Try to grab the tileset. */
+
+  tileset_object = load_image (FN_TILESET);
+
+  if (tileset_object == NULL)
+    {
+      fprintf (stderr, "MAPVIEW: Error: Couldn't load tileset.\n");
+      return;
+    }
+
+  tileset = tileset_object->data;
+
+  if (tileset == NULL)
+    {
+      fprintf (stderr, "MAPVIEW: Error: Tileset has NULL data.\n");
+      return;
+    }
 
   map = mapview->map;
   x_offset = mapview->x_offset;
@@ -362,10 +382,12 @@ render_map_layer (struct map_view *mapview, unsigned char layer)
                   && true_y < map->height
                   && mapview->dirty_tiles[true_x + (true_y * map->height)] != 0)
                 {
+                  /* Use direct access to eliminate the need to
+                     continually hash the filename. */
                   if (map->data_layers[layer][true_x + (true_y * map->height)] 
                       != 0)
-                    draw_image (FN_TILESET,
-                                map->data_layers[layer][true_x 
+                    draw_image_direct (tileset,
+                                       map->data_layers[layer][true_x 
                                                         + (true_y * map->height)]
                                 * TILE_W, 0,
                                 (x * TILE_W) - (short) (x_offset % TILE_W),
