@@ -83,6 +83,7 @@ init (void)
   char *module_path;
 
   init_parser ();
+
   /* yeah I know that needs someting better */
   if (config_parse_file ("config/default.cfg") == SUCCESS)
     {
@@ -90,7 +91,15 @@ init (void)
     }
   else
     {
-      module_path = DEFMODPATH;
+      module_path = malloc (sizeof (char) * strlen (DEFMODPATH) + 1);
+
+      if (module_path == NULL)
+        {
+          fprintf (stderr, "ERROR: Could not init modules!\n");
+          return FAILURE;
+        }
+
+      strncpy(module_path, DEFMODPATH, strlen (DEFMODPATH) + 1);
     }
 
   if (init_modules (module_path) == FAILURE)
@@ -98,6 +107,8 @@ init (void)
       fprintf (stderr, "ERROR: Could not init modules!\n");
       return FAILURE;
     }
+
+  free (module_path);
 
   if (init_graphics () == FAILURE)
     {

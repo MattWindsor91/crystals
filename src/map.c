@@ -112,8 +112,10 @@ init_test_map (void)
       unsigned int i;
       for (i = 0; i < 4; i++) 
         {
+          /* We can assume that (map->width * map->height + 1) fits in unsigned */
           memcpy (map->data_layers[i], sg_test_layers[i],
-                  sizeof (unsigned short) * (map->width * map->height + 1));
+                  sizeof (unsigned short)
+                  * (unsigned int) (map->width * map->height + 1));
         }
     }
 
@@ -123,11 +125,21 @@ init_test_map (void)
 /* Initialise a map. */
 
 struct map *
-init_map (unsigned int width, 
-          unsigned int height, 
+init_map (int width, 
+          int height, 
           unsigned char num_layers)
 {
   struct map *map;
+
+  /* Sanity check */
+
+  if (width <= 0 || height <= 0 || num_layers == 0)
+    {
+      fprintf (stderr, "MAP: Error: init_map given a zero or negative parameter.\n");
+      fprintf (stderr, "Width: %d; Height: %d; #Layers: %d\n",
+               width, height, num_layers);
+      return NULL;
+    }
 
   map = malloc (sizeof (struct map));
 
@@ -146,9 +158,10 @@ init_map (unsigned int width,
           for (i = 0; i < (num_layers); i++)
             {
               /* Allocate one extra slot for the layer tag (at the end of the
-                 data). */
-              map->data_layers[i] = malloc (sizeof (layer_t) * 
-                                            ((width * height) + 1));
+                 data). Assert that width and height are positive. */
+              map->data_layers[i] = malloc (sizeof (layer_t)
+                                            * (unsigned int) ((width * height)
+                                                              + 1));
             }
         }
       else

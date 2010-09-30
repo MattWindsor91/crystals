@@ -45,16 +45,6 @@
 #ifndef _MAP_H
 #define _MAP_H
 
-/* -- CONSTANTS -- */
-
-enum
-  {
-    TILE_W = 32, /**< Width of one tile. 
-                    @todo FIXME: read this from tileset data. */
-    TILE_H = 32  /**< Height of one tile. 
-                    @todo FIXME: read this from tileset data. */
-  };
-
 /* -- TYPEDEFS -- */
 
 typedef unsigned short layer_t; /**< Type for layer data. */
@@ -111,8 +101,8 @@ init_test_map (void);
  */
 
 struct map *
-init_map (unsigned int width, 
-          unsigned int height, 
+init_map (int width, 
+          int height, 
           unsigned char num_layers);
 
 /** Get the tag number assigned to a particular layer.

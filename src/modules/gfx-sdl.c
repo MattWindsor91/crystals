@@ -360,19 +360,19 @@ scroll_screen (unsigned int direction)
     {
     case NORTH:
       source.y = 1;
-      source.h -= 1;
+      source.h--;
       break;
     case EAST:
       dest.x = 1;
-      source.w -= 1;
+      source.w--;
       break;
     case SOUTH:
       dest.y = 1;
-      source.h -= 1;
+      source.h--;
       break;
     case WEST:
       source.x = 1;
-      source.w -= 1;
+      source.w--;
       break;
     }
 
