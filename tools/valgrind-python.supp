@@ -165,100 +165,100 @@
 ### that Python uses.  The problems to not appear to be related to Python's
 ### use of the libraries.
 ###
-
-{
-   Generic ubuntu ld problems
-   Memcheck:Addr8
-   obj:/lib/ld-2.4.so
-   obj:/lib/ld-2.4.so
-   obj:/lib/ld-2.4.so
-   obj:/lib/ld-2.4.so
-}
-
-{
-   Generic gentoo ld problems
-   Memcheck:Cond
-   obj:/lib/ld-2.3.4.so
-   obj:/lib/ld-2.3.4.so
-   obj:/lib/ld-2.3.4.so
-   obj:/lib/ld-2.3.4.so
-}
-
-{
-   DBM problems, see test_dbm
-   Memcheck:Param
-   write(buf)
-   fun:write
-   obj:/usr/lib/libdb1.so.2
-   obj:/usr/lib/libdb1.so.2
-   obj:/usr/lib/libdb1.so.2
-   obj:/usr/lib/libdb1.so.2
-   fun:dbm_close
-}
-
-{
-   DBM problems, see test_dbm
-   Memcheck:Value8
-   fun:memmove
-   obj:/usr/lib/libdb1.so.2
-   obj:/usr/lib/libdb1.so.2
-   obj:/usr/lib/libdb1.so.2
-   obj:/usr/lib/libdb1.so.2
-   fun:dbm_store
-   fun:dbm_ass_sub
-}
-
-{
-   DBM problems, see test_dbm
-   Memcheck:Cond
-   obj:/usr/lib/libdb1.so.2
-   obj:/usr/lib/libdb1.so.2
-   obj:/usr/lib/libdb1.so.2
-   fun:dbm_store
-   fun:dbm_ass_sub
-}
-
-{
-   DBM problems, see test_dbm
-   Memcheck:Cond
-   fun:memmove
-   obj:/usr/lib/libdb1.so.2
-   obj:/usr/lib/libdb1.so.2
-   obj:/usr/lib/libdb1.so.2
-   obj:/usr/lib/libdb1.so.2
-   fun:dbm_store
-   fun:dbm_ass_sub
-}
-
-{
-   GDBM problems, see test_gdbm
-   Memcheck:Param
-   write(buf)
-   fun:write
-   fun:gdbm_open
-
-}
-
-{
-   ZLIB problems, see test_gzip
-   Memcheck:Cond
-   obj:/lib/libz.so.1.2.3
-   obj:/lib/libz.so.1.2.3
-   fun:deflate
-}
-
-{
-   Avoid problems w/readline doing a putenv and leaking on exit
-   Memcheck:Leak
-   fun:malloc
-   fun:xmalloc
-   fun:sh_set_lines_and_columns
-   fun:_rl_get_screen_size
-   fun:_rl_init_terminal_io
-   obj:/lib/libreadline.so.4.3
-   fun:rl_initialize
-}
-
+###
+###{
+###   Generic ubuntu ld problems
+###   Memcheck:Addr8
+###   obj:/lib/ld-2.4.so
+###   obj:/lib/ld-2.4.so
+###   obj:/lib/ld-2.4.so
+###   obj:/lib/ld-2.4.so
+###}
+###
+###{
+###   Generic gentoo ld problems
+###   Memcheck:Cond
+###   obj:/lib/ld-2.3.4.so
+###   obj:/lib/ld-2.3.4.so
+###   obj:/lib/ld-2.3.4.so
+###   obj:/lib/ld-2.3.4.so
+###}
+###
+###{
+###   DBM problems, see test_dbm
+###   Memcheck:Param
+###   write(buf)
+###   fun:write
+###   obj:/usr/lib/libdb1.so.2
+###   obj:/usr/lib/libdb1.so.2
+###   obj:/usr/lib/libdb1.so.2
+###   obj:/usr/lib/libdb1.so.2
+###   fun:dbm_close
+###}
+###
+###{
+###   DBM problems, see test_dbm
+###   Memcheck:Value8
+###   fun:memmove
+###   obj:/usr/lib/libdb1.so.2
+###   obj:/usr/lib/libdb1.so.2
+###   obj:/usr/lib/libdb1.so.2
+###   obj:/usr/lib/libdb1.so.2
+###   fun:dbm_store
+###   fun:dbm_ass_sub
+###}
+###
+###{
+###   DBM problems, see test_dbm
+###   Memcheck:Cond
+###   obj:/usr/lib/libdb1.so.2
+###   obj:/usr/lib/libdb1.so.2
+###   obj:/usr/lib/libdb1.so.2
+###   fun:dbm_store
+###   fun:dbm_ass_sub
+###}
+###
+###{
+###   DBM problems, see test_dbm
+###   Memcheck:Cond
+###   fun:memmove
+###   obj:/usr/lib/libdb1.so.2
+###   obj:/usr/lib/libdb1.so.2
+###   obj:/usr/lib/libdb1.so.2
+###   obj:/usr/lib/libdb1.so.2
+###   fun:dbm_store
+###   fun:dbm_ass_sub
+###}
+###
+###{
+###   GDBM problems, see test_gdbm
+###   Memcheck:Param
+###   write(buf)
+###   fun:write
+###   fun:gdbm_open
+###
+###}
+###
+###{
+###   ZLIB problems, see test_gzip
+###   Memcheck:Cond
+###   obj:/lib/libz.so.1.2.3
+###   obj:/lib/libz.so.1.2.3
+###   fun:deflate
+###}
+###
+###{
+###   Avoid problems w/readline doing a putenv and leaking on exit
+###   Memcheck:Leak
+###   fun:malloc
+###   fun:xmalloc
+###   fun:sh_set_lines_and_columns
+###   fun:_rl_get_screen_size
+###   fun:_rl_init_terminal_io
+###   obj:/lib/libreadline.so.4.3
+###   fun:rl_initialize
+###}
+###
 ###
 ### These occur from somewhere within the SSL, when running
 ###  test_socket_sll.  They are too general to leave on by default.
