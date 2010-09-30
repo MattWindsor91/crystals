@@ -51,18 +51,6 @@
 
 /* -- STATIC DECLARATIONS -- */
 
-/** Internal function for getting the value.
- *
- *  @param key   The key to search for.
- *  @param node  The next branch to search in.
- *
- *  @return Return the value to the appropriate key or NULL if none is found.
- */
-
-static char*
-get_value (const char *key, struct node_t *node);
-
-
 /** Internal function for adding a key-value pair to the tree.
  *
  *  @param key   The string which will be added as key.
@@ -74,44 +62,15 @@ get_value (const char *key, struct node_t *node);
  */
 
 static int
-add_pair (char *key, char *value, struct node_t *node);
-
-
-/** Internal function for initializing a node.
- *
- *  @param node The node which will be initialized.
- *
- *  @param Return the initialized node.
- */
-
-static struct node_t*
-node_init (struct node_t *node);
-
-
-/** Internal function for freeing allocated memory in nodes.
- *
- * @param node The data in the node will be freed.
- */
-
-static void
-free_node (struct node_t *node);
+add_pair (char *key, char *value, dict_t *node);
 
 
 /* -- DEFINITIONS -- */
 
-/* Initializes the parser. */
-
-void
-init_parser (void)
-{
-  node_init (&sg_root);
-}
-
-
 /* Parse configuration file. */
 
 int
-config_parse_file (const char *path_name)
+config_parse_file (const char *path_name, dict_t *root)
 {
   /* simple booleans b_* */
   bool_t b_key = FALSE;
@@ -142,7 +101,6 @@ config_parse_file (const char *path_name)
           if (key - sk == 99)
             {
               fprintf (stderr, "PARSER: Key is too long: %d \n", line_counter);
-              b_error = TRUE;
               break;
             }
           if (b_ignore)
@@ -154,7 +112,7 @@ config_parse_file (const char *path_name)
                       *value = '\0';
                       key = sk;
                       value = sv;
-                      if (add_pair (key, value, &sg_root) == FAILURE)
+                      if (add_pair (key, value, root) == FAILURE)
                         {
                           fprintf (stderr, "PARSER: Key is already present: %d \n",
                             line_counter);
@@ -201,7 +159,7 @@ config_parse_file (const char *path_name)
                             *value = '\0';
                             key = sk;
                             value = sv;
-                            if (add_pair (key, value, &sg_root) == FAILURE)
+                            if (add_pair (key, value, root) == FAILURE)
                               {
                                 fprintf (stderr,
                                   "PARSER: Key is already present: %d \n",
@@ -270,41 +228,52 @@ config_parse_file (const char *path_name)
   else
     {
       fprintf(stderr, "PARSER: Could not open the file %s .\n", path_name);
-      b_error = TRUE;
     }
 
   free (key);
   free (value);
 
-  if (b_error)
+  if (b_error == TRUE)
     return FAILURE;
   else
     return SUCCESS;
 }
 
 
+/* Function for freeing allocated memory in nodes. */
+
+void
+config_free_dict (dict_t *node)
+{
+  if (node->key == NULL)
+    {
+      free (node);
+    }
+  else
+    {
+      config_free_dict (node->left);
+      config_free_dict (node->right);
+      free (node->key);
+      free (node->value);
+      free (node);
+    }
+}
+
+
 /* Get the value of the appropriate key. */
 
 char*
-config_get_value (const char *key)
-{
-  return get_value (key, &sg_root);
-}
-
-/* Internal function for getting the value. */
-
-static char*
-get_value (const char *key, node_t *node)
+config_get_value (const char *key, dict_t *node)
 {
   if (node->key != NULL)
     {
       if (strcmp (key, node->key) == -1)
         {
-          return get_value (key, node->left);
+          return config_get_value (key, node->left);
         }
       else if (strcmp (key, node->key) == 1)
         {
-          return get_value (key, node->right);
+          return config_get_value (key, node->right);
         }
       else
         {
@@ -321,11 +290,8 @@ get_value (const char *key, node_t *node)
 /* Internal function for adding a key-value pair to the tree. */
 
 static int
-add_pair (char *key, char *value, node_t *node)
+add_pair (char *key, char *value, dict_t *node)
 {
-  node_t *n_left;
-  node_t *n_right;
-
   if (node->key == NULL)
     {
       node->key = malloc (sizeof (char) * strlen (key) + 1);
@@ -334,11 +300,9 @@ add_pair (char *key, char *value, node_t *node)
       node->value = malloc (sizeof (char) * strlen (value) + 1);
       strcpy (node->value, value);
 
-      n_left = malloc (sizeof (node_t));
-      n_right = malloc (sizeof (node_t));
+      node->left = config_dict_init ();
+      node->right = config_dict_init ();
 
-      node->left = node_init (n_left);
-      node->right = node_init (n_right);
       return SUCCESS;
     }
   else
@@ -359,11 +323,12 @@ add_pair (char *key, char *value, node_t *node)
 }
 
 
-/* Internal function for initializing a node. */
+/* Initializing a node. */
 
-static node_t*
-node_init (node_t *node)
+dict_t*
+config_dict_init (void)
 {
+  dict_t *node = malloc (sizeof (dict_t));
   node->key = NULL;
   node->value = NULL;
   node->left = NULL;
@@ -371,37 +336,4 @@ node_init (node_t *node)
   return node;
 }
 
-
-/* Internal function for freeing allocated memory in nodes. */
-
-static void
-free_node (node_t *node)
-{
-  if (node->key == NULL)
-    {
-      free (node);
-    }
-  else
-    {
-      free_node (node->left);
-      free_node (node->right);
-      free (node->key);
-      free (node->value);
-      free (node);
-    }
-}
-
-
-/* Clean up the parser. */
-
-void
-cleanup_parser (void)
-{
-  free_node (sg_root.left);
-  free_node (sg_root.right);
-  free (sg_root.key);
-  free (sg_root.value);
-}
-
 /* vim: set ts=2 sw=2 softtabstop=2: */
-

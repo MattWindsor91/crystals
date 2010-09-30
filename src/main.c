@@ -81,13 +81,12 @@ int
 init (void)
 {
   char *module_path;
-
-  init_parser ();
+  dict_t *config = config_dict_init ();
 
   /* yeah I know that needs someting better */
-  if (config_parse_file ("config/default.cfg") == SUCCESS)
+  if (config_parse_file ("config/default.cfg", config) == SUCCESS)
     {
-      module_path = config_get_value ("module_path");
+      module_path = config_get_value ("module_path", config);
     }
   else
     {
@@ -107,8 +106,6 @@ init (void)
       fprintf (stderr, "ERROR: Could not init modules!\n");
       return FAILURE;
     }
-
-  free (module_path);
 
   if (init_graphics () == FAILURE)
     {
@@ -142,6 +139,9 @@ init (void)
   run_file ("tests/lua.lua");
   init_events ();
 
+  /* free allocated memory */
+  config_free_dict (config);
+
   return SUCCESS;
 }
 
@@ -169,7 +169,6 @@ cleanup (void)
   cleanup_graphics ();
   cleanup_bindings ();
   cleanup_modules ();
-  cleanup_parser ();
 }
 
 /* vim: set ts=2 sw=2 softtabstop=2: */

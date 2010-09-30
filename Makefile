@@ -9,7 +9,7 @@ TESTDIR  := tests
 
 ## Test directories ##
 
-TESTS    := module optionparser
+TESTS    := module optionparser parser
 
 # Add TESTDIR to all test paths #
 
@@ -128,6 +128,9 @@ $(TESTDIR)/module: module.o $(TESTDIR)/module.o $(TESTDIR)/$(MODDIR)/test.so
 
 $(TESTDIR)/optionparser: optionparser.o $(TESTDIR)/optionparser.o
 	@$(CC) $(CFLAGS) optionparser.o $(TESTDIR)/optionparser.o -o $@ >/dev/null
+
+$(TESTDIR)/parser: parser.o $(TESTDIR)/parser.o
+	@$(CC) $(CFLAGS) parser.o $(TESTDIR)/parser.o -o $@ >/dev/null
 
 clean-tests:
 	@echo "Cleaning tests..."
