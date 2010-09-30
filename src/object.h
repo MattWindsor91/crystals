@@ -172,8 +172,8 @@ set_object_image (struct object_t *object,
                   const char filename[],
                   short image_x,
                   short image_y,
-                  unsigned int map_x,
-                  unsigned int map_y,
+                  int map_x,
+                  int map_y,
                   unsigned short width,
                   unsigned short height);
 
@@ -208,8 +208,8 @@ set_object_image (struct object_t *object,
 
 int
 set_object_coordinates (struct object_t *object, 
-                        unsigned int x, 
-                        unsigned int y,
+                        int x, 
+                        int y,
                         unsigned short reference);
 
 /** Mark an object as being dirty on the given map view.

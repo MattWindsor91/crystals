@@ -49,7 +49,7 @@
 #include "parser.h"
 
 
-/* STATIC FUNCTION PROTOTYPES */
+/* -- STATIC DECLARATIONS -- */
 
 /** Internal function for getting the value.
  *
@@ -97,7 +97,7 @@ static void
 free_node (struct node_t *node);
 
 
-/* DEFINITIONS */
+/* -- DEFINITIONS -- */
 
 /* Initializes the parser. */
 
@@ -317,6 +317,7 @@ get_value (const char *key, node_t *node)
     }
 }
 
+
 /* Internal function for adding a key-value pair to the tree. */
 
 static int
@@ -356,6 +357,7 @@ add_pair (char *key, char *value, node_t *node)
         }
     }
 }
+
 
 /* Internal function for initializing a node. */
 
@@ -402,3 +404,4 @@ cleanup_parser (void)
 }
 
 /* vim: set ts=2 sw=2 softtabstop=2: */
+

@@ -54,6 +54,22 @@
 
 #include "map.h"
 
+/* -- CONSTANTS -- */
+
+/** Width of one tile. 
+ *
+ *  @todo FIXME: read this from tileset data.
+ */
+
+extern const unsigned short TILE_W;
+
+/** Height of one tile. 
+ *
+ *  @todo FIXME: read this from tileset data.
+ */
+
+extern const unsigned short TILE_H;
+
 /* -- STRUCTURES -- */
 
 /** An object render queue node. */
@@ -71,11 +87,11 @@ struct object_image
                             on-image rectangle from which to source
                             the rendered image, in pixels. */
 
-  unsigned int map_x;    /**< X co-ordinate of the left edge of the
+  int map_x;             /**< X co-ordinate of the left edge of the
                             on-map rectangle in which to render the
                             image, in pixels. */
 
-  unsigned int map_y;    /**< Y co-ordinate of the top edge of the
+  int map_y;             /**< Y co-ordinate of the top edge of the
                             on-map rectangle in which to render the
                             image, in pixels. */
 
@@ -268,10 +284,10 @@ scroll_map (struct map_view *mapview, int direction);
 
 int
 mark_dirty_rect (struct map_view *mapview,
-                 long start_x,
-                 long start_y,
-                 unsigned int width,
-                 unsigned int height);
+                 int start_x,
+                 int start_y,
+                 int width,
+                 int height);
 
 /** De-initialise a mapview.
  *

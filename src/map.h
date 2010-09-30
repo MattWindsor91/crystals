@@ -45,16 +45,6 @@
 #ifndef _MAP_H
 #define _MAP_H
 
-/* -- CONSTANTS -- */
-
-enum
-  {
-    TILE_W = 32, /**< Width of one tile. 
-                    @todo FIXME: read this from tileset data. */
-    TILE_H = 32  /**< Height of one tile. 
-                    @todo FIXME: read this from tileset data. */
-  };
-
 /* -- TYPEDEFS -- */
 
 typedef unsigned short layer_t; /**< Type for layer data. */
@@ -65,12 +55,15 @@ typedef unsigned short layer_t; /**< Type for layer data. */
  *
  *  This contains the tile data and eventually the object list for a
  *  map.
+ *
+ *  @note width and height are currently stored as ints due to quirks
+ *        in the map viewing code. This may change later.
  */
 
 struct map
 {
-  unsigned int width;       /**< Width of the map, in tiles. */
-  unsigned int height;      /**< Height of the map, in tiles. */
+  int width;                /**< Width of the map, in tiles. */
+  int height;               /**< Height of the map, in tiles. */
   unsigned char num_layers; /**< Number of arrays to store in the map. */
   layer_t **data_layers;    /**< Pointers to map layer arrays. */
 };
@@ -108,8 +101,8 @@ init_test_map (void);
  */
 
 struct map *
-init_map (unsigned int width, 
-          unsigned int height, 
+init_map (int width, 
+          int height, 
           unsigned char num_layers);
 
 /** Get the tag number assigned to a particular layer.

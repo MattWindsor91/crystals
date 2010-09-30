@@ -45,6 +45,8 @@
 #ifndef _HASH_H
 #define _HASH_H
 
+#include <stdarg.h>
+
 /* -- CONSTANTS -- */
 
 enum

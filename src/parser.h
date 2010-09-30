@@ -102,6 +102,7 @@ config_parse_file (const char *path_name);
 char*
 config_get_value (const char *key);
 
+
 /** Clean up the parser.
  *
  *  Free all allocated memory.

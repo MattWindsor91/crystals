@@ -1,5 +1,6 @@
-maprender-test
+crystals
 autodoc
 *.o
 *.so
 *.d
+*.*~

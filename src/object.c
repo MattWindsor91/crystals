@@ -194,8 +194,8 @@ set_object_image (struct object_t *object,
                   const char filename[],
                   short image_x,
                   short image_y,
-                  unsigned int map_x,
-                  unsigned int map_y,
+                  int map_x,
+                  int map_y,
                   unsigned short width,
                   unsigned short height)
 {
@@ -250,8 +250,8 @@ set_object_image (struct object_t *object,
 
 int
 set_object_coordinates (struct object_t *object, 
-                        unsigned int x, 
-                        unsigned int y,
+                        int x, 
+                        int y,
                         unsigned short reference)
 {
   /* Sanity checking. */
@@ -381,10 +381,10 @@ dirty_object_test (struct hash_object *hash_object, va_list ap)
 {
   struct object_t *object;
   struct map_view *mapview;
-  long start_x;
-  long start_y;
-  unsigned int width;
-  unsigned int height;
+  int start_x;
+  int start_y;
+  int width;
+  int height;
 
   /* Sanity-check the hash object. */
 
@@ -408,10 +408,10 @@ dirty_object_test (struct hash_object *hash_object, va_list ap)
     return SUCCESS;
 
   mapview = va_arg (ap, struct map_view *);
-  start_x = va_arg (ap, long);
-  start_y = va_arg (ap, long);
-  width   = va_arg (ap, unsigned int);
-  height  = va_arg (ap, unsigned int);
+  start_x = va_arg (ap, int);
+  start_y = va_arg (ap, int);
+  width   = va_arg (ap, int);
+  height  = va_arg (ap, int);
 
   /* Use separating axis theorem, sort of, to decide whether the
      object rect and the dirty rect intersect. */
