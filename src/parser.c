@@ -48,6 +48,10 @@
 #include "util.h"
 #include "parser.h"
 
+/* -- GLOBAL VARIABLES -- */
+
+static node_t sg_root;         /**< Root node for the key-value tree */
+
 
 /* -- STATIC DECLARATIONS -- */
 

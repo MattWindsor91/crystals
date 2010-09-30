@@ -67,10 +67,6 @@ struct node_t
   node_t *right;        /**< Right branch of the node. */
 };
 
-/* -- GLOBAL VARIABLES -- */
-
-node_t sg_root;         /**< Root node for the key-value tree */
-
 
 /* -- FUNCTION PROTOTYPES -- */
 
