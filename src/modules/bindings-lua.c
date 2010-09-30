@@ -36,7 +36,7 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/** @file   src/modules/bindings-lua.h
+/** @file   src/modules/bindings-lua.c
  *  @author Alexander Preisinger
  *  @brief  Lua module for scripting.
  */
@@ -94,6 +94,7 @@ parameter_check (lua_State *L, const char *func_name, const char sig[])
   int pars;
   int pas_pars;
 
+  /* to prevent type conversation warnings on 64 bit systems */
   pars = (int) strlen (sig);
   pas_pars = lua_gettop (L);
 

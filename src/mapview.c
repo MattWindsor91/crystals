@@ -45,6 +45,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <limits.h>
 
 #include "mapview.h"
 #include "map.h"
@@ -54,12 +55,17 @@
 
 #include "object.h"
 
+/* -- CONSTANTS -- */
+
+const unsigned short TILE_W = 32; 
+const unsigned short TILE_H = 32;
+
 struct map_view *
 init_mapview (struct map *map)
 {
   struct map_view *mapview;
 
-  unsigned int width, height; /* Temporary locations for shorthand purposes. */
+  int width, height; /* Temporary locations for shorthand purposes. */
   unsigned int i;
 
   if (map == NULL)
@@ -84,7 +90,14 @@ init_mapview (struct map *map)
   width = mapview->map->width;
   height = mapview->map->height;
 
-  mapview->dirty_tiles = malloc (sizeof (unsigned char) * (width * height));
+  if (width <= 0 || height <= 0)
+    {
+      fprintf (stderr, "MAPVIEW: Error: Map W/H are non-positive.\n");
+      return NULL;
+    }
+
+  mapview->dirty_tiles = malloc (sizeof (unsigned char) *
+                                 (unsigned int) (width * height));
 
   if (mapview->dirty_tiles == NULL)
     {
@@ -382,19 +395,53 @@ render_map_layer (struct map_view *mapview, unsigned char layer)
                   && true_y < map->height
                   && mapview->dirty_tiles[true_x + (true_y * map->height)] != 0)
                 {
-                  /* Use direct access to eliminate the need to
-                     continually hash the filename. */
-                  if (map->data_layers[layer][true_x + (true_y * map->height)] 
+                  /* Practically, the drawing X and Y should NEVER be
+                     bigger than a short, but it's good to check. 
+
+                     Also, and this will be changed eventually, but
+                     the tileset X cannot be bigger than a short.
+
+                  */
+
+                  int screen_x = (x * TILE_W) - (x_offset % TILE_W);
+                  int screen_y = (y * TILE_H) - (y_offset % TILE_H);
+                  int layer_offset = true_x  + (true_y * map->height);
+                  int tileset_x = TILE_W * map->data_layers[layer][layer_offset];
+
+                  if (screen_x < SHRT_MIN
+                      || screen_x > SHRT_MAX
+                      || screen_y < SHRT_MIN
+                      || screen_y > SHRT_MAX)
+                    {
+                      fprintf (stderr, "MAPVIEW: Error: Screen X and Y are outside short bounds.\n");
+                      fprintf (stderr, "MAPVIEW: Error: THIS SHOULD NEVER HAPPEN!\n");
+                      return;
+                    }
+
+                  if (layer_offset < 0 
+                      || layer_offset >= (map->width * map->height))
+                    {
+                      fprintf (stderr, "MAPVIEW: Error: Layer offset out of bounds.\n");
+                      return;
+                    }
+
+
+                  if (tileset_x < 0
+                      || tileset_x > SHRT_MAX)
+                    {
+                      fprintf (stderr, "MAPVIEW: Error: Tileset X is outside short bounds.\n");
+                      return;
+                    }
+
+                  if (map->data_layers[layer][layer_offset] 
                       != 0)
                     draw_image_direct (tileset,
-                                       map->data_layers[layer][true_x 
-                                                        + (true_y * map->height)]
-                                * TILE_W, 0,
-                                (x * TILE_W) - (short) (x_offset % TILE_W),
-                                (y * TILE_H) - (short) (y_offset % TILE_H),
-                                TILE_W, TILE_H);
+                                       (short) tileset_x, 0,
+                                       (short) screen_x,
+                                       (short) screen_y,
+                                       TILE_W, TILE_H);
 
-                  mapview->dirty_tiles[true_x + (true_y * map->height)]--;
+                  mapview->dirty_tiles[layer_offset]--;
                 }
             }
         }
@@ -439,9 +486,8 @@ render_map_objects (struct map_view *mapview, unsigned char layer)
 void
 scroll_map (struct map_view *mapview, int direction)
 {
-  int adirection = -1;
+  unsigned int adirection;
 
-  /* FIXME: Render damage. */
   switch (direction)
     {
     case NORTH:
@@ -476,8 +522,11 @@ scroll_map (struct map_view *mapview, int direction)
                        1, SCREEN_H / TILE_H);
       adirection = EAST;
       break;
+    default:
+      fprintf (stderr, "MAPVIEW: Error: Scrolling screen with absurd direction.\n");
+      return;
+      break;
     }
-
 
   (*g_modules.gfx.scroll_screen) (adirection);
   render_map (mapview);

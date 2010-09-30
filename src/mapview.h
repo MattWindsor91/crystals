@@ -54,6 +54,22 @@
 
 #include "map.h"
 
+/* -- CONSTANTS -- */
+
+/** Width of one tile. 
+ *
+ *  @todo FIXME: read this from tileset data.
+ */
+
+extern const unsigned short TILE_W;
+
+/** Height of one tile. 
+ *
+ *  @todo FIXME: read this from tileset data.
+ */
+
+extern const unsigned short TILE_H;
+
 /* -- STRUCTURES -- */
 
 /** An object render queue node. */

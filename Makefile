@@ -59,7 +59,7 @@ WARN     := -Wall -Wextra -Wshadow -Wpointer-arith -Wcast-align \
             -Wredundant-decls -Wnested-externs -Winline -Wno-long-long \
             -Wconversion -Wstrict-prototypes
 
-LIBS     := -ldl 
+LIBS     := -ldl -lpthread 
 CFLAGS   := -ansi -pedantic -O2 -ggdb -DDEFMODPATH="\"$(MODPATH)\"" $(WARN)
 
 ## Rules ##
@@ -84,7 +84,7 @@ $(BIN): $(OBJ) $(SO)
 
 clean: clean-tests clean-doc clean-modules
 	@echo "Cleaning..."
-	-@$(RM) $(BIN) *.o *.d *.so &>/dev/null
+	-@$(RM) $(BIN) $(SRCDIR)/*.{o,d,so} &>/dev/null
 
 ### Modules
 $(SRCDIR)/$(MODDIR)/gfx-sdl.so: LIBS   += `sdl-config --libs` -lSDL_image
