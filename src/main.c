@@ -59,6 +59,8 @@
 struct map *g_map;
 struct map_view *g_mapview;
 
+dict_t *config;
+
 int g_running;
 
 int
@@ -81,7 +83,8 @@ int
 init (void)
 {
   char *module_path;
-  dict_t *config = config_dict_init ();
+  
+  config = config_dict_init();
 
   /* yeah I know that needs someting better */
   if (config_parse_file ("config/default.cfg", config) == SUCCESS)
@@ -139,9 +142,6 @@ init (void)
   run_file ("tests/lua.lua");
   init_events ();
 
-  /* free allocated memory */
-  config_free_dict (config);
-
   return SUCCESS;
 }
 
@@ -169,6 +169,7 @@ cleanup (void)
   cleanup_graphics ();
   cleanup_bindings ();
   cleanup_modules ();
+  config_free_dict (config);
 }
 
 /* vim: set ts=2 sw=2 softtabstop=2: */

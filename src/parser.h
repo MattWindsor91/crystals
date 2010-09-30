@@ -92,6 +92,20 @@ int
 config_parse_file (const char *path_name, dict_t *root);
 
 
+/** Function for adding a key-value pair to the tree.
+ *
+ *  @param key   The string which will be added as key.
+ *  @param value The string which will be added as key.
+ *  @param node  The branch in which the key-value pair will be added.
+ *
+ *  @return Returns SUCCESS, if the key-value pair can be added, if not or
+ *  the key already exists return FAILURE. (Defined in util.h)
+ */
+
+int
+config_add_pair (char *key, char *value, dict_t *node);
+
+
 /** Get the value of the appropriate key.
  *
  * @param key   Pass a string, which will be searched in the tree.
@@ -102,6 +116,17 @@ config_parse_file (const char *path_name, dict_t *root);
 
 char*
 config_get_value (const char *key, dict_t *node);
+
+
+/** Return the numbers of items in the dictionary type
+ *
+ * @param node A dictionary node.
+ *
+ * @return The numbers of key-value pairs in the dictionary.
+ */
+
+int
+config_item_count (dict_t *node);
 
 
 /** Function for freeing allocated memory in nodes.

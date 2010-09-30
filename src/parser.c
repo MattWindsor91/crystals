@@ -49,24 +49,6 @@
 #include "parser.h"
 
 
-/* -- STATIC DECLARATIONS -- */
-
-/** Internal function for adding a key-value pair to the tree.
- *
- *  @param key   The string which will be added as key.
- *  @param value The string which will be added as key.
- *  @param node  The branch in which the key-value pair will be added.
- *
- *  @return Returns SUCCESS, if the key-value pair can be added, if not or
- *  the key already exists return FAILURE. (Defined in util.h)
- */
-
-static int
-add_pair (char *key, char *value, dict_t *node);
-
-
-/* -- DEFINITIONS -- */
-
 /* Parse configuration file. */
 
 int
@@ -112,7 +94,7 @@ config_parse_file (const char *path_name, dict_t *root)
                       *value = '\0';
                       key = sk;
                       value = sv;
-                      if (add_pair (key, value, root) == FAILURE)
+                      if (config_add_pair (key, value, root) == FAILURE)
                         {
                           fprintf (stderr, "PARSER: Key is already present: %d \n",
                             line_counter);
@@ -159,7 +141,7 @@ config_parse_file (const char *path_name, dict_t *root)
                             *value = '\0';
                             key = sk;
                             value = sv;
-                            if (add_pair (key, value, root) == FAILURE)
+                            if (config_add_pair (key, value, root) == FAILURE)
                               {
                                 fprintf (stderr,
                                   "PARSER: Key is already present: %d \n",
@@ -287,10 +269,10 @@ config_get_value (const char *key, dict_t *node)
 }
 
 
-/* Internal function for adding a key-value pair to the tree. */
+/* Function for adding a key-value pair to the tree. */
 
-static int
-add_pair (char *key, char *value, dict_t *node)
+int
+config_add_pair (char *key, char *value, dict_t *node)
 {
   if (node->key == NULL)
     {
@@ -309,16 +291,32 @@ add_pair (char *key, char *value, dict_t *node)
     {
       if (strcmp (key, node->key) == -1)
         {
-          return add_pair (key, value, node->left);
+          return config_add_pair (key, value, node->left);
         }
       else if (strcmp (key, node->key) == 1)
         {
-          return add_pair (key, value, node->right);
+          return config_add_pair (key, value, node->right);
         }
       else
         {
           return FAILURE;
         }
+    }
+}
+
+
+/* Return the numbers of items in the dictionary type */
+
+int
+config_item_count (dict_t *node)
+{
+  if (node->key == NULL)
+    {
+      return 0;
+    }
+  else
+    {
+      return config_item_count (node->left) + config_item_count (node->right) + 1;
     }
 }
 
