@@ -108,8 +108,6 @@ init (void)
       return FAILURE;
     }
 
-  free (module_path);
-
   if (init_graphics () == FAILURE)
     {
       fprintf (stderr, "ERROR: Could not init gfx!\n");

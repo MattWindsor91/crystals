@@ -316,17 +316,15 @@ find_hash_object (struct hash_object *head[],
 int
 apply_to_hash_objects (struct hash_object *head[], 
                        int (*function) (struct hash_object *object, 
-                                        va_list ap),
-                       ...)
+                                        void *data),
+                       void *data)
 {
   int i;
   int result;
   int temp_result;
-  va_list ap;
   struct hash_object *hash_object;
 
   result = SUCCESS;
-  va_start (ap, function);
 
   for (i = 0; i < HASH_VALS; i++)
     {
@@ -334,14 +332,12 @@ apply_to_hash_objects (struct hash_object *head[],
            hash_object != NULL;
            hash_object = hash_object->next)
         {
-          temp_result = function (hash_object, ap);
+          temp_result = function (hash_object, data);
 
           if (temp_result == FAILURE)
             result = FAILURE;
         }
     }
-
-  va_end (ap);
 
   return result;
 }

@@ -190,9 +190,10 @@ find_hash_object (struct hash_object *head[],
  *
  *  @param function  Pointer to the function to apply to the
  *                   object.  The function must take the hash object
- *                   as first parameter followed by a variadic
- *                   parameter set (va_list), and return a
- *                   SUCCESS/FAILURE int.
+ *                   as first parameter followed by a void pointer for
+ *                   data, and return a SUCCESS/FAILURE int.
+ *
+ *  @param data      Void pointer to the data to pass to the function.
  *
  *  @return SUCCESS if all applications of the function succeeded,
  *  FAILURE otherwise.
@@ -201,7 +202,7 @@ find_hash_object (struct hash_object *head[],
 int
 apply_to_hash_objects (struct hash_object *head[], 
                        int (*function) (struct hash_object *object, 
-                                        va_list ap),
-                       ...);
+                                        void *data),
+                       void *data);
 
 #endif /* not _HASH_H */

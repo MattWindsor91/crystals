@@ -105,6 +105,23 @@ struct object_image
   struct object_image *next; /**< Next node in the queue. */
 };
 
+/** A dirty rectangle queue node. */
+
+struct dirty_rectangle
+{
+  int start_x; /**< X co-ordinate of the left edge of the rectangle
+                  (in tiles from left of map). */
+
+  int start_y; /**< Y co-ordinate of the top of the rectangle (in
+                  tiles from top of map). */
+
+  int width;   /**< Width of the rectangle (in tiles). */
+  int height;  /**< Height of the rectangle (in tiles). */
+
+  struct map_view *parent;      /**< Parent map view. */
+  struct dirty_rectangle *next; /**< Next node in the queue. */
+};
+
 /** A map viewpoint.
  *
  *  This contains data required to render a map, including the offset
@@ -146,6 +163,9 @@ struct map_view
                                          on the next pass.  There will
                                          be num_object_queues heads in
                                          this block.*/
+
+  struct dirty_rectangle *dirty_rectangles; /**< Stack of dirty
+                                               rectangles. */
 };
 
 #include "object.h" /* object_t; cannot be included before

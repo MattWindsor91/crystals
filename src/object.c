@@ -377,16 +377,18 @@ get_object (const char object_name[], struct hash_object *add_pointer)
 } 
 
 int
-dirty_object_test (struct hash_object *hash_object, va_list ap)
+dirty_object_test (struct hash_object *hash_object, void *rect_pointer)
 {
   struct object_t *object;
   struct map_view *mapview;
+  struct dirty_rectangle *rect;
+
   int start_x;
   int start_y;
   int width;
   int height;
 
-  /* Sanity-check the hash object. */
+  /* Sanity-check the hash object and dirty rectangle data. */
 
   if (hash_object == NULL)
     {
@@ -400,18 +402,24 @@ dirty_object_test (struct hash_object *hash_object, va_list ap)
       return FAILURE;
     }
 
+  if (rect_pointer == NULL)
+    {
+      fprintf (stderr, "OBJECT: Error: Given dirty rect pointer is NULL.\n");
+    }
+
   object = (struct object_t *) hash_object->data;
+  rect = (struct dirty_rectangle *) rect_pointer;
 
  /* If an object is already dirty, don't bother checking. */
 
   if (object->is_dirty == TRUE)
     return SUCCESS;
 
-  mapview = va_arg (ap, struct map_view *);
-  start_x = va_arg (ap, int);
-  start_y = va_arg (ap, int);
-  width   = va_arg (ap, int);
-  height  = va_arg (ap, int);
+  mapview = rect->parent;
+  start_x = rect->start_x;
+  start_y = rect->start_y;
+  width   = rect->width;
+  height  = rect->height;
 
   /* Use separating axis theorem, sort of, to decide whether the
      object rect and the dirty rect intersect. */

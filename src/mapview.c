@@ -60,6 +60,36 @@
 const unsigned short TILE_W = 32; 
 const unsigned short TILE_H = 32;
 
+/* -- STATIC DECLARATIONS -- */
+
+/** Add a new dirty rectangle to the mapview's dirty rectangle queue.
+ *
+ *  @param mapview  Pointer to the map view.
+ *
+ *  @param start_x  The X co-ordinate of the start of the rectangle,
+ *                  as a tile offset from the left edge of the map.
+ *
+ *  @param start_y  The Y co-ordinate of the start of the rectangle, 
+ *                  as a tile offset from the top edge of the map.
+ *
+ *  @param width    Width of the tile rectangle, in tiles.
+ *
+ *  @param height   Height of the tile rectangle, in tiles.
+ *
+ *  @return SUCCESS if there were no errors encountered; FAILURE
+ *  otherwise.
+ */
+
+static int
+add_dirty_rect (struct map_view *mapview,
+                int start_x,
+                int start_y,
+                int width,
+                int height);
+
+
+/* -- DEFINITIONS -- */
+
 struct map_view *
 init_mapview (struct map *map)
 {
@@ -86,6 +116,7 @@ init_mapview (struct map *map)
   mapview->y_offset = 0;
   mapview->map = map;
   mapview->object_queue = NULL;
+  mapview->dirty_rectangles = NULL;
   
   width = mapview->map->width;
   height = mapview->map->height;
@@ -540,6 +571,7 @@ mark_dirty_rect (struct map_view *mapview,
                  int height)
 {
   int x, y;
+  struct dirty_rectangle *next;
 
   /* Sanity checking. */
 
@@ -555,33 +587,113 @@ mark_dirty_rect (struct map_view *mapview,
       return FAILURE;
     }
 
-  /* Mark dirty tiles. */
+  /* If this is the first rectangle to go onto the queue, then this
+     function call will take the responsibility of managing the
+     queue. Otherwise, just push this rectangle onto the queue for the
+     parent call to handle. */
 
-  for (x = start_x; x < start_x + width; x++)
+  if (mapview->dirty_rectangles != NULL)
+    return add_dirty_rect (mapview, start_x, start_y, width, height);
+
+  /* Otherwise, try adding and then process the queue. */
+
+  if (add_dirty_rect (mapview, start_x, start_y, width, height) 
+      == FAILURE)
+    return FAILURE;
+
+  while (mapview->dirty_rectangles != NULL)
     {
-      for (y = start_y; y < start_y + height; y++)
+      /* Mark dirty tiles. */
+
+      for (x = mapview->dirty_rectangles->start_x;
+           x < (mapview->dirty_rectangles->start_x
+                + mapview->dirty_rectangles->width); x++)
         {
-          if (x >= 0
-              && y >= 0
-              && x < mapview->map->width
-              && y < mapview->map->height)
-            mapview->dirty_tiles[x + (y * mapview->map->width)] = \
-              mapview->map->num_layers;
+          for (y = mapview->dirty_rectangles->start_y;
+               y < (mapview->dirty_rectangles->start_y
+                    + mapview->dirty_rectangles->height); y++)
+            {
+              if (x >= 0
+                  && y >= 0
+                  && x < mapview->map->width
+                  && y < mapview->map->height)
+                mapview->dirty_tiles[x + (y * mapview->map->width)] = \
+                  mapview->map->num_layers;
+            }
         }
+
+      /* Mark dirty objects. */
+
+      /* Check to see if each object in the hash table is going to be dirtied. */
+
+      apply_to_hash_objects (g_objects, 
+                             dirty_object_test, 
+                             mapview->dirty_rectangles);
+
+      /* Now can the current dirty rectangle and move to the next, if
+         any. */
+
+      next = mapview->dirty_rectangles->next;
+
+      free (mapview->dirty_rectangles);
+
+      mapview->dirty_rectangles = next;
+    }
+ 
+  return SUCCESS;
+}
+
+static int
+add_dirty_rect (struct map_view *mapview,
+                int start_x,
+                int start_y,
+                int width,
+                int height)
+{
+  struct dirty_rectangle *rect;
+  struct dirty_rectangle *p;
+
+  /* Sanity checking shouldn't be needed - this should never be called
+     directly. */
+
+  /* First, try to allocate a rect structure. */
+
+  rect = malloc (sizeof (struct dirty_rectangle));
+
+  if (rect == NULL)
+    {
+      fprintf (stderr, "MAPVIEW: Error: Cannot alloc a dirty rectangle.\n");
+      return FAILURE;
     }
 
-  /* Mark dirty objects. */
+  /* Now move the members in. */
 
-  /* Check to see if each object in the hash table is going to be dirtied. */
+  rect->start_x = start_x;
+  rect->start_y = start_y;
+  rect->width = width;
+  rect->height = height;
+  rect->parent = mapview;
+  rect->next = NULL;
 
-  apply_to_hash_objects (g_objects, 
-                         dirty_object_test, 
-                         mapview, 
-                         start_x,
-                         start_y,
-                         width,
-                         height);
- 
+  /* If the queue is empty, then replace the queue pointer with the
+     new rect pointer. */
+
+  if (mapview->dirty_rectangles == NULL)
+    {
+      mapview->dirty_rectangles = rect;
+      return SUCCESS;
+    }
+
+  /* Otherwise, skip to the first item in the queue with a NULL next
+     pointer and add the new rect pointer there. */
+
+  for (p = mapview->dirty_rectangles; 
+       p->next != NULL; 
+       p = p->next)
+    ;
+
+  p->next = rect;
+
   return SUCCESS;
 }
 
