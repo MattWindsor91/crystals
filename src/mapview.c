@@ -100,7 +100,7 @@ init_mapview (struct map *map)
 
   if (map == NULL)
     {
-      fprintf (stderr, "MAPVIEW: Error: Passed map pointer is null.\n");
+      error ("MAPVIEW - init_mapview - Passed map pointer is null.");
       return NULL;
     }
 
@@ -108,7 +108,7 @@ init_mapview (struct map *map)
 
   if (mapview == NULL)
     {
-      fprintf (stderr, "MAPVIEW: Error: Couldn't allocate map view.\n");
+      error ("MAPVIEW - init_mapview - Couldn't allocate map view.");
       return NULL;
     }
             
@@ -123,7 +123,7 @@ init_mapview (struct map *map)
 
   if (width <= 0 || height <= 0)
     {
-      fprintf (stderr, "MAPVIEW: Error: Map W/H are non-positive.\n");
+      error ("MAPVIEW - init_mapview - Map W/H are non-positive.");
       return NULL;
     }
 
@@ -132,7 +132,7 @@ init_mapview (struct map *map)
 
   if (mapview->dirty_tiles == NULL)
     {
-      fprintf (stderr, "MAPVIEW: Error: Couldn't allocate dirty tilemap. \n");
+      error ("MAPVIEW - init_mapview - Couldn't allocate dirty tilemap.");
       cleanup_mapview (mapview);
       return NULL;
     }
@@ -147,7 +147,7 @@ init_mapview (struct map *map)
 
   if (mapview->num_object_queues == 0)
     {
-      fprintf (stderr, "MAPVIEW: Error: No tags in map; please fix map.\n");
+      error ("MAPVIEW - init_mapview - No tags in map; please fix map.");
       cleanup_mapview (mapview);
       return NULL;
     }
@@ -159,7 +159,7 @@ init_mapview (struct map *map)
 
   if (mapview->object_queue == NULL)
     {
-      fprintf (stderr, "MAPVIEW: Error: Couldn't allocate object queues.");
+      error ("MAPVIEW - init_mapview - Couldn't allocate object queues.");
       cleanup_mapview (mapview);
       return NULL;
     }
@@ -171,10 +171,6 @@ init_mapview (struct map *map)
 
   mark_dirty_rect (mapview, 0, 0, map->width, map->height);
 
-  /*add_object_image (mapview, 1, "testobj.png", 0, 0, 60, 60, 16, 48);
-  add_object_image (mapview, 1, "testobj.png", 0, 0, 70, 70, 16, 48);
-
-  add_object_image (mapview, 1, "testobj.png", 16, 0, 100, 100, 16, 48);*/
   return mapview;
 }
 
@@ -705,13 +701,35 @@ cleanup_mapview (struct map_view *mapview)
       if (mapview->dirty_tiles)
         free (mapview->dirty_tiles);
 
-      /* Assert that the object queues will be empty, as the game will
-         only gracefully terminate after processing them and before
-         populating them. */
-
       if (mapview->object_queue)
-        free (mapview->object_queue);
-     
+        {
+          unsigned int i;
+          struct object_image *next;
+
+          for (i = 0; i < mapview->num_object_queues; i++)
+            {
+              while (mapview->object_queue[i] != NULL)
+                {             
+                  next = mapview->object_queue[i]->next;
+                  free_object_image (mapview->object_queue[i]);
+                  mapview->object_queue[i] = next;
+                }
+            }
+
+          free (mapview->object_queue);
+        }
+
+      if (mapview->dirty_rectangles)
+        {   
+          struct dirty_rectangle *next;
+
+          while (mapview->dirty_rectangles != NULL)
+            {
+              next = mapview->dirty_rectangles->next;
+              free (mapview->dirty_rectangles);
+              mapview->dirty_rectangles = next;
+            }
+        }
 
       free (mapview);
     }

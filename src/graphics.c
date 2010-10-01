@@ -116,7 +116,7 @@ load_image (const char filename[])
 
   if (filename == NULL)
     {
-      fprintf (stderr, "GFX: Error: Filename is NULL.\n");
+      fatal ("GFX - load_image - Filename is NULL.");
       return NULL;
     }
 
@@ -126,8 +126,8 @@ load_image (const char filename[])
 
   if (data == NULL)
     {
-      fprintf (stderr, "GFX: Error: Couldn't load image data for %s.\n", 
-               filename);
+      fatal ("GFX - load_image - Couldn't load image data for %s.", 
+             filename);
       return NULL;
     }
 
@@ -140,8 +140,8 @@ load_image (const char filename[])
 
   if (image == NULL)
     {
-      fprintf (stderr, "GFX: Error: Hash object create failed for %s.\n", 
-               filename);
+      fatal ("GFX - load_image - Hash object create failed for %s.", 
+             filename);
       free_image (data);
       return NULL;
     }
@@ -156,7 +156,7 @@ free_image (void *image)
 {
   if (image == NULL)
     {
-      fprintf (stderr, "GRAPHICS: Error: Tried to free NULL image.\n");
+      error ("GFX - free_image - Tried to free NULL image.");
     }
 
   (*g_modules.gfx.free_image_data) (image);
@@ -182,8 +182,8 @@ draw_image (const char filename[],
 
   if (img == NULL)
     {
-      fprintf (stderr, "GFX: Error: Draw-time image load failure for %s.\n", 
-               filename);
+      error ("GFX - draw_image - Image load failure for %s.", 
+             filename);
 
       return FAILURE;
     }

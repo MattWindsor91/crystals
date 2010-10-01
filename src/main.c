@@ -97,7 +97,7 @@ init (void)
 
       if (module_path == NULL)
         {
-          fprintf (stderr, "ERROR: Could not init modules!\n");
+          fatal ("MAIN - init - Module path could not be allocated.");
           return FAILURE;
         }
 
@@ -106,19 +106,19 @@ init (void)
 
   if (init_modules (module_path) == FAILURE)
     {
-      fprintf (stderr, "ERROR: Could not init modules!\n");
+      fatal ("MAIN - init - Module initialisation failed.");
       return FAILURE;
     }
 
   if (init_graphics () == FAILURE)
     {
-      fprintf (stderr, "ERROR: Could not init gfx!\n");
+      fatal ("MAIN - init - Graphics initialisation failed.");
       return FAILURE;
     }
 
   if (init_objects () == FAILURE)
     {
-      fprintf (stderr, "ERROR: Could not init objects!\n");
+      fatal ("MAIN - init - Object system initialisation failed.");
       return FAILURE;
     }
 
@@ -126,7 +126,7 @@ init (void)
 
   if (g_map == NULL)
     {
-      fprintf (stderr, "ERROR: Map did not init!\n");
+      fatal ("MAIN - init - Map initialisation failed.");
       return FAILURE;
     }
 
@@ -134,7 +134,7 @@ init (void)
 
   if (g_mapview == NULL)
     {
-      fprintf (stderr, "ERROR: Map view did not init!\n");
+      fatal ("MAIN - init - MapView initialisation failed.");
       return FAILURE;
     }
 

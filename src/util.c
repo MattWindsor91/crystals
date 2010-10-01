@@ -41,6 +41,44 @@
  *  @brief   Miscellaneous utility functions.
  */
 
-#include "util.h"
+#include <stdlib.h>
+#include <stdio.h>
+#include <stdarg.h>
 
-/* Space for rent */
+#include "util.h"
+#include "main.h"
+
+/* Fatal error. */
+
+void
+fatal (const char message[], ...)
+{
+  va_list ap;
+
+  va_start (ap, message);
+  fprintf (stderr, "FATAL: ");
+  vfprintf (stderr, message, ap);
+  fprintf (stderr, "\n");
+  va_end (ap);
+
+  fflush (stderr);
+
+  cleanup ();
+  exit (1);
+}
+
+/* Non-fatal error. */
+
+void
+error (const char message[], ...)
+{
+  va_list ap;
+
+  va_start (ap, message);
+  fprintf (stderr, "ERROR: ");
+  vfprintf (stderr, message, ap);
+  fprintf (stderr, "\n");
+  va_end (ap);
+
+  fflush (stderr);
+}

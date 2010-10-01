@@ -48,6 +48,8 @@
 #ifndef _UTIL_H
 #define _UTIL_H
 
+#include <stdarg.h>
+
 /* -- CONSTANTS -- */
 
 enum
@@ -67,5 +69,31 @@ enum
 
 #define MAX(x, y) ((x) > (y) ? (x) : (y)) /**< Get the maximum of two
                                              values. */
+
+/* -- DECLARATIONS -- */
+
+/** Fatal error.
+ *
+ *  This prints an error message and sets the g_running variable to
+ *  FALSE, effectively causing the engine to try gracefully shut down
+ *  after the frame in progress.
+ * 
+ *  @param message  Message to print.  This wrapper automatically
+ *  prepends and appends FATAL: and a newline respectively. 
+ */
+
+void
+fatal (const char message[], ...);
+
+/** Non-fatal error.
+ *
+ *  This prints an error message only.
+ * 
+ *  @param message  Message to print.  This wrapper automatically
+ *  prepends and appends ERROR: and a newline respectively. 
+ */
+
+void
+error (const char message[], ...);
 
 #endif /* not _UTIL_H */
