@@ -50,6 +50,8 @@ extern int g_running;              /**< Whether or not the engine is
 extern struct map_view *g_mapview; /**< Main map view. 
                                       @todo FIXME: Move this? */
 
+extern struct dict_t *g_config;    /**< Configuration dictionary. */
+
 /** The main function.
  *
  *  @param argc  Argument count.

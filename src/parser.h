@@ -44,7 +44,7 @@
 #ifndef _PARSER_H
 #define _PARSER_H
 
-typedef struct node_t node_t; /**< Node type for the key-value tree. */
+typedef struct dict_t dict_t; /**< Node type for the key-value tree. */
 typedef char bool_t;          /**< Boolean type.
                                  @todo FIXME: Universal bool type? */
 
@@ -57,59 +57,85 @@ typedef char bool_t;          /**< Boolean type.
  * it will be stored or searched in the right brach.
  */
 
-struct node_t
+struct dict_t
 {
   char *key;            /**< key item of the node. */
   char *value;          /**< value item of the node. */
   /* strcmp == -1 */
-  node_t *left;         /**< Left branch of the node. */
+  dict_t *left;         /**< Left branch of the node. */
   /* strcmp == 1 */
-  node_t *right;        /**< Right branch of the node. */
+  dict_t *right;        /**< Right branch of the node. */
 };
-
-/* -- GLOBAL VARIABLES -- */
-
-node_t sg_root;         /**< Root node for the key-value tree */
 
 
 /* -- FUNCTION PROTOTYPES -- */
 
-/** Initializes the parser. */
+/** Initialise a node.
+ *
+ *  @return Return the initialized node.
+ */
 
-void
-init_parser (void);
+dict_t*
+config_dict_init (void);
 
 
 /** Parse configuration file.
+*
+* @param path_name  The path to the configuration file.
+* @param root       Pass a dict_t node, which can already contain informations.
+*
+* @return Returns SUCCESS, if file has valid syntax and can be parsed, else
+* it returns FAILURE. (Defined in util.h)
+*/
+
+int
+config_parse_file (const char *path_name, dict_t *root);
+
+
+/** Function for adding a key-value pair to the tree.
  *
- * @param path_name The path to the configuration file.
+ *  @param key   The string which will be added as key.
+ *  @param value The string which will be added as key.
+ *  @param node  The branch in which the key-value pair will be added.
  *
- * @return Returns SUCCESS, if file has valid syntax and can be parsed, else
- * it returns FAILURE. (Defined in util.h)
+ *  @return Returns SUCCESS, if the key-value pair can be added, if not or
+ *  the key already exists return FAILURE. (Defined in util.h)
  */
 
 int
-config_parse_file (const char *path_name);
+config_add_pair (char *key, char *value, dict_t *node);
 
 
 /** Get the value of the appropriate key.
  *
- * @param key Pass a string, which will be searched in the tree.
+ * @param key   Pass a string, which will be searched in the tree.
+ * @param node  The root node which contains the information.
  *
  * @return Return the value to the appropriate key or NULL if none is found.
  */
 
 char*
-config_get_value (const char *key);
+config_get_value (const char *key, dict_t *node);
 
 
-/** Clean up the parser.
+/** Return the numbers of items in the dictionary type
  *
- *  Free all allocated memory.
+ * @param node A dictionary node.
+ *
+ * @return The numbers of key-value pairs in the dictionary.
+ */
+
+int
+config_item_count (dict_t *node);
+
+
+/** Function for freeing allocated memory in nodes.
+ *
+ * @param node The data in the node will be freed.
  */
 
 void
-cleanup_parser (void);
+config_free_dict (dict_t *node);
 
 #endif /* not _PARSER_H */
 
