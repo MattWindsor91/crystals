@@ -59,7 +59,7 @@
 struct map *g_map;
 struct map_view *g_mapview;
 
-dict_t *config;
+dict_t *g_config;
 
 int g_running;
 
@@ -84,12 +84,12 @@ init (void)
 {
   char *module_path;
   
-  config = config_dict_init();
+  g_config = config_dict_init();
 
   /* yeah I know that needs someting better */
-  if (config_parse_file ("config/default.cfg", config) == SUCCESS)
+  if (config_parse_file ("config/default.cfg", g_config) == SUCCESS)
     {
-      module_path = config_get_value ("module_path", config);
+      module_path = config_get_value ("module_path", g_config);
     }
   else
     {
@@ -169,7 +169,7 @@ cleanup (void)
   cleanup_graphics ();
   cleanup_bindings ();
   cleanup_modules ();
-  config_free_dict (config);
+  config_free_dict (g_config);
 }
 
 /* vim: set ts=2 sw=2 softtabstop=2: */
