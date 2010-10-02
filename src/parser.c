@@ -209,7 +209,7 @@ config_parse_file (const char *path_name, dict_t *root)
     }
   else
     {
-      stderr ("PARSER: Could not open the file %s .\n", path_name);
+      error ("PARSER: Could not open the file %s .\n", path_name);
     }
 
   free (key);
