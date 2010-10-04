@@ -46,8 +46,7 @@
 #include <string.h>
 
 #include "map.h"
-#include "main.h"
-#include "graphics.h"
+#include "../graphics.h"
 
 const char FN_TILESET[] = "gfx/tiles.png";
 

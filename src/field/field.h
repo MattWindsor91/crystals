@@ -1,5 +1,5 @@
 /*
- * Crystals (working title)
+ * Crystals (working title) 
  *
  * Copyright (c) 2010 Matt Windsor, Michael Walker and Alexander
  *                    Preisinger.
@@ -36,64 +36,84 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/** @file   src/bindings.h
- *  @author Alexander Preisinger
- *  @brief  Prototypes and declarations for generic language bindings.
+/** @file    src/field/map.h
+ *  @author  Matt Windsor
+ *  @brief   Prototypes and declarations for field state.
  */
 
-#ifndef _BINDINGS_H
-#define _BINDINGS_H
+#ifndef _FIELD_H
+#define _FIELD_H
 
-#include "field/mapview.h"
-
-/* -- STRUCTURES -- */
-
-/** Game Data struct
- *
- * Contains all information that will be passed to the bindings
- * for scripting purpose.
- *
- * @todo don't forget to add more here and asking hayashi what else to add.
- */
-
-struct game_data
-{
-  struct map_view *map_view; /**< Pointer to the mapview */
-};
-
-/* -- GLOBAL VARIABLES -- */
-
-extern struct game_data g_game_data; /**< global variable for the game_data
-                                          struct */
+#include "../events.h" /* event_t */
 
 /* -- PROTOTYPES -- */
 
-/** Init language bindings
+/** Initialise input callbacks.
  *
- *  @return Return SUCCESS if success else FAILURE
+ *  @return SUCCESS for success, FAILURE otherwise.
  */
 
-
 int
-init_bindings (void);
+field_init_callbacks (void);
 
-
-/** Cleanup language bindings */
+/** De-initialise input callbacks. */
 
 void
-cleanup_bindings(void);
+field_cleanup_callbacks (void);
+
+/** Callback for quit. 
+ *
+ *  @param event  The event produced by the quit.
+ */
+
+void
+field_on_quit (event_t *event);
+
+/** Callback for special key up-presses. 
+ *
+ *  @param event The event produced by the key press.
+ */
+
+void
+field_on_special_key_up (event_t *event);
 
 
-/** Executes the given file.
+/** Callback for special key down-presses. 
  *
- *  @param path   Path to the file.
+ *  @param event The event produced by the key press.
+ */
+
+void
+field_on_special_key_down (event_t *event);
+
+
+/** Check to see if certain keys are held and handle the results. */
+
+void
+field_handle_held_keys (void);
+
+
+/** Initialise the field state.
  *
- *  @return SUCCESS for success, FAILURE for failure.
+ *  @return  SUCCESS if no errors were encountered; FAILURE otherwise. 
  */
 
 int
-run_file (const char *path);
+init_field (void);
 
-#endif /* _BINDINGS_H */
 
-/* vim: set ts=2 sw=2 softtabstop=2: */
+/** Perform per-frame updates for field. */
+
+void
+update_field (void);
+
+
+/** De-initialise the field state.
+ *
+ *  @return  SUCCESS if no errors were encountered; FAILURE otherwise. 
+ */
+
+int
+cleanup_field (void);
+
+#endif /* not _FIELD_H */

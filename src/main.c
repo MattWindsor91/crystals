@@ -47,21 +47,17 @@
 
 #include "main.h"
 #include "util.h"
-#include "object.h"
+#include "state.h"
+#include "field/object.h"
 #include "parser.h"
 #include "module.h"
 #include "events.h"
 #include "graphics.h"
 #include "bindings.h"
-#include "mapview.h"
-#include "map.h"
-
-struct map *g_map;
-struct map_view *g_mapview;
+#include "field/mapview.h"
+#include "field/map.h"
 
 dict_t *g_config;
-
-int g_running;
 
 int
 main (int argc, char **argv)
@@ -71,10 +67,8 @@ main (int argc, char **argv)
   argv = argv;
 
   if (init () == SUCCESS)
-    {
-      g_running = TRUE;
-      main_loop ();
-    }
+    main_loop ();
+
   cleanup ();
   return 0;
 }
@@ -122,25 +116,19 @@ init (void)
       return FAILURE;
     }
 
-  g_map = init_test_map ();
-
-  if (g_map == NULL)
-    {
-      fatal ("MAIN - init - Map initialisation failed.");
-      return FAILURE;
-    }
-
-  g_mapview = init_mapview (g_map);
-
-  if (g_mapview == NULL)
-    {
-      fatal ("MAIN - init - MapView initialisation failed.");
-      return FAILURE;
-    }
-
   init_bindings ();
   run_file ("tests/lua.lua");
   init_events ();
+
+  /* We need to manually "flush" the state so the first state is set
+     immediately instead of after a main loop frame - otherwise, the
+     current state would be null and the engine would crash. */
+
+  if (set_state (STATE_FIELD == FAILURE))
+    {
+      fatal ("MAIN - init - Couldn't enqueue state.");
+      return FAILURE;
+    }
 
   return SUCCESS;
 }
@@ -149,21 +137,20 @@ init (void)
 void
 main_loop (void)
 {
-  render_map (g_mapview);
-
-  while (g_running)
+  while (update_state () != STATE_QUIT)
     {
+      state_frame_updates ();
       (*g_modules.gfx.update_screen) ();
       (*g_modules.event.process_events) ();
-      handle_held_keys ();
     }
 }
 
 void
 cleanup (void)
 {
-  cleanup_mapview (g_mapview);
-  cleanup_map (g_map);
+  if (get_state () != STATE_QUIT)
+    cleanup_state (get_state ());
+
   cleanup_objects ();
   cleanup_events ();
   cleanup_graphics ();

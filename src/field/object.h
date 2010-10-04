@@ -36,7 +36,7 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/** @file    object.h
+/** @file    src/field/object.h
  *  @author  Matt Windsor
  *  @brief   Prototypes and declarations for low-level object
  *           functions.
@@ -47,7 +47,7 @@
 
 #include <stdarg.h>
 
-#include "hash.h"    /* Hash stuff. */
+#include "../hash.h" /* Hash stuff. */
 #include "map.h"     /* layer_t */
 #include "mapview.h" /* struct object_image, struct map_view */
 

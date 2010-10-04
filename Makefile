@@ -17,8 +17,9 @@ TESTS    := $(addprefix $(TESTDIR)/,$(TESTS))
 
 ## Objects to link into main executable ##
 
-OBJ      := main.o hash.o object.o graphics.o map.o mapview.o events.o
-OBJ      += util.o bindings.o module.o optionparser.o parser.o
+OBJ      := main.o hash.o graphics.o events.o
+OBJ      += util.o bindings.o module.o optionparser.o parser.o state.o
+OBJ      += field/field.o field/map.o field/mapview.o field/object.o
 
 # Add SRCDIR to all object paths #
 
