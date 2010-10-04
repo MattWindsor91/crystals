@@ -53,9 +53,10 @@
 #include "mapview.h"
 #include "object.h"
 
+/* -- STATIC GLOBAL VARIABLES -- */
 
-struct map *sg_map;
-struct map_view *sg_mapview;
+static struct map *sg_map;
+static struct map_view *sg_mapview;
 
 /* Test callbacks, woo */
 

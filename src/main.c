@@ -48,14 +48,11 @@
 #include "main.h"
 #include "util.h"
 #include "state.h"
-#include "field/object.h"
 #include "parser.h"
 #include "module.h"
 #include "events.h"
 #include "graphics.h"
 #include "bindings.h"
-#include "field/mapview.h"
-#include "field/map.h"
 
 dict_t *g_config;
 

@@ -119,19 +119,19 @@ clean-doc:
 	-@$(RM) -r autodoc
 
 ### Test Suite
-tests: CFLAGS += -DTESTSUITE -DMODPATH="\"$(shell pwd)/$(TESTDIR)/$(MODDIR)\""
+tests: CFLAGS += -DTESTSUITE -DMODPATH="\"$(shell pwd)/$(TESTDIR)/$(MODDIR)/\""
 tests: $(TESTS)
 	@echo "Running tests..."
 	@for file in $(TESTS); do $$file &>/dev/null || echo "Test '$$file' failed."; done
 
-$(TESTDIR)/module: module.o $(TESTDIR)/module.o $(TESTDIR)/$(MODDIR)/test.so
-	@$(CC) $(CFLAGS) module.o $(TESTDIR)/module.o $(TESTDIR)/$(MODDIR)/test.so -o $@ >/dev/null
+$(TESTDIR)/module: $(SRCDIR)/module.o $(SRCDIR)/$(TESTDIR)/module.o $(SRCDIR)/$(TESTDIR)/$(MODDIR)/test.so
+	@$(CC) $(CFLAGS) $(SRCDIR)/module.o $(SRCDIR)/$(TESTDIR)/module.o -ldl -o $@ >/dev/null
 
-$(TESTDIR)/optionparser: optionparser.o $(TESTDIR)/optionparser.o
-	@$(CC) $(CFLAGS) optionparser.o $(TESTDIR)/optionparser.o -o $@ >/dev/null
+$(TESTDIR)/optionparser: $(SRCDIR)/optionparser.o $(SRCDIR)/$(TESTDIR)/optionparser.o
+	@$(CC) $(CFLAGS) $(SRCDIR)/optionparser.o $(SRCDIR)/$(TESTDIR)/optionparser.o -o $@ >/dev/null
 
-$(TESTDIR)/parser: parser.o $(TESTDIR)/parser.o
-	@$(CC) $(CFLAGS) parser.o $(TESTDIR)/parser.o -o $@ >/dev/null
+$(TESTDIR)/parser: $(SRCDIR)/parser.o $(SRCDIR)/$(TESTDIR)/parser.o
+	@$(CC) $(CFLAGS) $(SRCDIR)/parser.o $(SRCDIR)/$(TESTDIR)/parser.o -o $@ >/dev/null
 
 clean-tests:
 	@echo "Cleaning tests..."

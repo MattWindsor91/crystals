@@ -36,7 +36,7 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/** @file    src/field/map.h
+/** @file    src/field/field.h
  *  @author  Matt Windsor
  *  @brief   Prototypes and declarations for field state.
  */

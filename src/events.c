@@ -51,10 +51,7 @@
 #include <stdio.h>
 
 #include "events.h"
-#include "state.h"
 #include "module.h"
-#include "graphics.h"
-#include "field/mapview.h"
 #include "util.h"
 
 static struct event_base *sg_event_base;
