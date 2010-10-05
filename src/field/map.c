@@ -36,7 +36,7 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/** @file    map.c
+/** @file    src/field/map.c
  *  @author  Matt Windsor
  *  @brief   Low-level map handling functions.
  */

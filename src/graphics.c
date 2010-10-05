@@ -83,6 +83,16 @@ init_graphics (void)
   return SUCCESS;
 }
 
+
+/* Update the screen. */
+
+void
+update_screen (void)
+{
+  (*g_modules.gfx.update_screen) ();
+}
+
+
 /* Fill the screen with the given colour. */
 
 void
@@ -92,6 +102,7 @@ fill_screen (unsigned char red,
 {
   (*g_modules.gfx.draw_rect) (0, 0, SCREEN_W, SCREEN_H, red, green, blue);
 }
+
 
 /* Load an image. */
 
@@ -149,6 +160,7 @@ load_image (const char filename[])
   return image;
 }
 
+
 /* Free image data. */
 
 void
@@ -161,6 +173,7 @@ free_image (void *image)
 
   (*g_modules.gfx.free_image_data) (image);
 }
+
 
 
 /* Draw a rectangular portion of an image on-screen. */
@@ -237,6 +250,7 @@ clear_images (void)
   clear_hash_objects (sg_images);
 }
 
+
 /* Retrieve an image from the image cache. */
 
 struct hash_object *
@@ -244,6 +258,7 @@ find_image (const char filename[])
 {
   return get_hash_object (sg_images, filename, NULL);
 }
+
 
 /* Clean up the graphics subsystem. */
 

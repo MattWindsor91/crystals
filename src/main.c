@@ -54,7 +54,14 @@
 #include "graphics.h"
 #include "bindings.h"
 
+/* -- GLOBAL VARIABLES -- */
+
 dict_t *g_config;
+
+
+/* -- DEFINITIONS -- */
+
+/* The main function. */
 
 int
 main (int argc, char **argv)
@@ -69,6 +76,9 @@ main (int argc, char **argv)
   cleanup ();
   return 0;
 }
+
+
+/* Initialise all engine subsystems. */
 
 int
 init (void)
@@ -117,11 +127,7 @@ init (void)
   run_file ("tests/lua.lua");
   init_events ();
 
-  /* We need to manually "flush" the state so the first state is set
-     immediately instead of after a main loop frame - otherwise, the
-     current state would be null and the engine would crash. */
-
-  if (set_state (STATE_FIELD == FAILURE))
+  if (set_state (STATE_FIELD) == FAILURE)
     {
       fatal ("MAIN - init - Couldn't enqueue state.");
       return FAILURE;
@@ -131,16 +137,21 @@ init (void)
 }
 
 
+/* Execute the main loop of the program. */
+
 void
 main_loop (void)
 {
   while (update_state () != STATE_QUIT)
     {
       state_frame_updates ();
-      (*g_modules.gfx.update_screen) ();
-      (*g_modules.event.process_events) ();
+      update_screen ();
+      process_events ();
     }
 }
+
+
+/* Clean up all initialised subsystems. */
 
 void
 cleanup (void)
@@ -148,12 +159,12 @@ cleanup (void)
   if (get_state () != STATE_QUIT)
     cleanup_state (get_state ());
 
-  cleanup_objects ();
   cleanup_events ();
   cleanup_graphics ();
   cleanup_bindings ();
   cleanup_modules ();
   config_free_dict (g_config);
 }
+
 
 /* vim: set ts=2 sw=2 softtabstop=2: */

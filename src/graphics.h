@@ -46,6 +46,8 @@
 
 #include "hash.h"    /* Hash stuff. */
 
+/* -- CONSTANTS -- */
+
 enum
   {
     SCREEN_W = 640, /**< Width of the screen (in pixels). 
@@ -59,6 +61,8 @@ enum
   };
 
 
+/* -- PROTOTYPES -- */
+
 /** Initialise the graphics subsystem.
  *
  *  @return  SUCCESS if the graphics subsystem was initialised
@@ -67,6 +71,12 @@ enum
 
 int
 init_graphics (void);
+
+
+/** Update the screen. */
+
+void
+update_screen (void);
 
 
 /** Fill the screen with the given colour.

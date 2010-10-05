@@ -46,10 +46,12 @@
 
 #include "field/field.h"
 
-/* -- STATIC VARIABLES -- */
+
+/* -- STATIC GLOBAL VARIABLES -- */
 
 static state_t sg_state = STATE_NULL;          /**< Current state. */
 static state_t sg_enqueued_state = STATE_NULL; /**< Enqueued state. */
+
 
 /* -- DEFINITIONS -- */
 
@@ -60,6 +62,7 @@ get_state (void)
 {
   return sg_state;
 }
+
 
 /* Change the current state. */
 
@@ -104,13 +107,13 @@ update_state (void)
 
   if (cleanup_state (sg_state) == FAILURE)
     {
-      error ("STATE - set_state - Cleanup of old state failed.");
+      error ("STATE - update_state - Cleanup of old state failed.");
       return STATE_NULL;
     }
 
   if (init_state (sg_enqueued_state) == FAILURE)
     {
-      error ("STATE - set_state - Init of new state failed.");
+      error ("STATE - update_state - Init of new state failed.");
       return STATE_NULL;
     }
 

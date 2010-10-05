@@ -199,6 +199,7 @@ cleanup_field (void)
 {
   cleanup_mapview (sg_mapview);
   cleanup_map (sg_map);
+  cleanup_objects ();
 
   field_cleanup_callbacks ();
 

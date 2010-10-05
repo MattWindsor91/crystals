@@ -54,7 +54,12 @@
 #include "module.h"
 #include "util.h"
 
-static struct event_base *sg_event_base;
+/* -- STATIC GLOBAL VARIABLES -- */
+
+static struct event_base *sg_event_base; /**< Event base. */
+
+
+/* -- DEFINITIONS -- */
 
 int
 init_events (void)
@@ -80,15 +85,17 @@ init_events (void)
   return SUCCESS;
 }
 
-void cleanup_events (void)
+
+/* Process any events queued in the events driver. */
+
+void
+process_events (void)
 {
-  if (sg_event_base)
-    {
-      free (sg_event_base);
-      sg_event_base = NULL;
-    }
+  (*g_modules.event.process_events) ();
 }
 
+
+/* Install a callback. */
 
 struct event_callback *
 install_callback (void (*callback) (event_t *event), int types)
@@ -119,6 +126,8 @@ install_callback (void (*callback) (event_t *event), int types)
   return pnew;
 }
 
+
+/* Unload a callback. */
 
 int
 unload_callback (struct event_callback *ptr)
@@ -153,6 +162,9 @@ unload_callback (struct event_callback *ptr)
   return FAILURE;
 }
 
+
+/* Release an event package to all relevant installed callbacks. */
+
 void
 event_release (event_t *event)
 {
@@ -163,5 +175,18 @@ event_release (event_t *event)
       /* Trigger all callbacks with the relevant type. */
       if (p->types & event->type)
         p->callback (event);
+    }
+}
+
+
+/* De-initialise the events system. */
+
+void
+cleanup_events (void)
+{
+  if (sg_event_base)
+    {
+      free (sg_event_base);
+      sg_event_base = NULL;
     }
 }

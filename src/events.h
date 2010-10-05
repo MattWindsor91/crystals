@@ -44,6 +44,9 @@
 #ifndef _EVENTS_H
 #define _EVENTS_H
 
+
+/* -- CONSTANTS -- */
+
 enum
   {
     QUIT_EVENT              = (1<<0), /**< Identifier for low-level
@@ -76,6 +79,7 @@ enum
     SK_RIGHT                   /**< Identifier for down arrow special key. */
   };
 
+
 /* -- TYPEDEFS -- */
 
 typedef union event_t event_t;                /**< Input event type. */
@@ -85,6 +89,7 @@ typedef struct event_callback event_callback; /**< Input callback type. */
 /* -- STRUCTURES -- */
 
 /** The input system base structure. */
+
 struct event_base
 {
   struct event_callback *callbacks; /**< Linked list of callbacks. */
@@ -92,6 +97,7 @@ struct event_base
 
 
 /** A mouse motion input event. */
+
 struct mouse_motion_event
 {
   unsigned char type;  /**< The type identifier of the input event. */
@@ -109,6 +115,7 @@ struct mouse_motion_event
 
 
 /** A mouse button input event. */
+
 struct mouse_button_event
 {
   unsigned char type;   /**< The type identifier of the input event. */ 
@@ -117,6 +124,7 @@ struct mouse_button_event
 
 
 /** An ASCII keyboard event. */
+
 struct ascii_key_event
 {
   unsigned char type; /**< Whether the key was pressed or released. */
@@ -125,6 +133,7 @@ struct ascii_key_event
 
 
 /** A special (non-ASCII) keyboard event. */
+
 struct special_key_event
 {
   unsigned char type; /**< Whether the key was pressed or released. */
@@ -133,6 +142,7 @@ struct special_key_event
 
 
 /** An input event package. */
+
 union event_t
 {
   unsigned char type;   /**< The type identifier of the input event. */
@@ -144,11 +154,13 @@ union event_t
 
 
 /** A callback node. */
+
 struct event_callback
 {
   void
   (*callback) (event_t *event); /**< The callback function
                                      pointer. */
+
   int types;                    /**< Types of event that will
                                      trigger the callback. */
 
@@ -168,10 +180,10 @@ int
 init_events (void);
 
 
-/** De-initialise the events system. */
+/** Process any events queued in the events driver. */
 
 void
-cleanup_events (void);
+process_events (void);
 
 
 /** Install a callback.
@@ -214,6 +226,12 @@ unload_callback (struct event_callback *callback);
 
 void
 event_release (event_t *event);
+
+
+/** De-initialise the events system. */
+
+void
+cleanup_events (void);
 
 
 #endif /* not _EVENTS_H */
