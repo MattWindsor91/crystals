@@ -117,12 +117,6 @@ init (void)
       return FAILURE;
     }
 
-  if (init_objects () == FAILURE)
-    {
-      fatal ("MAIN - init - Object system initialisation failed.");
-      return FAILURE;
-    }
-
   init_bindings ();
   run_file ("tests/lua.lua");
   init_events ();

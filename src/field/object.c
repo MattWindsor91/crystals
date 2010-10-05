@@ -48,7 +48,7 @@
 #include "object.h"
 #include "../util.h"
 
-struct hash_object *g_objects[HASH_VALS];
+static struct hash_object *sg_objects[HASH_VALS];
 
 int
 init_objects (void)
@@ -56,7 +56,7 @@ init_objects (void)
   unsigned int i;
 
   for (i = 0; i < HASH_VALS; i++)
-    g_objects[i] = NULL;
+    sg_objects[i] = NULL;
 
   /* TEST DATA */
 
@@ -64,13 +64,17 @@ init_objects (void)
     struct object_t *test;
     struct object_t *test2;
 
-    test = add_object ("Test1", "null");
+    test = add_object ("Player", "null");
     test2 = add_object ("Test2", "null");
     
+    printf ("%p\n", test);
+
     set_object_tag (test, 1);
     set_object_tag (test2, 1);
-    set_object_image (test, "gfx/testobj.png", 0, 0, 60, 60, 16, 48);
-    set_object_image (test2, "gfx/testobj.png", 16, 0, 70, 70, 16, 48);
+    set_object_image (test, "gfx/testobj.png", 0, 0, 16, 48);
+    set_object_image (test2, "gfx/testobj.png", 16, 0, 16, 48);
+    set_object_coordinates (test, 60, 60, BOTTOM_LEFT);
+    set_object_coordinates (test2, 70, 70, BOTTOM_LEFT);
   }
 
   return SUCCESS;
@@ -157,7 +161,7 @@ add_object (const char object_name[],
 
   /* Try to store the object. */
 
-  result = create_hash_object (g_objects, 
+  result = create_hash_object (sg_objects, 
                                object_name,
                                DATA_OBJECT, 
                                object);
@@ -193,8 +197,6 @@ set_object_image (struct object_t *object,
                   const char filename[],
                   short image_x,
                   short image_y,
-                  int map_x,
-                  int map_y,
                   unsigned short width,
                   unsigned short height)
 {
@@ -239,13 +241,45 @@ set_object_image (struct object_t *object,
 
   object->image->image_x = image_x;
   object->image->image_y = image_y;
-  object->image->map_x = map_x;
-  object->image->map_y = map_y;
   object->image->width = width;
   object->image->height = height;
 
   return SUCCESS;
 }
+
+
+int
+get_object_coordinates (struct object_t *object, 
+                        int *x_pointer,
+                        int *y_pointer,
+                        unsigned short reference)
+{
+  /* Sanity checking. */
+
+  if (object == NULL)
+    {
+      fatal ("OBJECT - get_object_coordinates - Tried to get coords of NULL object.");
+      return FAILURE;
+    }
+
+  if (object->image == NULL)
+    {
+      fatal ("OBJECT - get_object_coordinates - Object %s has no image dataset.", 
+             object->name);
+      return FAILURE;
+    }
+
+  *x_pointer = object->image->map_x;
+  *y_pointer = object->image->map_y;
+
+  if (reference == BOTTOM_LEFT)
+    {
+      *y_pointer += (object->image->height - 1);
+    }
+
+  return SUCCESS;
+}
+
 
 int
 set_object_coordinates (struct object_t *object, 
@@ -279,7 +313,7 @@ set_object_coordinates (struct object_t *object,
 
       if (object->image->map_y < object->image->height - 1)
         {
-          fprintf (stderr, "OBJECT: Error: Object %s has bad coords.\n", 
+          fatal ("OBJECT - set_object_coordinates - Object %s has bad coords.", 
                    object->name);
           return FAILURE;
         }
@@ -331,6 +365,15 @@ set_object_dirty (struct object_t *object,
   if (object->tag != 0)
     {
       object->is_dirty = TRUE;
+
+      /* Mark the nearby tiles. */
+
+      mark_dirty_rect (mapview,
+                       (object->image->map_x / TILE_W) - 1, 
+                       (object->image->map_y / TILE_H) - 1, 
+                       MAX (3, object->image->width / TILE_W), 
+                       MAX (3, object->image->height / TILE_H));
+
       return add_object_image (mapview, object->tag, object->image);
     }
 
@@ -358,7 +401,7 @@ free_object (struct object_t *object)
 int
 delete_object (const char object_name[])
 {
-  return delete_hash_object (g_objects, object_name);
+  return delete_hash_object (sg_objects, object_name);
 }
 
 
@@ -367,7 +410,7 @@ get_object (const char object_name[], struct hash_object *add_pointer)
 {
   struct hash_object *result;
 
-  result = get_hash_object (g_objects, object_name, add_pointer);
+  result = get_hash_object (sg_objects, object_name, add_pointer);
 
   if (result == NULL)
     return NULL;
@@ -431,20 +474,24 @@ dirty_object_test (struct hash_object *hash_object, void *rect_pointer)
           + object->image->height >= start_y * TILE_H))
     {
       set_object_dirty (object, mapview);
-
-      /* Mark the nearby tiles. */
-
-      mark_dirty_rect (mapview,
-                       (object->image->map_x / TILE_W) - 1, 
-                       (object->image->map_y / TILE_H) - 1, 
-                       MAX (3, object->image->width / TILE_W), 
-                       MAX (3, object->image->height / TILE_H));
     }
   return SUCCESS;
 }
 
+
+int
+apply_to_objects (int (*function) (struct hash_object *object, 
+                                   void *data),
+                   void *data)
+{
+  return apply_to_hash_objects (sg_objects, 
+                                function, 
+                                data);
+}
+
+
 void
 cleanup_objects (void)
 {
-  clear_hash_objects (g_objects);
+  clear_hash_objects (sg_objects);
 }

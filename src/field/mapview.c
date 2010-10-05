@@ -621,9 +621,8 @@ mark_dirty_rect (struct map_view *mapview,
 
       /* Check to see if each object in the hash table is going to be dirtied. */
 
-      apply_to_hash_objects (g_objects, 
-                             dirty_object_test, 
-                             mapview->dirty_rectangles);
+      apply_to_objects (dirty_object_test, 
+                        mapview->dirty_rectangles);
 
       /* Now can the current dirty rectangle and move to the next, if
          any. */

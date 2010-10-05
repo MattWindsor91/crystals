@@ -94,6 +94,7 @@ field_on_special_key_down (event_t *event)
   sg_field_held_special_keys[(int) event->skey.code] = 1;
 }
 
+
 /* Regular functions. */
 
 int
@@ -117,6 +118,12 @@ init_field (void)
       return FAILURE;
     }
 
+  if (init_objects () == FAILURE)
+    {
+      fatal ("FIELD - init_field - Objects initialisation failed.");
+      return FAILURE;
+    }
+
   sg_mapview = init_mapview (sg_map);
 
   if (sg_mapview == NULL)
@@ -132,17 +139,50 @@ init_field (void)
 void
 field_handle_held_keys (void)
 {
+  struct object_t *player;
+  int x, y;
+
+  player = get_object ("Player", NULL);
+
+  if (player == NULL)
+    {
+      error ("FIELD - field_handle_held_keys - Couldn't grab player.");
+      return;
+    }
+
+  if (get_object_coordinates (player, &x, &y, TOP_LEFT) == FAILURE)
+    {
+      error ("FIELD - field_handle_held_keys - Couldn't get player coords.");
+      return;
+    }
+
   if (sg_field_held_special_keys[SK_UP])
-    scroll_map (sg_mapview, NORTH);
+    {
+      set_object_coordinates (player, x, y - 1, TOP_LEFT);
+      scroll_map (sg_mapview, NORTH);
+      set_object_dirty (player, sg_mapview);
+    }
 
-  if (sg_field_held_special_keys[SK_RIGHT])
-    scroll_map (sg_mapview, EAST);
+  else if (sg_field_held_special_keys[SK_RIGHT])
+    {
+      set_object_coordinates (player, x + 1, y, TOP_LEFT);
+      scroll_map (sg_mapview, EAST);
+      set_object_dirty (player, sg_mapview);
+    }
 
-  if (sg_field_held_special_keys[SK_DOWN])
-    scroll_map (sg_mapview, SOUTH);
+  else if (sg_field_held_special_keys[SK_DOWN])
+    {
+      set_object_coordinates (player, x, y + 1, TOP_LEFT);
+      scroll_map (sg_mapview, SOUTH);
+       set_object_dirty (player, sg_mapview);
+   }
 
-  if (sg_field_held_special_keys[SK_LEFT])
-    scroll_map (sg_mapview, WEST);
+  else if (sg_field_held_special_keys[SK_LEFT])
+    {
+      set_object_coordinates (player, x - 1, y, TOP_LEFT);
+      scroll_map (sg_mapview, WEST);
+      set_object_dirty (player, sg_mapview);
+    }
 }
 
 
