@@ -62,19 +62,22 @@ init_objects (void)
 
   {
     struct object_t *test;
+    struct object_t *test1;
     struct object_t *test2;
 
     test = add_object ("Player", "null");
+    test1 = add_object ("Test1", "null");
     test2 = add_object ("Test2", "null");
     
-    printf ("%p\n", test);
-
     set_object_tag (test, 1);
+    set_object_tag (test1, 2);
     set_object_tag (test2, 1);
-    set_object_image (test, "gfx/testobj.png", 0, 0, 16, 48);
+    set_object_image (test, "gfx/testobj.png", 32, 0, 48, 48);
+    set_object_image (test1, "gfx/testobj.png", 0, 0, 16, 48);
     set_object_image (test2, "gfx/testobj.png", 16, 0, 16, 48);
-    set_object_coordinates (test, 60, 60, BOTTOM_LEFT);
-    set_object_coordinates (test2, 70, 70, BOTTOM_LEFT);
+    set_object_coordinates (test,  200, 200, BOTTOM_LEFT);
+    set_object_coordinates (test1, 100, 100, BOTTOM_LEFT);
+    set_object_coordinates (test2, 90, 90, BOTTOM_LEFT);
   }
 
   return SUCCESS;
@@ -155,7 +158,7 @@ add_object (const char object_name[],
   /* Finally, nullify everything else. */
 
   object->tag = 0;
-  object->is_dirty = 0;
+  object->is_dirty = FALSE;
 
   init_object_image (object->image, object);
 
@@ -249,6 +252,55 @@ set_object_image (struct object_t *object,
 
 
 int
+move_object (struct object_t *object, 
+             struct map_view *mapview, 
+             int dx,
+             int dy)
+{
+  /* Sanity checking. */
+
+  if (object == NULL)
+    {
+      error ("OBJECT - move_object - Tried to move a NULL object.");
+      return FAILURE;
+    }
+
+  if (object->image == NULL)
+    {
+      error ("OBJECT - move_object - Object %s has no image dataset.", 
+             object->name);
+      return FAILURE;
+    }
+
+  /* No point moving by (0, 0). */
+
+  if (dx == 0 && dy == 0)
+    return SUCCESS;
+
+  /* Mark old location as dirty. */
+
+  mark_dirty_rect (mapview,
+                   object->image->map_x, 
+                   object->image->map_y, 
+                   object->image->width, 
+                   object->image->height);
+
+  /* Try to move object. */
+  if (set_object_coordinates (object, 
+                              object->image->map_x + dx,
+                              object->image->map_y + dy, TOP_LEFT) 
+      == FAILURE)
+    return FAILURE;
+
+  /* Set object as newly dirty. */
+
+  set_object_dirty (object, mapview);
+
+  return SUCCESS;
+}
+
+
+int
 get_object_coordinates (struct object_t *object, 
                         int *x_pointer,
                         int *y_pointer,
@@ -258,13 +310,13 @@ get_object_coordinates (struct object_t *object,
 
   if (object == NULL)
     {
-      fatal ("OBJECT - get_object_coordinates - Tried to get coords of NULL object.");
+      error ("OBJECT - get_object_coordinates - Tried to get coords of NULL object.");
       return FAILURE;
     }
 
   if (object->image == NULL)
     {
-      fatal ("OBJECT - get_object_coordinates - Object %s has no image dataset.", 
+      error ("OBJECT - get_object_coordinates - Object %s has no image dataset.", 
              object->name);
       return FAILURE;
     }
@@ -273,16 +325,14 @@ get_object_coordinates (struct object_t *object,
   *y_pointer = object->image->map_y;
 
   if (reference == BOTTOM_LEFT)
-    {
-      *y_pointer += (object->image->height - 1);
-    }
+    *y_pointer += (object->image->height - 1);
 
   return SUCCESS;
 }
 
 
 int
-set_object_coordinates (struct object_t *object, 
+set_object_coordinates (struct object_t *object,
                         int x, 
                         int y,
                         unsigned short reference)
@@ -291,16 +341,22 @@ set_object_coordinates (struct object_t *object,
 
   if (object == NULL)
     {
-      fprintf (stderr, "OBJECT: Error: Tried to set coords on NULL object.\n");
+      error ("OBJECT - set_object_coordinates - Tried to get coords of NULL object.");
       return FAILURE;
     }
 
   if (object->image == NULL)
     {
-      fprintf (stderr, "OBJECT: Error: Object %s has no image dataset.\n", 
-               object->name);
+      error ("OBJECT - set_object_coordinates - Object %s has no image dataset.", 
+             object->name);
       return FAILURE;
     }
+
+  /* No point setting coordinates if they're the same. */
+
+  if (object->image->map_x == x
+      && object->image->map_y == y)
+    return SUCCESS;
 
   /* Set the coordinates. */
 
@@ -364,20 +420,23 @@ set_object_dirty (struct object_t *object,
 
   if (object->tag != 0)
     {
+      if (add_object_image (mapview, object->tag, object->image)
+          == FAILURE)
+        return FAILURE;
+
       object->is_dirty = TRUE;
 
       /* Mark the nearby tiles. */
 
       mark_dirty_rect (mapview,
-                       (object->image->map_x / TILE_W) - 1, 
-                       (object->image->map_y / TILE_H) - 1, 
-                       MAX (3, object->image->width / TILE_W), 
-                       MAX (3, object->image->height / TILE_H));
+                       object->image->map_x, 
+                       object->image->map_y, 
+                       object->image->width, 
+                       object->image->height);
 
-      return add_object_image (mapview, object->tag, object->image);
     }
 
-  return FAILURE;
+  return SUCCESS;
 }
 
 void
@@ -466,12 +525,12 @@ dirty_object_test (struct hash_object *hash_object, void *rect_pointer)
   /* Use separating axis theorem, sort of, to decide whether the
      object rect and the dirty rect intersect. */
 
-  if ((object->image->map_x <= (start_x + width) * TILE_W)
+  if ((object->image->map_x <= (start_x + width - 1))
       && (object->image->map_x
-          + object->image->width >= start_x * TILE_W)
-      && (object->image->map_y <= (start_y + height) * TILE_H)
+          + object->image->width >= start_x)
+      && (object->image->map_y <= (start_y + height - 1))
       && (object->image->map_y
-          + object->image->height >= start_y * TILE_H))
+          + object->image->height >= start_y))
     {
       set_object_dirty (object, mapview);
     }

@@ -59,6 +59,7 @@ enum
     BOTTOM_LEFT = 1 /**< Bottom-left of image reference point. */
   };
 
+
 /* -- STRUCTURES -- */
 
 /** An object node in the object hash table.
@@ -85,6 +86,7 @@ struct object_t
   struct object_image *image; /**< Pointer to the object's associated
                                  image data. */
 };
+
 
 /* -- GLOBAL VARIABLES -- */
 
@@ -119,6 +121,7 @@ struct object_t *
 add_object (const char object_name[],
             const char script_filename[]);
 
+
 /** Change the layer tag associated with an object.
  *
  *  @param object  Pointer to the object whose tag is to be changed.
@@ -129,6 +132,7 @@ add_object (const char object_name[],
 int
 set_object_tag (struct object_t *object,
                 layer_t tag);
+
 
 /** Change the graphic associated with an object.
  *
@@ -149,14 +153,6 @@ set_object_tag (struct object_t *object,
  *                   rectangle from which to source the rendered
  *                   image, in pixels.
  *
- *  @param map_x     X co-ordinate of the left edge of the on-map
- *                   rectangle in which to render the image, in
- *                   pixels.
- *
- *  @param map_y     Y co-ordinate of the top edge of the on-map    
- *                   rectangle in which to render the image, in
- *                   pixels.
- *
  *  @param width     Width of the image rectangle to render, in
  *                   pixels.
  *
@@ -172,10 +168,64 @@ set_object_image (struct object_t *object,
                   const char filename[],
                   short image_x,
                   short image_y,
-                  int map_x,
-                  int map_y,
                   unsigned short width,
                   unsigned short height);
+
+
+/** Move an object, dirty-updating a map viewpoint.
+ *
+ *  @param object   Pointer to the object to move.
+ *
+ *  @param mapview  Pointer to the map viewpoint to render to.
+ *
+ *  @param dx       Change in x co-ordinate.
+ *
+ *  @param dy       Change in y co-ordinate.
+ *
+ *  @return  SUCCESS for success; FAILURE otherwise (eg if the either
+ *  pointer is NULL).
+ */
+
+int
+move_object (struct object_t *object, 
+             struct map_view *mapview, 
+             int dx,
+             int dy);
+
+
+/** Retrieve the object's co-ordinates on-map.
+ *
+ *  The reference parameter determines the reference point from which
+ *  the object's co-ordinates should be determined.
+ *
+ *  TOP_LEFT sets the co-ordinates to refer to the top-left of the
+ *  image.  BOTTOM_LEFT sets the co-ordinates to refer to the
+ *  bottom-left of the image, which in most cases will represent the
+ *  actual physical "base" of the object.
+ *
+ *  @param object  Pointer to the object to query.
+ *
+ *  @param x_pointer  Pointer to a variable in which to store the X
+ *                    co-ordinate.
+ *
+ *  @param y_pointer  Pointer to a variable in which to store the Y
+ *                    co-ordinate.
+ *
+ *  @param reference  The reference point to use (TOP_LEFT or
+ *                    BOTTOM_LEFT). In most cases, BOTTOM_LEFT is
+ *                    preferred, as the bottom of the image is the
+ *                    reference point for Z-order calculation.
+ *
+ *  @return  SUCCESS for success; FAILURE otherwise (eg if the map
+ *  pointer is NULL).
+ */ 
+
+int
+get_object_coordinates (struct object_t *object, 
+                        int *x_pointer, 
+                        int *y_pointer,
+                        unsigned short reference);
+
 
 /** Set the object's co-ordinates on-map.
  *
@@ -212,6 +262,7 @@ set_object_coordinates (struct object_t *object,
                         int y,
                         unsigned short reference);
 
+
 /** Mark an object as being dirty on the given map view.
  *
  *  @param object   Pointer to the object to render.
@@ -234,6 +285,7 @@ set_object_dirty (struct object_t *object,
 void
 free_object (struct object_t *object);
 
+
 /** Remove an object from the object table.
  *
  *  @param object_name  The name of the object to remove from the
@@ -246,10 +298,12 @@ free_object (struct object_t *object);
 int
 delete_object (const char object_name[]);
 
+
 /** Deletes all objects in the object table. */
 
 void
 clear_objects (void);
+
 
 /** Retrieve an object, or add an object to the object table.
  *
@@ -268,6 +322,7 @@ clear_objects (void);
 struct object_t *
 get_object (const char object_name[], struct hash_object *add_pointer);
 
+
 /** Check to see whether the given object falls within the given dirty
  *  rectangle and, if so, mark the object as dirty.
  *
@@ -282,9 +337,30 @@ get_object (const char object_name[], struct hash_object *add_pointer);
 int
 dirty_object_test (struct hash_object *hash_object, void *rect_pointer);
 
+
+/** Apply the given function to all objects.
+ *
+ *  @param function  Pointer to the function to apply to the
+ *                   object.  The function must take the hash object
+ *                   as first parameter followed by a void pointer for
+ *                   data, and return a SUCCESS/FAILURE int.
+ *
+ *  @param data      Void pointer to the data to pass to the function.
+ *
+ *  @return SUCCESS if all applications of the function succeeded,
+ *  FAILURE otherwise.
+ */
+
+int
+apply_to_objects (int (*function) (struct hash_object *object, 
+                                        void *data),
+                  void *data);
+
+
 /** Clean up the objects subsystem. */
 
 void
 cleanup_objects (void);
 
-#endif /* not _GRAPHICS_H */
+
+#endif /* not _OBJECT_H */

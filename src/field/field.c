@@ -140,7 +140,6 @@ void
 field_handle_held_keys (void)
 {
   struct object_t *player;
-  int x, y;
 
   player = get_object ("Player", NULL);
 
@@ -150,38 +149,25 @@ field_handle_held_keys (void)
       return;
     }
 
-  if (get_object_coordinates (player, &x, &y, TOP_LEFT) == FAILURE)
-    {
-      error ("FIELD - field_handle_held_keys - Couldn't get player coords.");
-      return;
-    }
-
   if (sg_field_held_special_keys[SK_UP])
     {
-      set_object_coordinates (player, x, y - 1, TOP_LEFT);
       scroll_map (sg_mapview, NORTH);
-      set_object_dirty (player, sg_mapview);
+      move_object (player, sg_mapview, 0, -1);
     }
-
   else if (sg_field_held_special_keys[SK_RIGHT])
     {
-      set_object_coordinates (player, x + 1, y, TOP_LEFT);
       scroll_map (sg_mapview, EAST);
-      set_object_dirty (player, sg_mapview);
+      move_object (player, sg_mapview, 1, 0);
     }
-
   else if (sg_field_held_special_keys[SK_DOWN])
     {
-      set_object_coordinates (player, x, y + 1, TOP_LEFT);
       scroll_map (sg_mapview, SOUTH);
-       set_object_dirty (player, sg_mapview);
+      move_object (player, sg_mapview, 0, 1);
    }
-
   else if (sg_field_held_special_keys[SK_LEFT])
     {
-      set_object_coordinates (player, x - 1, y, TOP_LEFT);
       scroll_map (sg_mapview, WEST);
-      set_object_dirty (player, sg_mapview);
+      move_object (player, sg_mapview, -1, 0);
     }
 }
 
@@ -226,8 +212,9 @@ field_cleanup_callbacks (void)
 void
 update_field (void)
 {
-  render_map (sg_mapview);
   field_handle_held_keys ();
+  render_map (sg_mapview);
+
 }
 
 
