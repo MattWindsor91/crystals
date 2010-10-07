@@ -252,55 +252,6 @@ set_object_image (struct object_t *object,
 
 
 int
-move_object (struct object_t *object, 
-             struct map_view *mapview, 
-             int dx,
-             int dy)
-{
-  /* Sanity checking. */
-
-  if (object == NULL)
-    {
-      error ("OBJECT - move_object - Tried to move a NULL object.");
-      return FAILURE;
-    }
-
-  if (object->image == NULL)
-    {
-      error ("OBJECT - move_object - Object %s has no image dataset.", 
-             object->name);
-      return FAILURE;
-    }
-
-  /* No point moving by (0, 0). */
-
-  if (dx == 0 && dy == 0)
-    return SUCCESS;
-
-  /* Mark old location as dirty. */
-
-  mark_dirty_rect (mapview,
-                   object->image->map_x, 
-                   object->image->map_y, 
-                   object->image->width, 
-                   object->image->height);
-
-  /* Try to move object. */
-  if (set_object_coordinates (object, 
-                              object->image->map_x + dx,
-                              object->image->map_y + dy, TOP_LEFT) 
-      == FAILURE)
-    return FAILURE;
-
-  /* Set object as newly dirty. */
-
-  set_object_dirty (object, mapview);
-
-  return SUCCESS;
-}
-
-
-int
 get_object_coordinates (struct object_t *object, 
                         int *x_pointer,
                         int *y_pointer,

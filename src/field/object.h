@@ -45,8 +45,6 @@
 #ifndef _OBJECT_H
 #define _OBJECT_H
 
-#include <stdarg.h>
-
 #include "../hash.h" /* Hash stuff. */
 #include "map.h"     /* layer_t */
 #include "mapview.h" /* struct object_image, struct map_view */
@@ -170,27 +168,6 @@ set_object_image (struct object_t *object,
                   short image_y,
                   unsigned short width,
                   unsigned short height);
-
-
-/** Move an object, dirty-updating a map viewpoint.
- *
- *  @param object   Pointer to the object to move.
- *
- *  @param mapview  Pointer to the map viewpoint to render to.
- *
- *  @param dx       Change in x co-ordinate.
- *
- *  @param dy       Change in y co-ordinate.
- *
- *  @return  SUCCESS for success; FAILURE otherwise (eg if the either
- *  pointer is NULL).
- */
-
-int
-move_object (struct object_t *object, 
-             struct map_view *mapview, 
-             int dx,
-             int dy);
 
 
 /** Retrieve the object's co-ordinates on-map.

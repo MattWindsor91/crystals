@@ -87,12 +87,6 @@ void
 field_on_special_key_down (event_t *event);
 
 
-/** Check to see if certain keys are held and handle the results. */
-
-void
-field_handle_held_keys (void);
-
-
 /** Initialise the field state.
  *
  *  @return  SUCCESS if no errors were encountered; FAILURE otherwise. 
@@ -100,6 +94,47 @@ field_handle_held_keys (void);
 
 int
 init_field (void);
+
+
+/** Retrieve the map view currently in use.
+ *
+ *  @return  Pointer to the current field map view.
+ *
+ */
+
+struct map_view *
+get_field_mapview (void);
+
+
+/** Retrieve the boundaries of the map currently in use.
+ *
+ *  @param  x0_pointer  Pointer to the variable in which to store the
+ *                      X co-ordinate of the left edge of the map.
+ *
+ *  @param  y0_pointer  Pointer to the variable in which to store the
+ *                      Y co-ordinate of the top edge of the map.
+ *
+ *  @param  x1_pointer  Pointer to the variable in which to store the
+ *                      X co-ordinate of the right edge of the map.
+ *
+ *  @param  y1_pointer  Pointer to the variable in which to store the
+ *                      Y co-ordinate of the bottom edge of the map.
+ *
+ *  @return  SUCCESS if no errors were encountered; FAILURE
+ *           otherwise. 
+ */
+
+int
+get_field_map_boundaries (int *x0_pointer,
+                          int *y0_pointer,
+                          int *x1_pointer,
+                          int *y1_pointer);
+
+
+/** Check to see if certain keys are held and handle the results. */
+
+void
+field_handle_held_keys (void);
 
 
 /** Perform per-frame updates for field. */

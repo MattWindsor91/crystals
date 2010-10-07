@@ -20,6 +20,7 @@ TESTS    := $(addprefix $(TESTDIR)/,$(TESTS))
 OBJ      := main.o hash.o graphics.o events.o
 OBJ      += util.o bindings.o module.o optionparser.o parser.o state.o
 OBJ      += field/field.o field/map.o field/mapview.o field/object.o
+OBJ      += field/object-api.o
 
 # Add SRCDIR to all object paths #
 

@@ -52,6 +52,7 @@
 #include "map.h"
 #include "mapview.h"
 #include "object.h"
+#include "object-api.h"
 
 /* -- STATIC GLOBAL VARIABLES -- */
 
@@ -136,38 +137,65 @@ init_field (void)
 }
 
 
+/* Retrieve the map view currently in use. */
+
+struct map_view *
+get_field_mapview (void)
+{
+  return sg_mapview;
+}
+
+
+/* Retrieve the boundaries of the map currently in use. */
+
+int
+get_field_map_boundaries (int *x0_pointer,
+                          int *y0_pointer,
+                          int *x1_pointer,
+                          int *y1_pointer)
+{
+  /* Sanity-check pointers. */
+
+  if (x0_pointer == NULL
+      || x1_pointer == NULL
+      || y0_pointer == NULL
+      || y1_pointer == NULL)
+    {
+      error ("FIELD - get_field_map_boundaries - Passed NULL pointer.");
+      return FAILURE;
+    }
+
+  *x0_pointer = 0;
+  *y0_pointer = 0;
+  *x1_pointer = (sg_map->width * TILE_W) - 1;
+  *y1_pointer = (sg_map->height * TILE_H) - 1;
+
+  return SUCCESS;
+}
+
+
 void
 field_handle_held_keys (void)
 {
-  struct object_t *player;
-
-  player = get_object ("Player", NULL);
-
-  if (player == NULL)
-    {
-      error ("FIELD - field_handle_held_keys - Couldn't grab player.");
-      return;
-    }
-
   if (sg_field_held_special_keys[SK_UP])
     {
       scroll_map (sg_mapview, NORTH);
-      move_object (player, sg_mapview, 0, -1);
+      move_object ("Player", 0, -1);
     }
   else if (sg_field_held_special_keys[SK_RIGHT])
     {
       scroll_map (sg_mapview, EAST);
-      move_object (player, sg_mapview, 1, 0);
+      move_object ("Player", 1, 0);
     }
   else if (sg_field_held_special_keys[SK_DOWN])
     {
       scroll_map (sg_mapview, SOUTH);
-      move_object (player, sg_mapview, 0, 1);
+      move_object ("Player", 0, 1);
    }
   else if (sg_field_held_special_keys[SK_LEFT])
     {
       scroll_map (sg_mapview, WEST);
-      move_object (player, sg_mapview, -1, 0);
+      move_object ("Player", -1, 0);
     }
 }
 
