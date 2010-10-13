@@ -180,13 +180,13 @@ init_object_image (struct object_image *image, struct object_t *parent)
 
   if (image == NULL)
     {
-      fprintf (stderr, "MAPVIEW: Error: Tried to init null object image.\n");
+      error ("MAPVIEW - init_object_image - Tried to init null object image.");
       return FAILURE;
     }
 
   if (parent == NULL)
     {
-      fprintf (stderr, "MAPVIEW: Error: Object image has no parent.\n");
+      error ("MAPVIEW - init_object_image - Object image has no parent.");
       return FAILURE;
     }
 
@@ -204,12 +204,14 @@ init_object_image (struct object_image *image, struct object_t *parent)
   return SUCCESS;
 }
 
+
 int
 add_object_image (struct map_view *mapview,
                   layer_t tag,
-                  struct object_image *image)
+                  struct object_t *object)
 {
-  struct object_image *new_image;
+  struct object_rnode *new_rnode;
+  struct object_image *image;
 
   /* First, error checking! */
 
@@ -217,15 +219,23 @@ add_object_image (struct map_view *mapview,
 
   if (mapview == NULL)
     {
-      fprintf (stderr, "MAPVIEW: Error: Tried to render to NULL mapview.\n");
+      error ("MAPVIEW - add_object_image - Tried to render to NULL mapview.");
       return FAILURE;
     }
 
-  /* Also, the image should exist. */
+  /* Also, the object to add should exist. */
+
+  if (object == NULL)
+    {
+      error ("MAPVIEW - add_object_image - Tried to render a NULL object.");
+      return FAILURE;
+    }
+
+  image = get_object_image (object);
 
   if (image == NULL)
     {
-      fprintf (stderr, "MAPVIEW: Error: Tried to render a NULL rnode.\n");
+      error ("MAPVIEW - add_object_image - Tried to render a NULL image.");
       return FAILURE;
     }
 
@@ -237,7 +247,7 @@ add_object_image (struct map_view *mapview,
 
   if (tag == 0)
     {
-      fprintf (stderr, "MAPVIEW: Error: Tried to render to tag 0.\n");
+      error ("MAPVIEW - add_object_image - Tried to render to tag 0.");
       return FAILURE;
     }
 
@@ -250,49 +260,37 @@ add_object_image (struct map_view *mapview,
 
   if (tag > mapview->num_object_queues)
     {
-      fprintf (stderr, "MAPVIEW: Error: Tag specified too high.\n");
+      error ("MAPVIEW - add_object_image - Tag specified too high.");
       return FAILURE;
     }
 
   if (image->filename == NULL)
     {
-      fprintf (stderr, "MAPVIEW: Error: Filename is NULL.\n");
+      error ("MAPVIEW - add_object_image - Filename is NULL.");
       return FAILURE;
     }
 
   if (image->width == 0 || image->height == 0)
     {
-      fprintf (stderr, "MAPVIEW: Error: Zero object render width/height.\n");
+      error ("MAPVIEW - add_object_image - Zero object render width/height.");
       return FAILURE;
     }
 
   /* Now copy the image, if possible. */
 
-  new_image = malloc (sizeof (struct object_image));
+  new_rnode = malloc (sizeof (struct object_rnode));
 
-  if (new_image == NULL)
+  if (new_rnode == NULL)
     {
-      fprintf (stderr, "MAPVIEW: Error: Allocation failed for dupe rnode.\n");
+      error ("MAPVIEW - add_object_image - Allocation failed for rnode.");
       return FAILURE;
     }
 
-  /* Blindly copy the existing stuff, then allocate new space for the
-     filename and copy that over. */
+  /* Link to the object and its image. */
 
-  memcpy (new_image, image, sizeof (struct object_image));
-
-  new_image->filename = malloc (sizeof (char)
-                                * (strlen (image->filename) + 1));
-
-  if (new_image->filename == NULL)
-    {
-      fprintf (stderr, "MAPVIEW: Error: Couldn't alloc new image FN.");
-      free_object_image (new_image);
-      return FAILURE;
-    }
-
-  strncpy (new_image->filename, image->filename,
-           (strlen (image->filename) + 1));
+  new_rnode->object = object;
+  new_rnode->image = image;
+  new_rnode->next = NULL;
 
   /* Finally, add to the proper tag queue.
 
@@ -304,36 +302,38 @@ add_object_image (struct map_view *mapview,
   */
   
   if (mapview->object_queue[tag - 1] == NULL
-      || ((mapview->object_queue[tag - 1]->map_y
-           + mapview->object_queue[tag - 1]->height)
-          > (new_image->map_y + new_image->height)))
+      || ((mapview->object_queue[tag - 1]->image->map_y
+           + mapview->object_queue[tag - 1]->image->height)
+          > (image->map_y + image->height)))
     {
-      new_image->next = mapview->object_queue[tag - 1];
-      mapview->object_queue[tag - 1] = new_image;
+      new_rnode->next = mapview->object_queue[tag - 1];
+      mapview->object_queue[tag - 1] = new_rnode;
+
       return SUCCESS;
     }
   else
     {
-      struct object_image *ptr;
+      struct object_rnode *ptr;
  
       /* Skip to the first item that either has a null neighbour 
          or a neighbour whose screen_y + width is bigger. */
 
       for (ptr = mapview->object_queue[tag - 1]; 
            ptr->next != NULL
-             && ((ptr->next->map_y + ptr->next->height)
-                 <= (new_image->map_y + new_image->height)); 
+             && ((ptr->next->image->map_y + ptr->next->image->height)
+                 <= (image->map_y + image->height)); 
            ptr = ptr->next)
         ;
 
       /* Insert the new image here. */
 
-      new_image->next = ptr->next;
-      ptr->next = new_image;
+      new_rnode->next = ptr->next;
+      ptr->next = new_rnode;
 
       return SUCCESS;
     }
 }
+
 
 void
 free_object_image (struct object_image *image)
@@ -346,6 +346,7 @@ free_object_image (struct object_image *image)
       free (image);
     }
 }
+
 
 void
 render_map (struct map_view *mapview)
@@ -365,6 +366,7 @@ render_map (struct map_view *mapview)
         }
     }
 }
+
 
 void
 render_map_layer (struct map_view *mapview, unsigned char layer)
@@ -476,6 +478,7 @@ render_map_layer (struct map_view *mapview, unsigned char layer)
     }
 }
 
+
 void
 render_map_objects (struct map_view *mapview, unsigned char layer)
 {
@@ -484,32 +487,40 @@ render_map_objects (struct map_view *mapview, unsigned char layer)
 
   if (tag > 0)
     {
-      struct object_image *next;
+      struct object_rnode *next;
+      struct object_image *image;
 
       while (mapview->object_queue[tag - 1] != NULL)
         {
           next = mapview->object_queue[tag - 1]->next;
 
-          draw_image (mapview->object_queue[tag - 1]->filename,
-                      mapview->object_queue[tag - 1]->image_x,
-                      mapview->object_queue[tag - 1]->image_y,
-                      (short) (mapview->object_queue[tag - 1]->map_x 
-                       - mapview->x_offset),
-                      (short) (mapview->object_queue[tag - 1]->map_y
-                       - mapview->y_offset),
-                      mapview->object_queue[tag - 1]->width,
-                      mapview->object_queue[tag - 1]->height);
+          image = mapview->object_queue[tag - 1]->image;
+
+          if (image == NULL)
+            {
+              error ("MAPVIEW - render_map_objects - Failed to get object image.");
+              return;
+            }
+
+          draw_image (image->filename,
+                      image->image_x,
+                      image->image_y,
+                      (short) (image->map_x - mapview->x_offset),
+                      (short) (image->map_y - mapview->y_offset),
+                      image->width,
+                      image->height);
 
           /* Mark the parent object as no longer dirty. */
-          if (mapview->object_queue[tag - 1]->parent != NULL)
-            mapview->object_queue[tag - 1]->parent->is_dirty = FALSE;
+          if (mapview->object_queue[tag - 1] != NULL)
+            mapview->object_queue[tag - 1]->object->is_dirty = FALSE;
 
-          free_object_image (mapview->object_queue[tag - 1]);
+          free (mapview->object_queue[tag - 1]);
 
           mapview->object_queue[tag - 1] = next;
         }
     } 
 }
+
 
 void
 scroll_map (struct map_view *mapview, int direction)
@@ -559,6 +570,7 @@ scroll_map (struct map_view *mapview, int direction)
   (*g_modules.gfx.scroll_screen) (adirection);
   render_map (mapview);
 }
+
 
 int
 mark_dirty_rect (struct map_view *mapview,
@@ -667,6 +679,7 @@ mark_dirty_rect (struct map_view *mapview,
   return SUCCESS;
 }
 
+
 static int
 add_dirty_rect (struct map_view *mapview,
                 int start_x,
@@ -721,6 +734,7 @@ add_dirty_rect (struct map_view *mapview,
   return SUCCESS;
 }
 
+
 void
 cleanup_mapview (struct map_view *mapview)
 {
@@ -732,14 +746,14 @@ cleanup_mapview (struct map_view *mapview)
       if (mapview->object_queue)
         {
           unsigned int i;
-          struct object_image *next;
+          struct object_rnode *next;
 
           for (i = 0; i < mapview->num_object_queues; i++)
             {
               while (mapview->object_queue[i] != NULL)
                 {             
                   next = mapview->object_queue[i]->next;
-                  free_object_image (mapview->object_queue[i]);
+                  free (mapview->object_queue[i]);
                   mapview->object_queue[i] = next;
                 }
             }

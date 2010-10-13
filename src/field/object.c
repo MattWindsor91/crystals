@@ -46,9 +46,11 @@
 #include <string.h>
 
 #include "object.h"
+#include "object-api.h"
 #include "../util.h"
 
 static struct hash_object *sg_objects[HASH_VALS];
+
 
 int
 init_objects (void)
@@ -72,16 +74,17 @@ init_objects (void)
     set_object_tag (test, 1);
     set_object_tag (test1, 2);
     set_object_tag (test2, 1);
-    set_object_image (test, "gfx/testobj.png", 32, 0, 48, 48);
-    set_object_image (test1, "gfx/testobj.png", 0, 0, 16, 48);
-    set_object_image (test2, "gfx/testobj.png", 16, 0, 16, 48);
-    set_object_coordinates (test,  200, 200, BOTTOM_LEFT);
-    set_object_coordinates (test1, 100, 100, BOTTOM_LEFT);
-    set_object_coordinates (test2, 90, 90, BOTTOM_LEFT);
+    change_object_image ("Player", "gfx/testobj.png", 32, 0, 48, 48);
+    change_object_image ("Test1", "gfx/testobj.png", 0, 0, 16, 48);
+    change_object_image ("Test2", "gfx/testobj.png", 16, 0, 16, 48);
+    position_object ("Player",  200, 200, BOTTOM_LEFT);
+    position_object ("Test1", 100, 100, BOTTOM_LEFT);
+    position_object ("Test2", 90, 90, BOTTOM_LEFT);
   }
 
   return SUCCESS;
 }
+
 
 struct object_t *
 add_object (const char object_name[],
@@ -94,13 +97,13 @@ add_object (const char object_name[],
 
   if (object_name == NULL)
     {
-      fprintf (stderr, "OBJECT: Error: Object name is NULL.\n");
+      error ("OBJECT - add_object - Object name is NULL.");
       return NULL;
     }
 
   if (script_filename == NULL)
     {
-      fprintf (stderr, "OBJECT: Error: Script filename is NULL.\n");
+      error ("OBJECT - add_object - Script filename is NULL.");
       return NULL;
     }
 
@@ -110,8 +113,8 @@ add_object (const char object_name[],
 
   if (object == NULL)
     {
-      fprintf (stderr, "OBJECT: Error: Allocation failed for %s.\n", 
-               object_name);
+      error ("OBJECT - add_object - Allocation failed for %s.", 
+             object_name);
       return NULL;
     }
 
@@ -121,8 +124,8 @@ add_object (const char object_name[],
 
   if (object->image == NULL)
     {
-      fprintf (stderr, "OBJECT: Error: Allocation failed for rnode of %s.\n", 
-               object_name);
+      error ("OBJECT - add_object - Allocation failed for image of %s.", 
+             object_name);
       free_object (object);
       return NULL;
     }
@@ -133,8 +136,8 @@ add_object (const char object_name[],
 
   if (object->name == NULL)
     {
-      fprintf (stderr, "OBJECT: Error: ON allocation failed for %s.\n", 
-               object_name);
+      error ("OBJECT - add_object - Allocation failed for name of %s.", 
+             object_name);
       free_object (object);
       return NULL;
     }
@@ -149,7 +152,7 @@ add_object (const char object_name[],
 
   if (object->script_filename == NULL)
     {
-      fprintf (stderr, "OBJECT: Error: FN allocation failed for %s.\n", 
+      error ("OBJECT - add_object - Allocation failed for filename of %s.", 
                object_name);
       free_object (object);
       return NULL;
@@ -171,7 +174,7 @@ add_object (const char object_name[],
 
   if (result == NULL)
     {
-      fprintf (stderr, "OBJECT: Error: Store failed for %s.\n", 
+      error ("OBJECT - add_object - Store failed for %s.", 
                object_name);
       free_object (object);
       return NULL;
@@ -180,13 +183,14 @@ add_object (const char object_name[],
   return (struct object_t*) result->data;
 }
 
+
 int
 set_object_tag (struct object_t *object, 
                 layer_t tag)
 {
   if (object == NULL)
     {
-      fprintf (stderr, "OBJECT: Error: Tried to set tag of null object.\n");
+      error ("OBJECT - set_object_tag - Tried to set tag of null object.");
       return FAILURE;
     }
 
@@ -194,6 +198,24 @@ set_object_tag (struct object_t *object,
   
   return SUCCESS;
 }
+
+
+/* Get the graphic associated with an object. */
+
+struct object_image *
+get_object_image (struct object_t *object)
+{
+  if (object == NULL)
+    {
+      error ("OBJECT - get_object_image - Tried to get image of null object.");
+      return NULL;
+    }
+
+  return object->image;
+}
+
+
+/* Change the graphic associated with an object. */
 
 int
 set_object_image (struct object_t *object, 
@@ -207,20 +229,20 @@ set_object_image (struct object_t *object,
 
   if (object == NULL)
     {
-      fprintf (stderr, "OBJECT: Error: Tried to set image of null object.\n");
+      error ("OBJECT - set_object_image - Tried to set image of null object.");
       return FAILURE;
     }
 
   if (object->image == NULL)
     {
-      fprintf (stderr, "OBJECT: Error: Object %s has no image dataset.\n", 
-               object->name);
+      error ("OBJECT - set_object_image - Object %s has no image dataset.", 
+             object->name);
       return FAILURE;
     }
 
   if (filename == NULL)
     {
-      fprintf (stderr, "OBJECT: Error: Tried to set image FN to null.\n");
+      error ("OBJECT - set_object_image - Tried to set image FN to null.");
       return FAILURE;
     }
 
@@ -233,8 +255,8 @@ set_object_image (struct object_t *object,
 
   if (object->image->filename == NULL)
     {
-      fprintf (stderr, "OBJECT: Error: Couldn't alloc image FN for %s.\n",
-               object->name);
+      error ("OBJECT - set_object_image - Couldn't alloc image FN for %s.",
+             object->name);
       return FAILURE;
     }
 
@@ -331,6 +353,7 @@ set_object_coordinates (struct object_t *object,
   return SUCCESS;
 }
 
+
 int
 set_object_dirty (struct object_t *object, 
                   struct map_view *mapview)
@@ -339,13 +362,13 @@ set_object_dirty (struct object_t *object,
 
   if (object == NULL)
     {
-      fprintf (stderr, "OBJECT: Error: Tried to set a NULL object dirty.\n");
+      error ("OBJECT - set_object_dirty - Tried to set a NULL object dirty.");
       return FAILURE;
     }
 
   if (mapview == NULL)
     {
-      fprintf (stderr, "OBJECT: Error: Tried dirtying on a NULL mapview.\n");
+      error ("OBJECT - set_object_dirty - Tried dirtying on a NULL mapview.");
       return FAILURE;
     }
 
@@ -353,6 +376,13 @@ set_object_dirty (struct object_t *object,
 
   if (object->is_dirty == TRUE)
     return SUCCESS;
+
+  /* If the object has no image (the filename is NULL) then ignore the
+     dirty request. */
+  if (object->image->filename == NULL)
+    {
+      return SUCCESS;
+    }
 
   /* Ensure the object's co-ordinates don't go over the map
      width/height! */
@@ -362,7 +392,7 @@ set_object_dirty (struct object_t *object,
       || (object->image->map_y + object->image->height 
           > mapview->map->height * TILE_H))
     {
-      fprintf (stderr, "OBJECT: Error: Object %s out of bounds.\n", 
+      error ("OBJECT - set_object_dirty - Object %s out of bounds.", 
                object->name);
       return FAILURE;
     }
@@ -371,7 +401,7 @@ set_object_dirty (struct object_t *object,
 
   if (object->tag != 0)
     {
-      if (add_object_image (mapview, object->tag, object->image)
+      if (add_object_image (mapview, object->tag, object)
           == FAILURE)
         return FAILURE;
 
@@ -390,6 +420,7 @@ set_object_dirty (struct object_t *object,
   return SUCCESS;
 }
 
+
 void
 free_object (struct object_t *object)
 {
@@ -407,6 +438,7 @@ free_object (struct object_t *object)
       free (object);
     }
 }
+
 
 int
 delete_object (const char object_name[])
@@ -428,6 +460,7 @@ get_object (const char object_name[], struct hash_object *add_pointer)
     return (struct object_t*) result->data;
 } 
 
+
 int
 dirty_object_test (struct hash_object *hash_object, void *rect_pointer)
 {
@@ -444,19 +477,20 @@ dirty_object_test (struct hash_object *hash_object, void *rect_pointer)
 
   if (hash_object == NULL)
     {
-      fprintf (stderr, "OBJECT: Error: Given hash object is NULL.\n");
+      error ("OBJECT - dirty_object_test - Given hash object is NULL.\n");
       return FAILURE;
     }
 
   if (hash_object->data == NULL)
     {
-      fprintf (stderr, "OBJECT: Error: Hash object has no data.\n");
+      error ("OBJECT - dirty_object_test - Hash object has no data.\n");
       return FAILURE;
     }
 
   if (rect_pointer == NULL)
     {
-      fprintf (stderr, "OBJECT: Error: Given dirty rect pointer is NULL.\n");
+      error ("OBJECT - dirty_object_test - Given dirty rect pointer is NULL.\n");
+      return FAILURE;
     }
 
   object = (struct object_t *) hash_object->data;
@@ -485,6 +519,7 @@ dirty_object_test (struct hash_object *hash_object, void *rect_pointer)
     {
       set_object_dirty (object, mapview);
     }
+
   return SUCCESS;
 }
 

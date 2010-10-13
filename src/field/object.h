@@ -101,6 +101,7 @@ extern struct hash_object *g_objects[HASH_VALS]; /**< The object hash
 int
 init_objects (void);
 
+
 /** Create a new object and add it to the object table.
  *
  *  @param object_name      The name of the object, used to look it up
@@ -131,6 +132,16 @@ int
 set_object_tag (struct object_t *object,
                 layer_t tag);
 
+
+/** Get the graphic associated with an object.
+ *
+ *  @param object  Pointer to the object to query.
+ *
+ *  @return  The object image, or NULL if an error occurred.
+ */
+
+struct object_image *
+get_object_image (struct object_t *object);
 
 /** Change the graphic associated with an object.
  *

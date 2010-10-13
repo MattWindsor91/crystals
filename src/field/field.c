@@ -119,17 +119,17 @@ init_field (void)
       return FAILURE;
     }
 
-  if (init_objects () == FAILURE)
-    {
-      fatal ("FIELD - init_field - Objects initialisation failed.");
-      return FAILURE;
-    }
-
   sg_mapview = init_mapview (sg_map);
 
   if (sg_mapview == NULL)
     {
       fatal ("FIELD - init_field - Map view initialisation failed.");
+      return FAILURE;
+    }
+
+  if (init_objects () == FAILURE)
+    {
+      fatal ("FIELD - init_field - Objects initialisation failed.");
       return FAILURE;
     }
 
