@@ -44,6 +44,7 @@
 #include <stdlib.h>
 
 #include "../util.h"
+#include "../graphics.h"
 
 #include "field.h"
 #include "object.h"
@@ -179,6 +180,20 @@ move_object (const char object_name[],
   /* Set object as newly dirty. */
 
   set_object_dirty (object, mapview);
+
+  /* Finally, if the object is the camera focus, scroll the map (if
+     the new co-ordinates are near enough) or, when full map updates
+     are ready, centre the camera and redraw the map. */
+
+  if (object == sg_camera_focus)
+    {
+      /* Assert SCREEN_W and SCREEN_H are always short */
+      if (dx <= SCREEN_W 
+          || dy <= SCREEN_H
+          || dx >= -SCREEN_W
+          || dy >= -SCREEN_H)
+        scroll_map (mapview, (short) dx, (short) dy);
+    }
 
   return SUCCESS;
 }

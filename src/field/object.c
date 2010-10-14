@@ -77,6 +77,7 @@ init_objects (void)
     change_object_image ("Player", "gfx/testobj.png", 32, 0, 48, 48);
     change_object_image ("Test1", "gfx/testobj.png", 0, 0, 16, 48);
     change_object_image ("Test2", "gfx/testobj.png", 16, 0, 16, 48);
+    focus_camera_on_object ("Player");
     position_object ("Player",  200, 200, BOTTOM_LEFT);
     position_object ("Test1", 100, 100, BOTTOM_LEFT);
     position_object ("Test2", 90, 90, BOTTOM_LEFT);
