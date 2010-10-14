@@ -67,13 +67,13 @@ init_graphics (void)
 
   if (load_module_gfx ("gfx-sdl", &g_modules) == FAILURE)
     {
-      fprintf (stderr, "ERROR: Could not load graphics module.\n");
+      error ("GRAPHICS - init_graphics - Could not load graphics module.");
       return FAILURE;
     }
 
   if ((*g_modules.gfx.init_screen) (SCREEN_W, SCREEN_H, SCREEN_D) == FAILURE)
     {
-      fprintf (stderr, "ERROR: Could not init screen.!\n");
+      error ("GRAPHICS - init_graphics - Could not init screen.");
       return FAILURE;
     }
  
@@ -101,6 +101,15 @@ fill_screen (unsigned char red,
              unsigned char blue)
 {
   (*g_modules.gfx.draw_rect) (0, 0, SCREEN_W, SCREEN_H, red, green, blue);
+}
+
+
+/* Translate the screen by a co-ordinate pair, leaving damage. */
+
+void
+scroll_screen (short x_offset, short y_offset)
+{
+  (*g_modules.gfx.scroll_screen) (x_offset, y_offset);
 }
 
 

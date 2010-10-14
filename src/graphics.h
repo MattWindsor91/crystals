@@ -97,6 +97,19 @@ fill_screen (unsigned char red,
              unsigned char blue);
 
 
+/** Translate the screen by a co-ordinate pair, leaving damage.
+ *
+ *  @param x_offset  The X co-ordinate offset in which to scroll the 
+ *                   screen.
+ *
+ *  @param y_offset  The Y co-ordinate offset in which to scroll the 
+ *                   screen.
+ */
+
+void
+scroll_screen (short x_offset, short y_offset);
+
+
 /** Load an image.
  *
  *  This does not need to be called directly in normal circumstances,
@@ -242,20 +255,6 @@ find_image (const char filename[]);
 
 void
 update_screen (void);
-
-
-/** Scroll the screen one pixel in the given direction.
- *
- *  This does NOT repair the damage done to the screen - it is
- *  expected that subsequent functions will fill in the gap left by
- *  the scroll with colour or image data.
- *
- *  @param direction  The direction (NORTH, SOUTH, EAST or WEST) in
- *                     which to scroll the screen.
- */
-
-void
-scroll_screen (unsigned int direction);
 
 
 /** Clean up the graphics subsystem. */

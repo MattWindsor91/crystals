@@ -179,22 +179,22 @@ field_handle_held_keys (void)
 {
   if (sg_field_held_special_keys[SK_UP])
     {
-      scroll_map (sg_mapview, NORTH);
+      scroll_map (sg_mapview, 0, -1);
       move_object ("Player", 0, -1);
     }
   else if (sg_field_held_special_keys[SK_RIGHT])
     {
-      scroll_map (sg_mapview, EAST);
+      scroll_map (sg_mapview, 1, 0);
       move_object ("Player", 1, 0);
     }
   else if (sg_field_held_special_keys[SK_DOWN])
     {
-      scroll_map (sg_mapview, SOUTH);
+      scroll_map (sg_mapview, 0, 1);
       move_object ("Player", 0, 1);
    }
   else if (sg_field_held_special_keys[SK_LEFT])
     {
-      scroll_map (sg_mapview, WEST);
+      scroll_map (sg_mapview, -1, 0);
       move_object ("Player", -1, 0);
     }
 }

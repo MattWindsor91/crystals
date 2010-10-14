@@ -292,12 +292,15 @@ render_map_objects (struct map_view *mapview, unsigned char layer);
  *
  *  @param mapview    The map view to render.
  *
- *  @param direction  The cardinal direction (NORTH, SOUTH, EAST or
- *                    WEST) to scroll in.
+ *  @param x_offset   The X co-ordinate offset to scroll by.
+ *
+ *  @param y_offset   The Y co-ordinate offset to scroll by.
  */
 
 void
-scroll_map (struct map_view *mapview, int direction);
+scroll_map (struct map_view *mapview, 
+            short x_offset, 
+            short y_offset);
 
 
 /** Mark a rectangle of tiles as being dirty.

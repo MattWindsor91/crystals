@@ -523,51 +523,66 @@ render_map_objects (struct map_view *mapview, unsigned char layer)
 
 
 void
-scroll_map (struct map_view *mapview, int direction)
+scroll_map (struct map_view *mapview,
+            short x_offset,
+            short y_offset)
 {
-  unsigned int adirection;
 
-  switch (direction)
+  /* Sanity checking. */
+
+  if (mapview == NULL)
     {
-    case NORTH:
-      mapview->y_offset -= 1;
-      mark_dirty_rect (mapview, 
-                       mapview->x_offset,
-                       mapview->y_offset,
-                       SCREEN_W, 1);      
-      adirection = SOUTH;
-      break;
-    case EAST:
-      mapview->x_offset += 1;
-      mark_dirty_rect (mapview, 
-                       SCREEN_W + mapview->x_offset - 1,
-                       mapview->y_offset,
-                       1, SCREEN_H);
-      adirection = WEST;
-      break;
-    case SOUTH:
-      mapview->y_offset += 1;
-      mark_dirty_rect (mapview, 
-                       mapview->x_offset,
-                       SCREEN_H + mapview->y_offset - 1,
-                       SCREEN_W, 1);
-      adirection = NORTH;
-      break;
-    case WEST:
-      mapview->x_offset -= 1;
-      mark_dirty_rect (mapview, 
-                       mapview->x_offset,
-                       mapview->y_offset,
-                       1, SCREEN_H);
-      adirection = EAST;
-      break;
-    default:
-      fatal ("MAPVIEW - scroll_screen - Absurd direction %u.", direction);
+      error ("MAPVIEW - scroll_map - Map view is NULL.");
       return;
-      break;
     }
 
-  (*g_modules.gfx.scroll_screen) (adirection);
+  /* Work out the dirty rectangles to mark. */
+
+  /* West scroll. */
+
+  if (x_offset < 0)
+    {
+       mark_dirty_rect (mapview, 
+                        mapview->x_offset,
+                        mapview->y_offset,
+                        -(x_offset), SCREEN_H);     
+    }
+
+  /* East scroll. */
+
+  else if (x_offset > 0)
+    {
+      mark_dirty_rect (mapview, 
+                       SCREEN_W + mapview->x_offset - x_offset,
+                       mapview->y_offset,
+                       x_offset, SCREEN_H);
+    }
+
+
+  /* North scroll. */
+
+  if (y_offset < 0) 
+    {
+      mark_dirty_rect (mapview, 
+                       mapview->x_offset,
+                       mapview->y_offset,
+                       SCREEN_W, -(y_offset)); 
+    }
+
+  /* South scroll. */
+
+  else if (y_offset > 0)
+    {
+      mark_dirty_rect (mapview, 
+                       mapview->x_offset,
+                       SCREEN_H + mapview->y_offset - y_offset,
+                       SCREEN_W, y_offset);
+    }
+
+  mapview->x_offset += x_offset;
+  mapview->y_offset += y_offset;
+
+  scroll_screen (-(x_offset), -(y_offset));
   render_map (mapview);
 }
 

@@ -148,6 +148,7 @@ load_image_data (const char filename[]);
 void
 free_image_data (void *data);
 
+
 /** Draw a rectangular portion of an image on-screen.
  *
  *  This should not be called directly, but instead accessed through
@@ -185,19 +186,25 @@ draw_image (void *image,
             unsigned short width,
             unsigned short height);
 
+
 /** Update the screen. */
 
 void
 update_screen (void);
 
-/** Scroll the entire screen one pixel in a given direction.
+
+/** Translate the screen by a co-ordinate pair, leaving damage.
  *
- *  @param direction  The cardinal direction (NORTH, SOUTH, EAST or
- *  WEST) to scroll in.
+ *  @param x_offset  The X co-ordinate offset in which to scroll the 
+ *                   screen.
+ *
+ *  @param y_offset  The Y co-ordinate offset in which to scroll the 
+ *                   screen.
  */
 
 void
-scroll_screen (unsigned int direction);
+scroll_screen (short x_offset, short y_offset);
+
 
 /* -- DEFINITIONS -- */
 
@@ -208,6 +215,7 @@ init (void)
 {
   sg_screen = NULL;
 }
+
 
 /* Terminate the module, freeing any remaining data dynamically
    allocated by the module. */
@@ -223,6 +231,7 @@ term (void)
       SDL_Quit ();
     }
 }
+
 
 /* Initialise a screen of a given width, height and depth. */
 
@@ -261,6 +270,7 @@ init_screen (unsigned short width,
   return FALSE;
 }
 
+
 /* Draw a rectangle of colour on-screen. */
 
 void
@@ -298,6 +308,7 @@ load_image_data (const char filename[])
   return (void*) surf;
 }
 
+
 /* Free image data retrieved by load_image_data. */
 
 void
@@ -306,6 +317,7 @@ free_image_data (void *data)
   if (data)
     SDL_FreeSurface(data);
 }
+
 
 int
 draw_image (void *image,
@@ -339,6 +351,7 @@ draw_image (void *image,
     return 0;
 }
 
+
 void
 update_screen (void)
 {
@@ -346,8 +359,9 @@ update_screen (void)
   SDL_Delay (15);
 }
 
+
 void
-scroll_screen (unsigned int direction)
+scroll_screen (short x_offset, short y_offset)
 {
   SDL_Rect source, dest;
 
@@ -356,24 +370,28 @@ scroll_screen (unsigned int direction)
   source.w = dest.w = (Uint16) sg_screen->w;
   source.h = dest.h = (Uint16) sg_screen->h;
 
-  switch (direction)
+  /* Set up the offsets. */
+
+  if (x_offset < 0)
     {
-    case NORTH:
-      source.y = 1;
-      source.h--;
-      break;
-    case EAST:
-      dest.x = 1;
-      source.w--;
-      break;
-    case SOUTH:
-      dest.y = 1;
-      source.h--;
-      break;
-    case WEST:
-      source.x = 1;
-      source.w--;
-      break;
+      source.x -= x_offset;
+      source.w += x_offset;
+    }
+  else
+    {
+      dest.x += x_offset;
+      dest.w -= x_offset;
+    }
+
+  if (y_offset < 0)
+    {
+      source.y -= y_offset;
+      source.h += y_offset;
+    }
+  else
+    {
+      dest.y += y_offset;
+      source.h -= y_offset;
     }
 
   SDL_BlitSurface (sg_screen, &source, sg_shadow, &dest);
