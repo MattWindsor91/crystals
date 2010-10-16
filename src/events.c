@@ -91,7 +91,7 @@ init_events (void)
 void
 process_events (void)
 {
-  (*g_modules.event.process_events) ();
+  (*g_modules.event.process_events_internal) ();
 }
 
 

@@ -45,6 +45,7 @@
 #include <SDL.h>
 #include <SDL/SDL_image.h>
 
+#include "../util.h"
 #include "../events.h"
 #include "../graphics.h"
 
@@ -54,6 +55,7 @@ static void
 (*sg_event_release) (event_t *event); /**< Event release function
                                          pointer. */
 
+
 /* -- PROTOTYPES -- */
 
 /** Initialise the events module. */
@@ -61,11 +63,13 @@ static void
 int
 init (void);
 
+
 /** Terminate the events module, freeing any remaining data
     dynamically allocated by the module. */
 
 void
 term (void);
+
 
 /** Register a function for handling event releases.
  *
@@ -76,6 +80,7 @@ term (void);
 void
 register_release_handle (void (*handle) (event_t *event));
 
+
 /** Process one frame of input.
  *
  *  This function calls the platform-specific input routines to handle 
@@ -84,7 +89,8 @@ register_release_handle (void (*handle) (event_t *event));
  */
 
 void
-process_events (void);
+process_events_internal (void);
+
 
 /** Handle an SDL mouse motion event.
  *
@@ -94,6 +100,7 @@ process_events (void);
 
 static void
 mouse_motion (event_t *event, SDL_Event *sdlevent);
+
 
 /* -- DEFINITIONS -- */
 
@@ -105,12 +112,13 @@ init (void)
   if (SDL_Init (SDL_INIT_VIDEO) != 0)
     {
       fprintf (stderr, "event-sdl: ERROR: Could not init SDL!\n");
-      return 0;
+      return FAILURE;
     }
 
   SDL_EnableUNICODE (1);
-  return 1;
+  return SUCCESS;
 }
+
 
 /* Terminate the events module, freeing any remaining data
    dynamically allocated by the module. */
@@ -121,6 +129,7 @@ term (void)
   SDL_Quit ();
 }
 
+
 /* Register a function for handling event releases. */
 
 void
@@ -129,10 +138,11 @@ register_release_handle (void (*handle) (event_t *event))
   sg_event_release = handle;
 }
 
+
 /* Process one frame of input. */
 
 void
-process_events (void)
+process_events_internal (void)
 {
   SDL_Event sdlevent;
   event_t event;
@@ -234,6 +244,7 @@ process_events (void)
         (*sg_event_release) (&event);
     }
 }
+
 
 /* Handle an SDL mouse motion event. */
 

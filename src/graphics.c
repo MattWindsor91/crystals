@@ -71,7 +71,8 @@ init_graphics (void)
       return FAILURE;
     }
 
-  if ((*g_modules.gfx.init_screen) (SCREEN_W, SCREEN_H, SCREEN_D) == FAILURE)
+  if ((*g_modules.gfx.init_screen_internal)
+      (SCREEN_W, SCREEN_H, SCREEN_D) == FAILURE)
     {
       error ("GRAPHICS - init_graphics - Could not init screen.");
       return FAILURE;
@@ -86,30 +87,32 @@ init_graphics (void)
 
 /* Update the screen. */
 
-void
+int
 update_screen (void)
 {
-  (*g_modules.gfx.update_screen) ();
+  return (*g_modules.gfx.update_screen_internal) ();
 }
 
 
 /* Fill the screen with the given colour. */
 
-void
+int
 fill_screen (unsigned char red, 
              unsigned char green, 
              unsigned char blue)
 {
-  (*g_modules.gfx.draw_rect) (0, 0, SCREEN_W, SCREEN_H, red, green, blue);
+  return (*g_modules.gfx.draw_rect_internal)
+    (0, 0, SCREEN_W, SCREEN_H, red, green, blue);
 }
 
 
 /* Translate the screen by a co-ordinate pair, leaving damage. */
 
-void
+int
 scroll_screen (short x_offset, short y_offset)
 {
-  (*g_modules.gfx.scroll_screen) (x_offset, y_offset);
+  return (*g_modules.gfx.scroll_screen_internal)
+    (x_offset, y_offset);
 }
 
 
@@ -172,15 +175,16 @@ load_image (const char filename[])
 
 /* Free image data. */
 
-void
+int
 free_image (void *image)
 {
   if (image == NULL)
     {
       error ("GFX - free_image - Tried to free NULL image.");
+      return FAILURE;
     }
 
-  (*g_modules.gfx.free_image_data) (image);
+  return (*g_modules.gfx.free_image_data) (image);
 }
 
 
@@ -232,13 +236,13 @@ draw_image_direct (void *data,
                    unsigned short width,
                    unsigned short height)
 {
-  return (*g_modules.gfx.draw_image) (data,
-                                      image_x,
-                                      image_y,
-                                      screen_x,
-                                      screen_y,
-                                      width,
-                                      height);
+  return (*g_modules.gfx.draw_image_internal) (data,
+                                               image_x,
+                                               image_y,
+                                               screen_x,
+                                               screen_y,
+                                               width,
+                                               height);
 }
 
 

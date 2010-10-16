@@ -536,6 +536,16 @@ scroll_map (struct map_view *mapview,
       return;
     }
 
+  /* This particular number will pose problems later 
+     when flipping to negative, so don't allow it. */
+
+  if (x_offset == SHRT_MIN
+      || y_offset == SHRT_MIN)
+    {
+      error ("MAPVIEW - scroll_map - Offset too big.");
+      return;
+    }
+
   /* Work out the dirty rectangles to mark. */
 
   /* West scroll. */
@@ -582,7 +592,9 @@ scroll_map (struct map_view *mapview,
   mapview->x_offset += x_offset;
   mapview->y_offset += y_offset;
 
-  scroll_screen (-(x_offset), -(y_offset));
+  scroll_screen ((short) -(x_offset),
+                 (short) -(y_offset));
+
   render_map (mapview);
 }
 

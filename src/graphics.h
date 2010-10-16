@@ -73,12 +73,6 @@ int
 init_graphics (void);
 
 
-/** Update the screen. */
-
-void
-update_screen (void);
-
-
 /** Fill the screen with the given colour.
  *
  *  Depending on the graphics module, the colour displayed on screen
@@ -91,7 +85,7 @@ update_screen (void);
  *  @param blue    The blue component of the fill colour (0-255).
  */
 
-void
+int
 fill_screen (unsigned char red,
              unsigned char green,
              unsigned char blue);
@@ -106,7 +100,7 @@ fill_screen (unsigned char red,
  *                   screen.
  */
 
-void
+int
 scroll_screen (short x_offset, short y_offset);
 
 
@@ -146,7 +140,7 @@ load_image (const char filename[]);
  *  @param image  Pointer to the image data to free.
  */
 
-void
+int
 free_image (void *image);
 
 
@@ -253,7 +247,7 @@ find_image (const char filename[]);
 
 /** Update the screen. */
 
-void
+int
 update_screen (void);
 
 
