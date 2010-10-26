@@ -69,7 +69,9 @@ static event_callback *sg_field_quitcb;
 
 /* -- DEFINITIONS -- */
 
-/* Callbacks */
+/* - Callbacks - */
+
+/* Callback for quit event. */
 
 void
 field_on_quit (event_t *event)
@@ -79,20 +81,24 @@ field_on_quit (event_t *event)
 }
 
 
+/* Callback for special key up-presses. */
+
 void
 field_on_special_key_up (event_t *event)
 {
   if (event->skey.code == SK_ESCAPE)
     field_on_quit (event);
 
-  sg_field_held_special_keys[(int) event->skey.code] = 0;
+  sg_field_held_special_keys[(int) event->skey.code] = FALSE;
 }
 
+
+/* Callback for special key down-presses. */
 
 void
 field_on_special_key_down (event_t *event)
 {
-  sg_field_held_special_keys[(int) event->skey.code] = 1;
+  sg_field_held_special_keys[(int) event->skey.code] = TRUE;
 }
 
 
@@ -102,8 +108,6 @@ int
 init_field (void)
 {
   memset (sg_field_held_special_keys, 0, sizeof (unsigned char) * 256);
-
-  /* Test callbacks, woo */
 
   if (field_init_callbacks () == FAILURE)
     {
@@ -174,6 +178,8 @@ get_field_map_boundaries (int *x0_pointer,
 }
 
 
+/* Check to see if certain keys are held and handle the results. */
+
 void
 field_handle_held_keys (void)
 {
@@ -196,6 +202,8 @@ field_handle_held_keys (void)
 }
 
 
+/* Initialise input callbacks. */
+
 int
 field_init_callbacks (void)
 {
@@ -215,6 +223,8 @@ field_init_callbacks (void)
     }
 }
 
+
+/* De-initialise input callbacks. */
 
 void
 field_cleanup_callbacks (void)

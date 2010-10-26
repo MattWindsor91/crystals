@@ -48,31 +48,23 @@
 
 /* -- PROTOTYPES -- */
 
-/** Initialise input callbacks.
- *
- *  @return SUCCESS for success, FAILURE otherwise.
- */
+/* - Callbacks - */
 
-int
-field_init_callbacks (void);
-
-/** De-initialise input callbacks. */
-
-void
-field_cleanup_callbacks (void);
-
-/** Callback for quit. 
+/** Callback for quit event.
  *
  *  @param event  The event produced by the quit.
  */
 
+
 void
 field_on_quit (event_t *event);
+
 
 /** Callback for special key up-presses. 
  *
  *  @param event The event produced by the key press.
  */
+
 
 void
 field_on_special_key_up (event_t *event);
@@ -85,6 +77,27 @@ field_on_special_key_up (event_t *event);
 
 void
 field_on_special_key_down (event_t *event);
+
+
+/* Regular functions */
+
+
+/** Initialise input callbacks.
+ *
+ *  @return SUCCESS for success, FAILURE otherwise.
+ */
+
+int
+field_init_callbacks (void);
+
+
+/** De-initialise input callbacks. */
+
+void
+field_cleanup_callbacks (void);
+
+
+
 
 
 /** Initialise the field state.
@@ -106,7 +119,7 @@ struct map_view *
 get_field_mapview (void);
 
 
-/** Retrieve the boundaries of the map currently in use.
+/** Retrieve the boundaries of the map currently in use, in pixels.
  *
  *  @param  x0_pointer  Pointer to the variable in which to store the
  *                      X co-ordinate of the left edge of the map.
