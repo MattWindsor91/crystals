@@ -291,6 +291,33 @@ position_object (const char object_name[],
 }
 
 
+/* Change the tag associated with an object. */
+
+int
+tag_object (const char object_name[],
+            layer_t tag)
+{
+  struct object_t *object;
+
+  if (object_name == NULL)
+    {
+      error ("OBJECT-API - tag_object - Null object name.");
+      return FAILURE;
+    }
+
+  object = get_object (object_name, NULL);
+
+  if (object == NULL)
+    {
+      error ("OBJECT-API - tag_object - Couldn't get object %s.", 
+             object_name);
+      return FAILURE;
+    }
+
+  return set_object_tag (object, tag);
+}
+
+
 /* Change the image associated with an object. */
 
 int

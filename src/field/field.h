@@ -39,6 +39,9 @@
 /** @file    src/field/field.h
  *  @author  Matt Windsor
  *  @brief   Prototypes and declarations for field state.
+ *
+ *  The field state handles the main game map.  It is composed of a
+ *  map rendering engine, an object system, and a map loader.
  */
 
 #ifndef _FIELD_H

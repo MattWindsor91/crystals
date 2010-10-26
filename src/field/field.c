@@ -137,6 +137,28 @@ init_field (void)
       return FAILURE;
     }
 
+  /* TEST DATA */
+
+  {
+    add_object ("Player", "null");
+    add_object ("Test1", "null");
+    add_object ("Test2", "null");
+    
+    tag_object ("Player", 1);
+    tag_object ("Test1", 2);
+    tag_object ("Test2", 1);
+
+    change_object_image ("Player", "gfx/testobj.png", 32, 0, 48, 48);
+    change_object_image ("Test1", "gfx/testobj.png", 0, 0, 16, 48);
+    change_object_image ("Test2", "gfx/testobj.png", 16, 0, 16, 48);
+
+    focus_camera_on_object ("Player");
+
+    position_object ("Player",  200, 200, BOTTOM_LEFT);
+    position_object ("Test1", 100, 100, BOTTOM_LEFT);
+    position_object ("Test2", 90, 90, BOTTOM_LEFT);
+  }
+
   return SUCCESS;
 }
 
@@ -241,6 +263,7 @@ field_cleanup_callbacks (void)
   sg_field_skeyupcb = sg_field_skeydowncb = sg_field_quitcb = NULL;
 }
 
+
 /* Perform per-frame updates for field. */
 
 void
@@ -248,9 +271,7 @@ update_field (void)
 {
   field_handle_held_keys ();
   render_map (sg_mapview);
-
 }
-
 
 
 /* De-initialise the field state. */

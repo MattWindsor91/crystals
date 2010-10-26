@@ -60,29 +60,6 @@ init_objects (void)
   for (i = 0; i < HASH_VALS; i++)
     sg_objects[i] = NULL;
 
-  /* TEST DATA */
-
-  {
-    struct object_t *test;
-    struct object_t *test1;
-    struct object_t *test2;
-
-    test = add_object ("Player", "null");
-    test1 = add_object ("Test1", "null");
-    test2 = add_object ("Test2", "null");
-    
-    set_object_tag (test, 1);
-    set_object_tag (test1, 2);
-    set_object_tag (test2, 1);
-    change_object_image ("Player", "gfx/testobj.png", 32, 0, 48, 48);
-    change_object_image ("Test1", "gfx/testobj.png", 0, 0, 16, 48);
-    change_object_image ("Test2", "gfx/testobj.png", 16, 0, 16, 48);
-    focus_camera_on_object ("Player");
-    position_object ("Player",  200, 200, BOTTOM_LEFT);
-    position_object ("Test1", 100, 100, BOTTOM_LEFT);
-    position_object ("Test2", 90, 90, BOTTOM_LEFT);
-  }
-
   return SUCCESS;
 }
 
@@ -184,6 +161,8 @@ add_object (const char object_name[],
   return (struct object_t*) result->data;
 }
 
+
+/* Change the tag associated with an object. */
 
 int
 set_object_tag (struct object_t *object, 

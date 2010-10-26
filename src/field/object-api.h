@@ -51,7 +51,7 @@
 #define _OBJECT_API_H
 
 #include "object.h"
-
+#include "map.h"
 
 /* -- PROTOTYPES -- */
 
@@ -120,6 +120,21 @@ int
 move_object (const char object_name[], 
              int dx,
              int dy);
+
+
+/** Change the tag associated with an object.
+ *
+ *  @param object_name  Name of the object to change the tag of.
+ *
+ *  @param tag          The new tag.
+ *
+ *  @return  SUCCESS for success; FAILURE otherwise (eg if the object
+ *  doesn't exist).
+ */
+
+int
+tag_object (const char object_name[],
+            layer_t tag);
 
 
 /** Change the image associated with an object.
