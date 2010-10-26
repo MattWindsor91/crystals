@@ -41,6 +41,8 @@
  *  @brief    Game state machine.
  */
 
+#include <stdlib.h>
+
 #include "util.h"
 #include "state.h"
 
@@ -51,6 +53,8 @@
 
 static state_t sg_state = STATE_NULL;          /**< Current state. */
 static state_t sg_enqueued_state = STATE_NULL; /**< Enqueued state. */
+static struct state_functions sg_functions = {NULL,
+                                              NULL};  /**< Function table. */
 
 
 /* -- DEFINITIONS -- */
@@ -105,7 +109,7 @@ update_state (void)
   if (sg_enqueued_state == STATE_NULL)
     return sg_state;
 
-  if (cleanup_state (sg_state) == FAILURE)
+  if (cleanup_state () == FAILURE)
     {
       error ("STATE - update_state - Cleanup of old state failed.");
       return STATE_NULL;
@@ -132,7 +136,7 @@ init_state (state_t state)
   switch (state)
     {
     case STATE_FIELD:
-      return init_field ();
+      return init_field (&sg_functions);
       break;
     case STATE_QUIT:
       return SUCCESS;
@@ -149,41 +153,35 @@ init_state (state_t state)
 
 /* Perform frame updates for the current state. */
 
-void
+int
 state_frame_updates (void)
 {
-  switch (sg_state)
-    {
-    case STATE_FIELD:
-      update_field ();
-      break;
-    default:
-      /* Invalid state. */
-      fatal ("STATE - state_frame_updates - Invalid state ID %u.", 
-             sg_state);
-      break;
-    }
+  if (sg_functions.update != NULL)
+    return sg_functions.update ();
+  else
+    return FAILURE;
 }
 
 
 /* Clean up a state. */
 
 int
-cleanup_state (state_t state)
+cleanup_state (void)
 {
-  switch (state)
+  if (sg_functions.cleanup != NULL)
     {
-    case STATE_FIELD:
-      return cleanup_field ();
-      break;
-    case STATE_NULL:
-      return SUCCESS;
-      break;
-    default:
-      /* Invalid state. */
-      error ("STATE - cleanup_state - Invalid state ID %u.", 
-             state);
-      return FAILURE;
-      break;
+      if (sg_functions.cleanup () == FAILURE)
+        {
+          fatal ("STATE - cleanup_state - Cleanup failure.");
+          return FAILURE;
+        }
+      else
+        {
+          /* Clean up the function pointers. */
+          sg_functions.cleanup = NULL;
+          sg_functions.update = NULL;
+        }
     }
+
+  return SUCCESS;
 }

@@ -151,7 +151,7 @@ void
 cleanup (void)
 {
   if (get_state () != STATE_QUIT)
-    cleanup_state (get_state ());
+    cleanup_state ();
 
   cleanup_events ();
   cleanup_graphics ();

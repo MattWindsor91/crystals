@@ -48,6 +48,7 @@
 #define _FIELD_H
 
 #include "../events.h" /* event_t */
+#include "../state.h"  /* state_functions */
 
 /* -- PROTOTYPES -- */
 
@@ -100,16 +101,15 @@ void
 field_cleanup_callbacks (void);
 
 
-
-
-
 /** Initialise the field state.
+ *
+ *  @param function_table  Pointer to the function pointer to populate.
  *
  *  @return  SUCCESS if no errors were encountered; FAILURE otherwise. 
  */
 
 int
-init_field (void);
+init_field (struct state_functions *function_table);
 
 
 /** Retrieve the map view currently in use.
@@ -155,7 +155,7 @@ field_handle_held_keys (void);
 
 /** Perform per-frame updates for field. */
 
-void
+int
 update_field (void);
 
 

@@ -105,7 +105,7 @@ field_on_special_key_down (event_t *event)
 /* Regular functions. */
 
 int
-init_field (void)
+init_field (struct state_functions *function_table)
 {
   memset (sg_field_held_special_keys, 0, sizeof (unsigned char) * 256);
 
@@ -158,6 +158,11 @@ init_field (void)
     position_object ("Test1", 100, 100, BOTTOM_LEFT);
     position_object ("Test2", 90, 90, BOTTOM_LEFT);
   }
+
+  /* Populate function pointers. */
+
+  function_table->update = update_field;
+  function_table->cleanup = cleanup_field;
 
   return SUCCESS;
 }
@@ -266,11 +271,13 @@ field_cleanup_callbacks (void)
 
 /* Perform per-frame updates for field. */
 
-void
+int
 update_field (void)
 {
   field_handle_held_keys ();
   render_map (sg_mapview);
+
+  return SUCCESS;
 }
 
 
