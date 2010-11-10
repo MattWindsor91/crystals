@@ -148,9 +148,9 @@ init_field (struct state_functions *function_table)
     tag_object ("Test1", 2);
     tag_object ("Test2", 1);
 
-    change_object_image ("Player", "gfx/testobj.png", 32, 0, 48, 48);
-    change_object_image ("Test1", "gfx/testobj.png", 0, 0, 16, 48);
-    change_object_image ("Test2", "gfx/testobj.png", 16, 0, 16, 48);
+    change_object_image ("Player", "testobj.png", 32, 0, 48, 48);
+    change_object_image ("Test1", "testobj.png", 0, 0, 16, 48);
+    change_object_image ("Test2", "testobj.png", 16, 0, 16, 48);
 
     focus_camera_on_object ("Player");
 

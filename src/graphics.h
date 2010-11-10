@@ -60,6 +60,11 @@ enum
                        pixel.) */
   };
 
+extern const char DEFGFXPATH[]; /**< Default root path for graphics,
+                                   to be invoked if the root path
+                                   cannot be found in the
+                                   configuration file. */
+
 
 /* -- PROTOTYPES -- */
 
@@ -71,6 +76,20 @@ enum
 
 int
 init_graphics (void);
+
+
+/** Given a relative path to an image file, append the graphics root
+ *  path to it and store it in the given pointer. 
+ *
+ *  @param path  The relative path to the image file, for example
+ *  "bob.png".
+ *
+ *  @return  The absolute path to the image file, for example
+ *  "/usr/share/crystals/gfx/bob.png".
+ */
+
+char *
+get_absolute_path (const char path[]);
 
 
 /** Fill the screen with the given colour.

@@ -44,8 +44,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
+#include <string.h>
 
 #include "util.h"
+#include "parser.h"
 #include "main.h"
 
 /* Fatal error. */
@@ -67,6 +69,7 @@ fatal (const char message[], ...)
   exit (1);
 }
 
+
 /* Non-fatal error. */
 
 void
@@ -81,4 +84,44 @@ error (const char message[], ...)
   va_end (ap);
 
   fflush (stderr);
+}
+
+
+/* Get the path to the directory in which all modules are stored. */
+
+void
+get_module_root_path (char **module_path)
+{
+  /* If a string exists here, remove it. */
+
+  if (*module_path != NULL)
+    {
+      free (module_path);
+      *module_path = NULL;
+    }
+
+  /* If configuration loading succeeded, try to grab the module path
+     from the config file.  If this doesn't work, use the default
+     path. */
+
+  if (g_config)
+    {
+      *module_path = config_get_value ("module_path", g_config);
+    }
+
+  if (*module_path == NULL)
+    {
+      error ("UTIL - get_module_path - Cannot read module path from config.");
+      
+      /* Copy the default path to the pointer. */
+
+      *module_path = malloc (sizeof (char) * strlen (DEFMODPATH) + 1);
+
+      if (*module_path == NULL)
+        {
+          fatal ("UTIL - get_module_path - Module path could not be allocated.");
+        }
+      else
+        strncpy (*module_path, DEFMODPATH, strlen (DEFMODPATH) + 1);
+    }
 }

@@ -49,6 +49,42 @@
 #include "parser.h"
 
 
+/* Initialise the config system. */
+
+dict_t *
+init_config (const char *config_path)
+{
+  dict_t *config;
+
+  /* Sanity check the inbound path. */
+
+  if (config_path == NULL)
+    {
+      error ("PARSER - init_config - Given NULL path to config file.");
+      return NULL;
+    }
+
+  config = config_dict_init();
+
+  if (config == NULL)
+    {
+      error ("PARSER - init_config - Failed to init config dict.");
+      return NULL;
+    }
+
+  /* Now try to parse the configuration.  If we fail, destroy the dict. */
+
+  if (config_parse_file (config_path, config) == FAILURE)
+    {
+      error ("PARSER - init_config - Could not parse config file.");
+      config_free_dict (config);
+      return NULL;
+    }
+
+  return config;
+}
+
+
 /* Parse configuration file. */
 
 int
@@ -227,33 +263,34 @@ config_parse_file (const char *path_name, dict_t *root)
 void
 config_free_dict (dict_t *node)
 {
-  if (node->key == NULL)
+  if (node != NULL)
     {
-      free (node);
-    }
-  else
-    {
-      config_free_dict (node->left);
-      config_free_dict (node->right);
-      free (node->key);
-      free (node->value);
-      free (node);
+      if (node->key == NULL)
+        free (node);
+      else
+        {
+          config_free_dict (node->left);
+          config_free_dict (node->right);
+          free (node->key);
+          free (node->value);
+          free (node);
+        }
     }
 }
 
 
 /* Get the value of the appropriate key. */
 
-char*
+char *
 config_get_value (const char *key, dict_t *node)
 {
   if (node->key != NULL)
     {
-      if (strcmp (key, node->key) == -1)
+      if (strcmp (key, node->key) < 0)
         {
           return config_get_value (key, node->left);
         }
-      else if (strcmp (key, node->key) == 1)
+      else if (strcmp (key, node->key) > 0)
         {
           return config_get_value (key, node->right);
         }
@@ -272,15 +309,36 @@ config_get_value (const char *key, dict_t *node)
 /* Function for adding a key-value pair to the tree. */
 
 int
-config_add_pair (char *key, char *value, dict_t *node)
+config_add_pair (const char *key, const char *value, dict_t *node)
 {
+  /* Sanity check */
+
+  if (key == NULL)
+    {
+      error ("PARSER - config_add_pair - Key is NULL.");
+      return FAILURE;
+    }
+  else if (value == NULL)
+    {
+      error ("PARSER - config_add_pair - Value is NULL.");
+      return FAILURE;
+    }
+  else if (node == NULL)
+    {
+      error ("PARSER - config_add_pair - Node is NULL.");
+      return FAILURE;
+    }
+
+  /* End sanity check. */
+
+
   if (node->key == NULL)
     {
       node->key = malloc (sizeof (char) * strlen (key) + 1);
-      strcpy (node->key, key);
+      strncpy (node->key, key, strlen (value) + 1);
 
       node->value = malloc (sizeof (char) * strlen (value) + 1);
-      strcpy (node->value, value);
+      strncpy (node->value, value, strlen (value) + 1);
 
       node->left = config_dict_init ();
       node->right = config_dict_init ();
@@ -289,11 +347,11 @@ config_add_pair (char *key, char *value, dict_t *node)
     }
   else
     {
-      if (strcmp (key, node->key) == -1)
+      if (strcmp (key, node->key) < 0)
         {
           return config_add_pair (key, value, node->left);
         }
-      else if (strcmp (key, node->key) == 1)
+      else if (strcmp (key, node->key) > 0)
         {
           return config_add_pair (key, value, node->right);
         }

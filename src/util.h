@@ -85,6 +85,7 @@ enum
 void
 fatal (const char message[], ...);
 
+
 /** Non-fatal error.
  *
  *  This prints an error message only.
@@ -95,5 +96,16 @@ fatal (const char message[], ...);
 
 void
 error (const char message[], ...);
+
+
+/** Get the path to the directory in which all modules are stored.
+ *
+ *  @param module_path  Pointer in which to store the path string.  If
+ *                      this has already been allocated, the function
+ *                      will free it.
+ */
+void
+get_module_root_path (char **module_path);
+
 
 #endif /* not _UTIL_H */

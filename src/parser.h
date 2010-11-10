@@ -70,6 +70,17 @@ struct dict_t
 
 /* -- FUNCTION PROTOTYPES -- */
 
+/** Initialise the config system. 
+ *
+ *  @param config_path  The path to the configuration file to read. 
+ *
+ *  @return  A pointer to the master configuration dictionary.
+ */
+
+dict_t *
+init_config (const char *config_path);
+
+
 /** Initialise a node.
  *
  *  @return Return the initialized node.
@@ -103,7 +114,7 @@ config_parse_file (const char *path_name, dict_t *root);
  */
 
 int
-config_add_pair (char *key, char *value, dict_t *node);
+config_add_pair (const char *key, const char *value, dict_t *node);
 
 
 /** Get the value of the appropriate key.
