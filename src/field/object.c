@@ -36,7 +36,7 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/** @file    object.c
+/** @file    src/field/object.c
  *  @author  Matt Windsor
  *  @brief   Low-level object functions.
  */
@@ -46,8 +46,7 @@
 #include <string.h>
 
 #include "object.h"
-#include "main.h"
-#include "util.h"
+#include "../util.h"
 
 struct hash_object *g_objects[HASH_VALS];
 

@@ -44,6 +44,9 @@
 #ifndef _EVENTS_H
 #define _EVENTS_H
 
+
+/* -- CONSTANTS -- */
+
 enum
   {
     QUIT_EVENT              = (1<<0), /**< Identifier for low-level
@@ -76,16 +79,25 @@ enum
     SK_RIGHT                   /**< Identifier for down arrow special key. */
   };
 
+
+/* -- TYPEDEFS -- */
+
 typedef union event_t event_t;                /**< Input event type. */
 typedef struct event_callback event_callback; /**< Input callback type. */
 
+
+/* -- STRUCTURES -- */
+
 /** The input system base structure. */
+
 struct event_base
 {
   struct event_callback *callbacks; /**< Linked list of callbacks. */
 };
 
+
 /** A mouse motion input event. */
+
 struct mouse_motion_event
 {
   unsigned char type;  /**< The type identifier of the input event. */
@@ -101,14 +113,18 @@ struct mouse_motion_event
   short deltay; /**< Change in Y co-ordinate from previous position. */
 };
 
+
 /** A mouse button input event. */
+
 struct mouse_button_event
 {
   unsigned char type;   /**< The type identifier of the input event. */ 
   unsigned char button; /**< Which button was pressed. */
 };
 
+
 /** An ASCII keyboard event. */
+
 struct ascii_key_event
 {
   unsigned char type; /**< Whether the key was pressed or released. */
@@ -117,6 +133,7 @@ struct ascii_key_event
 
 
 /** A special (non-ASCII) keyboard event. */
+
 struct special_key_event
 {
   unsigned char type; /**< Whether the key was pressed or released. */
@@ -125,6 +142,7 @@ struct special_key_event
 
 
 /** An input event package. */
+
 union event_t
 {
   unsigned char type;   /**< The type identifier of the input event. */
@@ -136,11 +154,13 @@ union event_t
 
 
 /** A callback node. */
+
 struct event_callback
 {
   void
   (*callback) (event_t *event); /**< The callback function
                                      pointer. */
+
   int types;                    /**< Types of event that will
                                      trigger the callback. */
 
@@ -148,6 +168,8 @@ struct event_callback
                                      list. */
 };
 
+
+/* -- PROTOTYPES -- */
 
 /** Initialise the events system.
  *
@@ -157,10 +179,12 @@ struct event_callback
 int
 init_events (void);
 
-/** De-initialise the events system. */
+
+/** Process any events queued in the events driver. */
 
 void
-cleanup_events (void);
+process_events (void);
+
 
 /** Install a callback.
  *
@@ -180,6 +204,7 @@ struct event_callback *
 install_callback (void (*callback) (event_t *event),
                   int types);
 
+
 /** Unload a callback.
  *
  *  @see install_callback()
@@ -193,6 +218,7 @@ install_callback (void (*callback) (event_t *event),
 int 
 unload_callback (struct event_callback *callback);
 
+
 /** Release an event package to all relevant callbacks.
  *
  *  @param event  The event to release to callbacks.
@@ -201,48 +227,11 @@ unload_callback (struct event_callback *callback);
 void
 event_release (event_t *event);
 
-/* This stuff will likely be going away soon. */
 
-/** Initialise input callbacks.
- *
- *  @return SUCCESS for success, FAILURE otherwise.
- */
-
-int
-init_callbacks (void);
-
-/** De-initialise input callbacks. */
+/** De-initialise the events system. */
 
 void
-cleanup_callbacks (void);
+cleanup_events (void);
 
-/** Callback for quit. 
- *
- *  @param event  The event produced by the quit.
- */
 
-void
-on_quit (event_t *event);
-
-/** Callback for special key up-presses. 
- *
- *  @param event The event produced by the key press.
- */
-
-void
-on_special_key_up (event_t *event);
-
-/** Callback for special key down-presses. 
- *
- *  @param event The event produced by the key press.
- */
-
-void
-on_special_key_down (event_t *event);
-
-/** Check to see if certain keys are held and handle the results. */
-
-void
-handle_held_keys (void);
-
-#endif /* _EVENTS_H */
+#endif /* not _EVENTS_H */

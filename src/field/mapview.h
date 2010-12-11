@@ -36,7 +36,7 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/** @file    mapview.h
+/** @file    src/field/mapview.h
  *  @author  Matt Windsor
  *  @brief   Prototypes and declarations for rendering functions.
  *

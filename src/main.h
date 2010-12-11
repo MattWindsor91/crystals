@@ -44,9 +44,6 @@
 #ifndef _MAIN_H
 #define _MAIN_H
 
-extern int g_running;              /**< Whether or not the engine is 
-                                      running. */
-
 extern struct map_view *g_mapview; /**< Main map view. 
                                       @todo FIXME: Move this? */
 

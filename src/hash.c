@@ -46,9 +46,9 @@
 #include <stdio.h>
 
 #include "hash.h"
-#include "util.h"     /* SUCCESS and FAILURE. */
-#include "graphics.h" /* free_image. */
-#include "object.h"   /* free_object. */
+#include "util.h"         /* SUCCESS and FAILURE. */
+#include "graphics.h"     /* free_image. */
+#include "field/object.h" /* free_object. */
 
 int
 ascii_hash (const char string[])

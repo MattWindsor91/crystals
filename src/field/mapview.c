@@ -36,7 +36,7 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/** @file    mapview.c
+/** @file    src/field/mapview.c
  *  @author  Matt Windsor
  *  @brief   Map rendering functions.
  */
@@ -49,11 +49,10 @@
 
 #include "mapview.h"
 #include "map.h"
-#include "util.h"
-#include "module.h"
-#include "graphics.h"
-
 #include "object.h"
+#include "../util.h"
+#include "../module.h"
+#include "../graphics.h"
 
 /* -- CONSTANTS -- */
 

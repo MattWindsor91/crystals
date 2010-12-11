@@ -36,7 +36,7 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/** @file    map.c
+/** @file    src/field/map.c
  *  @author  Matt Windsor
  *  @brief   Low-level map handling functions.
  */
@@ -46,8 +46,7 @@
 #include <string.h>
 
 #include "map.h"
-#include "main.h"
-#include "graphics.h"
+#include "../graphics.h"
 
 const char FN_TILESET[] = "gfx/tiles.png";
 

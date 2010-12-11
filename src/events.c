@@ -52,64 +52,21 @@
 
 #include "events.h"
 #include "module.h"
-#include "graphics.h"
-#include "mapview.h"
 #include "util.h"
-#include "main.h"
 
-static struct event_base *sg_event_base;
-static unsigned char sg_held_special_keys[256];
+/* -- STATIC GLOBAL VARIABLES -- */
 
-/* Test callbacks, woo */
+static struct event_base *sg_event_base; /**< Event base. */
 
-static event_callback *sg_skeyupcb;
-static event_callback *sg_skeydowncb;
-static event_callback *sg_quitcb;
 
-void
-on_quit (event_t *event)
-{
-  event = event;
-  g_running = 0;
-}
-
-void
-on_special_key_up (event_t *event)
-{
-  if (event->skey.code == SK_ESCAPE)
-    on_quit (event);
-
-  sg_held_special_keys[(int) event->skey.code] = 0;
-}
-
-void
-on_special_key_down (event_t *event)
-{
-  sg_held_special_keys[(int) event->skey.code] = 1;
-}
-
-void
-handle_held_keys (void)
-{
-  if (sg_held_special_keys[SK_UP])
-    scroll_map (g_mapview, NORTH);
-
-  if (sg_held_special_keys[SK_RIGHT])
-    scroll_map (g_mapview, EAST);
-
-  if (sg_held_special_keys[SK_DOWN])
-    scroll_map (g_mapview, SOUTH);
-
-  if (sg_held_special_keys[SK_LEFT])
-    scroll_map (g_mapview, WEST);
-}
+/* -- DEFINITIONS -- */
 
 int
 init_events (void)
 {
   if (load_module_event ("event-sdl", &g_modules) == FAILURE)
     {
-      fprintf (stderr, "ERROR: Could not load events module.\n");
+      error ("EVENTS - init_events - Could not load events module.");
       return FAILURE;
     }
 
@@ -119,66 +76,26 @@ init_events (void)
 
   if (sg_event_base == NULL)
     {
-      fprintf (stderr, "ERROR: Could not allocate events base. \n");
+      error ("EVENTS - init_events - Could not allocate events base.");
       return FAILURE;
     }
 
   sg_event_base->callbacks = NULL;
-  memset (sg_held_special_keys, 0, sizeof (unsigned char) * 256);
-
-  /* Test callbacks, woo */
-
-  if (init_callbacks () == FAILURE)
-    {
-      fprintf (stderr, "ERROR: Could not install event callbacks.\n");
-    }
 
   return SUCCESS;
 }
 
-int
-init_callbacks (void)
-{
-  sg_skeyupcb = install_callback (on_special_key_up, SPECIAL_KEY_UP_EVENT);
-  sg_skeydowncb = install_callback (on_special_key_down, SPECIAL_KEY_DOWN_EVENT);
-  sg_quitcb = install_callback (on_quit, QUIT_EVENT);
 
-  if (sg_skeyupcb
-      && sg_skeydowncb
-      && sg_quitcb)
-    return SUCCESS;
-  else
-    {
-      /* Clean up callbacks if any failed. */
-      cleanup_callbacks ();
-      return FAILURE;
-    }
-}
+/* Process any events queued in the events driver. */
 
 void
-cleanup_callbacks (void)
-{ 
- if (sg_skeyupcb)
-   unload_callback (sg_skeyupcb);
-
- if (sg_skeydowncb)
-   unload_callback (sg_skeydowncb);
-
- if (sg_quitcb)
-   unload_callback (sg_quitcb);
-
- sg_skeyupcb = sg_skeydowncb = sg_quitcb = NULL;
-}
-
-void cleanup_events (void)
+process_events (void)
 {
-  if (sg_event_base) {
-    cleanup_callbacks ();
-    free (sg_event_base);
-    sg_event_base = NULL;
-  }
+  (*g_modules.event.process_events) ();
 }
 
+
+/* Install a callback. */
 
 struct event_callback *
 install_callback (void (*callback) (event_t *event), int types)
@@ -209,6 +126,9 @@ install_callback (void (*callback) (event_t *event), int types)
   return pnew;
 }
 
+
+/* Unload a callback. */
+
 int
 unload_callback (struct event_callback *ptr)
 {
@@ -222,23 +142,28 @@ unload_callback (struct event_callback *ptr)
           sg_event_base->callbacks = ptr->next;
           free (ptr);
           return SUCCESS;
-    }
+        }
 
-    for (p = sg_event_base->callbacks; p->next != NULL; p = p->next) {
-      if (p->next == ptr) {
-        /* Now we've found the list node before this one, replace its 
-           next pointer with the to-be-unloaded node's next pointer. */
-        p->next = ptr->next;
+      for (p = sg_event_base->callbacks; p->next != NULL; p = p->next)
+        {
+          if (p->next == ptr)
+            {
+              /* Now we've found the list node before this one, replace its 
+                 next pointer with the to-be-unloaded node's next pointer. */
+              p->next = ptr->next;
 
-        /* Now delete the callback. */
-        free(ptr);
-        return SUCCESS;
-      }
+              /* Now delete the callback. */
+              free(ptr);
+              return SUCCESS;
+            }
+        }
     }
-  }
 
   return FAILURE;
 }
+
+
+/* Release an event package to all relevant installed callbacks. */
 
 void
 event_release (event_t *event)
@@ -250,5 +175,18 @@ event_release (event_t *event)
       /* Trigger all callbacks with the relevant type. */
       if (p->types & event->type)
         p->callback (event);
+    }
+}
+
+
+/* De-initialise the events system. */
+
+void
+cleanup_events (void)
+{
+  if (sg_event_base)
+    {
+      free (sg_event_base);
+      sg_event_base = NULL;
     }
 }
