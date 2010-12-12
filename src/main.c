@@ -52,7 +52,7 @@
 #include "module.h"
 #include "events.h"
 #include "graphics.h"
-#include "bindings.h"
+#include "bindings/bindings.h"
 
 /* -- GLOBAL VARIABLES -- */
 
@@ -123,8 +123,11 @@ init (void)
       return FAILURE;
     }
 
-  init_bindings ();
-  run_file ("tests/lua.lua");
+  if (init_bindings () == SUCCESS)
+    {
+        run_script ("tests/test.sc");
+    }
+
   init_events ();
 
   if (set_state (STATE_FIELD) == FAILURE)

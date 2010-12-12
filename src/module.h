@@ -259,29 +259,6 @@ typedef struct
 
 } module_event;
 
-
-/** The bindings module table.
- *
- *  This contains functions to handle bindings
- *  for different programming languages.
- */
-
-typedef struct
-{
-  module_data metadata; /**< Metadata for the bindings module. */
-
-  /** Executes the given file
-   *
-   *  @param path   Path to file.
-   *
-   *  @return Returns SUCCESS if success else FAILURE.
-   */
-
-  int
-  (*run_file) (const char *path);
-
-} module_bindings;
-
 /** The module set.
  *
  *  This contains the functions for engine bindings to different
@@ -294,7 +271,6 @@ typedef struct
 
   module_gfx gfx;           /**< The graphics module. */
   module_event event;       /**< The event module. */
-  module_bindings bindings; /**< The bindings module */
 
 } module_set;
 

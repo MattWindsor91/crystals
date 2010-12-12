@@ -18,7 +18,7 @@ TESTS    := $(addprefix $(TESTDIR)/,$(TESTS))
 ## Objects to link into main executable ##
 
 OBJ      := main.o hash.o graphics.o events.o
-OBJ      += util.o bindings.o module.o optionparser.o parser.o state.o
+OBJ      += util.o module.o optionparser.o parser.o state.o
 OBJ      += field/field.o field/map.o field/mapview.o field/object.o
 
 # Add SRCDIR to all object paths #
@@ -63,6 +63,16 @@ WARN     := -Wall -Wextra -Wshadow -Wpointer-arith -Wcast-align \
 LIBS     := -ldl -lpthread 
 CFLAGS   := -ansi -pedantic -O2 -ggdb -DDEFMODPATH="\"$(MODPATH)\"" $(WARN)
 
+## Bindings file
+
+BINDINGS := $(SRCDIR)/bindings/python.o
+
+# Add bindings object file to the other object files and add the proper CFLAGS and LIBS
+
+OBJ      += $(BINDINGS)
+LIBS     += `python-config --libs`
+CFLAGS   += -I/usr/include/python3.1 -I/usr/include/python3.1 -DNDEBUG
+
 ## Rules ##
 
 .PHONY: all doc autodoc clean clean-tests clean-doc clean-modules modules tests
@@ -93,11 +103,6 @@ $(SRCDIR)/$(MODDIR)/gfx-sdl.so: CFLAGS += `sdl-config --cflags`
 
 $(SRCDIR)/$(MODDIR)/event-sdl.so: LIBS   += `sdl-config --libs` 
 $(SRCDIR)/$(MODDIR)/event-sdl.so: CFLAGS += `sdl-config --cflags`
-
-$(SRCDIR)/$(MODDIR)/bindings-python.so: LIBS   += `python-config --libs`
-$(SRCDIR)/$(MODDIR)/bindings-python.so: CFLAGS += `python-config --cflags`
-
-$(SRCDIR)/$(MODDIR)/bindings-lua.so: LIBS += `pkg-config --libs lua`
 
 modules: $(SOBJ)
 
