@@ -88,7 +88,8 @@ crystals_meth[] = {
 
 static PyModuleDef 
 crystals_mod = {
-    PyModuleDef_HEAD_INIT, "crystals", NULL, -1, crystals_meth,
+    /* a quick and dirty hack to prevent the PyModuleDef_HEAD_INIT warning */
+    {PyObject_HEAD_INIT(NULL) NULL, 0, NULL}, "crystals", NULL, -1, crystals_meth,
     NULL, NULL, NULL, NULL
 };
 
