@@ -82,7 +82,7 @@ config_parse_file (const char *path_name, dict_t *root)
           /* check if someone wants to exploit us */
           if (key - sk == 99)
             {
-              fprintf (stderr, "PARSER: Key is too long: %d \n", line_counter);
+              error ("PARSER: Key is too long: %d \n", line_counter);
               break;
             }
           if (b_ignore)
@@ -96,7 +96,7 @@ config_parse_file (const char *path_name, dict_t *root)
                       value = sv;
                       if (config_add_pair (key, value, root) == FAILURE)
                         {
-                          fprintf (stderr, "PARSER: Key is already present: %d \n",
+                          error ("PARSER: Key is already present: %d \n",
                             line_counter);
                           b_error = TRUE;
                         }
@@ -117,7 +117,7 @@ config_parse_file (const char *path_name, dict_t *root)
                     /* key is present but not a value */
                     if (b_key == TRUE && b_value == FALSE)
                       {
-                        fprintf (stderr, "PARSER: Invalid config syntax at line %d \n",
+                        error ("PARSER: Invalid config syntax at line %d \n",
                           line_counter);
                         b_error = TRUE;
                       }
@@ -130,7 +130,7 @@ config_parse_file (const char *path_name, dict_t *root)
                     /* key is present but not a value */
                     if (b_key == TRUE && b_value == FALSE)
                       {
-                        fprintf (stderr, "PARSER: Invalid config syntax at line %d \n",
+                        error ("PARSER: Invalid config syntax at line %d \n",
                           line_counter);
                         b_error = TRUE;
                       }
@@ -143,7 +143,7 @@ config_parse_file (const char *path_name, dict_t *root)
                             value = sv;
                             if (config_add_pair (key, value, root) == FAILURE)
                               {
-                                fprintf (stderr,
+                                error (
                                   "PARSER: Key is already present: %d \n",
                                   line_counter);
                                 b_error = TRUE;
@@ -165,7 +165,7 @@ config_parse_file (const char *path_name, dict_t *root)
                       }
                     else
                       {
-                        fprintf (stderr, "PARSER: Invalid config syntax at line %d \n",
+                        error ("PARSER: Invalid config syntax at line %d \n",
                           line_counter);
                         b_error = TRUE;
                       }
@@ -179,7 +179,7 @@ config_parse_file (const char *path_name, dict_t *root)
                   default:
                     if (b_whitespace == TRUE && b_value == TRUE)
                       {
-                        fprintf (stderr, "PARSER: Invalid config syntax at line %d \n",
+                        error ("PARSER: Invalid config syntax at line %d \n",
                           line_counter);
                         b_error = TRUE;
                       }
@@ -209,14 +209,16 @@ config_parse_file (const char *path_name, dict_t *root)
     }
   else
     {
-      fprintf(stderr, "PARSER: Could not open the file %s .\n", path_name);
+      error ("PARSER: Could not open the file %s .\n", path_name);
     }
 
   free (key);
   free (value);
 
-  if (b_error == TRUE)
+  if (b_error == TRUE) {
+    root = config_dict_init ();
     return FAILURE;
+  }
   else
     return SUCCESS;
 }

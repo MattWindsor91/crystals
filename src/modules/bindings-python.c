@@ -47,6 +47,8 @@
 #include <stdio.h>
 #include "../util.h"
 
+/* -- PROTOTYPES -- */
+
 /** Initialise the python module. */
 
 void
@@ -62,28 +64,41 @@ term (void);
 /** Execute the file
  *  The file has to be a valid python source
  *
- *  @param path Path to the file.
+ *  @param  path Path to the file.
  *
- *  @return Returns SUCCESS if success else FAILURE
+ *  @return      Returns SUCCESS if success else FAILURE
  * */
 
 int
 run_file (const char* path);
 
+/* -- PYTHON PROTOTYPES AND STRUCTS */
 
 /** Run a test */
 
 static PyObject*
 crystals_test (PyObject *self, PyObject *args);
 
-/* -- DEFINITIONS -- */
-
 static PyMethodDef
-CrystalsMethods[] = {
+crystals_meth[] = {
   /* name, C func,        flags,        docstring */
   {"test", crystals_test, METH_VARARGS, "Test the Crystal Module."},
   {NULL, NULL, 0, NULL}
 };
+
+static PyModuleDef 
+crystals_mod = {
+    PyModuleDef_HEAD_INIT, "crystals", NULL, -1, crystals_meth,
+    NULL, NULL, NULL, NULL
+};
+
+static PyObject*
+crystals_init (void) {
+    return PyModule_Create (&crystals_mod);
+}
+
+
+/* -- DEFINITIONS -- */
 
 void
 init (void)
@@ -103,7 +118,7 @@ run_file (const char* path)
   FILE *file_stream;
   short EXIT;
 
-  Py_InitModule("crystals", CrystalsMethods);
+  PyImport_AppendInittab("crystals", &crystals_init);
 
   file_stream = fopen(path, "r");
 
