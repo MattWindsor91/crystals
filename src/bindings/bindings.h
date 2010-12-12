@@ -51,7 +51,6 @@
  *  @return Return SUCCESS if success else FAILURE
  */
 
-
 int
 init_bindings (void);
 

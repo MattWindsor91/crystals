@@ -27,7 +27,7 @@ OBJ      := $(addprefix $(SRCDIR)/,$(OBJ))
 
 ## Shared objects (modules) ##
 
-SOBJ     := gfx-sdl.so event-sdl.so bindings-python.so bindings-lua.so
+SOBJ     := gfx-sdl.so event-sdl.so
 
 # Add SRCDIR and MODDIR to all shared object paths #
 

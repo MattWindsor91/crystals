@@ -48,12 +48,15 @@
 #include "bindings.h"
 #include "../util.h"
 
-/* -- PROTOTYPES -- */
-/* bindings.h defines what functions to use */
+/* -- INTERAL PROTOTYPES -- */
+/* bindings.h defines what functions to use externally */
 
-/* -- PYTHON PROTOTYPES AND STRUCTS */
+/* -- PYTHON PROTOTYPES AND STRUCTS*/
 
 /** Run a test */
+
+static PyObject*
+crystals_init (void);
 
 static PyObject*
 crystals_test (PyObject *self, PyObject *args);
@@ -72,13 +75,8 @@ crystals_mod = {
     NULL, NULL, NULL, NULL
 };
 
-static PyObject*
-crystals_init (void) {
-    return PyModule_Create (&crystals_mod);
-}
 
-
-/* -- DEFINITIONS -- */
+/* -- INTERNAL DEFINITIONS -- */
 
 int
 init_bindings (void)
@@ -115,6 +113,14 @@ run_script (const char* path)
 
   fclose(file_stream);
   return EXIT;
+}
+
+
+/* PYTHON DEFINITIONS */
+
+static PyObject*
+crystals_init (void) {
+    return PyModule_Create (&crystals_mod);
 }
 
 static PyObject*
