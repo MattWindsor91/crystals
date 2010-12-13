@@ -82,7 +82,7 @@ int
 init_bindings (void)
 {
   Py_Initialize(); 
-  return SUCCESS;
+  return Py_IsInitialized();
 }
 
 void
@@ -128,7 +128,7 @@ crystals_test (PyObject *self, PyObject *args)
 {
   char *s;
 
-  self = self; /* to prevent unused error */
+  (void) self; /* to prevent unused error */
 
   /* parse string and store it into the given pointers */
   if (!PyArg_ParseTuple(args, "s:test", &s))
