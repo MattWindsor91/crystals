@@ -251,11 +251,11 @@ config_get_value (const char *key, dict_t *node)
 {
   if (node->key != NULL)
     {
-      if (strcmp (key, node->key) == -1)
+      if (strcmp (key, node->key) < 0)
         {
           return config_get_value (key, node->left);
         }
-      else if (strcmp (key, node->key) == 1)
+      else if (strcmp (key, node->key) > 0)
         {
           return config_get_value (key, node->right);
         }
@@ -291,11 +291,11 @@ config_add_pair (char *key, char *value, dict_t *node)
     }
   else
     {
-      if (strcmp (key, node->key) == -1)
+      if (strcmp (key, node->key) < 0)
         {
           return config_add_pair (key, value, node->left);
         }
-      else if (strcmp (key, node->key) == 1)
+      else if (strcmp (key, node->key) > 0)
         {
           return config_add_pair (key, value, node->right);
         }
