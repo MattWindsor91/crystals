@@ -1,5 +1,3 @@
-BIN      := crystals
-
 # Allowed platforms:
 
 # windows    | Windows 32- and 64-bit (9x onwards)
@@ -7,6 +5,13 @@ BIN      := crystals
 # gnu-linux  | GNU/Linux distributions (eg Ubuntu) - implies gnu
 
 PLATFORM := gnu-linux
+
+## Name of executable ##
+
+# Note: On certain platforms, this will have an extension appended
+#       to it.
+
+BIN      := crystals
 
 ## Directories ##
 
@@ -58,7 +63,7 @@ DOC      := $(addprefix $(DOCDIR)/,$(DOC))
 
 ## Compilation toolchain ##
 
-CC       := clang
+CC       := gcc
 RM       := rm -f
 DIST	 := $(shell uname -r | sed "s/.*-//")
 
@@ -78,21 +83,25 @@ GNUFLAGS := -DPLATFORM_GNU -DUSES_DLOPEN
 
 ifeq ($(PLATFORM),windows)
 	CFLAGS += -DPLATFORM_WINDOWS
+	DLLEXT := dll
 endif
 
 ifeq ($(PLATFORM),gnu)
 	CFLAGS += $(GNUFLAGS)
+	DLLEXT := so
 endif
 
 ifeq ($(PLATFORM),gnu-linux)
     CFLAGS += $(GNUFLAGS) -DPLATFORM_GNU_LINUX
+    DLLEXT := so
 endif
 
 ## Rules ##
 
 .PHONY: all doc autodoc clean clean-tests clean-doc clean-modules modules tests
 
-all: $(BIN) doc autodoc modules
+all: $(BIN) modules
+alldoc: all doc autodoc
 
 $(BIN): $(OBJ) $(SO)
 	@echo "Linking..."
@@ -110,26 +119,26 @@ $(BIN): $(OBJ) $(SO)
 
 clean: clean-tests clean-doc clean-modules
 	@echo "Cleaning..."
-	-@$(RM) $(BIN) $(SRCDIR)/*.{o,d,so} &>/dev/null
+	-@$(RM) $(BIN) $(SRCDIR)/*.{o,d,$(DLLEXT)} &>/dev/null
 
 ### Modules
-$(SRCDIR)/$(MODDIR)/gfx-sdl.so: LIBS   += `sdl-config --libs` -lSDL_image
-$(SRCDIR)/$(MODDIR)/gfx-sdl.so: CFLAGS += `sdl-config --cflags`
+$(SRCDIR)/$(MODDIR)/gfx-sdl.$(DLLEXT): LIBS   += `sdl-config --libs` -lSDL_image
+$(SRCDIR)/$(MODDIR)/gfx-sdl.$(DLLEXT): CFLAGS += `sdl-config --cflags`
 
-$(SRCDIR)/$(MODDIR)/event-sdl.so: LIBS   += `sdl-config --libs` 
-$(SRCDIR)/$(MODDIR)/event-sdl.so: CFLAGS += `sdl-config --cflags`
+$(SRCDIR)/$(MODDIR)/event-sdl.$(DLLEXT): LIBS   += `sdl-config --libs` 
+$(SRCDIR)/$(MODDIR)/event-sdl.$(DLLEXT): CFLAGS += `sdl-config --cflags`
 
-$(SRCDIR)/$(MODDIR)/bindings-python.so: LIBS   += `python-config --libs`
-$(SRCDIR)/$(MODDIR)/bindings-python.so: CFLAGS += `python-config --cflags`
+$(SRCDIR)/$(MODDIR)/bindings-python.$(DLLEXT): LIBS   += `python-config --libs`
+$(SRCDIR)/$(MODDIR)/bindings-python.$(DLLEXT): CFLAGS += `python-config --cflags`
 
-$(SRCDIR)/$(MODDIR)/bindings-lua.so: LIBS += `pkg-config --libs lua`
+$(SRCDIR)/$(MODDIR)/bindings-lua.$(DLLEXT): LIBS += `pkg-config --libs lua`
 
 modules: $(SOBJ)
 
 clean-modules:
 	@echo "Cleaning modules..."
-	-@$(RM) $(MODDIR)/*.{so,o} &>/dev/null
-	-@$(RM) $(SRCDIR)/$(MODDIR)/*.{so,o} &>/dev/null
+	-@$(RM) $(MODDIR)/*.{$(DLLEXT),o} &>/dev/null
+	-@$(RM) $(SRCDIR)/$(MODDIR)/*.{$(DLLEXT),o} &>/dev/null
 
 ### Documentation
 doc: $(DOC)
@@ -149,7 +158,7 @@ tests: $(TESTS)
 	@echo "Running tests..."
 	@for file in $(TESTS); do $$file &>/dev/null || echo "Test '$$file' failed."; done
 
-$(TESTDIR)/module: $(SRCDIR)/module.o $(SRCDIR)/$(TESTDIR)/module.o $(SRCDIR)/$(TESTDIR)/$(MODDIR)/test.so
+$(TESTDIR)/module: $(SRCDIR)/module.o $(SRCDIR)/$(TESTDIR)/module.o $(SRCDIR)/$(TESTDIR)/$(MODDIR)/test.$(DLLEXT)
 	@$(CC) $(CFLAGS) $(SRCDIR)/module.o $(SRCDIR)/$(TESTDIR)/module.o -ldl -o $@ >/dev/null
 
 $(TESTDIR)/optionparser: $(SRCDIR)/optionparser.o $(SRCDIR)/$(TESTDIR)/optionparser.o
@@ -173,10 +182,10 @@ clean-tests:
 	sed 's,\($*\)\.o[ :]*,\1.o $@ : ,g' < $@.$$$$ > $@; \
 	$(RM) -f $@.$$$$
 
-%.so : %.c
+%.$(DLLEXT) : %.c
 	@echo "Compiling $< to shared object..."
 	@$(CC) $(CFLAGS) $(INCLUDES) -Wall -fPIC -rdynamic -c $^ -o $(^:.c=.o) >/dev/null
-	@$(CC) $(LIBS) -shared -Wl,-soname,$(^:.c=.so) -o $(^:.c=.so) $(^:.c=.o) >/dev/null
+	@$(CC) $(LIBS) -shared -Wl,-soname,$(^:.c=.$(DLLEXT)) -o $(^:.c=.$(DLLEXT)) $(^:.c=.o) >/dev/null
 
 %.pdf: %.tex
 	@echo "LaTeXing $<..."
