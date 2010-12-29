@@ -47,10 +47,37 @@
 
 #include "events.h"
 
-/* -- CONSTANTS -- */
+/* -- MACROS -- */
 
-/** The file suffix of modules */
-#define MODULESUFFIX ".so"
+/* The following macros are used for the purposes of POSIX and Windows
+ * compatibility with regards to dynamic library loading.
+ */
+
+/** Windows 32-bit - use Windows API to load .dll files. */
+
+#ifdef _WIN32
+#include <Windows.h>
+typedef HMODULE dll_handle;                  /**< Handle type used for DLL modules. */
+typedef FARPROC mod_function_ptr;            /**< Function pointer type used for DLLs. */
+#define DLLOPEN(x) LoadLibrary(x)            /**< Function used for opening DLLs. */
+#define DLLLOOKUP(x,y) GetProcAddress(x,y)   /**< Function used for looking up DLL symbols. */
+#define DLLCLOSE(x) FreeLibrary(x)           /**< Function used for closing DLLs. */
+#define MODULESUFFIX ".dll"                  /**< Suffix used for DLLs. */
+#endif /* _WIN32 */
+
+
+/** UNIX and similar - use dlfcn.h, dlopen etc. to load .so files. */
+
+#ifdef USES_DLOPEN
+#include <dlfcn.h>
+typedef void* dll_handle;                    /**< Handle type used for SO modules. */
+typedef void* mod_function_ptr;              /**< Function pointer type used for SOs. */
+#define DLLOPEN(x) dlopen(x, RTLD_LAZY)      /**< Function used for opening SOs. */
+#define DLLLOOKUP(x,y) dlsym(x,y)            /**< Function used for looking up SO symbols. */
+#define DLLCLOSE(x) dlclose(x)               /**< Function used for closing SOs. */
+#define MODULESUFFIX ".so"                   /**< Function used for SOs. */
+#endif /* USES_DLOPEN */
+
 
 /* -- STRUCTURES -- */
 
@@ -73,11 +100,13 @@ typedef struct
 } module_data;
 #endif /* TESTSUITE */
 
+
 /** The graphics module vtable.
  *
  *  This contains function pointers for the graphics class of modules,
  *  along with module metadata.
  */
+
 typedef struct
 {
   module_data metadata; /**< Metadata for the graphics module. */
@@ -130,7 +159,7 @@ typedef struct
                          unsigned short width,
                          unsigned short height,
                          unsigned char red,
-                unsigned char green,
+                         unsigned char green,
                          unsigned char blue);
 
   /** Load an image and return its data in the module's native

@@ -1,5 +1,13 @@
 BIN      := crystals
 
+# Allowed platforms:
+
+# windows    | Windows 32- and 64-bit (9x onwards)
+# gnu        | GNU distributions
+# gnu-linux  | GNU/Linux distributions (eg Ubuntu) - implies gnu
+
+PLATFORM := gnu-linux
+
 ## Directories ##
 
 SRCDIR   := src
@@ -63,6 +71,22 @@ WARN     := -Wall -Wextra -Wshadow -Wpointer-arith -Wcast-align \
 
 LIBS     := -ldl -lpthread 
 CFLAGS   := -ansi -pedantic -O2 -ggdb -DDEFMODPATH="\"$(MODPATH)\"" $(WARN)
+
+## Platforms ##
+
+GNUFLAGS := -DPLATFORM_GNU -DUSES_DLOPEN
+
+ifeq ($(PLATFORM),windows)
+	CFLAGS += -DPLATFORM_WINDOWS
+endif
+
+ifeq ($(PLATFORM),gnu)
+	CFLAGS += $(GNUFLAGS)
+endif
+
+ifeq ($(PLATFORM),gnu-linux)
+    CFLAGS += $(GNUFLAGS) -DPLATFORM_GNU_LINUX
+endif
 
 ## Rules ##
 

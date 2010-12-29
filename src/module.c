@@ -44,7 +44,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <dlfcn.h>
 #include <string.h>
 
 #ifdef TESTSUITE
@@ -143,23 +142,28 @@ get_module_by_name (const char* name, const char *modulespath, module_data *modu
 int
 get_module (const char* modulepath, module_data *module)
 {
-  char *dlerr;
+  /*char *dlerr;*/
 
-  if (module->lib_handle != NULL) return FAILURE;
+  if (module->lib_handle != NULL)
+    return FAILURE;
 
-  module->lib_handle = dlopen (modulepath, RTLD_LAZY);
+  module->lib_handle = DLLOPEN(modulepath);
 
+  if (module->lib_handle == NULL)
+    return FAILURE;
+
+  /* Removed because Windows's error code is completely different.
   dlerr = dlerror ();
 
   if (dlerr != NULL)
     {
       fprintf (stderr, "DLERROR: %s\n", dlerr);
       return FAILURE;
-    }
+    }*/
 
   /* Get init and termination functions if present */
-  get_module_function (*module, "init", (void**) &module->init);
-  get_module_function (*module, "term", (void**) &module->term);
+  get_module_function (*module, "init", (mod_function_ptr*) &module->init);
+  get_module_function (*module, "term", (mod_function_ptr*) &module->term);
 
   /* Execute init function if present */
   if (module->init != NULL)
@@ -172,19 +176,22 @@ get_module (const char* modulepath, module_data *module)
 
 /* This loads a pointer to a function from a module */
 int
-get_module_function (module_data module, const char *function, void **func)
+get_module_function (module_data module, const char *function, mod_function_ptr *func)
 {
-  char *dlerr;
+  /** char *dlerr; */
 
-  *(void**)(func) = dlsym (module.lib_handle, function);
+  *(mod_function_ptr*)(func) = DLLLOOKUP(module.lib_handle, function);
 
-  dlerr = dlerror ();
+  if (*func == NULL)
+    return FAILURE;
+
+  /*dlerr = dlerror ();
 
   if (dlerr != NULL)
     {
       fprintf (stderr, "DLERROR: %s\n", dlerr);
       return FAILURE;
-    }
+    }*/
 
   return SUCCESS;
 }
@@ -199,45 +206,45 @@ load_module_gfx (const char* name, module_set* modules)
   
   if (get_module_function (modules->gfx.metadata,
                            "init_screen_internal",
-                           (void**)
+                           (mod_function_ptr*)
                            &modules->gfx.init_screen_internal)
       == FAILURE)
     return FAILURE;
   
   if (get_module_function (modules->gfx.metadata,
                            "draw_rect_internal",
-                           (void**)
+                           (mod_function_ptr*)
                            &modules->gfx.draw_rect_internal)
       == FAILURE)
     return FAILURE;
   
   if (get_module_function (modules->gfx.metadata, "load_image_data",
-                           (void**)
+                           (mod_function_ptr*)
                            &modules->gfx.load_image_data) == FAILURE)
     return FAILURE;
   
   if (get_module_function (modules->gfx.metadata, "free_image_data",
-                           (void**)
+                           (mod_function_ptr*)
                            &modules->gfx.free_image_data) == FAILURE)
     return FAILURE;
   
   if (get_module_function (modules->gfx.metadata,
                            "draw_image_internal",
-                           (void**)
+                           (mod_function_ptr*)
                            &modules->gfx.draw_image_internal)
       == FAILURE)
     return FAILURE;
   
   if (get_module_function (modules->gfx.metadata,
                            "update_screen_internal",
-                           (void**)
+                           (mod_function_ptr*)
                            &modules->gfx.update_screen_internal) 
       == FAILURE)
     return FAILURE;
   
   if (get_module_function (modules->gfx.metadata,
                            "scroll_screen_internal",
-                           (void**)
+                           (mod_function_ptr*)
                            &modules->gfx.scroll_screen_internal)
       == FAILURE)
     return FAILURE;
@@ -256,20 +263,21 @@ load_module_event (const char *name, module_set *modules)
   
   if (get_module_function (modules->event.metadata,
                            "process_events_internal",
-                           (void**)
+                           (mod_function_ptr*)
                            &modules->event.process_events_internal)
       == FAILURE)
     return FAILURE;
   
   if (get_module_function (modules->event.metadata,
                            "register_release_handle",
-                           (void**)
+                           (mod_function_ptr*)
                            &modules->event.register_release_handle)
       == FAILURE)
     return FAILURE;
   
   return SUCCESS;
 }
+
 
 int
 load_module_bindings (const char *name, module_set *modules)
@@ -279,14 +287,16 @@ load_module_bindings (const char *name, module_set *modules)
         return FAILURE;
 
   if (get_module_function (modules->bindings.metadata, "run_file",
-                               (void**)
+                               (mod_function_ptr*)
                                &modules->bindings.run_file) == FAILURE)
         return FAILURE;
 
   return SUCCESS;
 }
 
-/* This closes an individual module and runs any termination code */
+
+/* This closes an individual module and runs any termination code. */
+
 void
 close_module (module_data *module)
 {
@@ -297,12 +307,13 @@ close_module (module_data *module)
           /* Call any termination code */
           (*module->term) ();
         }
-      /* Close the libdl handle */
-      dlclose (module->lib_handle);
+      /* Close the lib handle */
+      DLLCLOSE (module->lib_handle);
     }
 }
 
 /* This closes any loaded modules, run before program termination */
+
 void
 cleanup_modules (void)
 {
