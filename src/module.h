@@ -56,19 +56,22 @@
 /** Windows 32-bit - use Windows API to load .dll files. */
 
 #ifdef _WIN32
-#include <Windows.h>
+
+#include <windows.h>
 typedef HMODULE dll_handle;                  /**< Handle type used for DLL modules. */
 typedef FARPROC mod_function_ptr;            /**< Function pointer type used for DLLs. */
 #define DLLOPEN(x) LoadLibrary(x)            /**< Function used for opening DLLs. */
 #define DLLLOOKUP(x,y) GetProcAddress(x,y)   /**< Function used for looking up DLL symbols. */
 #define DLLCLOSE(x) FreeLibrary(x)           /**< Function used for closing DLLs. */
 #define MODULESUFFIX ".dll"                  /**< Suffix used for DLLs. */
+
 #endif /* _WIN32 */
 
 
 /** UNIX and similar - use dlfcn.h, dlopen etc. to load .so files. */
 
-#ifdef USES_DLOPEN
+#ifdef USE_LIBDL
+
 #include <dlfcn.h>
 typedef void* dll_handle;                    /**< Handle type used for SO modules. */
 typedef void* mod_function_ptr;              /**< Function pointer type used for SOs. */
@@ -76,7 +79,8 @@ typedef void* mod_function_ptr;              /**< Function pointer type used for
 #define DLLLOOKUP(x,y) dlsym(x,y)            /**< Function used for looking up SO symbols. */
 #define DLLCLOSE(x) dlclose(x)               /**< Function used for closing SOs. */
 #define MODULESUFFIX ".so"                   /**< Function used for SOs. */
-#endif /* USES_DLOPEN */
+
+#endif /* USE_LIBDL */
 
 
 /* -- STRUCTURES -- */
@@ -337,10 +341,13 @@ typedef struct
 
 } module_set;
 
+
 /* -- GLOBAL VARIABLES -- */
 
 /** The set of modules in use. */
+
 extern module_set g_modules;
+
 
 /* -- PROTOTYPES -- */
 
@@ -354,14 +361,17 @@ extern module_set g_modules;
 int
 init_modules (const char *path);
 
+
 /** Perform the minimum initialisation needed for a module
  *
  *  This is called for every module as part of init_modules.
  *
  *  @param module Pointer to the module_data structure to initialise.
  */
+
 void
 module_bare_init (module_data *module);
+
 
 /** Get the path to a module, given its name.
  *
@@ -371,10 +381,12 @@ module_bare_init (module_data *module);
  *
  *  @return Either SUCCESS or FAILURE (defined in main.h).
  */
+
 int
 get_module_path (const char *module, const char *modulespath, char **out);
 
-/** Find and load a module by name
+
+/** Find and load a module by name.
  *
  *  This finds and loads a module, initialising the module_data struct so it can be
  *  used by get_module_function.
@@ -403,7 +415,20 @@ get_module_by_name (const char* name, const char *modulespath, module_data *modu
 int
 get_module (const char* modulepath, module_data *module);
 
-/** Find a pointer to a function within a module
+
+/**
+ * Print the last DLL-acquisition error message, if any.
+ *
+ * @param function_name  The name of the function calling print_dll_error,
+ * to display in the message.
+ *
+ */
+
+void
+print_dll_error (const char function_name[]);
+
+
+/** Find a pointer to a function within a module.
  *
  *  This finds a pointer to a named symbol (only tested for functions, currently) in
  *  a loaded module.
@@ -416,7 +441,8 @@ get_module (const char* modulepath, module_data *module);
  */
 
 int
-get_module_function (module_data metadata, const char *function, void **func);
+get_module_function (module_data metadata, const char *function, mod_function_ptr *func);
+
 
 /** Load the graphics module.
  *
@@ -431,6 +457,7 @@ get_module_function (module_data metadata, const char *function, void **func);
 int
 load_module_gfx (const char* name, module_set* modules);
 
+
 /** Load the event module.
  *
  *  This loads an event module and sets up g_modules.event.
@@ -443,6 +470,7 @@ load_module_gfx (const char* name, module_set* modules);
 
 int
 load_module_event (const char* name, module_set* modules);
+
 
 /** Load the language binding module.
  *
@@ -457,6 +485,7 @@ load_module_event (const char* name, module_set* modules);
 int
 load_module_bindings (const char* name, module_set* modules);
 
+
 /** Close an individual module.
  *
  *  This runs any term function which is present in the module and closes
@@ -464,14 +493,18 @@ load_module_bindings (const char* name, module_set* modules);
  *
  *  @param module A pointer to the module_data struct to close.
  */
+
 void
 close_module (module_data *module);
+
 
 /** Clean up all modules in the g_modules structure.
  *
  *  This runs close_module on every module.
  */
+
 void
 cleanup_modules (void);
+
 
 #endif /* _MODULE_H */

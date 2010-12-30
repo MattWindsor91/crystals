@@ -73,7 +73,7 @@ init_modules (const char *path)
     }
   else
     {
-      fprintf (stderr, "ERROR: Couldn't alloc modules path!\n");
+      error ("MODULE - init_modules - Couldn't allocate modules path.");
     }
 
   return FAILURE;
@@ -106,7 +106,7 @@ get_module_path (const char* module, const char* modulespath, char** out)
     }
   else
     {
-      fprintf (stderr, "ERROR: couldn't allocate module path.\n");
+      error ("MODULE - get_module_path - couldn't allocate module path.");
       return FAILURE;
     }
 
@@ -114,7 +114,9 @@ get_module_path (const char* module, const char* modulespath, char** out)
   return SUCCESS;
 }
 
+
 /* This finds the filename of a module and calls get_module */
+
 int
 get_module_by_name (const char* name, const char *modulespath, module_data *module)
 {
@@ -133,7 +135,7 @@ get_module_by_name (const char* name, const char *modulespath, module_data *modu
     }
   else
     {
-      fprintf (stderr, "ERROR: couldn't find module path.\n");
+      error ("MODULE - get_module_by_name - couldn't find module path.");
       return FAILURE;
     }
 }
@@ -150,16 +152,11 @@ get_module (const char* modulepath, module_data *module)
   module->lib_handle = DLLOPEN(modulepath);
 
   if (module->lib_handle == NULL)
-    return FAILURE;
-
-  /* Removed because Windows's error code is completely different.
-  dlerr = dlerror ();
-
-  if (dlerr != NULL)
     {
-      fprintf (stderr, "DLERROR: %s\n", dlerr);
+      print_dll_error ("get_module");
       return FAILURE;
-    }*/
+    }
+
 
   /* Get init and termination functions if present */
   get_module_function (*module, "init", (mod_function_ptr*) &module->init);
@@ -174,7 +171,49 @@ get_module (const char* modulepath, module_data *module)
   return SUCCESS;
 }
 
+
+/* Print the last DLL-acquisition error message, if any. */
+
+void
+print_dll_error (const char function_name[])
+{
+  /* Unix-likes use libdl, so use dlerror to get DLL error */
+#ifdef USE_LIBDL
+
+  char *dlerr = dlerror ();
+
+  if (dlerr != NULL)
+    error ("MODULE - %s - Failed with dlerr: %s",
+           function_name, dlerr);
+
+#endif /* USE_LIBDL */
+
+  /* If on Windows, use the Windows API instead */
+#ifdef PLATFORM_WINDOWS
+
+  LPVOID lpMsgBuf;
+  DWORD dw = GetLastError ();
+
+  FormatMessage ((FORMAT_MESSAGE_ALLOCATE_BUFFER
+                  | FORMAT_MESSAGE_FROM_SYSTEM
+                  | FORMAT_MESSAGE_IGNORE_INSERTS),
+                 NULL,
+                 dw,
+                 MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+                 (LPTSTR) &lpMsgBuf,
+                 0, NULL);
+
+  error ("MODULE - %s - Failed with error %d: %s",
+         function_name, dw, lpMsgBuf);
+
+  LocalFree (lpMsgBuf);
+
+#endif
+}
+
+
 /* This loads a pointer to a function from a module */
+
 int
 get_module_function (module_data module, const char *function, mod_function_ptr *func)
 {
@@ -183,15 +222,10 @@ get_module_function (module_data module, const char *function, mod_function_ptr 
   *(mod_function_ptr*)(func) = DLLLOOKUP(module.lib_handle, function);
 
   if (*func == NULL)
-    return FAILURE;
-
-  /*dlerr = dlerror ();
-
-  if (dlerr != NULL)
     {
-      fprintf (stderr, "DLERROR: %s\n", dlerr);
+      print_dll_error ("get_module_function");
       return FAILURE;
-    }*/
+    }
 
   return SUCCESS;
 }
@@ -267,14 +301,14 @@ load_module_event (const char *name, module_set *modules)
                            &modules->event.process_events_internal)
       == FAILURE)
     return FAILURE;
-  
+
   if (get_module_function (modules->event.metadata,
                            "register_release_handle",
                            (mod_function_ptr*)
                            &modules->event.register_release_handle)
       == FAILURE)
     return FAILURE;
-  
+
   return SUCCESS;
 }
 

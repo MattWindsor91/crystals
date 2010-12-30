@@ -54,7 +54,7 @@ init_bindings (void)
 {
   if (load_module_bindings ("bindings-lua", &g_modules) == FAILURE)
     {
-      error ("ERROR: Could not load bindings module.\n");
+      error ("BINDINGS - init_bindings - Could not load bindings module.");
       return FAILURE;
     }
 

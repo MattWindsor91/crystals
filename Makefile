@@ -1,112 +1,303 @@
+# Crystals (working title)
+#
+# Copyright (c) 2010 Matt Windsor, Michael Walker and Alexander
+#                    Preisinger.
+#
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
+#
+#   * Redistributions of source code must retain the above copyright
+#     notice, this list of conditions and the following disclaimer.
+#
+#   * Redistributions in binary form must reproduce the above
+#     copyright notice, this list of conditions and the following
+#     disclaimer in the documentation and/or other materials provided
+#     with the distribution.
+#
+#   * The names of contributors may not be used to endorse or promote
+#     products derived from this software without specific prior
+#     written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+# FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+# AFOREMENTIONED COPYRIGHT HOLDERS BE LIABLE FOR ANY DIRECT,
+# INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+# (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+# SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+# HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+# STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
+# OF THE POSSIBILITY OF SUCH DAMAGE.
+
+### MAKEFILE ###
+
+# The following Makefile is set up by default to allow for compilation 
+# to a few common platform targets.
+#
+# For the most part, all users need do is change the PLATFORM
+# definition to refer to the platform they wish to compile for.
+# However, fine-tuning of other variables may be necessary.
+
+# For convenience, anything that you, the user, should consider 
+# modifying to suit your needs is marked with chevrons (eg >> PLATFORM <<).
+
+# In contrast, anything marked ! is an action performed by the Makefile
+# that in most cases should NOT be tampered with.
+
+
+## >> PLATFORM << ##
+
 # Allowed platforms:
 
-# windows    | Windows 32- and 64-bit (9x onwards)
-# gnu        | GNU distributions
-# gnu-linux  | GNU/Linux distributions (eg Ubuntu) - implies gnu
+# windows-mingw32 | Windows 32- and 64-bit (9x onwards) using MinGW
+#                 | (set up for cross-compiler i486-mingw32 by default)
+# gnu             | GNU distributions
+# gnu-linux       | GNU/Linux distributions (eg Ubuntu) - implies gnu
 
-PLATFORM := gnu-linux
+# TODO: Add BSD, native Windows.
 
-## Name of executable ##
+PLATFORM := windows-mingw32
+
+
+## >> EXECUTABLE NAME << ##
 
 # Note: On certain platforms, this will have an extension appended
 #       to it.
 
 BIN      := crystals
 
-## Directories ##
+
+## >> DIRECTORIES << ##
+
+# Prefix appended to tool names.  This generally only needs to change
+# for cross-compilation on *nix systems.
+
+BUILDPREFIX := /usr
+
+# Source directory, relative to this directory.
+# This probably shouldn't be changed.
 
 SRCDIR   := src
+
+# Subdirectory of this directory and of SRCDIR in which modules and 
+# module sources respectively are stored.
+# This probably shouldn't be changed.
+
 MODDIR   := modules
+
+# Subdirectory of this directory in which documentation is stored.
+# This probably shouldn't be changed.
+
 DOCDIR   := doc
+
+# Subdirectory of this directory and of SRCDIR in which unit tests
+# are stored.
+# This probably shouldn't be changed.
+
 TESTDIR  := tests
 
-## Test directories ##
+
+## TEST DIRECTORIES ##
 
 TESTS    := module optionparser parser
 
-# Add TESTDIR to all test paths #
+# ! Add TESTDIR to all test paths #
 
 TESTS    := $(addprefix $(TESTDIR)/,$(TESTS))
 
-## Objects to link into main executable ##
+
+## CORE OBJECTS ##
+
+# The following object list represents the core of the engine 
+# and thus generally does not need altering by users.
 
 OBJ      := main.o hash.o graphics.o events.o
 OBJ      += util.o bindings.o module.o optionparser.o parser.o state.o
 OBJ      += field/field.o field/map.o field/mapview.o field/object.o
 OBJ      += field/object-api.o
 
-# Add SRCDIR to all object paths #
+# ! Add SRCDIR to all object paths #
 
 OBJ      := $(addprefix $(SRCDIR)/,$(OBJ))
 
-## Shared objects (modules) ##
+## >> Modules << ##
 
-SOBJ     := gfx-sdl.so event-sdl.so bindings-python.so bindings-lua.so
+# Note: DO NOT add .so or .dll onto the end of module names!
+# This will be done later, after platform-specific configuration.
 
-# Add SRCDIR and MODDIR to all shared object paths #
 
-SOBJ     := $(addprefix $(MODDIR)/,$(SOBJ))
-SOBJ     := $(addprefix $(SRCDIR)/,$(SOBJ))
+# Graphics backends #
 
-## Sources and dependency files ##
+# You will need at least one of these in order to run crystals.
+# The graphics backends interface with graphics libraries in order to 
+# render crystals on screen.
+
+# gfx-sdl | Simple DirectMedia Layer graphics backend.
+#         | This renders in software, but is cross-platform and 
+#         | likely to be the most stable backend.  (Recommended)
+#         |
+#         | Works on:  windows, gnu and gnu variants.
+#         | NOTE: Use event-sdl if using this backend.
+
+SOBJ     := gfx-sdl
+
+
+# Events backends #
+
+# You will need at least one of these in order to run crystals.
+# The events backends interface with events libraries (often part of 
+# graphics libraries) in order to accept input from the user via 
+# keyboard, mouse etc.
+
+# event-sdl | Simple DirectMedia Layer events backend.
+#           | This is REQUIRED if using a SDL-based graphics driver.
+#           | (Recommended)
+#           | 
+#           | Works on:  windows, gnu and gnu variants.
+
+SOBJ     += event-sdl
+
+
+# Scripting bindings #
+
+# These allow for the use of scripting languages with the crystals
+# engine.
+
+# bindings-lua    | Lua bindings backend.
+# bindings-python | Python bindings backend.
+
+SOBJ     += bindings-lua
+
+
+## ! Sources and dependency files ##
 
 SOURCES  := $(subst .o,.c,$(OBJ))
 DEPFILES := $(subst .o,.d,$(OBJ))
+
 
 ## Documentation ##
 
 DOC      := module.pdf mapformat-internal.pdf optionparser.pdf
 
-# Add DOCDIR to all documentation paths #
+# ! Add DOCDIR to all documentation paths #
 
 DOC      := $(addprefix $(DOCDIR)/,$(DOC))
 
-## Compilation toolchain ##
+## >> TOOLCHAIN AND COMPILER FLAGS << ##
+
+# Note: the following may be overridden by platform-specific
+# options below.  For example, by default the windows platform 
+# overrides gcc with a cross-compiler.
+
+# The compiler to use.
 
 CC       := gcc
+
+# The delete command.
+
 RM       := rm -f
+
+# The method of getting the distribution name.
+
 DIST	 := $(shell uname -r | sed "s/.*-//")
 
-MODPATH  := $(shell pwd)/$(SRCDIR)/$(MODDIR)/\0
+# The module path.
+
+MODPATH  := $(shell pwd)/$(MODDIR)/\0
+
+# Warning flags to use during compilation.
+# These should be kept on!
 
 WARN     := -Wall -Wextra -Wshadow -Wpointer-arith -Wcast-align \
             -Wwrite-strings -Wmissing-prototypes -Wmissing-declarations \
             -Wredundant-decls -Wnested-externs -Winline -Wno-long-long \
             -Wconversion -Wstrict-prototypes
+             
+# Generic compilation flags.
 
-LIBS     := -ldl -lpthread 
 CFLAGS   := -ansi -pedantic -O2 -ggdb -DDEFMODPATH="\"$(MODPATH)\"" $(WARN)
 
-## Platforms ##
+## >> PLATFORM SPECIFICS << ##
 
-GNUFLAGS := -DPLATFORM_GNU -DUSES_DLOPEN
+# Flags used:
 
-ifeq ($(PLATFORM),windows)
-	CFLAGS += -DPLATFORM_WINDOWS
-	DLLEXT := dll
+# USE_LIBDL | Use libdl (dlopen etc.) for loading shared objects.
+#           | This should be used on most if not all non-Windows targets.
+
+GNUFLAGS := -DPLATFORM_GNU -DUSE_LIBDL
+GNULIBS  := -ldl -lpthread
+
+
+# Windows using mingw32 #
+
+ifeq ($(PLATFORM),windows-mingw32)
+    # Most of this is setting up to use a cross-compiler,
+    # so if using mingw32 natively much of this can be changed 
+    # or commented out.
+    
+	CC          := i486-mingw32-gcc
+	BUILDPREFIX := /usr/i486-mingw32
+	PKGCONFIG   := i486-mingw32-pkg-config
+	CFLAGS      += -DPLATFORM_WINDOWS
+	LIBS        += -L/usr/i486-mingw32/lib -lmingw32 -mwindows
+	DLLEXT      := dll
+	BINSUFFIX   := .exe
+	
 endif
+
+
+# GNU #
 
 ifeq ($(PLATFORM),gnu)
-	CFLAGS += $(GNUFLAGS)
-	DLLEXT := so
+	CFLAGS    += $(GNUFLAGS)
+	LIBS      += $(GNULIBS)
+	PKGCONFIG := $(BUILDPREFIX)/bin/pkg-config
+	DLLEXT    := so
 endif
+
+
+# GNU/Linux #
 
 ifeq ($(PLATFORM),gnu-linux)
-    CFLAGS += $(GNUFLAGS) -DPLATFORM_GNU_LINUX
-    DLLEXT := so
+    CFLAGS    += $(GNUFLAGS) -DPLATFORM_GNU_LINUX
+    LIBS      += $(GNULIBS)
+	PKGCONFIG := $(BUILDPREFIX)/bin/pkg-config
+    DLLEXT    := so
 endif
 
-## Rules ##
 
-.PHONY: all doc autodoc clean clean-tests clean-doc clean-modules modules tests
+## ! LAST-MINUTE AUTOMATED MAGIC ##
 
-all: $(BIN) modules
+# ! Add SRCDIR and MODDIR to all shared object paths #
+
+SOBJ     := $(addprefix $(MODDIR)/,$(SOBJ))
+SOBJ     := $(addprefix $(SRCDIR)/,$(SOBJ))
+
+# ! Add DLLEXT too #
+
+SOBJ     := $(addsuffix .$(DLLEXT),$(SOBJ))
+
+# ! Add suffix to program name #
+
+BIN      := $(addsuffix $(BINSUFFIX),$(BIN))
+
+## ! RULES ##
+
+.PHONY: all doc autodoc clean clean-tests clean-doc clean-modules modules tests copy
+
+all: $(BIN) modules copy
 alldoc: all doc autodoc
 
 $(BIN): $(OBJ) $(SO)
 	@echo "Linking..."
 	@$(CC) $(OBJ) -o "$(BIN)" $(LIBS) >/dev/null
 
+copy:
 	@echo "Copying modules to destination..."
 	-@mkdir -p modules
 	@cp -r $(SRCDIR)/$(MODDIR)/* $(MODDIR)
@@ -121,17 +312,19 @@ clean: clean-tests clean-doc clean-modules
 	@echo "Cleaning..."
 	-@$(RM) $(BIN) $(SRCDIR)/*.{o,d,$(DLLEXT)} &>/dev/null
 
-### Modules
-$(SRCDIR)/$(MODDIR)/gfx-sdl.$(DLLEXT): LIBS   += `sdl-config --libs` -lSDL_image
-$(SRCDIR)/$(MODDIR)/gfx-sdl.$(DLLEXT): CFLAGS += `sdl-config --cflags`
 
-$(SRCDIR)/$(MODDIR)/event-sdl.$(DLLEXT): LIBS   += `sdl-config --libs` 
-$(SRCDIR)/$(MODDIR)/event-sdl.$(DLLEXT): CFLAGS += `sdl-config --cflags`
+# Modules #
+
+$(SRCDIR)/$(MODDIR)/gfx-sdl.$(DLLEXT): LIBS   += `$(BUILDPREFIX)/bin/sdl-config --libs` -lSDL_image
+$(SRCDIR)/$(MODDIR)/gfx-sdl.$(DLLEXT): CFLAGS += `$(BUILDPREFIX)/bin/sdl-config --cflags`
+
+$(SRCDIR)/$(MODDIR)/event-sdl.$(DLLEXT): LIBS   += `$(BUILDPREFIX)/bin/sdl-config --libs` 
+$(SRCDIR)/$(MODDIR)/event-sdl.$(DLLEXT): CFLAGS += `$(BUILDPREFIX)/bin/sdl-config --cflags`
 
 $(SRCDIR)/$(MODDIR)/bindings-python.$(DLLEXT): LIBS   += `python-config --libs`
 $(SRCDIR)/$(MODDIR)/bindings-python.$(DLLEXT): CFLAGS += `python-config --cflags`
 
-$(SRCDIR)/$(MODDIR)/bindings-lua.$(DLLEXT): LIBS += `pkg-config --libs lua`
+$(SRCDIR)/$(MODDIR)/bindings-lua.$(DLLEXT): LIBS += `$(PKGCONFIG) --libs lua`
 
 modules: $(SOBJ)
 
@@ -140,7 +333,9 @@ clean-modules:
 	-@$(RM) $(MODDIR)/*.{$(DLLEXT),o} &>/dev/null
 	-@$(RM) $(SRCDIR)/$(MODDIR)/*.{$(DLLEXT),o} &>/dev/null
 
-### Documentation
+
+# Documentation #
+
 doc: $(DOC)
 
 autodoc:
@@ -152,7 +347,9 @@ clean-doc:
 	-@$(RM) doc/*.{pdf,aux,log} &>/dev/null
 	-@$(RM) -r autodoc
 
-### Test Suite
+
+# Test Suite #
+
 tests: CFLAGS += -DTESTSUITE -DMODPATH="\"$(shell pwd)/$(TESTDIR)/$(MODDIR)/\""
 tests: $(TESTS)
 	@echo "Running tests..."
@@ -171,7 +368,9 @@ clean-tests:
 	@echo "Cleaning tests..."
 	-@$(RM) $(TESTS) $(TESTDIR)/*.{o,so} $(TESTDIR)/$(MODDIR)/*.{o,so} &>/dev/null
 
-### File Types
+
+# File Types #
+
 %.o : %.c
 	@echo "Compiling $<..."
 	@$(CC) -c $< $(CFLAGS) -o $@ >/dev/null
@@ -182,10 +381,15 @@ clean-tests:
 	sed 's,\($*\)\.o[ :]*,\1.o $@ : ,g' < $@.$$$$ > $@; \
 	$(RM) -f $@.$$$$
 
-%.$(DLLEXT) : %.c
+%.so : %.c
 	@echo "Compiling $< to shared object..."
 	@$(CC) $(CFLAGS) $(INCLUDES) -Wall -fPIC -rdynamic -c $^ -o $(^:.c=.o) >/dev/null
-	@$(CC) $(LIBS) -shared -Wl,-soname,$(^:.c=.$(DLLEXT)) -o $(^:.c=.$(DLLEXT)) $(^:.c=.o) >/dev/null
+	@$(CC) -shared -Wl,-soname,$(^:.c=.$(DLLEXT)) -o $(^:.c=.$(DLLEXT)) $(^:.c=.o) $(LIBS) >/dev/null
+
+%.dll : %.c
+	@echo "Compiling $< to dynamic linked library..."
+	@$(CC) $(CFLAGS) $(INCLUDES) -Wall -c $^ -o $(^:.c=.o) >/dev/null
+	@$(CC) -shared -Wl -o $(^:.c=.dll) $(^:.c=.o) $(LIBS) >/dev/null
 
 %.pdf: %.tex
 	@echo "LaTeXing $<..."

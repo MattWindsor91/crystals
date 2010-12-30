@@ -47,6 +47,7 @@
 #include "bindings-lua.h"
 #include "../util.h"
 
+
 void
 init (void)
 {
@@ -56,11 +57,13 @@ init (void)
   lua_setglobal (g_lua, "crystals_test");
 }
 
+
 void
 term (void)
 {
   lua_close (g_lua);
 }
+
 
 int
 run_file (const char *path)
@@ -77,6 +80,7 @@ run_file (const char *path)
     }
 }
 
+
 int
 crystals_test (lua_State *L)
 {
@@ -86,6 +90,7 @@ crystals_test (lua_State *L)
   printf("%s\n", lua_tostring (L, 1));
   return 1;
 }
+
 
 static int
 parameter_check (lua_State *L, const char *func_name, const char sig[])

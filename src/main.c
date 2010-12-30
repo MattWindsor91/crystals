@@ -61,6 +61,21 @@ dict_t *g_config;
 
 /* -- DEFINITIONS -- */
 
+/* Windows is awful. */
+
+#ifdef PLATFORM_WINDOWS
+
+#include <windows.h>
+
+int WINAPI
+WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
+{
+  return main (0, NULL);
+}
+
+#endif /* PLATFORM_WINDOWS */
+
+
 /* The main function. */
 
 int

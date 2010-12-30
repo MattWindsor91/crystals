@@ -52,6 +52,14 @@
 
 /* -- CONSTANTS -- */
 
+#ifdef TRUE
+#undef TRUE
+#endif /* TRUE */
+
+#ifdef FALSE
+#undef FALSE
+#endif /* FALSE */
+
 enum
   {
     SUCCESS = 1, /**< Value raised by functions upon success. */

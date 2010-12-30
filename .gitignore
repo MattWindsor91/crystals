@@ -1,6 +1,8 @@
 crystals
 autodoc
+*.exe
 *.o
 *.so
 *.d
 *.*~
+*.dll
