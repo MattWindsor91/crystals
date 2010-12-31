@@ -50,7 +50,7 @@
 
 /* Workaround for Windows DLL symbol load failures.
  *
- * All prototypes of outward-facing functions MUST be preceded with
+ * All outward-facing functions MUST be preceded with
  * EXPORT so that the DLL loader can see them.
  */
 

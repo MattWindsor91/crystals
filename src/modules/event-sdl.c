@@ -43,11 +43,22 @@
 
 #include <stdio.h>
 #include <SDL.h>
-#include <SDL/SDL_image.h>
 
 #include "../util.h"
 #include "../events.h"
 #include "../graphics.h"
+
+/* Workaround for Windows DLL symbol load failures.
+ *
+ * All outward-facing functions MUST be preceded with
+ * EXPORT so that the DLL loader can see them.
+ */
+
+#ifdef PLATFORM_WINDOWS
+#define EXPORT __declspec(dllexport)
+#else
+#define EXPORT
+#endif /* PLATFORM_WINDOWS */
 
 /* -- STATIC GLOBAL VARIABLES -- */
 
@@ -60,14 +71,14 @@ static void
 
 /** Initialise the events module. */
 
-int
+EXPORT int
 init (void);
 
 
 /** Terminate the events module, freeing any remaining data
     dynamically allocated by the module. */
 
-void
+EXPORT void
 term (void);
 
 
@@ -77,7 +88,7 @@ term (void);
  *                 This should be event.c's event_release;
  */
 
-void
+EXPORT void
 register_release_handle (void (*handle) (event_t *event));
 
 
@@ -88,7 +99,7 @@ register_release_handle (void (*handle) (event_t *event));
  *
  */
 
-void
+EXPORT void
 process_events_internal (void);
 
 

@@ -1,0 +1,6 @@
+LIBRARY   event-sdl
+EXPORTS
+   init   @1
+   term   @2
+   register_release_handle   @3
+   process_events_internal   @4

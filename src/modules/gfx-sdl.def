@@ -1,0 +1,11 @@
+LIBRARY   gfx-sdl
+EXPORTS
+   init   @1
+   term   @2
+   load_image_data   @3
+   free_image_data   @4
+   init_screen_internal   @5
+   update_screen_internal   @6
+   scroll_screen_internal   @7
+   draw_image_internal @8
+   draw_rect_internal @9
