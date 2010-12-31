@@ -61,28 +61,7 @@ dict_t *g_config;
 
 /* -- DEFINITIONS -- */
 
-/* Windows is awful. */
-
-#ifdef PLATFORM_WINDOWS
-
-#include <windows.h>
-
-/* Windows entry point. */
-
-int WINAPI
-WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
-{
-  /* Stop gcc complaining about unused parameters */
-  hInstance = hInstance;
-  hPrevInstance = hPrevInstance;
-  lpCmdLine = lpCmdLine;
-  nShowCmd = nShowCmd;
-
-  return main (0, NULL);
-}
-
-#endif /* PLATFORM_WINDOWS */
-
+/* NB: For the Windows code entry point, see platform/w32-main.c. */
 
 /* The main function. */
 

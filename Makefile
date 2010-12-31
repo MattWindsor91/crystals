@@ -61,7 +61,7 @@
 
 # TODO: Add BSD, native Windows.
 
-PLATFORM := windows-mingw32
+PLATFORM := gnu-linux
 
 
 ## >> EXECUTABLE NAME << ##
@@ -101,6 +101,11 @@ DOCDIR   := doc
 
 TESTDIR  := tests
 
+# Subdirectory of SRCDIR in which platform-specific code (eg Windows hacks)
+# is stored.
+# This probably shouldn't be changed.
+
+PLATDIR  := platform
 
 ## TEST DIRECTORIES ##
 
@@ -121,15 +126,10 @@ OBJ      += util.o bindings.o module.o optionparser.o parser.o state.o
 OBJ      += field/field.o field/map.o field/mapview.o field/object.o
 OBJ      += field/object-api.o
 
-# ! Add SRCDIR to all object paths #
-
-OBJ      := $(addprefix $(SRCDIR)/,$(OBJ))
-
 ## >> Modules << ##
 
 # Note: DO NOT add .so or .dll onto the end of module names!
 # This will be done later, after platform-specific configuration.
-
 
 # Graphics backends #
 
@@ -146,7 +146,6 @@ OBJ      := $(addprefix $(SRCDIR)/,$(OBJ))
 
 SOBJ     := gfx-sdl
 
-
 # Events backends #
 
 # You will need at least one of these in order to run crystals.
@@ -162,7 +161,6 @@ SOBJ     := gfx-sdl
 
 SOBJ     += event-sdl
 
-
 # Scripting bindings #
 
 # These allow for the use of scripting languages with the crystals
@@ -174,12 +172,6 @@ SOBJ     += event-sdl
 SOBJ     += bindings-lua
 
 
-## ! Sources and dependency files ##
-
-SOURCES  := $(subst .o,.c,$(OBJ))
-DEPFILES := $(subst .o,.d,$(OBJ))
-
-
 ## Documentation ##
 
 DOC      := module.pdf mapformat-internal.pdf optionparser.pdf
@@ -187,6 +179,7 @@ DOC      := module.pdf mapformat-internal.pdf optionparser.pdf
 # ! Add DOCDIR to all documentation paths #
 
 DOC      := $(addprefix $(DOCDIR)/,$(DOC))
+
 
 ## >> TOOLCHAIN AND COMPILER FLAGS << ##
 
@@ -248,6 +241,10 @@ ifeq ($(PLATFORM),windows-mingw32)
 	DLLEXT      := dll
 	BINSUFFIX   := .exe
 	
+	# Add Windows-specific code
+	
+	OBJ         += $(PLATDIR)/w32-main.o
+	
 endif
 
 
@@ -273,6 +270,10 @@ endif
 
 ## ! LAST-MINUTE AUTOMATED MAGIC ##
 
+# ! Add SRCDIR to all object paths #
+
+OBJ      := $(addprefix $(SRCDIR)/,$(OBJ))
+
 # ! Add SRCDIR and MODDIR to all shared object paths #
 
 SOBJ     := $(addprefix $(MODDIR)/,$(SOBJ))
@@ -286,14 +287,19 @@ SOBJ     := $(addsuffix .$(DLLEXT),$(SOBJ))
 
 BIN      := $(addsuffix $(BINSUFFIX),$(BIN))
 
+## ! Make lists for sources and dependency files ##
+
+SOURCES  := $(subst .o,.c,$(OBJ))
+DEPFILES := $(subst .o,.d,$(OBJ))
+
 ## ! RULES ##
 
 .PHONY: all doc autodoc clean clean-tests clean-doc clean-modules modules tests copy
 
-all: $(BIN) modules copy
+all: $(BIN) copy
 alldoc: all doc autodoc
 
-$(BIN): $(OBJ) $(SO)
+$(BIN): $(OBJ) modules
 	@echo "Linking..."
 	@$(CC) $(OBJ) -o "$(BIN)" $(LIBS) >/dev/null
 
@@ -306,11 +312,12 @@ copy:
 	-@mkdir -p tests
 	@cp -r $(SRCDIR)/$(TESTDIR)/* $(TESTDIR)
 
--include $(DEPFILES)
 
 clean: clean-tests clean-doc clean-modules
 	@echo "Cleaning..."
 	-@$(RM) $(BIN) $(SRCDIR)/*.{o,d,$(DLLEXT)} &>/dev/null
+	-@$(RM) $(BIN) $(SRCDIR)/field/*.{o,d,$(DLLEXT)} &>/dev/null
+	-@$(RM) $(BIN) $(SRCDIR)/$(PLATDIR)/*.{o,d,$(DLLEXT)} &>/dev/null
 
 
 # Modules #
@@ -368,7 +375,6 @@ clean-tests:
 	@echo "Cleaning tests..."
 	-@$(RM) $(TESTS) $(TESTDIR)/*.{o,so} $(TESTDIR)/$(MODDIR)/*.{o,so} &>/dev/null
 
-
 # File Types #
 
 %.o : %.c
@@ -394,5 +400,10 @@ clean-tests:
 %.pdf: %.tex
 	@echo "LaTeXing $<..."
 	@pdflatex -output-directory=$(shell dirname $@) $^ >/dev/null
+
+
+# Include dependency makefiles here. #
+
+-include $(DEPFILES)
 
 # vim: noexpandtab:
