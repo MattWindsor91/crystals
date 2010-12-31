@@ -219,7 +219,7 @@ get_module_function (module_data module, const char *function, mod_function_ptr 
 {
   /** char *dlerr; */
 
-  *(mod_function_ptr*)(func) = DLLLOOKUP(module.lib_handle, function);
+  *func = DLLLOOKUP(module.lib_handle, function);
 
   if (*func == NULL)
     {
