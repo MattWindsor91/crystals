@@ -117,7 +117,7 @@ mouse_motion (event_t *event, SDL_Event *sdlevent);
 
 /* Initialise the events module. */
 
-int
+EXPORT int
 init (void)
 {
   if (SDL_Init (SDL_INIT_VIDEO) != 0)
@@ -134,7 +134,7 @@ init (void)
 /* Terminate the events module, freeing any remaining data
    dynamically allocated by the module. */
 
-void
+EXPORT void
 term (void)
 {
   SDL_Quit ();
@@ -143,7 +143,7 @@ term (void)
 
 /* Register a function for handling event releases. */
 
-void
+EXPORT void
 register_release_handle (void (*handle) (event_t *event))
 {
   sg_event_release = handle;
@@ -259,7 +259,7 @@ process_events_internal (void)
 
 /* Handle an SDL mouse motion event. */
 
-void
+static void
 mouse_motion (event_t *event, SDL_Event *sdlevent)
 {
   /* We need to check to see if the raw X and Y are within the
@@ -270,10 +270,10 @@ mouse_motion (event_t *event, SDL_Event *sdlevent)
   right = SCREEN_W;  /**@todo FIXME: make this less hardcoded. */
   bottom = SCREEN_H; /**@todo FIXME: make this less hardcoded. */
 
-  if (sdlevent->motion.x >= left && 
-      sdlevent->motion.x < right &&
-      sdlevent->motion.y >= top &&
-      sdlevent->motion.y < bottom)
+  if (sdlevent->motion.x >= left
+      && sdlevent->motion.x < right
+      && sdlevent->motion.y >= top
+      && sdlevent->motion.y < bottom)
     {
       event->motion.type = MOUSE_MOTION_EVENT;
       event->motion.xraw = event->motion.x = sdlevent->motion.x;

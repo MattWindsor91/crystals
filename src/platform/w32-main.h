@@ -42,14 +42,14 @@
  */
 
 
-#ifndef W32_MAIN_H_
-#define W32_MAIN_H_
+#ifndef _W32_MAIN_H
+#define _W32_MAIN_H
 
 #include <windows.h>
 
 /* -- DECLARATIONS -- */
 
-/* WinMain is defined in winbase.h */
+/* WinMain is defined in winbase.h. */
 
 
-#endif /* W32_MAIN_H_ */
+#endif /* _W32_MAIN_H */

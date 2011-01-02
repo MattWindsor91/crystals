@@ -52,6 +52,8 @@
 
 /* -- CONSTANTS -- */
 
+/* Windows likes to define these already. */
+
 #ifdef TRUE
 #undef TRUE
 #endif /* TRUE */
@@ -78,30 +80,48 @@ enum
 #define MAX(x, y) ((x) > (y) ? (x) : (y)) /**< Get the maximum of two
                                              values. */
 
+
 /* -- DECLARATIONS -- */
 
-/** Fatal error.
+/** 
+ * Fatal error.
  *
- *  This prints an error message and sets the g_running variable to
- *  FALSE, effectively causing the engine to try gracefully shut down
- *  after the frame in progress.
+ * This shows an error message and attempts to immediately shut down
+ * the game.
  * 
- *  @param message  Message to print.  This wrapper automatically
- *  prepends and appends FATAL: and a newline respectively. 
+ * @param message  Message to print.  This function automatically
+ *                 prepends and appends FATAL: and a newline respectively. 
  */
 
 void
 fatal (const char message[], ...);
 
-/** Non-fatal error.
+
+/** 
+ * Non-fatal error.
  *
- *  This prints an error message only.
+ * This shows an error message only.
  * 
- *  @param message  Message to print.  This wrapper automatically
- *  prepends and appends ERROR: and a newline respectively. 
+ * @param message  Message to print.  This function automatically
+ *                 prepends and appends ERROR: and a newline respectively. 
  */
 
 void
 error (const char message[], ...);
+
+
+/**
+ * Standard error reporting procedure. 
+ *
+ * This prints the error message to standard error.
+ *
+ * @param message   The error message/format string.
+ * @param ap        The variadic arguments list passed from fatal or error.
+ * @param is_fatal  Whether or not the error is fatal.  If the error is 
+ *                  fatal, the program will be halted.
+ */
+
+void
+std_error (const char message[], va_list ap, int is_fatal);
 
 #endif /* not _UTIL_H */

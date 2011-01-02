@@ -58,6 +58,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="user32.lib"
 				LinkIncremental="2"
 				GenerateDebugInformation="true"
 				SubSystem="2"
@@ -130,6 +131,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="windows.lib"
 				LinkIncremental="2"
 				GenerateDebugInformation="true"
 				SubSystem="2"
@@ -233,6 +235,10 @@
 			</File>
 			<File
 				RelativePath=".\src\platform\w32-main.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\platform\w32-util.h"
 				>
 			</File>
 		</Filter>
@@ -363,6 +369,10 @@
 			</File>
 			<File
 				RelativePath=".\src\platform\w32-main.c"
+				>
+			</File>
+			<File
+				RelativePath=".\src\platform\w32-util.c"
 				>
 			</File>
 		</Filter>

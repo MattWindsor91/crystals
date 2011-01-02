@@ -48,7 +48,7 @@
 #include "../util.h"
 
 
-void
+EXPORT void
 init (void)
 {
   g_lua = lua_open ();
@@ -58,14 +58,14 @@ init (void)
 }
 
 
-void
+EXPORT void
 term (void)
 {
   lua_close (g_lua);
 }
 
 
-int
+EXPORT int
 run_file (const char *path)
 {
   if (luaL_loadfile (g_lua, path) == L_SUCCESS)

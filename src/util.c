@@ -48,24 +48,27 @@
 #include "util.h"
 #include "main.h"
 
+#ifdef PLATFORM_WINDOWS
+
+#include "platform/w32-util.h" /* Windows error procedures */
+#define ERROR_PROCEDURE(x, y, z) w32_error((x), (y), (z))
+
+#else /* not PLATFORM_WINDOWS */
+
+#define ERROR_PROCEDURE(x, y, z) std_error((x), (y), (z))
+
+#endif /* not PLATFORM_WINDOWS */
+
 /* Fatal error. */
 
 void
 fatal (const char message[], ...)
 {
   va_list ap;
-
   va_start (ap, message);
-  fprintf (stderr, "FATAL: ");
-  vfprintf (stderr, message, ap);
-  fprintf (stderr, "\n");
-  va_end (ap);
-
-  fflush (stderr);
-
-  cleanup ();
-  exit (1);
+  ERROR_PROCEDURE(message, ap, TRUE);
 }
+
 
 /* Non-fatal error. */
 
@@ -73,12 +76,30 @@ void
 error (const char message[], ...)
 {
   va_list ap;
-
   va_start (ap, message);
-  fprintf (stderr, "ERROR: ");
+  ERROR_PROCEDURE(message, ap, FALSE);
+}
+
+
+/* Standard error reporting procedure. */
+
+void
+std_error (const char message[], va_list ap, int is_fatal)
+{
+  if (is_fatal)
+  	fprintf (stderr, "FATAL: ");
+  else
+    fprintf (stderr, "ERROR: ");
+
   vfprintf (stderr, message, ap);
   fprintf (stderr, "\n");
   va_end (ap);
 
   fflush (stderr);
+
+  if (is_fatal)
+    {
+	    cleanup ();
+	    exit (1);
+    }
 }

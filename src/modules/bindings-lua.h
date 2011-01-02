@@ -55,7 +55,7 @@
  */
 
 #ifdef PLATFORM_WINDOWS
-#define EXPORT __declspec(dllexport)
+#define EXPORT __declspec( dllexport )
 #else
 #define EXPORT
 #endif /* PLATFORM_WINDOWS */

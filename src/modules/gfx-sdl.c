@@ -48,6 +48,7 @@
 
 #include "../util.h" /* Constants. */
 
+
 /* Workaround for Windows DLL symbol load failures.
  *
  * All outward-facing functions MUST be preceded with
@@ -59,6 +60,7 @@
 #else
 #define EXPORT
 #endif /* PLATFORM_WINDOWS */
+
 
 /* -- STATIC GLOBAL VARIABLES -- */
 
@@ -74,11 +76,13 @@ static SDL_Surface *sg_shadow; /**< The shadow screen surface, used
 EXPORT int
 init (void);
 
+
 /** Terminate the module, freeing any remaining data dynamically
     allocated by the module. */
 
 EXPORT void
 term (void);
+
 
 /** Initialise a screen of a given width, height and depth.
  *
@@ -99,6 +103,7 @@ EXPORT int
 init_screen_internal (unsigned short width,
                       unsigned short height,
                       unsigned char depth);
+
 
 /** Draw a rectangle of colour on-screen.
  *
@@ -129,6 +134,7 @@ draw_rect_internal (short x,
                     unsigned char green,
                     unsigned char blue);
 
+
 /** Load an image and return its data in the module's native
  *  format.
  *
@@ -146,6 +152,7 @@ draw_rect_internal (short x,
 
 EXPORT void *
 load_image_data (const char filename[]);
+
 
 /** Free image data retrieved by load_image_data.
  *

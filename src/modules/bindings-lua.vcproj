@@ -4,6 +4,7 @@
 	Version="8.00"
 	Name="bindings-lua"
 	ProjectGUID="{06BDCAD7-B361-4824-BA08-FE29BA804F0C}"
+	RootNamespace="bindings-lua"
 	Keyword="Win32Proj"
 	>
 	<Platforms>
@@ -38,7 +39,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;BINDINGSLUA_EXPORTS;"
+				PreprocessorDefinitions="PLATFORM_WINDOWS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -60,7 +61,7 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="lua51.lib"
 				LinkIncremental="2"
-				ModuleDefinitionFile="bindings-lua.def"
+				ModuleDefinitionFile=""
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				TargetMachine="1"
@@ -113,7 +114,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;BINDINGSLUA_EXPORTS;"
+				PreprocessorDefinitions="PLATFORM_WINDOWS"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
@@ -192,10 +193,6 @@
 			>
 			<File
 				RelativePath=".\bindings-lua.c"
-				>
-			</File>
-			<File
-				RelativePath=".\bindings-lua.def"
 				>
 			</File>
 		</Filter>
