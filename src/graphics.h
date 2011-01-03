@@ -73,12 +73,6 @@ int
 init_graphics (void);
 
 
-/** Update the screen. */
-
-void
-update_screen (void);
-
-
 /** Fill the screen with the given colour.
  *
  *  Depending on the graphics module, the colour displayed on screen
@@ -91,10 +85,23 @@ update_screen (void);
  *  @param blue    The blue component of the fill colour (0-255).
  */
 
-void
+int
 fill_screen (unsigned char red,
              unsigned char green,
              unsigned char blue);
+
+
+/** Translate the screen by a co-ordinate pair, leaving damage.
+ *
+ *  @param x_offset  The X co-ordinate offset in which to scroll the 
+ *                   screen.
+ *
+ *  @param y_offset  The Y co-ordinate offset in which to scroll the 
+ *                   screen.
+ */
+
+int
+scroll_screen (short x_offset, short y_offset);
 
 
 /** Load an image.
@@ -133,7 +140,7 @@ load_image (const char filename[]);
  *  @param image  Pointer to the image data to free.
  */
 
-void
+int
 free_image (void *image);
 
 
@@ -240,22 +247,8 @@ find_image (const char filename[]);
 
 /** Update the screen. */
 
-void
+int
 update_screen (void);
-
-
-/** Scroll the screen one pixel in the given direction.
- *
- *  This does NOT repair the damage done to the screen - it is
- *  expected that subsequent functions will fill in the gap left by
- *  the scroll with colour or image data.
- *
- *  @param direction  The direction (NORTH, SOUTH, EAST or WEST) in
- *                     which to scroll the screen.
- */
-
-void
-scroll_screen (unsigned int direction);
 
 
 /** Clean up the graphics subsystem. */

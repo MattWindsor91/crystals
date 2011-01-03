@@ -135,7 +135,7 @@ create_hash_object (struct hash_object *head[],
       return NULL;
     }
 
-  strncpy (hash_object->name, name, sizeof (char) * strlen (name) + 1);
+  strncpy (hash_object->name, name, strlen (name) + 1);
 
   /* Now that everything else is done, link the data to the object. */
 

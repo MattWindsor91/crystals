@@ -97,10 +97,11 @@ typedef struct
    *  @return  SUCCESS for success; FAILURE otherwise.
    */
 
+
   int
-  (*init_screen) (unsigned short width,
-                  unsigned short height,
-                  unsigned char depth);
+  (*init_screen_internal) (unsigned short width,
+                           unsigned short height,
+                           unsigned char depth);
 
   /** Draw a rectangle of colour on-screen.
    *
@@ -122,14 +123,15 @@ typedef struct
    *  @param blue    The blue component of the fill colour (0-255).
    */
 
-  void
-  (*draw_rect) (short x,
-                short y,
-                unsigned short width,
-                unsigned short height,
-                unsigned char red,
+
+  int
+  (*draw_rect_internal) (short x,
+                         short y,
+                         unsigned short width,
+                         unsigned short height,
+                         unsigned char red,
                 unsigned char green,
-                unsigned char blue);
+                         unsigned char blue);
 
   /** Load an image and return its data in the module's native
    *  format.
@@ -149,6 +151,7 @@ typedef struct
   void *
   (*load_image_data) (const char filename[]);
 
+
   /** Free image data retrieved by load_image_data.
    *
    *  Since the nature of the image data in question varies from
@@ -160,8 +163,9 @@ typedef struct
    *               data (in the module's native format) to be freed.
    */
 
-  void
+  int
   (*free_image_data) (void *data);
+
 
   /** Draw a rectangular portion of an image on-screen.
    *
@@ -192,27 +196,33 @@ typedef struct
    */
 
   int
-  (*draw_image) (void *image,
-                 short image_x,
-                 short image_y,
-                 short screen_x,
-                 short screen_y,
-                 unsigned short width,
-                 unsigned short height);
+  (*draw_image_internal) (void *image,
+                          short image_x,
+                          short image_y,
+                          short screen_x,
+                          short screen_y,
+                          unsigned short width,
+                          unsigned short height);
+
 
   /** Update the screen. */
 
-  void
-  (*update_screen) (void);
+  int
+  (*update_screen_internal) (void);
 
-  /** Scroll the entire screen one pixel in a given direction.
+
+  /** Translate the screen by a co-ordinate pair, leaving damage.
    *
-   *  @param direction  The cardinal direction (NORTH, SOUTH, EAST or
-   *  WEST) to scroll in.
+   *  @param x_offset  The X co-ordinate offset in which to scroll the 
+   *                   screen.
+   *
+   *  @param y_offset  The Y co-ordinate offset in which to scroll the 
+   *                   screen.
    */
 
-  void
-  (*scroll_screen) (unsigned int direction);
+  int
+  (*scroll_screen_internal) (short x_offset, short y_offset);
+
 
 } module_gfx;
 
@@ -235,7 +245,7 @@ typedef struct
    */
 
   void
-  (*process_events) (void);
+  (*process_events_internal) (void);
 
   /** Register an event release handle with the event module.
    *

@@ -42,6 +42,7 @@
  */
 
 #include <stdio.h>
+#include <limits.h>
 #include <SDL.h>
 #include <SDL/SDL_image.h>
 
@@ -58,7 +59,7 @@ static SDL_Surface *sg_shadow; /**< The shadow screen surface, used
 
 /** Initialise the module. */
 
-void
+int
 init (void);
 
 /** Terminate the module, freeing any remaining data dynamically
@@ -83,9 +84,9 @@ term (void);
  */
 
 int
-init_screen (unsigned short width,
-             unsigned short height,
-             unsigned char depth);
+init_screen_internal (unsigned short width,
+                      unsigned short height,
+                      unsigned char depth);
 
 /** Draw a rectangle of colour on-screen.
  *
@@ -107,14 +108,14 @@ init_screen (unsigned short width,
  *  @param blue    The blue component of the fill colour (0-255).
  */
 
-void
-draw_rect (short x,
-           short y, 
-           unsigned short width,
-           unsigned short height, 
-           unsigned char red,
-           unsigned char green,
-           unsigned char blue);
+int
+draw_rect_internal (short x,
+                    short y, 
+                    unsigned short width,
+                    unsigned short height, 
+                    unsigned char red,
+                    unsigned char green,
+                    unsigned char blue);
 
 /** Load an image and return its data in the module's native
  *  format.
@@ -145,8 +146,9 @@ load_image_data (const char filename[]);
  *               data (in the module's native format) to be freed.
  */
 
-void
+int
 free_image_data (void *data);
+
 
 /** Draw a rectangular portion of an image on-screen.
  *
@@ -177,37 +179,46 @@ free_image_data (void *data);
  */
 
 int
-draw_image (void *image, 
-            short image_x,
-            short image_y,
-            short screen_x,
-            short screen_y,
-            unsigned short width,
-            unsigned short height);
+draw_image_internal (void *image, 
+                     short image_x,
+                     short image_y,
+                     short screen_x,
+                     short screen_y,
+                     unsigned short width,
+                     unsigned short height);
+
 
 /** Update the screen. */
 
-void
-update_screen (void);
+int
+update_screen_internal (void);
 
-/** Scroll the entire screen one pixel in a given direction.
+
+/** Translate the screen by a co-ordinate pair, leaving damage.
  *
- *  @param direction  The cardinal direction (NORTH, SOUTH, EAST or
- *  WEST) to scroll in.
+ *  @param x_offset  The X co-ordinate offset in which to scroll the 
+ *                   screen.
+ *
+ *  @param y_offset  The Y co-ordinate offset in which to scroll the 
+ *                   screen.
  */
 
-void
-scroll_screen (unsigned int direction);
+int
+scroll_screen_internal (short x_offset, short y_offset);
+
 
 /* -- DEFINITIONS -- */
 
 /* Initialise the module. */
 
-void
+int
 init (void)
 {
   sg_screen = NULL;
+
+  return SUCCESS;
 }
+
 
 /* Terminate the module, freeing any remaining data dynamically
    allocated by the module. */
@@ -224,12 +235,13 @@ term (void)
     }
 }
 
+
 /* Initialise a screen of a given width, height and depth. */
 
 int
-init_screen (unsigned short width,
-             unsigned short height,
-             unsigned char depth)
+init_screen_internal (unsigned short width,
+                      unsigned short height,
+                      unsigned char depth)
 {
   if (SDL_Init (SDL_INIT_VIDEO) == 0)
     {
@@ -242,7 +254,7 @@ init_screen (unsigned short width,
           sg_shadow = SDL_DisplayFormat (sg_screen);
 
           if (sg_shadow)
-            return TRUE;
+            return SUCCESS;
           else
             {
               fprintf (stderr, "GFX-SDL: Error: could not make shadowbuf.\n");
@@ -258,19 +270,20 @@ init_screen (unsigned short width,
   else
     fprintf (stderr, "GFX-SDL: Error: could not init SDL.\n");
 
-  return FALSE;
+  return FAILURE;
 }
+
 
 /* Draw a rectangle of colour on-screen. */
 
-void
-draw_rect (short x,
-           short y, 
-           unsigned short width,
-           unsigned short height, 
-           unsigned char red,
-           unsigned char green,
-           unsigned char blue)
+int
+draw_rect_internal (short x,
+                    short y, 
+                    unsigned short width,
+                    unsigned short height, 
+                    unsigned char red,
+                    unsigned char green,
+                    unsigned char blue)
 {
   SDL_Rect rect;
 
@@ -281,6 +294,8 @@ draw_rect (short x,
 
   SDL_FillRect (sg_screen, &rect, SDL_MapRGB (sg_screen->format,
                                              red, green, blue));
+
+  return SUCCESS;
 }
 
 /* Load an image and return its data in the module's native format. */
@@ -298,23 +313,29 @@ load_image_data (const char filename[])
   return (void*) surf;
 }
 
+
 /* Free image data retrieved by load_image_data. */
 
-void
+int
 free_image_data (void *data)
 {
   if (data)
     SDL_FreeSurface(data);
+
+  return SUCCESS;
 }
 
+
+/* Draw a rectangular portion of an image on-screen. */
+
 int
-draw_image (void *image,
-            short image_x,
-            short image_y,
-            short screen_x,
-            short screen_y,
-            unsigned short width,
-            unsigned short height)
+draw_image_internal (void *image,
+                     short image_x,
+                     short image_y,
+                     short screen_x,
+                     short screen_y,
+                     unsigned short width,
+                     unsigned short height)
 {
   SDL_Rect srcrect, destrect;
   SDL_Surface *ptex;
@@ -333,49 +354,107 @@ draw_image (void *image,
   if (ptex)
     {
       SDL_BlitSurface (ptex, &srcrect, sg_screen, &destrect);
-      return 1;
+      return SUCCESS;
     }
   else
-    return 0;
+    return FAILURE;
 }
 
-void
-update_screen (void)
+
+/* Update the screen. */
+
+int
+update_screen_internal (void)
 {
   SDL_Flip (sg_screen);
   SDL_Delay (15);
+
+  return SUCCESS;
 }
 
-void
-scroll_screen (unsigned int direction)
+
+/* Translate the screen by a co-ordinate pair, leaving damage. */
+
+int
+scroll_screen_internal (short x_offset, short y_offset)
 {
   SDL_Rect source, dest;
 
-  source.x = dest.x = source.y = dest.y = 0;
+  /* These are all temporary variables, which are 
+   * used for boundary-checking before populating the SDL rects.
+   */
 
-  source.w = dest.w = (Uint16) sg_screen->w;
-  source.h = dest.h = (Uint16) sg_screen->h;
+  int sx;
+  int sy;
+  int sw;
+  int sh;
+  int dx;
+  int dy;
 
-  switch (direction)
+  sx = dx = sy = dy = 0;
+
+  sw = dest.w = (Uint16) sg_screen->w;
+  sh = dest.h = (Uint16) sg_screen->h;
+
+  /* Set up the offsets. */
+
+  if (x_offset < 0)
     {
-    case NORTH:
-      source.y = 1;
-      source.h--;
-      break;
-    case EAST:
-      dest.x = 1;
-      source.w--;
-      break;
-    case SOUTH:
-      dest.y = 1;
-      source.h--;
-      break;
-    case WEST:
-      source.x = 1;
-      source.w--;
-      break;
+      sx -= x_offset;
+      sw += x_offset;
     }
+  else
+    {
+      dx += x_offset;
+      sw -= x_offset;
+    }
+
+  if (y_offset < 0)
+    {
+      sy -= y_offset;
+      sh += y_offset;
+    }
+  else
+    {
+      dy += y_offset;
+      sh -= y_offset;
+    }
+
+  /* Now check for overflows. */
+
+  if (sx > SHRT_MAX
+      || sy > SHRT_MAX
+      || dx > SHRT_MAX
+      || dy > SHRT_MAX
+      || sx < SHRT_MIN
+      || sy < SHRT_MIN
+      || dx < SHRT_MIN
+      || dy < SHRT_MIN)
+    {
+      fprintf (stderr, "GFX-SDL: Coordinate overflow when scrolling.\n");
+      return FAILURE;
+    }
+
+  if (sw > USHRT_MAX
+      || sh > USHRT_MAX
+      || sw < 0
+      || sh < 0)
+    {
+      fprintf (stderr, "GFX-SDL: Dimension overflow when scrolling.\n");
+      return FAILURE;
+    }
+
+  /* Convert down. */
+
+  source.x = (short) sx;
+  source.y = (short) sy;
+  dest.x = (short) dx;
+  dest.y = (short) dy;
+  source.w = (unsigned short) sw;
+  source.h = (unsigned short) sh;
 
   SDL_BlitSurface (sg_screen, &source, sg_shadow, &dest);
   SDL_BlitSurface (sg_shadow, &dest, sg_screen, &dest);
+
+  return SUCCESS;
 }

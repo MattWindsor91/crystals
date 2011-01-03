@@ -66,6 +66,36 @@ enum
   };
 
 
+/* -- STRUCTURES -- */
+
+/** A function table for states, which is to be populated when the
+ *  state is initialised.
+ *
+ *  @todo  This will eventually be rolled into the module system.
+ */
+
+struct state_functions
+{
+  /** Clean up the current state.
+   *
+   *  @return  SUCCESS if no errors occurred, FAILURE otherwise.
+   */
+
+  int
+  (*cleanup) (void);
+
+
+  /** Perform frame updates for the current state.
+   *
+   *  @return  SUCCESS if no errors occurred, FAILURE otherwise.
+   */
+
+  int
+  (*update) (void);
+
+
+};
+
 /* -- PROTOTYPES -- */
 
 /** Retrieve the current game state.
@@ -119,21 +149,22 @@ int
 init_state (state_t state);
 
 
-/** Perform per-frame updates for the current state. */
+/** Perform per-frame updates for the current state. 
+ *   
+ *  @return  SUCCESS if no errors occurred, FAILURE otherwise. 
+ */
 
-void
+int
 state_frame_updates (void);
 
 
-/** Call the cleanup function for a given state.
- *
- *  @param state  The state to attempt to de-initialise.
+/** Call the cleanup function for the current state.
  *
  *  @return  SUCCESS if no errors occurred, FAILURE otherwise.
  */
 
 int
-cleanup_state (state_t state);
+cleanup_state (void);
 
 
 #endif /* not _STATE_H */

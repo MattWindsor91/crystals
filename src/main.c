@@ -117,12 +117,6 @@ init (void)
       return FAILURE;
     }
 
-  if (init_objects () == FAILURE)
-    {
-      fatal ("MAIN - init - Object system initialisation failed.");
-      return FAILURE;
-    }
-
   if (init_bindings () == SUCCESS)
     {
         run_script ("tests/test.sc");
@@ -160,7 +154,7 @@ void
 cleanup (void)
 {
   if (get_state () != STATE_QUIT)
-    cleanup_state (get_state ());
+    cleanup_state ();
 
   cleanup_events ();
   cleanup_graphics ();

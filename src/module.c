@@ -142,15 +142,17 @@ get_module_by_name (const char* name, const char *modulespath, module_data *modu
 int
 get_module (const char* modulepath, module_data *module)
 {
-  char *error;
+  char *dlerr;
 
   if (module->lib_handle != NULL) return FAILURE;
 
   module->lib_handle = dlopen (modulepath, RTLD_LAZY);
 
-  if ((error = dlerror ()) != NULL)
+  dlerr = dlerror ();
+
+  if (dlerr != NULL)
     {
-      fprintf (stderr, "DLERROR: %s\n", error);
+      fprintf (stderr, "DLERROR: %s\n", dlerr);
       return FAILURE;
     }
 
@@ -171,13 +173,15 @@ get_module (const char* modulepath, module_data *module)
 int
 get_module_function (module_data module, const char *function, void **func)
 {
-  char *error;
+  char *dlerr;
 
   *(void**)(func) = dlsym (module.lib_handle, function);
 
-  if ((error = dlerror ()) != NULL)
+  dlerr = dlerror ();
+
+  if (dlerr != NULL)
     {
-      fprintf (stderr, "DLERROR: %s\n", error);
+      fprintf (stderr, "DLERROR: %s\n", dlerr);
       return FAILURE;
     }
 
@@ -192,14 +196,18 @@ load_module_gfx (const char* name, module_set* modules)
   if (get_module_by_name (name, modules->path, &modules->gfx.metadata) == FAILURE)
     return FAILURE;
   
-  if (get_module_function (modules->gfx.metadata, "init_screen",
+  if (get_module_function (modules->gfx.metadata,
+                           "init_screen_internal",
                            (void**)
-                           &modules->gfx.init_screen) == FAILURE)
+                           &modules->gfx.init_screen_internal)
+      == FAILURE)
     return FAILURE;
   
-  if (get_module_function (modules->gfx.metadata, "draw_rect",
+  if (get_module_function (modules->gfx.metadata,
+                           "draw_rect_internal",
                            (void**)
-                           &modules->gfx.draw_rect) == FAILURE)
+                           &modules->gfx.draw_rect_internal)
+      == FAILURE)
     return FAILURE;
   
   if (get_module_function (modules->gfx.metadata, "load_image_data",
@@ -212,19 +220,25 @@ load_module_gfx (const char* name, module_set* modules)
                            &modules->gfx.free_image_data) == FAILURE)
     return FAILURE;
   
-  if (get_module_function (modules->gfx.metadata, "draw_image",
+  if (get_module_function (modules->gfx.metadata,
+                           "draw_image_internal",
                            (void**)
-                           &modules->gfx.draw_image) == FAILURE)
+                           &modules->gfx.draw_image_internal)
+      == FAILURE)
     return FAILURE;
   
-  if (get_module_function (modules->gfx.metadata, "update_screen",
+  if (get_module_function (modules->gfx.metadata,
+                           "update_screen_internal",
                            (void**)
-                           &modules->gfx.update_screen)  == FAILURE)
+                           &modules->gfx.update_screen_internal) 
+      == FAILURE)
     return FAILURE;
   
-  if (get_module_function (modules->gfx.metadata, "scroll_screen",
+  if (get_module_function (modules->gfx.metadata,
+                           "scroll_screen_internal",
                            (void**)
-                           &modules->gfx.scroll_screen) == FAILURE)
+                           &modules->gfx.scroll_screen_internal)
+      == FAILURE)
     return FAILURE;
   
   return SUCCESS;
@@ -235,12 +249,15 @@ load_module_gfx (const char* name, module_set* modules)
 int
 load_module_event (const char *name, module_set *modules)
 {
-  if (get_module_by_name (name, modules->path, &modules->event.metadata) == FAILURE)
+  if (get_module_by_name (name, modules->path, &modules->event.metadata)
+      == FAILURE)
     return FAILURE;
   
-  if (get_module_function (modules->event.metadata, "process_events",
+  if (get_module_function (modules->event.metadata,
+                           "process_events_internal",
                            (void**)
-                           &modules->event.process_events) == FAILURE)
+                           &modules->event.process_events_internal)
+      == FAILURE)
     return FAILURE;
   
   if (get_module_function (modules->event.metadata,

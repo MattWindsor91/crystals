@@ -168,7 +168,7 @@ init_mapview (struct map *map)
 
   /* Set all tiles as dirty. */
 
-  mark_dirty_rect (mapview, 0, 0, map->width, map->height);
+  mark_dirty_rect (mapview, 0, 0, map->width * TILE_W, map->height * TILE_H);
 
   return mapview;
 }
@@ -180,13 +180,13 @@ init_object_image (struct object_image *image, struct object_t *parent)
 
   if (image == NULL)
     {
-      fprintf (stderr, "MAPVIEW: Error: Tried to init null object image.\n");
+      error ("MAPVIEW - init_object_image - Tried to init null object image.");
       return FAILURE;
     }
 
   if (parent == NULL)
     {
-      fprintf (stderr, "MAPVIEW: Error: Object image has no parent.\n");
+      error ("MAPVIEW - init_object_image - Object image has no parent.");
       return FAILURE;
     }
 
@@ -204,12 +204,14 @@ init_object_image (struct object_image *image, struct object_t *parent)
   return SUCCESS;
 }
 
+
 int
 add_object_image (struct map_view *mapview,
                   layer_t tag,
-                  struct object_image *image)
+                  struct object_t *object)
 {
-  struct object_image *new_image;
+  struct object_rnode *new_rnode;
+  struct object_image *image;
 
   /* First, error checking! */
 
@@ -217,15 +219,23 @@ add_object_image (struct map_view *mapview,
 
   if (mapview == NULL)
     {
-      fprintf (stderr, "MAPVIEW: Error: Tried to render to NULL mapview.\n");
+      error ("MAPVIEW - add_object_image - Tried to render to NULL mapview.");
       return FAILURE;
     }
 
-  /* Also, the image should exist. */
+  /* Also, the object to add should exist. */
+
+  if (object == NULL)
+    {
+      error ("MAPVIEW - add_object_image - Tried to render a NULL object.");
+      return FAILURE;
+    }
+
+  image = get_object_image (object);
 
   if (image == NULL)
     {
-      fprintf (stderr, "MAPVIEW: Error: Tried to render a NULL rnode.\n");
+      error ("MAPVIEW - add_object_image - Tried to render a NULL image.");
       return FAILURE;
     }
 
@@ -237,7 +247,7 @@ add_object_image (struct map_view *mapview,
 
   if (tag == 0)
     {
-      fprintf (stderr, "MAPVIEW: Error: Tried to render to tag 0.\n");
+      error ("MAPVIEW - add_object_image - Tried to render to tag 0.");
       return FAILURE;
     }
 
@@ -250,85 +260,80 @@ add_object_image (struct map_view *mapview,
 
   if (tag > mapview->num_object_queues)
     {
-      fprintf (stderr, "MAPVIEW: Error: Tag specified too high.\n");
+      error ("MAPVIEW - add_object_image - Tag specified too high.");
       return FAILURE;
     }
 
   if (image->filename == NULL)
     {
-      fprintf (stderr, "MAPVIEW: Error: Filename is NULL.\n");
+      error ("MAPVIEW - add_object_image - Filename is NULL.");
       return FAILURE;
     }
 
   if (image->width == 0 || image->height == 0)
     {
-      fprintf (stderr, "MAPVIEW: Error: Zero object render width/height.\n");
+      error ("MAPVIEW - add_object_image - Zero object render width/height.");
       return FAILURE;
     }
 
   /* Now copy the image, if possible. */
 
-  new_image = malloc (sizeof (struct object_image));
+  new_rnode = malloc (sizeof (struct object_rnode));
 
-  if (new_image == NULL)
+  if (new_rnode == NULL)
     {
-      fprintf (stderr, "MAPVIEW: Error: Allocation failed for dupe rnode.\n");
+      error ("MAPVIEW - add_object_image - Allocation failed for rnode.");
       return FAILURE;
     }
 
-  /* Blindly copy the existing stuff, then allocate new space for the
-     filename and copy that over. */
+  /* Link to the object and its image. */
 
-  memcpy (new_image, image, sizeof (struct object_image));
-
-  new_image->filename = malloc (sizeof (char)
-                                * (strlen (image->filename) + 1));
-
-  if (new_image->filename == NULL)
-    {
-      fprintf (stderr, "MAPVIEW: Error: Couldn't alloc new image FN.");
-      free_object_image (new_image);
-      return FAILURE;
-    }
-
-  strncpy (new_image->filename, image->filename,
-           (strlen (image->filename) + 1));
+  new_rnode->object = object;
+  new_rnode->image = image;
+  new_rnode->next = NULL;
 
   /* Finally, add to the proper tag queue.
 
-     If the queue is empty, then just add it to the queue head.
+     If the queue is empty or the first queue item is in front, then
+     just add it to the queue head.
      Otherwise, find a space in the queue before the first item with a
      screen_y higher (further down the screen) than this object, to
      preserve z-order.
   */
   
-  if (mapview->object_queue[tag - 1] == NULL)
+  if (mapview->object_queue[tag - 1] == NULL
+      || ((mapview->object_queue[tag - 1]->image->map_y
+           + mapview->object_queue[tag - 1]->image->height)
+          > (image->map_y + image->height)))
     {
-      mapview->object_queue[tag - 1] = new_image;
+      new_rnode->next = mapview->object_queue[tag - 1];
+      mapview->object_queue[tag - 1] = new_rnode;
+
       return SUCCESS;
     }
   else
     {
-      struct object_image *ptr;
-      
+      struct object_rnode *ptr;
+ 
       /* Skip to the first item that either has a null neighbour 
          or a neighbour whose screen_y + width is bigger. */
 
       for (ptr = mapview->object_queue[tag - 1]; 
            ptr->next != NULL
-             && ((ptr->next->map_y + ptr->next->height)
-                 <= (new_image->map_y + new_image->height)); 
+             && ((ptr->next->image->map_y + ptr->next->image->height)
+                 <= (image->map_y + image->height)); 
            ptr = ptr->next)
         ;
 
       /* Insert the new image here. */
 
-      new_image->next = ptr->next;
-      ptr->next = new_image;
+      new_rnode->next = ptr->next;
+      ptr->next = new_rnode;
 
       return SUCCESS;
     }
 }
+
 
 void
 free_object_image (struct object_image *image)
@@ -342,11 +347,10 @@ free_object_image (struct object_image *image)
     }
 }
 
+
 void
 render_map (struct map_view *mapview)
 {
-  /* FIXME: only render dirty tiles. */
-
   if (mapview)
     {
       if (mapview->map)
@@ -363,6 +367,7 @@ render_map (struct map_view *mapview)
     }
 }
 
+
 void
 render_map_layer (struct map_view *mapview, unsigned char layer)
 {
@@ -378,7 +383,7 @@ render_map_layer (struct map_view *mapview, unsigned char layer)
 
   if (tileset_object == NULL)
     {
-      fprintf (stderr, "MAPVIEW: Error: Couldn't load tileset.\n");
+      fatal ("MAPVIEW - render_map_layer - Couldn't load tileset.");
       return;
     }
 
@@ -386,7 +391,7 @@ render_map_layer (struct map_view *mapview, unsigned char layer)
 
   if (tileset == NULL)
     {
-      fprintf (stderr, "MAPVIEW: Error: Tileset has NULL data.\n");
+      fatal ("MAPVIEW - render_map_layer - Tileset has NULL data.");
       return;
     }
 
@@ -419,14 +424,13 @@ render_map_layer (struct map_view *mapview, unsigned char layer)
 
               if (true_y >= 0
                   && true_y < map->height
-                  && mapview->dirty_tiles[true_x + (true_y * map->height)] != 0)
+                  && mapview->dirty_tiles[true_x + (true_y * map->width)] != 0)
                 {
                   /* Practically, the drawing X and Y should NEVER be
                      bigger than a short, but it's good to check. 
 
                      Also, and this will be changed eventually, but
                      the tileset X cannot be bigger than a short.
-
                   */
 
                   int screen_x = (x * TILE_W) - (x_offset % TILE_W);
@@ -439,15 +443,15 @@ render_map_layer (struct map_view *mapview, unsigned char layer)
                       || screen_y < SHRT_MIN
                       || screen_y > SHRT_MAX)
                     {
-                      fprintf (stderr, "MAPVIEW: Error: Screen X and Y are outside short bounds.\n");
-                      fprintf (stderr, "MAPVIEW: Error: THIS SHOULD NEVER HAPPEN!\n");
+                      error ("MAPVIEW - render_map_layer - Screen X and Y are outside short bounds.");
+                      fatal ("^-- THIS SHOULD NEVER HAPPEN!");
                       return;
                     }
 
                   if (layer_offset < 0 
                       || layer_offset >= (map->width * map->height))
                     {
-                      fprintf (stderr, "MAPVIEW: Error: Layer offset out of bounds.\n");
+                      fatal ("MAPVIEW - render_map_layer - Layer offset out of bounds.");
                       return;
                     }
 
@@ -455,7 +459,7 @@ render_map_layer (struct map_view *mapview, unsigned char layer)
                   if (tileset_x < 0
                       || tileset_x > SHRT_MAX)
                     {
-                      fprintf (stderr, "MAPVIEW: Error: Tileset X is outside short bounds.\n");
+                      fatal ("MAPVIEW - render_map_layer - Tileset X is outside short bounds.");
                       return;
                     }
 
@@ -474,6 +478,7 @@ render_map_layer (struct map_view *mapview, unsigned char layer)
     }
 }
 
+
 void
 render_map_objects (struct map_view *mapview, unsigned char layer)
 {
@@ -482,81 +487,117 @@ render_map_objects (struct map_view *mapview, unsigned char layer)
 
   if (tag > 0)
     {
-      struct object_image *next;
+      struct object_rnode *next;
+      struct object_image *image;
 
       while (mapview->object_queue[tag - 1] != NULL)
         {
           next = mapview->object_queue[tag - 1]->next;
 
-          draw_image (mapview->object_queue[tag - 1]->filename,
-                      mapview->object_queue[tag - 1]->image_x,
-                      mapview->object_queue[tag - 1]->image_y,
-                      (short) (mapview->object_queue[tag - 1]->map_x 
-                       - mapview->x_offset),
-                      (short) (mapview->object_queue[tag - 1]->map_y
-                       - mapview->y_offset),
-                      mapview->object_queue[tag - 1]->width,
-                      mapview->object_queue[tag - 1]->height);
+          image = mapview->object_queue[tag - 1]->image;
+
+          if (image == NULL)
+            {
+              error ("MAPVIEW - render_map_objects - Failed to get object image.");
+              return;
+            }
+
+          draw_image (image->filename,
+                      image->image_x,
+                      image->image_y,
+                      (short) (image->map_x - mapview->x_offset),
+                      (short) (image->map_y - mapview->y_offset),
+                      image->width,
+                      image->height);
 
           /* Mark the parent object as no longer dirty. */
-          if (mapview->object_queue[tag - 1]->parent != NULL)
-            mapview->object_queue[tag - 1]->parent->is_dirty = FALSE;
+          if (mapview->object_queue[tag - 1] != NULL)
+            mapview->object_queue[tag - 1]->object->is_dirty = FALSE;
 
-          free_object_image (mapview->object_queue[tag - 1]);
+          free (mapview->object_queue[tag - 1]);
 
           mapview->object_queue[tag - 1] = next;
         }
     } 
 }
 
-void
-scroll_map (struct map_view *mapview, int direction)
-{
-  unsigned int adirection;
 
-  switch (direction)
+void
+scroll_map (struct map_view *mapview,
+            short x_offset,
+            short y_offset)
+{
+
+  /* Sanity checking. */
+
+  if (mapview == NULL)
     {
-    case NORTH:
-      mapview->y_offset -= 1;
-      mark_dirty_rect (mapview, 
-                       mapview->x_offset / TILE_W,
-                       mapview->y_offset / TILE_H,
-                       SCREEN_W / TILE_W, 1);      
-      adirection = SOUTH;
-      break;
-    case EAST:
-      mapview->x_offset += 1;
-      mark_dirty_rect (mapview, 
-                       (SCREEN_W / TILE_W) + (mapview->x_offset / TILE_W) - 1,
-                       mapview->y_offset / TILE_H,
-                       1, SCREEN_H / TILE_H);
-      adirection = WEST;
-      break;
-    case SOUTH:
-      mapview->y_offset += 1;
-      mark_dirty_rect (mapview, 
-                       mapview->x_offset / TILE_W,
-                       (SCREEN_H / TILE_H) + (mapview->y_offset / TILE_H) - 1,
-                       SCREEN_W / TILE_W, 1);
-      adirection = NORTH;
-      break;
-    case WEST:
-      mapview->x_offset -= 1;
-      mark_dirty_rect (mapview, 
-                       mapview->x_offset / TILE_W,
-                       mapview->y_offset / TILE_H,
-                       1, SCREEN_H / TILE_H);
-      adirection = EAST;
-      break;
-    default:
-      fprintf (stderr, "MAPVIEW: Error: Scrolling screen with absurd direction.\n");
+      error ("MAPVIEW - scroll_map - Map view is NULL.");
       return;
-      break;
     }
 
-  (*g_modules.gfx.scroll_screen) (adirection);
+  /* This particular number will pose problems later 
+     when flipping to negative, so don't allow it. */
+
+  if (x_offset == SHRT_MIN
+      || y_offset == SHRT_MIN)
+    {
+      error ("MAPVIEW - scroll_map - Offset too big.");
+      return;
+    }
+
+  /* Work out the dirty rectangles to mark. */
+
+  /* West scroll. */
+
+  if (x_offset < 0)
+    {
+       mark_dirty_rect (mapview, 
+                        mapview->x_offset,
+                        mapview->y_offset,
+                        -(x_offset), SCREEN_H);     
+    }
+
+  /* East scroll. */
+
+  else if (x_offset > 0)
+    {
+      mark_dirty_rect (mapview, 
+                       SCREEN_W + mapview->x_offset - x_offset,
+                       mapview->y_offset,
+                       x_offset, SCREEN_H);
+    }
+
+
+  /* North scroll. */
+
+  if (y_offset < 0) 
+    {
+      mark_dirty_rect (mapview, 
+                       mapview->x_offset,
+                       mapview->y_offset,
+                       SCREEN_W, -(y_offset)); 
+    }
+
+  /* South scroll. */
+
+  else if (y_offset > 0)
+    {
+      mark_dirty_rect (mapview, 
+                       mapview->x_offset,
+                       SCREEN_H + mapview->y_offset - y_offset,
+                       SCREEN_W, y_offset);
+    }
+
+  mapview->x_offset += x_offset;
+  mapview->y_offset += y_offset;
+
+  scroll_screen ((short) -(x_offset),
+                 (short) -(y_offset));
+
   render_map (mapview);
 }
+
 
 int
 mark_dirty_rect (struct map_view *mapview,
@@ -600,13 +641,29 @@ mark_dirty_rect (struct map_view *mapview,
     {
       /* Mark dirty tiles. */
 
-      for (x = mapview->dirty_rectangles->start_x;
-           x < (mapview->dirty_rectangles->start_x
-                + mapview->dirty_rectangles->width); x++)
+      int xmax, ymax;
+
+      /* Make sure maxima are rounded up. */
+
+      xmax = ((mapview->dirty_rectangles->start_x
+               + mapview->dirty_rectangles->width) / TILE_W);
+
+      if ((mapview->dirty_rectangles->start_x
+            + mapview->dirty_rectangles->width) % TILE_W > 0)
+        xmax++;
+
+      ymax = ((mapview->dirty_rectangles->start_y
+               + mapview->dirty_rectangles->height) / TILE_H);
+
+      if ((mapview->dirty_rectangles->start_y
+            + mapview->dirty_rectangles->height) % TILE_H > 0)
+        ymax++;
+
+      for (x = mapview->dirty_rectangles->start_x / TILE_W;
+           x < xmax; x++)
         {
-          for (y = mapview->dirty_rectangles->start_y;
-               y < (mapview->dirty_rectangles->start_y
-                    + mapview->dirty_rectangles->height); y++)
+          for (y = mapview->dirty_rectangles->start_y / TILE_H;
+               y < ymax; y++)
             {
               if (x >= 0
                   && y >= 0
@@ -619,11 +676,22 @@ mark_dirty_rect (struct map_view *mapview,
 
       /* Mark dirty objects. */
 
+      /* Transform the dirty rectangle so it extends to all tiles it
+         intersects. */
+
+      x = mapview->dirty_rectangles->start_x / TILE_W;
+      y = mapview->dirty_rectangles->start_y / TILE_H;
+
+      mapview->dirty_rectangles->start_x = x * TILE_W;
+      mapview->dirty_rectangles->start_y = y * TILE_H;
+
+      mapview->dirty_rectangles->width = (xmax - x + 1) * TILE_W;
+      mapview->dirty_rectangles->height = (ymax - y + 1) * TILE_H;
+
       /* Check to see if each object in the hash table is going to be dirtied. */
 
-      apply_to_hash_objects (g_objects, 
-                             dirty_object_test, 
-                             mapview->dirty_rectangles);
+      apply_to_objects (dirty_object_test, 
+                        mapview->dirty_rectangles);
 
       /* Now can the current dirty rectangle and move to the next, if
          any. */
@@ -637,6 +705,7 @@ mark_dirty_rect (struct map_view *mapview,
  
   return SUCCESS;
 }
+
 
 static int
 add_dirty_rect (struct map_view *mapview,
@@ -692,6 +761,7 @@ add_dirty_rect (struct map_view *mapview,
   return SUCCESS;
 }
 
+
 void
 cleanup_mapview (struct map_view *mapview)
 {
@@ -703,14 +773,14 @@ cleanup_mapview (struct map_view *mapview)
       if (mapview->object_queue)
         {
           unsigned int i;
-          struct object_image *next;
+          struct object_rnode *next;
 
           for (i = 0; i < mapview->num_object_queues; i++)
             {
               while (mapview->object_queue[i] != NULL)
                 {             
                   next = mapview->object_queue[i]->next;
-                  free_object_image (mapview->object_queue[i]);
+                  free (mapview->object_queue[i]);
                   mapview->object_queue[i] = next;
                 }
             }

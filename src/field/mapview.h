@@ -72,7 +72,7 @@ extern const unsigned short TILE_H;
 
 /* -- STRUCTURES -- */
 
-/** An object render queue node. */
+/** An object image. */
 
 struct object_image
 {
@@ -105,6 +105,18 @@ struct object_image
   struct object_image *next; /**< Next node in the queue. */
 };
 
+
+/** An object render queue node. */
+
+struct object_rnode
+{
+  struct object_t *object;    /**< Pointer to the object. */
+  struct object_image *image; /**< Pointer to the object image linked
+                                 to the object, for expedience. */
+  struct object_rnode *next;  /**< Next node in the queue. */
+};
+
+
 /** A dirty rectangle queue node. */
 
 struct dirty_rectangle
@@ -121,6 +133,7 @@ struct dirty_rectangle
   struct map_view *parent;      /**< Parent map view. */
   struct dirty_rectangle *next; /**< Next node in the queue. */
 };
+
 
 /** A map viewpoint.
  *
@@ -158,15 +171,16 @@ struct map_view
                                      (equal to the highest tag used
                                      by the map). */
 
-  struct object_image **object_queue; /**< The head array of queues of
-                                         object sprites to be rendered
+  struct object_rnode **object_queue; /**< The head array of queues of
+                                         object pointers to be rendered
                                          on the next pass.  There will
                                          be num_object_queues heads in
                                          this block.*/
-
+  
   struct dirty_rectangle *dirty_rectangles; /**< Stack of dirty
                                                rectangles. */
 };
+
 
 #include "object.h" /* object_t; cannot be included before
                        structures. */
@@ -174,6 +188,7 @@ struct map_view
 /* -- GLOBAL VARIABLES -- */
 
 extern const char FN_TILESET[]; /**< Tileset filename. */
+
 
 /* -- PROTOTYPES -- */
 
@@ -188,6 +203,7 @@ extern const char FN_TILESET[]; /**< Tileset filename. */
 struct map_view *
 init_mapview (struct map *map);
 
+
 /** Set all the parameters of an object image node to default values.
  *
  *  @param image   Pointer to the object render queue node.
@@ -200,6 +216,7 @@ init_mapview (struct map *map);
 
 int
 init_object_image (struct object_image *image, struct object_t *parent);
+
 
 /** Add an object sprite to the rendering queue. 
  *
@@ -214,8 +231,8 @@ init_object_image (struct object_image *image, struct object_t *parent);
  *                   be rendered on top of the first map layer to use
  *                   the tag. This -must- be nonzero.
  *
- *  @param image     Pointer to the object render queue node to add to
- *                   the rendering queue.
+ *  @param object    Pointer to the object whose image should be
+ *                   rendered.
  *
  *  @return SUCCESS if there were no errors encountered; FAILURE
  *  otherwise.
@@ -224,7 +241,8 @@ init_object_image (struct object_image *image, struct object_t *parent);
 int
 add_object_image (struct map_view *mapview,
                   layer_t tag,
-                  struct object_image *image);
+                  struct object_t *object);
+
 
 /** Free an object image render queue node.
  *
@@ -234,6 +252,7 @@ add_object_image (struct map_view *mapview,
 void
 free_object_image (struct object_image *image);
 
+
 /** Render the dirty tiles on a map.
  *
  *  @param mapview  Pointer to the map view to render.
@@ -241,6 +260,7 @@ free_object_image (struct object_image *image);
 
 void
 render_map (struct map_view *mapview);
+
 
 /** Render a given layer on a map.
  *
@@ -251,6 +271,7 @@ render_map (struct map_view *mapview);
 
 void
 render_map_layer (struct map_view *mapview, unsigned char layer);
+
 
 /** Render any map objects to be placed on top of this layer.
  *
@@ -266,16 +287,21 @@ render_map_layer (struct map_view *mapview, unsigned char layer);
 void
 render_map_objects (struct map_view *mapview, unsigned char layer);
 
+
 /** Scroll the map on-screen, re-rendering it in its new position.
  *
  *  @param mapview    The map view to render.
  *
- *  @param direction  The cardinal direction (NORTH, SOUTH, EAST or
- *                    WEST) to scroll in.
+ *  @param x_offset   The X co-ordinate offset to scroll by.
+ *
+ *  @param y_offset   The Y co-ordinate offset to scroll by.
  */
 
 void
-scroll_map (struct map_view *mapview, int direction);
+scroll_map (struct map_view *mapview, 
+            short x_offset, 
+            short y_offset);
+
 
 /** Mark a rectangle of tiles as being dirty.
  *
@@ -309,6 +335,7 @@ mark_dirty_rect (struct map_view *mapview,
                  int width,
                  int height);
 
+
 /** De-initialise a mapview.
  *
  *  @warning This frees the mapview structure, but NOT the map
@@ -319,5 +346,6 @@ mark_dirty_rect (struct map_view *mapview,
 
 void
 cleanup_mapview (struct map_view *mapview);
+
 
 #endif /* _MAPVIEW_H */
