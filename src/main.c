@@ -119,7 +119,7 @@ init (void)
 
   if (init_bindings () == SUCCESS)
     {
-        run_script ("tests/test.sc");
+        run_script ("tests/python.py");
     }
 
   init_events ();

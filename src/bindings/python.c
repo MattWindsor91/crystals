@@ -107,11 +107,12 @@ run_script (const char* path)
         EXIT = SUCCESS;
       else
         EXIT = FAILURE;
+  
+      fclose(file_stream);
     }
   else
     EXIT = FAILURE;
 
-  fclose(file_stream);
   return EXIT;
 }
 
