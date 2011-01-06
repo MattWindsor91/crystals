@@ -119,7 +119,7 @@ init (void)
 
   if (init_bindings () == SUCCESS)
     {
-        run_script ("tests/python.py");
+        run_script ("tests/lua.lua");
     }
 
   init_events ();

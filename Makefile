@@ -22,6 +22,10 @@ OBJ      += util.o module.o optionparser.o parser.o state.o
 OBJ      += field/field.o field/map.o field/mapview.o field/object.o
 OBJ      += field/object-api.o
 
+## Bindings file
+
+BINDINGS := lua
+
 # Add SRCDIR to all object paths #
 
 OBJ      := $(addprefix $(SRCDIR)/,$(OBJ))
@@ -61,18 +65,22 @@ WARN     := -Wall -Wextra -Wshadow -Wpointer-arith -Wcast-align \
             -Wredundant-decls -Wnested-externs -Winline -Wno-long-long \
             -Wconversion -Wstrict-prototypes
 
-LIBS     := -ldl -lpthread 
+LIBS     := -ldl 
 CFLAGS   := -ansi -pedantic -O2 -ggdb -DDEFMODPATH="\"$(MODPATH)\"" $(WARN)
-
-## Bindings file
-
-BINDINGS := $(SRCDIR)/bindings/python.o
 
 # Add bindings object file to the other object files and add the proper CFLAGS and LIBS
 
-OBJ      += $(BINDINGS)
-LIBS     += `python-config --libs`
-CFLAGS   += -I/usr/include/python3.1 -I/usr/include/python3.1 -DNDEBUG
+OBJ      += $(SRCDIR)/bindings/$(BINDINGS).o
+
+
+ifeq ($(BINDINGS), python)
+	LIBS     += `python-config --libs`
+	CFLAGS   += -I/usr/include/python3.1 -I/usr/include/python3.1 -DNDEBUG
+endif
+
+ifeq ($(BINDINGS), lua)
+	LIBS     += `pkg-config --libs lua`
+endif
 
 ## Rules ##
 
@@ -163,4 +171,4 @@ clean-tests:
 	@echo "LaTeXing $<..."
 	@pdflatex -output-directory=$(shell dirname $@) $^ >/dev/null
 
-# vim: noexpandtab:
+# vim: set ts=8 noexpandtab:
