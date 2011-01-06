@@ -36,7 +36,7 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/** @file src/modules/bindings-lua.c
+/** @file src/bindings/lua.c
  *  @author Alexander Preisinger
  *  @brief Lua module for scripting.
  */
