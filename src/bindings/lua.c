@@ -122,6 +122,8 @@ run_script (const char *path)
     }
 }
 
+/* -- LUA DEFINITIONS -- */
+
 int
 crystals_test (lua_State *L)
 {
@@ -136,28 +138,28 @@ static int
 parameter_check (lua_State *L, const char *func_name, const char sig[])
 {
   int i;
-  int pars;
-  int pas_pars;
+  int parameters;
+  int passed_parameters;
 
   /* to prevent type conversation warnings on 64 bit systems */
-  pars = (int) strlen (sig);
-  pas_pars = lua_gettop (L);
+  parameters = (int) strlen (sig);
+  passed_parameters = lua_gettop (L);
 
-  if (pars != pas_pars)
+  if (parameters != passed_parameters)
     {
-      fprintf (stderr, "LUA: %s: Only takes %d argument, %d given.\n",
-        func_name, pars, pas_pars);
+      error ("LUA: %s: Takes %d argument, %d given.\n", func_name, parameters,
+        passed_parameters);
       return 0;
     }
 
-  for (i = 1; i <= pars; ++i)
+  for (i = 1; i <= parameters; ++i)
     {
       switch (sig[i-1])
         {
           case 's':
             if (lua_type (L, i) != LUA_TSTRING)
               {
-                fprintf (stderr, "LUA: %s: Parameter %d has to be a string.\n",
+                error ("LUA: %s: Parameter %d has to be a string.\n", 
                   func_name, i);
                 return 0;
               }
@@ -165,7 +167,7 @@ parameter_check (lua_State *L, const char *func_name, const char sig[])
           case 'd':
             if (lua_type (L, i) != LUA_TNUMBER)
               {
-                fprintf (stderr, "LUA: %s: Parameter %d has to be a number.\n",
+                error ("LUA: %s: Parameter %d has to be a number.\n",
                   func_name, i);
                 return 0;
               }
@@ -173,14 +175,13 @@ parameter_check (lua_State *L, const char *func_name, const char sig[])
           case 'b':
             if (lua_type (L, i) != LUA_TBOOLEAN)
               {
-                fprintf (stderr, "LUA: %s: Parameter %d has to be a boolean.\n",
+                error ("LUA: %s: Parameter %d has to be a boolean.\n",
                   func_name, i);
                 return 0;
               }
             break;
           default:
-            fprintf (stderr, "LUA: parameter_check: Uknown sig character %c\n",
-              sig[i]);
+              error("LUA: parameter_check: Uknown sig character %c\n", sig[i]);
             return 0;
             break;
         }
@@ -188,4 +189,4 @@ parameter_check (lua_State *L, const char *func_name, const char sig[])
   return 1;
 }
 
-/* vim: set st=2 sw=2 softtabstop=2: */
+/* vim: set ts=2 sw=2 softtabstop=2: */

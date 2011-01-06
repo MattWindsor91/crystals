@@ -117,7 +117,7 @@ run_script (const char* path)
 }
 
 
-/* PYTHON DEFINITIONS */
+/* -- PYTHON DEFINITIONS -- */
 
 static PyObject*
 crystals_init (void) {
