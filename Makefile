@@ -66,7 +66,7 @@ WARN     := -Wall -Wextra -Wshadow -Wpointer-arith -Wcast-align \
             -Wconversion -Wstrict-prototypes
 
 LIBS     := -ldl 
-CFLAGS   := -ansi -pedantic -O2 -ggdb -DDEFMODPATH="\"$(MODPATH)\"" $(WARN)
+CFLAGS   := -pedantic -O2 -ggdb -DDEFMODPATH="\"$(MODPATH)\"" $(WARN)
 
 # Add bindings object file to the other object files and add the proper CFLAGS and LIBS
 
@@ -75,11 +75,17 @@ OBJ      += $(SRCDIR)/bindings/$(BINDINGS).o
 
 ifeq ($(BINDINGS), python)
 	LIBS     += `python-config --libs`
-	CFLAGS   += -I/usr/include/python3.1 -I/usr/include/python3.1 -DNDEBUG
+	CFLAGS   += -I/usr/include/python3.1 -DNDEBUG
 endif
 
 ifeq ($(BINDINGS), lua)
 	LIBS     += `pkg-config --libs lua`
+endif
+
+ifeq ($(BINDINGS), ruby)
+	LIBS     += -lruby
+	CFLAGS   += -I/usr/include/ruby-1.9.1 \
+		    -I/usr/include/ruby-1.9.1/i686-linux/
 endif
 
 ## Rules ##
