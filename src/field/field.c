@@ -50,6 +50,7 @@
 
 #include "field.h"
 #include "map.h"
+#include "mapload.h"
 #include "mapview.h"
 #include "object.h"
 #include "object-api.h"
@@ -115,7 +116,7 @@ init_field (struct state_functions *function_table)
       return FAILURE;
     }
 
-  sg_map = init_test_map ();
+  sg_map = load_map ("maps/test.map");
 
   if (sg_map == NULL)
     {
@@ -287,7 +288,7 @@ int
 cleanup_field (void)
 {
   cleanup_mapview (sg_mapview);
-  cleanup_map (sg_map);
+  free_map (sg_map);
   cleanup_objects ();
 
   field_cleanup_callbacks ();

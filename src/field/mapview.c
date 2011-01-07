@@ -54,10 +54,12 @@
 #include "../module.h"
 #include "../graphics.h"
 
+
 /* -- CONSTANTS -- */
 
 const unsigned short TILE_W = 32; 
 const unsigned short TILE_H = 32;
+
 
 /* -- STATIC DECLARATIONS -- */
 
@@ -126,7 +128,7 @@ init_mapview (struct map *map)
       return NULL;
     }
 
-  mapview->dirty_tiles = malloc (sizeof (unsigned char) *
+  mapview->dirty_tiles = malloc (sizeof (layer_count_t) *
                                  (unsigned int) (width * height));
 
   if (mapview->dirty_tiles == NULL)
@@ -207,7 +209,7 @@ init_object_image (struct object_image *image, struct object_t *parent)
 
 int
 add_object_image (struct map_view *mapview,
-                  layer_t tag,
+                  layer_value_t tag,
                   struct object_t *object)
 {
   struct object_rnode *new_rnode;
@@ -358,7 +360,7 @@ render_map (struct map_view *mapview)
           unsigned char l;
 
           /* Render a layer, then the objects tagged with that layer. */
-          for (l = 0; l < mapview->map->num_layers; l++)
+          for (l = 0; l <= get_max_layer (mapview->map); l++)
             {
               render_map_layer (mapview, l);
               render_map_objects (mapview, l);
@@ -436,7 +438,7 @@ render_map_layer (struct map_view *mapview, unsigned char layer)
                   int screen_x = (x * TILE_W) - (x_offset % TILE_W);
                   int screen_y = (y * TILE_H) - (y_offset % TILE_H);
                   int layer_offset = true_x  + (true_y * map->height);
-                  int tileset_x = TILE_W * map->data_layers[layer][layer_offset];
+                  int tileset_x = TILE_W * map->value_planes[layer][layer_offset];
 
                   if (screen_x < SHRT_MIN
                       || screen_x > SHRT_MAX
@@ -463,7 +465,7 @@ render_map_layer (struct map_view *mapview, unsigned char layer)
                       return;
                     }
 
-                  if (map->data_layers[layer][layer_offset] 
+                  if (map->value_planes[layer][layer_offset] 
                       != 0)
                     draw_image_direct (tileset,
                                        (short) tileset_x, 0,
@@ -482,8 +484,8 @@ render_map_layer (struct map_view *mapview, unsigned char layer)
 void
 render_map_objects (struct map_view *mapview, unsigned char layer)
 {
-  layer_t tag;
-  tag = get_tag (mapview->map, layer);
+  layer_value_t tag;
+  tag = get_layer_tag (mapview->map, layer);
 
   if (tag > 0)
     {
@@ -555,7 +557,7 @@ scroll_map (struct map_view *mapview,
        mark_dirty_rect (mapview, 
                         mapview->x_offset,
                         mapview->y_offset,
-                        -(x_offset), SCREEN_H);     
+                        (dimension_t) abs (x_offset), SCREEN_H);
     }
 
   /* East scroll. */
@@ -565,7 +567,7 @@ scroll_map (struct map_view *mapview,
       mark_dirty_rect (mapview, 
                        SCREEN_W + mapview->x_offset - x_offset,
                        mapview->y_offset,
-                       x_offset, SCREEN_H);
+                       (dimension_t) x_offset, SCREEN_H);
     }
 
 
@@ -576,7 +578,7 @@ scroll_map (struct map_view *mapview,
       mark_dirty_rect (mapview, 
                        mapview->x_offset,
                        mapview->y_offset,
-                       SCREEN_W, -(y_offset)); 
+                       SCREEN_W, (dimension_t) abs (y_offset));
     }
 
   /* South scroll. */
@@ -586,7 +588,7 @@ scroll_map (struct map_view *mapview,
       mark_dirty_rect (mapview, 
                        mapview->x_offset,
                        SCREEN_H + mapview->y_offset - y_offset,
-                       SCREEN_W, y_offset);
+                       SCREEN_W, (dimension_t) y_offset);
     }
 
   mapview->x_offset += x_offset;
@@ -606,7 +608,8 @@ mark_dirty_rect (struct map_view *mapview,
                  int width,
                  int height)
 {
-  int x, y;
+  int x;
+  int y;
   struct dirty_rectangle *next;
 
   /* Sanity checking. */
@@ -670,7 +673,7 @@ mark_dirty_rect (struct map_view *mapview,
                   && x < mapview->map->width
                   && y < mapview->map->height)
                 mapview->dirty_tiles[x + (y * mapview->map->width)] = \
-                  mapview->map->num_layers;
+                  get_max_layer (mapview->map) + 1;
             }
         }
 

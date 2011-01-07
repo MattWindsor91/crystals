@@ -46,7 +46,7 @@
 #define _OBJECT_H
 
 #include "../hash.h" /* Hash stuff. */
-#include "map.h"     /* layer_t */
+#include "map.h"     /* layer_value_t */
 #include "mapview.h" /* struct object_image, struct map_view */
 
 /* -- CONSTANTS -- */
@@ -75,7 +75,7 @@ struct object_t
   char *script_filename;      /**< Filename of the script associated with
                                  the object. */
   
-  layer_t tag;                /**< The tag on which to render. */
+  layer_value_t tag;                /**< The tag on which to render. */
 
   char is_dirty;              /**< Boolean determining whether or not
                                  the object is "dirty" (should be
@@ -130,7 +130,7 @@ add_object (const char object_name[],
 
 int
 set_object_tag (struct object_t *object,
-                layer_t tag);
+                layer_value_t tag);
 
 
 /** Get the graphic associated with an object.

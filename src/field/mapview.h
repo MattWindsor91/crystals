@@ -70,6 +70,7 @@ extern const unsigned short TILE_W;
 
 extern const unsigned short TILE_H;
 
+
 /* -- STRUCTURES -- */
 
 /** An object image. */
@@ -122,13 +123,13 @@ struct object_rnode
 struct dirty_rectangle
 {
   int start_x; /**< X co-ordinate of the left edge of the rectangle
-                  (in tiles from left of map). */
+                    (in pixels from left side of map). */
 
-  int start_y; /**< Y co-ordinate of the top of the rectangle (in
-                  tiles from top of map). */
+  int start_y; /**< Y co-ordinate of the top edge of the rectangle
+                    (in pixels from top side of map). */
 
-  int width;   /**< Width of the rectangle (in tiles). */
-  int height;  /**< Height of the rectangle (in tiles). */
+  int width;   /**< Width of the rectangle (in pixels). */
+  int height;  /**< Height of the rectangle (in pixels). */
 
   struct map_view *parent;      /**< Parent map view. */
   struct dirty_rectangle *next; /**< Next node in the queue. */
@@ -152,9 +153,9 @@ struct map_view
                                  screen, in pixels from the top edge
                                  of the map. Can be negative.*/
 
-  struct map *map;            /**< Pointer to the map being viewed. */
+  map_t *map;                 /**< Pointer to the map being viewed. */
 
-  unsigned char *dirty_tiles; /**< Matrix of "dirty" tiles, or tiles
+  layer_count_t *dirty_tiles; /**< Matrix of "dirty" tiles, or tiles
                                  to be re-rendered on the next
                                  rendering pass. 
 
@@ -240,7 +241,7 @@ init_object_image (struct object_image *image, struct object_t *parent);
 
 int
 add_object_image (struct map_view *mapview,
-                  layer_t tag,
+                  layer_value_t tag,
                   struct object_t *object);
 
 
@@ -290,11 +291,11 @@ render_map_objects (struct map_view *mapview, unsigned char layer);
 
 /** Scroll the map on-screen, re-rendering it in its new position.
  *
- *  @param mapview    The map view to render.
+ *  @param mapview   The map view to render.
  *
- *  @param x_offset   The X co-ordinate offset to scroll by.
+ *  @param x_offset  The X co-ordinate offset to scroll by, in pixels.
  *
- *  @param y_offset   The Y co-ordinate offset to scroll by.
+ *  @param y_offset  The Y co-ordinate offset to scroll by, in pixels.
  */
 
 void
@@ -315,14 +316,14 @@ scroll_map (struct map_view *mapview,
  *  @param mapview  Pointer to the map view to render.
  *
  *  @param start_x  The X co-ordinate of the start of the rectangle,
- *                  as a tile offset from the left edge of the map.
+ *                  as a pixel offset from the left edge of the map.
  *
  *  @param start_y  The Y co-ordinate of the start of the rectangle, 
- *                  as a tile offset from the top edge of the map.
+ *                  as a pixel offset from the top edge of the map.
  *
- *  @param width    Width of the tile rectangle, in tiles.
+ *  @param width    Width of the tile rectangle, in pixels.
  *
- *  @param height   Height of the tile rectangle, in tiles.
+ *  @param height   Height of the tile rectangle, in pixels.
  *
  *  @return SUCCESS if there were no errors encountered; FAILURE
  *  otherwise.
@@ -339,7 +340,7 @@ mark_dirty_rect (struct map_view *mapview,
 /** De-initialise a mapview.
  *
  *  @warning This frees the mapview structure, but NOT the map
- *  connected to it.  Use cleanup_map to remove the map.
+ *  connected to it.  Use free_map to remove the map.
  *
  *  @param mapview  Pointer to the map view to de-allocate.
  */

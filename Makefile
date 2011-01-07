@@ -20,7 +20,7 @@ TESTS    := $(addprefix $(TESTDIR)/,$(TESTS))
 OBJ      := main.o hash.o graphics.o events.o
 OBJ      += util.o bindings.o module.o optionparser.o parser.o state.o
 OBJ      += field/field.o field/map.o field/mapview.o field/object.o
-OBJ      += field/object-api.o
+OBJ      += field/object-api.o field/mapload.o
 
 # Add SRCDIR to all object paths #
 
@@ -50,7 +50,7 @@ DOC      := $(addprefix $(DOCDIR)/,$(DOC))
 
 ## Compilation toolchain ##
 
-CC       := clang
+CC       := gcc
 RM       := rm -f
 DIST	 := $(shell uname -r | sed "s/.*-//")
 
@@ -61,14 +61,14 @@ WARN     := -Wall -Wextra -Wshadow -Wpointer-arith -Wcast-align \
             -Wredundant-decls -Wnested-externs -Winline -Wno-long-long \
             -Wconversion -Wstrict-prototypes
 
-LIBS     := -ldl -lpthread 
-CFLAGS   := -ansi -pedantic -O2 -ggdb -DDEFMODPATH="\"$(MODPATH)\"" $(WARN)
+LIBS     := -ldl -lpthread -g
+CFLAGS   := -ansi -pedantic -g -DDEFMODPATH="\"$(MODPATH)\"" $(WARN)
 
 ## Rules ##
 
 .PHONY: all doc autodoc clean clean-tests clean-doc clean-modules modules tests
 
-all: $(BIN) doc autodoc modules
+all: $(BIN) modules
 
 $(BIN): $(OBJ) $(SO)
 	@echo "Linking..."

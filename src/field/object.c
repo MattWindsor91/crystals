@@ -166,7 +166,7 @@ add_object (const char object_name[],
 
 int
 set_object_tag (struct object_t *object, 
-                layer_t tag)
+                layer_value_t tag)
 {
   if (object == NULL)
     {

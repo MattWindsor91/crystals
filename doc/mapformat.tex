@@ -1,0 +1,399 @@
+\documentclass [12pt,a4paper]{article}
+\pagestyle{headings}
+
+\usepackage [utf8x]{inputenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage [margin=0.9in]{geometry}
+\usepackage{ucs}
+\usepackage{listings}
+\usepackage{color}
+\usepackage{textcomp}
+
+\lstset{
+  language=C,
+  keywordstyle=\bfseries\ttfamily\color[rgb]{0,0,1},
+  identifierstyle=\ttfamily,
+  commentstyle=\color[rgb]{0.133,0.545,0.133},
+  stringstyle=\ttfamily\color[rgb]{0.627,0.126,0.941},
+  showstringspaces=false,
+  basicstyle=\small,
+  numberstyle=\footnotesize,
+  numbers=left,
+  stepnumber=1,
+  numbersep=10pt,
+  tabsize=2,
+  breaklines=true,
+  prebreak = \raisebox{0ex}[0ex][0ex]{\ensuremath{\hookleftarrow}},
+  breakatwhitespace=false,
+  aboveskip={1.5\baselineskip},
+  columns=fixed,
+  upquote=true,
+  extendedchars=true,
+}
+
+\newcommand{\superscript} [1]{\ensuremath{^{\textrm{#1}}}}
+\newcommand{\subscript} [1]{\ensuremath{_{\textrm{#1}}}}
+
+\author{Matt Windsor}
+\title{The Crystals Map Format\\Version 1}
+\date{}
+
+\begin{document}
+
+\maketitle{}
+
+\begin{abstract}
+  This \LaTeX file details the map format supported at the time of
+  writing by Crystals and the Crystals map editor.
+
+  \emph{Note:} This is a proposal, and is subject to heavy
+  change.
+
+\end{abstract}
+
+\section{Brief}
+
+\subsection{Requirements}
+
+The map format has been designed to meet the following criteria:
+
+\begin{itemize}
+
+  \item Be easily parsed both by the Crystals engine and by external
+    tools, without the need of non-standard libraries (thus making
+    format parsing readily cross-platform);
+
+  \item Allow for ample scalability, though not necessarily unlimited
+    flexibility;
+
+  \item Support maps of comparable size and standards to those in the
+    existing reference games.
+
+\end{itemize}
+
+\subsection{Features}
+
+Version 1 of the map format boasts the following features:
+
+\begin{itemize}
+
+  \item Binary format that can be parsed with C and Java standard
+    library functions working at the byte level;
+
+  \item Does not require external libraries to parse;
+
+  \item Support (theoretical) for maps of width and height up to 65,535
+    tiles (16 bits per dimension) each;
+
+  \item Support (theoretical) for up to 65,536 layers (16 bits for
+    layer count), which are to be composited by the map renderer;
+
+  \item Support for up to 65,535 \emph{layer tags} (16 bits per tag
+    field), which can be assigned to layers to provide the map
+    renderer with hints as to where to render objects in the layer
+    stack without tying objects to layer numbers.
+
+  \item Support for up to 65,536 tiles in one tileset.  At time of
+    writing, the tileset path is not part of the map data, but this
+    will easily be insertable at the end of the current data
+    definition as a null-terminated string.
+
+\end{itemize}
+
+It is believed at the current time that the hard limits, which are
+based around the C unsigned short type, are more than sufficient for
+Crystals maps.  Further, incompatible, revisions to the map structure
+may change this.
+
+
+\section{The format}
+
+Following is the format specification proper, starting with the
+outline of the structure of a map file.  The rest of the specification
+is composed in a bottom-up manner, beginning with the representation
+of concrete data types and continuing to the definition of the
+building blocks of a map.
+
+
+\subsection {Outline}
+
+\begin{enumerate}
+
+  \item Map header (16 bytes)
+  
+  \begin{itemize}
+
+    \item ASCII ``CMFT'' identifier (4 bytes)
+    \item Format version number (2 bytes)
+    \item Width of map in tiles (2 bytes)
+    \item Height of map in tiles (2 bytes)
+    \item Index of highest layer (number of layers - 1) (2 bytes)
+    \item Index of highest zone (number of zones - 1) (2 bytes)
+    \item Reserved (2 bytes)
+
+  \end{itemize}
+
+
+  \item Layer tag data ($4 + (layercount\cdot{}2)$ bytes) 
+  
+  \begin{itemize}
+
+    \item ASCII ``TAGS'' identifier (4 bytes)
+    \item Layer tag (2 bytes per layer)
+
+  \end{itemize}
+
+
+  \item Layer value data ($4 + (layercount\cdot{}width\cdot{}height\cdot{}2)$ bytes) 
+  
+  \begin{itemize}
+
+    \item ASCII ``VALS'' identifier (4 bytes)
+    \item Layer value data (\emph{height} rows of \emph{width} tile entries,
+      each tile constituting 2 bytes; no row end delimitation;
+      repeated for each layer in the map with no layer end delimitation)
+
+  \end{itemize}
+
+
+  \item Layer zone data ($4 + (layercount\cdot{}width\cdot{}height\cdot{}2)$ bytes) 
+  
+  \begin{itemize}
+
+    \item ASCII ``ZONE'' identifier (4 bytes)
+    \item Layer zone data (\emph{height} rows of \emph{width} tile entries,
+      each tile constituting 2 bytes; no row end delimitation;
+      repeated for each layer in the map with no layer end delimitation)
+
+  \end{itemize}
+
+
+  \item Zone parameters ($3 + (zonecount\cdot{}2)$ bytes)
+
+
+  \item End of file - future versions may place additional data here.
+
+
+\end{enumerate}
+
+
+\subsection{Unsigned short representation}
+
+Almost all fields are represented as two-byte unsigned short values,
+representing values from 0 to 65,535.
+
+These are encoded in a big-endian manner: that is, the highest bit is
+stored first, followed by the lowest bit.
+
+
+\subsection{ASCII identifiers}
+
+Three-character identifiers are placed before the start of data blocks
+in order to aid in validation.  In this version of the map editor,
+they are not used to detect the nature of blocks, and thus all maps
+must include all data blocks in the above order.
+
+The identifiers are encoded in ASCII with one byte per character,
+yielding three bytes per identifier.
+
+
+\subsection{Tile value}
+
+The \emph{value} of a tile denotes the offset into the tile-set at
+which the tile image can be found.
+
+It is an unsigned short number and thus each tile in the map
+contributes two bytes per layer towards the size of the value layer
+plane.
+
+
+\subsection{Tile zone}
+
+The \emph{zone} of a tile is used to group tiles with similar
+properties.  For example, zones can be used to denote impassable
+areas, or random encounter areas.
+
+It is an unsigned short number and thus each tile in the map
+contributes two bytes per layer towards the size of the value zone
+plane.
+
+
+\subsection{Layer plane}
+
+The tile value and zone attributes are stored in what is referred to
+as \emph{layer planes}.
+
+A layer plane is comprised of the tile information for one layer, laid
+out in a left-to-right, top-to-bottom format; each row is stored one
+by one with no delimiter to mark the end of a row.
+
+Layer planes are generally 
+
+
+\section{Implementation details}
+
+\subsection{Java}
+
+A class library for interacting with the Crystals map format is
+included in the Java Crystals Map Editor.  This library provides an
+object-orientated view of the Crystals map format, in contrast to the
+data structure-orientated approach used in the C engine.
+
+\subsection{C structure listing}
+
+Reproduced here is the internal map structure, at the time of writing,
+as used in the Crystals engine.  Internally, it is referred to as the
+type \emph{map\_t}.
+
+
+\begin{lstlisting}
+typedef unsigned short layer_t; /**< Type for layer data. */
+typedef unsigned short tag_t;   /**< Type for layer tags. */
+
+struct map
+{
+  unsigned short width;       /**< Width of the map, in tiles. */
+  unsigned short height;      /**< Height of the map, in tiles. */
+  unsigned short num_layers;  /**< Number of arrays to store in the
+                                   map. */
+  tag_t   layer_tags[];       /**< Array of layer tags. */
+  layer_t **data_layers;      /**< Pointers to map layer arrays. */
+};
+
+typedef struct map map_t;
+
+\end{lstlisting}
+
+\subsubsection{A note on types}
+
+The data layer type is typedef'd as layer\_t to allow quick changes in
+the future, should a global limit on 65,536 tiles become too small, or
+if layer\_t needs to be changed to a compound structure later.
+
+The same logic is used with layer tags and tag\_t.
+
+\subsection{Layers}
+
+The map tiles are organised into \emph{layers}.  The theoretical upper
+bound on the number of layers that can be stored is 65,536 (the maximum
+value of an unsigned short); however, it is expected that most maps
+will feature on average 3-5 layers.
+
+Layers consist of $(width * height)$ unsigned shorts, arranged in a
+dynamically allocated array of $num\_layers$ members at
+\textbf{num\_layers}.  Each value represents one tile, and should be
+read left-to-right, top-to-bottom, bottom layer to top layer.
+
+\subsection{Tags}
+
+The last char in each layer is reserved as the \emph{tag byte}.  This
+is a number, 0 to 65,535, that is used to identify the layer to
+objects.
+
+Objects also have tag indices (either by default or specified during
+their instantiation on the map) and, when an object is instantiated on
+a map, it will look for the first layer with a matching tag index or,
+if the tag index cannot be found, the first layer defined (the bottom
+layer).
+
+The layer found is then treated as the object's ``floor'', with all
+layers below the floor ignored and rendered beneath the object, and
+all layers above the floor ignored and rendered above the object.
+Barring exceptional circumstances, an object can only interact with,
+and be blocked by, objects on its ``floor'' layer.
+
+An example of the usage of this would be a scene in which there is a
+balcony floor (let us say tag 2) looking out on a floor below (let us
+say tag 1).  The player is tag 1 (see ``Defined Tags'' below), and
+positioned on the below floor, and another NPC is tag 2 and positioned
+on the floor above.  If the player moves underneath the floor, he will
+disappear underneath the floor as the balcony is a layer above the
+floor, and as the player is tagged with the lower floor's tag, the
+player will treat the lower floor as ground and the balcony as
+overlay.  At the same time, the NPC will be rendered on top of the
+balcony as its tag matches that of the balcony.
+
+\subsubsection{Defined Tags}
+
+\begin{tabular}{ l p{5in} }
+  ID & Purpose \\
+  \hline
+  0  & Inactive layer.  No objects can be instantiated on a tag-0
+       layer, and it will not be considered for object checking during 
+       rendering.  This is often referred to as the \emph{null tag.} \\
+  1  & Recommended default tag for the player and objects that will 
+       interact with the player. \\
+\end{tabular}
+
+\subsubsection{Changing Tag}
+
+A possible feature would be the ability to change the tag of an object
+temporarily on a map.  For example, if the player walks up a ladder,
+their tag could change so they consider a different layer as their
+floor.
+
+This, of course, would need some added complexities (see
+\emph{Arguments against tags} below).
+
+\subsubsection{Rationale for tags}
+
+Tags would allow objects to carry information on where they should, by
+default, be placed in a scene, without hardcoding the map layer number
+(which could change from map to map.)  For example, the player object
+would by default start each map with the tag 1, which could correspond
+to layer 0 on one map, layer 2 on another map, or even layer 63 on
+another map.
+
+While a particularly complex map may make use of many layers to
+achieve graphical effects, it will likely only have a few ``physical''
+layers (eg ground, mezzanines, overlay).  Tags would allow for objects
+to be placed based on physical layers rather than graphical layers.
+
+If layers are added to or removed from a map, the tags will likely
+remain the same while the layer IDs change.
+
+In addition, layers tagged 0 could be completely disregarded while
+rendering objects which (dependent on how the rendering system is
+implemented) could save effort.
+
+Tags could be used to place animating objects, for example flickering
+street lamps, above the player.
+
+\subsubsection{Arguments against tags}
+
+Though it is the author's belief that tags are a good feature, for
+completeness's sake and the purposes of debate some potential
+arguments against the aforementioned tag implementation are discussed.
+
+Tags are a complexity that will be thrust upon the map designer, and
+such could be an annoyance especially if all maps have the same layer
+layout anyway.
+
+Tags require an extra byte per layer for storage, which is a modest
+cost but a cost nonetheless.
+
+The numeric format of tags means that they are less intuitive than,
+say, a string-based system (the player treats the first layer named
+``player-floor'' as its floor, for example) - but this would add
+complexity and space consumption.
+
+If tag changing is made possible, this could become messy as objects
+move from their default tag to other tags.  Doors would have to be
+scripted to ensure that the player has the right tag when moving to a
+new map, and this would break the idea of tags allowing objects to
+ignore differences between maps.
+
+Only one tag can be stored per layer under the proposed system.  A
+system of being able to chain tags could be implemented, but would add
+more complexity to the map structures.
+
+\section {The tileset}
+
+The global tileset image, at time of writing, is located in
+\emph{tiles.png}.  Currently, all the layer data provides is an offset
+into this tileset image.
+
+\end{document}

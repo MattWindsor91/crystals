@@ -41,200 +41,372 @@
  *  @brief   Low-level map handling functions.
  */
 
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 
 #include "map.h"
+#include "../util.h"
 #include "../graphics.h"
+
 
 const char FN_TILESET[] = "gfx/tiles.png";
 
-/* FIXME: Remove the data below when map loaders are available. */
 
-static layer_t sg_test_layers[4][101] = 
-  {{ 9,  5,  5,  5,  5,  5,  5,  5,  5, 10, 
-     8,  2,  2,  2,  2,  2,  2,  2,  2,  7,
-     8, 13, 13, 13, 13, 13, 13, 13, 13,  7,
-     8, 13, 13, 13, 13, 13, 13, 13, 13,  7,
-     8, 13, 13, 13, 13, 13, 13, 13, 13,  7,
-     8, 13, 13, 13, 13, 13, 13, 13, 13,  7,
-     8, 13, 13, 13, 13, 13, 13, 13, 13,  7,
-     8, 13, 13, 13, 13, 13, 13, 13, 13,  7,
-    11, 13, 13, 13, 13, 13, 13, 13, 13, 12,
-     1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 0},
-   { 0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  3,  3,  3,  3,  3,  3,  3,  3,  0,
-     0, 14, 14, 14, 14, 14, 14, 14, 14,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 1}, 
-   { 0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  3,  3,  3,  3,  3,  3,  3,  3,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 0}, 
-   { 0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
-     0,  0,  0,  0,  4,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  4,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  4,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  4,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  4,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  4,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  4,  0,  0,  0,  0,  0,
-     0,  6,  6,  6,  6,  6,  6,  6,  6,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 2} 
-  };
+/* Allocate and initialise a map. */
 
-/* Initialise the test map. */
-
-/* NOTE: This should be removed when map loading is implemented! */
-
-struct map *
-init_test_map (void)
+map_t *
+init_map (dimension_t width,
+          dimension_t height,
+          layer_index_t max_layer_index,
+          zone_index_t max_zone_index)
 {
-  struct map *map;
+  map_t *map;
+  unsigned int i;
 
-  map = init_map (10, 10, 4);
-
-  if (map)
-    {
-      unsigned int i;
-      for (i = 0; i < 4; i++) 
-        {
-          /* We can assume that (map->width * map->height + 1) fits in unsigned */
-          memcpy (map->data_layers[i], sg_test_layers[i],
-                  sizeof (unsigned short)
-                  * (unsigned int) (map->width * map->height + 1));
-        }
-    }
-
-  return map;
-}
-
-/* Initialise a map. */
-
-struct map *
-init_map (int width, 
-          int height, 
-          unsigned char num_layers)
-{
-  struct map *map;
 
   /* Sanity check */
 
-  if (width <= 0 || height <= 0 || num_layers == 0)
+  if (width <= 0 || height <= 0)
     {
-      fprintf (stderr, "MAP: Error: init_map given a zero or negative parameter.\n");
-      fprintf (stderr, "Width: %d; Height: %d; #Layers: %d\n",
-               width, height, num_layers);
+      error ("MAP - init_map - Given a zero or negative parameter.\nWidth: %d; Height: %d.",
+               width, height);
       return NULL;
     }
 
-  map = malloc (sizeof (struct map));
+  map = malloc (sizeof (map_t));
 
-  if (map) 
+  if (map == NULL)
     {
-      map->width = width;
-      map->height = height;
-      map->num_layers = num_layers;
+      error ("MAP - init_map - Map allocation failed.");
+      return NULL;
+    }
 
-      map->data_layers = malloc (sizeof (layer_t*) * num_layers);
 
-      if (map->data_layers)
+  /* Set parameters and nullify pointers. */
+
+  map->width = width;
+  map->height = height;
+  map->max_layer_index = max_layer_index;
+  map->max_zone_index = max_zone_index;
+
+  map->layer_tags = NULL;
+  map->zone_properties = NULL;
+  map->value_planes = NULL;
+  map->zone_planes = NULL;
+
+
+  /* Allocate tag array. */
+
+  map->layer_tags = calloc ((size_t) max_layer_index + 1, sizeof (layer_tag_t));
+
+  if (map->layer_tags == NULL)
+    {
+      error ("MAP - init_map - Map tag array allocation failed.");
+      free_map (map);
+      return NULL;
+    }
+
+
+  /* Allocate properties array. */
+
+  map->zone_properties = calloc ((size_t) max_zone_index + 1, sizeof (zone_prop_t));
+
+  if (map->zone_properties == NULL)
+    {
+      error ("MAP - init_map - Map zone property array allocation failed.");
+      free_map (map);
+      return NULL;
+    }
+
+
+  /* Allocate layer slots in planes. */
+
+  map->value_planes = calloc ((size_t) max_layer_index + 1, sizeof (layer_value_t*));
+
+  if (map->value_planes == NULL)
+    {
+      error ("MAP - init_map - Map value plane array allocation failed.");
+      free_map (map);
+      return NULL;
+    }
+
+
+  map->zone_planes = calloc ((size_t) max_layer_index + 1, sizeof (layer_zone_t*));
+
+  if (map->zone_planes == NULL)
+    {
+      error ("MAP - init_map - Map zone plane array allocation failed.");
+      free_map (map);
+      return NULL;
+    }
+
+
+  /* Allocate columns in planes. */
+
+  for (i = 0; i <= max_layer_index; i++)
+    {
+      map->value_planes[i] = calloc ((size_t) width * height, sizeof (layer_value_t));
+      if (map->value_planes[i] == NULL)
         {
-          unsigned int i;
-
-          for (i = 0; i < (num_layers); i++)
-            {
-              /* Allocate one extra slot for the layer tag (at the end of the
-                 data). Assert that width and height are positive. */
-              map->data_layers[i] = malloc (sizeof (layer_t)
-                                            * (unsigned int) ((width * height)
-                                                              + 1));
-            }
+          error ("MAP - init_map - Map value plane allocation failed for layer %d.", i);
+          free_map (map);
         }
-      else
+
+      map->zone_planes[i] = calloc ((size_t) width * height, sizeof (layer_zone_t));
+      if (map->zone_planes[i] == NULL)
         {
-          /* Clean up the entire thing, as a map is useless without
-             its data layers. */
-
-          free (map);
-          map = NULL;
+          error ("MAP - init_map - Map zone plane allocation failed for layer %d.", i);
+          free_map (map);
         }
+
     }
 
   return map;
 }
 
-layer_t
-get_tag (struct map *map, unsigned int layer)
+
+/* Set the tag value of a layer. */
+
+int
+set_layer_tag (map_t *map, layer_index_t layer, layer_tag_t tag)
 {
   if (map == NULL)
     {
-      fprintf (stderr, "MAP: Error: Tried to get tag for a NULL map.\n");
-      return 0;
+      error ("MAP - set_tile_value - Given map pointer is NULL.");
+      return FAILURE;
     }
 
-  if (layer >= map->num_layers)
+  if (layer > map->max_layer_index)
     {
-      fprintf (stderr, "MAP: Error: Tried to get tag for an invalid layer.\n");
+      error ("MAP - set_tile_value - Given layer does not exist.");
+      return FAILURE;
+    }
+
+  map->layer_tags[layer] = tag;
+
+  return SUCCESS;
+}
+
+
+/* Set the property bitfield of a zone. */
+
+int
+set_zone_properties (map_t *map, zone_index_t zone, zone_prop_t properties)
+{
+  if (map == NULL)
+    {
+      error ("MAP - set_tile_value - Given map pointer is NULL.");
+      return FAILURE;
+    }
+
+  if (zone > map->max_zone_index)
+    {
+      error ("MAP - set_tile_value - Given zone does not exist.");
+      return FAILURE;
+    }
+
+  map->zone_properties[zone] = properties;
+
+  return SUCCESS;
+}
+
+/* Set the value of a tile. */
+
+int
+set_tile_value (map_t *map, layer_index_t layer, dimension_t x, dimension_t y, layer_value_t value)
+{
+  if (map == NULL)
+    {
+      error ("MAP - set_tile_value - Given map pointer is NULL.");
+      return FAILURE;
+    }
+
+  if (layer > map->max_layer_index)
+    {
+      error ("MAP - set_tile_value - Given layer does not exist.");
+      return FAILURE;
+    }
+
+  if (x >= map->width || y >= map->height)
+    {
+      error ("MAP - set_tile_value - Tile out of bounds.");
+      return FAILURE;
+    }
+
+  map->value_planes[layer][(y * map->width) + x] = value;
+
+  return SUCCESS;
+}
+
+
+/* Set the zone of a tile. */
+
+int
+set_tile_zone (map_t *map, layer_index_t layer, dimension_t x, dimension_t y, layer_zone_t zone)
+{
+  if (map == NULL)
+    {
+      error ("MAP - set_tile_zone - Given map pointer is NULL.");
+      return FAILURE;
+    }
+
+  if (layer > map->max_layer_index)
+    {
+      error ("MAP - set_tile_zone - Given layer does not exist.");
+      return FAILURE;
+    }
+
+  if (zone > map->max_zone_index)
+    {
+      error ("MAP - set_tile_zone - Given zone does not exist.");
+      return FAILURE;
+    }
+
+  if (x >= map->width || y >= map->height)
+    {
+      error ("MAP - set_tile_zone - Tile out of bounds.");
+      return FAILURE;
+    }
+
+  map->zone_planes[layer][(y * map->width) + x] = zone;
+
+  return SUCCESS;
+}
+
+
+/* Get the width of a map, in tiles. */
+
+dimension_t
+get_map_width (map_t *map)
+{
+  if (map == NULL)
+    {
+      error ("MAP - get_map_width - Tried to get width of a NULL map.");
       return 0;
     }
 
-  return map->data_layers[layer][map->width * map->height];
+  return map->width;
 }
+
+
+/* Get the height of a map, in tiles. */
+
+dimension_t
+get_map_height (map_t *map)
+{
+  if (map == NULL)
+    {
+      error ("MAP - get_map_height - Tried to get height of a NULL map.");
+      return 0;
+    }
+
+  return map->height;
+}
+
+
+/* Get the tag associated with a layer. */
+
+layer_tag_t
+get_layer_tag (map_t *map, layer_index_t layer)
+{
+  if (map == NULL)
+    {
+      error ("MAP - get_layer_tag - Tried to get tag for a NULL map.");
+      return NULL_TAG;
+    }
+
+  if (layer > map->max_layer_index)
+    {
+      error ("MAP - get_layer_tag - Tried to get tag for an invalid layer.");
+      return NULL_TAG;
+    }
+
+  return map->layer_tags[layer];
+}
+
 
 /* Get the highest tag number allocated on a map. */
 
-layer_t
-get_max_tag (struct map *map)
+layer_tag_t
+get_max_tag (map_t *map)
 {
-  unsigned int l;
-  layer_t result;
+  layer_index_t l;
+  layer_tag_t result;
 
-  result = 0;
+  result = NULL_TAG;
 
-  if (map)
+  if (map == NULL)
     {
-      for (l = 0; l < map->num_layers; l++)
-        {
-          if (get_tag (map, l) > result)
-            result = get_tag (map, l);
-        }
+      error ("MAP - get_max_tag - Map is NULL.");
+      return 0;
+    }
+
+  for (l = 0; l <= map->max_layer_index; l++)
+    {
+      if (get_layer_tag (map, l) > result)
+        result = get_layer_tag (map, l);
     }
 
   return result;
 }
 
+
+/* Get the highest layer index allocated on a map. */
+
+layer_index_t
+get_max_layer (map_t *map)
+{
+
+  if (map == NULL)
+    {
+      error ("MAP - get_max_layer - Map is NULL.");
+      return 0;
+    }
+
+  return map->max_layer_index;
+}
+
+
+/* Get the highest zone index allocated on a map. */
+
+zone_index_t
+get_max_zone (map_t *map)
+{
+
+  if (map == NULL)
+    {
+      error ("MAP - get_max_zone - Map is NULL.");
+      return 0;
+    }
+
+  return map->max_zone_index;
+}
+
+
 /* De-initialise a map. */
 
 void
-cleanup_map (struct map *map)
+free_map (map_t *map)
 {
   if (map)
     {
       /* Make sure to clean up all the data layers. */
-      if (map->data_layers)
+      if (map->value_planes)
         {
           unsigned int i;
 
-          for (i = 0; i < map->num_layers; i++)
+          if (map->layer_tags)
+            free (map->layer_tags);
+
+          for (i = 0; i <= map->max_layer_index; i++)
             {
-              if (map->data_layers[i])
-                free (map->data_layers[i]);
+              if (map->value_planes[i])
+                free (map->value_planes[i]);
             }
 
-          free (map->data_layers);
+          free (map->value_planes);
         }
       free (map);
     }
