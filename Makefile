@@ -5,6 +5,7 @@ BIN      := crystals
 SRCDIR   := src
 MODDIR   := modules
 DOCDIR   := doc
+BNDDIR   := bindings
 TESTDIR  := tests
 
 ## Test directories ##
@@ -70,8 +71,7 @@ CFLAGS   := -ansi -pedantic -O2 -ggdb -DDEFMODPATH="\"$(MODPATH)\"" $(WARN)
 
 # Add bindings object file to the other object files and add the proper CFLAGS and LIBS
 
-OBJ      += $(SRCDIR)/bindings/$(BINDINGS).o
-
+OBJ      += $(SRCDIR)/$(BNDDIR)/$(BINDINGS).o
 
 ifeq ($(BINDINGS), python)
 	LIBS     += `python-config --libs`
@@ -109,7 +109,7 @@ $(BIN): $(OBJ) $(SO)
 
 -include $(DEPFILES)
 
-clean: clean-tests clean-doc clean-modules
+clean: clean-tests clean-doc clean-modules clean-bindings
 	@echo "Cleaning..."
 	-@$(RM) $(BIN) $(SRCDIR)/*.{o,d,so} &>/dev/null
 
@@ -138,6 +138,10 @@ clean-doc:
 	@echo "Cleaning documentation..."
 	-@$(RM) doc/*.{pdf,aux,log} &>/dev/null
 	-@$(RM) -r autodoc
+
+clean-bindings:
+	@echo "Cleaning bindings..."
+	-@$(RM) $(SRCDIR)/$(BNDDIR)/*.{o,d}
 
 ### Test Suite
 tests: CFLAGS += -DTESTSUITE -DMODPATH="\"$(shell pwd)/$(TESTDIR)/$(MODDIR)/\""

@@ -36,9 +36,9 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/** @file src/bindings/lua.c
+/** @file   src/bindings/lua.c
  *  @author Alexander Preisinger
- *  @brief Lua module for scripting.
+ *  @brief  Lua module for scripting.
  */
 
 #include <stdio.h>
@@ -78,7 +78,7 @@ lua_State *g_lua; /**< Main Lua state which holds the main stack. */
  */
 
 static int
-parameter_check (lua_State *L, const char *func_name, const char *sig);
+lua_parameter_check (lua_State *L, const char *func_name, const char *sig);
 
 
 /** Run a test
@@ -100,8 +100,8 @@ init_bindings (void)
   g_lua = lua_open ();
   luaL_openlibs (g_lua);
   
-  lua_pushcfunction (g_lua, crystals_test);
-  lua_setglobal (g_lua, "crystals_test");
+  lua_pushcfunction (g_lua, crystals_test); /* push the c function on the lua stack*/
+  lua_setglobal (g_lua, "crystals_test"); /* make the c function visible for lua */
   
   lua_pushcfunction (g_lua, power_test);
   lua_setglobal (g_lua, "power_test");
@@ -137,19 +137,21 @@ power_test (lua_State *L)
 {
   int x, y, res;
   
-  if (parameter_check (L, "power_test", "dd") == FAILURE)
+  /*NOTE if you call the c function in lua the parameters are on the lua stack
+   * thats why we need to check if they are of the right type */
+  if (lua_parameter_check (L, "power_test", "dd") == FAILURE)
     return L_FAILURE;
     
-  y = lua_tointeger (L, 2);
-  x = lua_tointeger (L, 1);
+  y = lua_tointeger (L, 2); /* get the first parameter from the lua stack*/
+  x = lua_tointeger (L, 1); /* get the second parametr*/
   
-  printf("%d : %d \n", x, y);
-  
-  lua_getfield (L, LUA_GLOBALSINDEX, "power");
-  lua_pushinteger (L, x);
-  lua_pushinteger (L, y);
-  lua_call (L, 2, 1);
-  res = lua_tointeger (L, -1);
+  lua_getfield (L, LUA_GLOBALSINDEX, "power"); /* move the function lua power
+    to the lua stack */
+  lua_pushinteger (L, x); /* push first parameter to the stack*/
+  lua_pushinteger (L, y); /* push second parameter to the stack */
+  lua_call (L, 2, 1); /* call the function with 2 parameters and 1 result */
+  res = lua_tointeger (L, -1); /* get the result from the stack and convert it 
+    to an integer */
   
   printf ("%d ^ %d = %d\n", x, y, res);
   
@@ -159,7 +161,7 @@ power_test (lua_State *L)
 static int 
 crystals_test (lua_State *L)
 {
-  if (parameter_check (L, "crystals_test", "s") == FAILURE)
+  if (lua_parameter_check (L, "crystals_test", "s") == FAILURE)
     return L_FAILURE;
 
   printf("%s\n", lua_tostring (L, 1));
@@ -167,7 +169,7 @@ crystals_test (lua_State *L)
 }
 
 static int
-parameter_check (lua_State *L, const char *func_name, const char sig[])
+lua_parameter_check (lua_State *L, const char *func_name, const char sig[])
 {
   int i;
   int parameters;
@@ -181,7 +183,7 @@ parameter_check (lua_State *L, const char *func_name, const char sig[])
     {
       error ("LUA: %s: Takes %d argument, %d given.\n", func_name, parameters,
         passed_parameters);
-      return 0;
+      return FAILURE;
     }
 
   for (i = 1; i <= parameters; ++i)
@@ -193,7 +195,7 @@ parameter_check (lua_State *L, const char *func_name, const char sig[])
               {
                 error ("LUA: %s: Parameter %d has to be a string.\n", 
                   func_name, i);
-                return 0;
+                return FAILURE;
               }
             break;
           case 'd':
@@ -201,7 +203,7 @@ parameter_check (lua_State *L, const char *func_name, const char sig[])
               {
                 error ("LUA: %s: Parameter %d has to be a number.\n",
                   func_name, i);
-                return 0;
+                return FAILURE;
               }
             break;
           case 'b':
@@ -209,16 +211,16 @@ parameter_check (lua_State *L, const char *func_name, const char sig[])
               {
                 error ("LUA: %s: Parameter %d has to be a boolean.\n",
                   func_name, i);
-                return 0;
+                return FAILURE;
               }
             break;
           default:
-              error("LUA: parameter_check: Uknown sig character %c\n", sig[i]);
-            return 0;
+              error ("LUA: parameter_check: Uknown sig character %c\n", sig[i]);
+            return FAILURE;
             break;
         }
     }
-  return 1;
+  return SUCCESS;
 }
 
 /* vim: set ts=2 sw=2 softtabstop=2: */
