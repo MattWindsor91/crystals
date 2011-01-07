@@ -85,6 +85,9 @@ parameter_check (lua_State *L, const char *func_name, const char *sig);
  * @todo Remove tests.
  */
 
+static int 
+power_test (lua_State *L);
+
 static int
 crystals_test (lua_State *L);
 
@@ -96,8 +99,13 @@ init_bindings (void)
 {
   g_lua = lua_open ();
   luaL_openlibs (g_lua);
+  
   lua_pushcfunction (g_lua, crystals_test);
   lua_setglobal (g_lua, "crystals_test");
+  
+  lua_pushcfunction (g_lua, power_test);
+  lua_setglobal (g_lua, "power_test");
+  
   return SUCCESS;
 }
 
@@ -124,14 +132,38 @@ run_script (const char *path)
 
 /* -- LUA DEFINITIONS -- */
 
-int
+static int 
+power_test (lua_State *L)
+{
+  int x, y, res;
+  
+  if (parameter_check (L, "power_test", "dd") == FAILURE)
+    return L_FAILURE;
+    
+  y = lua_tointeger (L, 2);
+  x = lua_tointeger (L, 1);
+  
+  printf("%d : %d \n", x, y);
+  
+  lua_getfield (L, LUA_GLOBALSINDEX, "power");
+  lua_pushinteger (L, x);
+  lua_pushinteger (L, y);
+  lua_call (L, 2, 1);
+  res = lua_tointeger (L, -1);
+  
+  printf ("%d ^ %d = %d\n", x, y, res);
+  
+  return L_SUCCESS;
+}
+
+static int 
 crystals_test (lua_State *L)
 {
   if (parameter_check (L, "crystals_test", "s") == FAILURE)
-    return 0;
+    return L_FAILURE;
 
   printf("%s\n", lua_tostring (L, 1));
-  return 1;
+  return L_SUCCESS;
 }
 
 static int

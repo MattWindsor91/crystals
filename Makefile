@@ -66,7 +66,7 @@ WARN     := -Wall -Wextra -Wshadow -Wpointer-arith -Wcast-align \
             -Wconversion -Wstrict-prototypes
 
 LIBS     := -ldl 
-CFLAGS   := -pedantic -O2 -ggdb -DDEFMODPATH="\"$(MODPATH)\"" $(WARN)
+CFLAGS   := -ansi -pedantic -O2 -ggdb -DDEFMODPATH="\"$(MODPATH)\"" $(WARN)
 
 # Add bindings object file to the other object files and add the proper CFLAGS and LIBS
 
@@ -82,11 +82,12 @@ ifeq ($(BINDINGS), lua)
 	LIBS     += `pkg-config --libs lua`
 endif
 
-ifeq ($(BINDINGS), ruby)
-	LIBS     += -lruby
-	CFLAGS   += -I/usr/include/ruby-1.9.1 \
-		    -I/usr/include/ruby-1.9.1/i686-linux/
-endif
+# Not possible to use with -ansi cflag
+#ifeq ($(BINDINGS), ruby)
+#	LIBS     += -lruby
+#	CFLAGS   += -I/usr/include/ruby-1.9.1 \
+#		    -I/usr/include/ruby-1.9.1/i686-linux/
+#endif
 
 ## Rules ##
 
