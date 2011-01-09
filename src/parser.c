@@ -45,13 +45,12 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "util.h"
-#include "parser.h"
+#include "parser.h" /* includes util.h */
 
 
 /* Parse configuration file. */
 
-int
+bool_t
 config_parse_file (const char *path_name, dict_t *root)
 {
   /* simple booleans b_* */
@@ -273,7 +272,7 @@ config_get_value (const char *key, dict_t *node)
 
 /* Function for adding a key-value pair to the tree. */
 
-int
+bool_t
 config_add_pair (char *key, char *value, dict_t *node)
 {
   if (node->key == NULL)

@@ -44,9 +44,8 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "lua.h"
+#include "lua.h" /* includes ../util.h */
 #include "bindings.h"
-#include "../util.h"
 
 /* -- LUA PROTOTYPES -- */
 
@@ -54,7 +53,7 @@
  * @todo Remove tests.
  */
 
-static int 
+static int
 power_test (lua_State *L);
 
 static int
@@ -100,7 +99,7 @@ run_script (const char *path)
 
 /* -- LUA DEFINITIONS -- */
 
-static int 
+static int
 power_test (lua_State *L)
 {
   int x, y, res;
@@ -126,7 +125,7 @@ power_test (lua_State *L)
   return L_SUCCESS;
 }
 
-static int 
+static int
 crystals_test (lua_State *L)
 {
   if (lua_parameter_check (L, "crystals_test", "s") == FAILURE)
@@ -136,7 +135,7 @@ crystals_test (lua_State *L)
   return L_SUCCESS;
 }
 
-static int
+bool_t
 lua_parameter_check (lua_State *L, const char *func_name, const char sig[])
 {
   int i;

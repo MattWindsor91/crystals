@@ -64,6 +64,10 @@ enum
     WEST,        /**< West (left) cardinal direction. */
     NULLC = '\0' /**< Null character (necessary?) */
   };
+  
+/* -- TYPEDEFS -- */
+
+typedef char bool_t; /**<< Used for TRUE, FALSE, SUCCESS and FAILURE */
 
 /* -- FUNCTION MACROS -- */
 
