@@ -44,7 +44,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <dlfcn.h>
 #include <string.h>
 
 #ifdef TESTSUITE
@@ -73,7 +72,7 @@ init_modules (const char *path)
     }
   else
     {
-      fprintf (stderr, "ERROR: Couldn't alloc modules path!\n");
+      error ("MODULE - init_modules - Couldn't allocate modules path.");
     }
 
   return FAILURE;
@@ -106,7 +105,7 @@ get_module_path (const char* module, const char* modulespath, char** out)
     }
   else
     {
-      fprintf (stderr, "ERROR: couldn't allocate module path.\n");
+      error ("MODULE - get_module_path - couldn't allocate module path.");
       return FAILURE;
     }
 
@@ -114,7 +113,9 @@ get_module_path (const char* module, const char* modulespath, char** out)
   return SUCCESS;
 }
 
+
 /* This finds the filename of a module and calls get_module */
+
 int
 get_module_by_name (const char* name, const char *modulespath, module_data *module)
 {
@@ -133,7 +134,7 @@ get_module_by_name (const char* name, const char *modulespath, module_data *modu
     }
   else
     {
-      fprintf (stderr, "ERROR: couldn't find module path.\n");
+      error ("MODULE - get_module_by_name - couldn't find module path.");
       return FAILURE;
     }
 }
@@ -142,23 +143,23 @@ get_module_by_name (const char* name, const char *modulespath, module_data *modu
 int
 get_module (const char* modulepath, module_data *module)
 {
-  char *dlerr;
+  /*char *dlerr;*/
 
-  if (module->lib_handle != NULL) return FAILURE;
+  if (module->lib_handle != NULL)
+    return FAILURE;
 
-  module->lib_handle = dlopen (modulepath, RTLD_LAZY);
+  module->lib_handle = DLLOPEN(modulepath);
 
-  dlerr = dlerror ();
-
-  if (dlerr != NULL)
+  if (module->lib_handle == NULL)
     {
-      fprintf (stderr, "DLERROR: %s\n", dlerr);
+      print_dll_error ("get_module");
       return FAILURE;
     }
 
+
   /* Get init and termination functions if present */
-  get_module_function (*module, "init", (void**) &module->init);
-  get_module_function (*module, "term", (void**) &module->term);
+  get_module_function (*module, "init", (mod_function_ptr*) &module->init);
+  get_module_function (*module, "term", (mod_function_ptr*) &module->term);
 
   /* Execute init function if present */
   if (module->init != NULL)
@@ -169,19 +170,59 @@ get_module (const char* modulepath, module_data *module)
   return SUCCESS;
 }
 
-/* This loads a pointer to a function from a module */
-int
-get_module_function (module_data module, const char *function, void **func)
+
+/* Print the last DLL-acquisition error message, if any. */
+
+void
+print_dll_error (const char function_name[])
 {
-  char *dlerr;
+  /* Unix-likes use libdl, so use dlerror to get DLL error */
+#ifdef USE_LIBDL
 
-  *(void**)(func) = dlsym (module.lib_handle, function);
-
-  dlerr = dlerror ();
+  char *dlerr = dlerror ();
 
   if (dlerr != NULL)
+    error ("MODULE - %s - Failed with dlerr: %s",
+           function_name, dlerr);
+
+#endif /* USE_LIBDL */
+
+  /* If on Windows, use the Windows API instead */
+#ifdef PLATFORM_WINDOWS
+
+  LPVOID lpMsgBuf;
+  DWORD dw = GetLastError ();
+
+  FormatMessage ((FORMAT_MESSAGE_ALLOCATE_BUFFER
+                  | FORMAT_MESSAGE_FROM_SYSTEM
+                  | FORMAT_MESSAGE_IGNORE_INSERTS),
+                 NULL,
+                 dw,
+                 MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+                 (LPTSTR) &lpMsgBuf,
+                 0, NULL);
+
+  error ("MODULE - %s - Failed with error %d: %s",
+         function_name, dw, lpMsgBuf);
+
+  LocalFree (lpMsgBuf);
+
+#endif
+}
+
+
+/* This loads a pointer to a function from a module */
+
+int
+get_module_function (module_data module, const char *function, mod_function_ptr *func)
+{
+  /** char *dlerr; */
+
+  *func = DLLLOOKUP(module.lib_handle, function);
+
+  if (*func == NULL)
     {
-      fprintf (stderr, "DLERROR: %s\n", dlerr);
+      print_dll_error ("get_module_function");
       return FAILURE;
     }
 
@@ -198,45 +239,45 @@ load_module_gfx (const char* name, module_set* modules)
   
   if (get_module_function (modules->gfx.metadata,
                            "init_screen_internal",
-                           (void**)
+                           (mod_function_ptr*)
                            &modules->gfx.init_screen_internal)
       == FAILURE)
     return FAILURE;
   
   if (get_module_function (modules->gfx.metadata,
                            "draw_rect_internal",
-                           (void**)
+                           (mod_function_ptr*)
                            &modules->gfx.draw_rect_internal)
       == FAILURE)
     return FAILURE;
   
   if (get_module_function (modules->gfx.metadata, "load_image_data",
-                           (void**)
+                           (mod_function_ptr*)
                            &modules->gfx.load_image_data) == FAILURE)
     return FAILURE;
   
   if (get_module_function (modules->gfx.metadata, "free_image_data",
-                           (void**)
+                           (mod_function_ptr*)
                            &modules->gfx.free_image_data) == FAILURE)
     return FAILURE;
   
   if (get_module_function (modules->gfx.metadata,
                            "draw_image_internal",
-                           (void**)
+                           (mod_function_ptr*)
                            &modules->gfx.draw_image_internal)
       == FAILURE)
     return FAILURE;
   
   if (get_module_function (modules->gfx.metadata,
                            "update_screen_internal",
-                           (void**)
+                           (mod_function_ptr*)
                            &modules->gfx.update_screen_internal) 
       == FAILURE)
     return FAILURE;
   
   if (get_module_function (modules->gfx.metadata,
                            "scroll_screen_internal",
-                           (void**)
+                           (mod_function_ptr*)
                            &modules->gfx.scroll_screen_internal)
       == FAILURE)
     return FAILURE;
@@ -255,22 +296,23 @@ load_module_event (const char *name, module_set *modules)
   
   if (get_module_function (modules->event.metadata,
                            "process_events_internal",
-                           (void**)
+                           (mod_function_ptr*)
                            &modules->event.process_events_internal)
       == FAILURE)
     return FAILURE;
-  
+
   if (get_module_function (modules->event.metadata,
                            "register_release_handle",
-                           (void**)
+                           (mod_function_ptr*)
                            &modules->event.register_release_handle)
       == FAILURE)
     return FAILURE;
-  
+
   return SUCCESS;
 }
 
 /* This closes an individual module and runs any termination code */
+
 void
 close_module (module_data *module)
 {
@@ -281,12 +323,13 @@ close_module (module_data *module)
           /* Call any termination code */
           (*module->term) ();
         }
-      /* Close the libdl handle */
-      dlclose (module->lib_handle);
+      /* Close the lib handle */
+      DLLCLOSE (module->lib_handle);
     }
 }
 
 /* This closes any loaded modules, run before program termination */
+
 void
 cleanup_modules (void)
 {

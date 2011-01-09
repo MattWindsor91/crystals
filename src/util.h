@@ -52,6 +52,16 @@
 
 /* -- CONSTANTS -- */
 
+/* Windows likes to define these already. */
+
+#ifdef TRUE
+#undef TRUE
+#endif /* TRUE */
+
+#ifdef FALSE
+#undef FALSE
+#endif /* FALSE */
+
 enum
   {
     SUCCESS = 1, /**< Value raised by functions upon success. */
@@ -70,30 +80,77 @@ enum
 #define MAX(x, y) ((x) > (y) ? (x) : (y)) /**< Get the maximum of two
                                              values. */
 
+
+/* - PLATFORM-DEPENDENCY FUNCTION MACROS - */
+
+/* ~~ Windows */
+
+#ifdef PLATFORM_WINDOWS
+#define UTIL_PLATFORM_MACROS
+
+#include "platform/w32-util.h" /* Windows error procedures */
+
+/** The procedure to use for outputting an error message. */
+#define ERROR_PROCEDURE(message, ap, is_fatal) w32_error((message), (ap), (is_fatal))
+
+#endif /* PLATFORM_WINDOWS */
+
+
+/* ~~ Generic/standard */
+
+#ifndef UTIL_PLATFORM_MACROS
+#define UTIL_PLATFORM_MACROS
+
+/** The procedure to use for outputting an error message. */
+#define ERROR_PROCEDURE(message, ap, is_fatal) std_error((message), (ap), (is_fatal))
+
+#endif /* not UTIL_PLATFORM_MACROS */
+
+
 /* -- DECLARATIONS -- */
 
-/** Fatal error.
+/** 
+ * Fatal error.
  *
- *  This prints an error message and sets the g_running variable to
- *  FALSE, effectively causing the engine to try gracefully shut down
- *  after the frame in progress.
+ * This shows an error message and attempts to immediately shut down
+ * the game.
  * 
- *  @param message  Message to print.  This wrapper automatically
- *  prepends and appends FATAL: and a newline respectively. 
+ * @param message  Message to print.  This function automatically
+ *                 prepends and appends FATAL: and a newline respectively. 
  */
 
 void
 fatal (const char message[], ...);
 
-/** Non-fatal error.
+
+/** 
+ * Non-fatal error.
  *
- *  This prints an error message only.
+ * This shows an error message only.
  * 
- *  @param message  Message to print.  This wrapper automatically
- *  prepends and appends ERROR: and a newline respectively. 
+ * @param message  Message to print.  This function automatically
+ *                 prepends and appends ERROR: and a newline respectively. 
  */
 
 void
 error (const char message[], ...);
+
+
+/**
+ * Standard error reporting procedure. 
+ *
+ * This prints the error message to standard error.
+ *
+ * Alternative error procedures are defined wherever more suitable alternatives
+ * are available (eg GUI message boxes).
+ *
+ * @param message   The error message/format string.
+ * @param ap        The variadic arguments list passed from fatal or error.
+ * @param is_fatal  Whether or not the error is fatal.  If the error is 
+ *                  fatal, the program will be halted.
+ */
+
+void
+std_error (const char message[], va_list ap, int is_fatal);
 
 #endif /* not _UTIL_H */

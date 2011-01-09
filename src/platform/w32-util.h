@@ -36,62 +36,36 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/** @file    util.c
+/** @file    w32-util.h
  *  @author  Matt Windsor
- *  @brief   Miscellaneous utility functions.
+ *  @brief   Miscellaneous utility prototypes and declarations for Windows.
+ *
+ *  This, and its corresponding C file, contain things that are
+ *  undeserving of their own code file, but nevertheless useful for
+ *  the engine.
  */
 
-#include <stdlib.h>
-#include <stdio.h>
+#ifndef _W32_UTIL_H
+#define _W32_UTIL_H
+
 #include <stdarg.h>
 
-#include "util.h"
-#include "main.h"
 
-
-/* - DEFINITIONS - */
-
-/* Fatal error. */
-
-void
-fatal (const char message[], ...)
-{
-  va_list ap;
-  va_start (ap, message);
-  ERROR_PROCEDURE(message, ap, TRUE);
-}
-
-
-/* Non-fatal error. */
+/**
+ * Windows error reporting procedure. 
+ *
+ * This displays a message box with the error.
+ *
+ * This prints the error message to standard error.
+ *
+ * @param message   The error message/format string.
+ * @param ap        The variadic arguments list passed from fatal or error.
+ * @param is_fatal  Whether or not the error is fatal.  If the error is 
+ *                  fatal, the program will be halted.
+ */
 
 void
-error (const char message[], ...)
-{
-  va_list ap;
-  va_start (ap, message);
-  ERROR_PROCEDURE(message, ap, FALSE);
-}
+w32_error (const char message[], va_list ap, int is_fatal);
 
 
-/* Standard error reporting procedure. */
-
-void
-std_error (const char message[], va_list ap, int is_fatal)
-{
-  if (is_fatal)
-  	fprintf (stderr, "FATAL: ");
-  else
-    fprintf (stderr, "ERROR: ");
-
-  vfprintf (stderr, message, ap);
-  fprintf (stderr, "\n");
-  va_end (ap);
-
-  fflush (stderr);
-
-  if (is_fatal)
-    {
-	    cleanup ();
-	    exit (1);
-    }
-}
+#endif /* not _W32_UTIL_H */

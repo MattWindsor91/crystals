@@ -1,5 +1,5 @@
 /*
- * Crystals (working title) 
+ * Crystals (working title)
  *
  * Copyright (c) 2010 Matt Windsor, Michael Walker and Alexander
  *                    Preisinger.
@@ -36,62 +36,21 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/** @file    util.c
- *  @author  Matt Windsor
- *  @brief   Miscellaneous utility functions.
+/** @file     src/platform/w32-main.h
+ *  @author   Matt Windsor
+ *  @brief    Declaration for Windows code entry point.
  */
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <stdarg.h>
 
-#include "util.h"
-#include "main.h"
+#ifndef _W32_MAIN_H
+#define _W32_MAIN_H
 
-
-/* - DEFINITIONS - */
-
-/* Fatal error. */
-
-void
-fatal (const char message[], ...)
-{
-  va_list ap;
-  va_start (ap, message);
-  ERROR_PROCEDURE(message, ap, TRUE);
-}
+#include <windows.h>
 
 
-/* Non-fatal error. */
+/* -- DECLARATIONS -- */
 
-void
-error (const char message[], ...)
-{
-  va_list ap;
-  va_start (ap, message);
-  ERROR_PROCEDURE(message, ap, FALSE);
-}
+/* WinMain is defined in winbase.h. */
 
 
-/* Standard error reporting procedure. */
-
-void
-std_error (const char message[], va_list ap, int is_fatal)
-{
-  if (is_fatal)
-  	fprintf (stderr, "FATAL: ");
-  else
-    fprintf (stderr, "ERROR: ");
-
-  vfprintf (stderr, message, ap);
-  fprintf (stderr, "\n");
-  va_end (ap);
-
-  fflush (stderr);
-
-  if (is_fatal)
-    {
-	    cleanup ();
-	    exit (1);
-    }
-}
+#endif /* _W32_MAIN_H */

@@ -44,9 +44,23 @@
 #include <stdio.h>
 #include <limits.h>
 #include <SDL.h>
-#include <SDL/SDL_image.h>
+#include <SDL_image.h>
 
 #include "../util.h" /* Constants. */
+
+
+/* Workaround for Windows DLL symbol load failures.
+ *
+ * All outward-facing functions MUST be preceded with
+ * EXPORT so that the DLL loader can see them.
+ */
+
+#ifdef PLATFORM_WINDOWS
+#define EXPORT __declspec(dllexport)
+#else
+#define EXPORT
+#endif /* PLATFORM_WINDOWS */
+
 
 /* -- STATIC GLOBAL VARIABLES -- */
 
@@ -59,14 +73,16 @@ static SDL_Surface *sg_shadow; /**< The shadow screen surface, used
 
 /** Initialise the module. */
 
-int
+EXPORT int
 init (void);
+
 
 /** Terminate the module, freeing any remaining data dynamically
     allocated by the module. */
 
-void
+EXPORT void
 term (void);
+
 
 /** Initialise a screen of a given width, height and depth.
  *
@@ -83,10 +99,11 @@ term (void);
  *  @return  SUCCESS for success; FAILURE otherwise.
  */
 
-int
+EXPORT int
 init_screen_internal (unsigned short width,
                       unsigned short height,
                       unsigned char depth);
+
 
 /** Draw a rectangle of colour on-screen.
  *
@@ -108,7 +125,7 @@ init_screen_internal (unsigned short width,
  *  @param blue    The blue component of the fill colour (0-255).
  */
 
-int
+EXPORT int
 draw_rect_internal (short x,
                     short y, 
                     unsigned short width,
@@ -116,6 +133,7 @@ draw_rect_internal (short x,
                     unsigned char red,
                     unsigned char green,
                     unsigned char blue);
+
 
 /** Load an image and return its data in the module's native
  *  format.
@@ -132,8 +150,9 @@ draw_rect_internal (short x,
  *  function.
  */
 
-void *
+EXPORT void *
 load_image_data (const char filename[]);
+
 
 /** Free image data retrieved by load_image_data.
  *
@@ -146,7 +165,7 @@ load_image_data (const char filename[]);
  *               data (in the module's native format) to be freed.
  */
 
-int
+EXPORT int
 free_image_data (void *data);
 
 
@@ -178,7 +197,7 @@ free_image_data (void *data);
  *           cases, a failure will simply cause the image to not appear.
  */
 
-int
+EXPORT int
 draw_image_internal (void *image, 
                      short image_x,
                      short image_y,
@@ -190,7 +209,7 @@ draw_image_internal (void *image,
 
 /** Update the screen. */
 
-int
+EXPORT int
 update_screen_internal (void);
 
 
@@ -203,7 +222,7 @@ update_screen_internal (void);
  *                   screen.
  */
 
-int
+EXPORT int
 scroll_screen_internal (short x_offset, short y_offset);
 
 
@@ -211,7 +230,7 @@ scroll_screen_internal (short x_offset, short y_offset);
 
 /* Initialise the module. */
 
-int
+EXPORT int
 init (void)
 {
   sg_screen = NULL;
@@ -223,7 +242,7 @@ init (void)
 /* Terminate the module, freeing any remaining data dynamically
    allocated by the module. */
 
-void
+EXPORT void
 term (void)
 {
   if (sg_screen)
@@ -238,7 +257,7 @@ term (void)
 
 /* Initialise a screen of a given width, height and depth. */
 
-int
+EXPORT int
 init_screen_internal (unsigned short width,
                       unsigned short height,
                       unsigned char depth)
@@ -276,7 +295,7 @@ init_screen_internal (unsigned short width,
 
 /* Draw a rectangle of colour on-screen. */
 
-int
+EXPORT int
 draw_rect_internal (short x,
                     short y, 
                     unsigned short width,
@@ -300,7 +319,7 @@ draw_rect_internal (short x,
 
 /* Load an image and return its data in the module's native format. */
 
-void *
+EXPORT void *
 load_image_data (const char filename[])
 { 
   SDL_Surface *surf;
@@ -316,7 +335,7 @@ load_image_data (const char filename[])
 
 /* Free image data retrieved by load_image_data. */
 
-int
+EXPORT int
 free_image_data (void *data)
 {
   if (data)
@@ -328,7 +347,7 @@ free_image_data (void *data)
 
 /* Draw a rectangular portion of an image on-screen. */
 
-int
+EXPORT int
 draw_image_internal (void *image,
                      short image_x,
                      short image_y,
@@ -363,7 +382,7 @@ draw_image_internal (void *image,
 
 /* Update the screen. */
 
-int
+EXPORT int
 update_screen_internal (void)
 {
   SDL_Flip (sg_screen);
@@ -375,7 +394,7 @@ update_screen_internal (void)
 
 /* Translate the screen by a co-ordinate pair, leaving damage. */
 
-int
+EXPORT int
 scroll_screen_internal (short x_offset, short y_offset)
 {
   SDL_Rect source, dest;

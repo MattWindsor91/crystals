@@ -61,6 +61,8 @@ dict_t *g_config;
 
 /* -- DEFINITIONS -- */
 
+/* NB: For the Windows code entry point, see platform/w32-main.c. */
+
 /* The main function. */
 
 int
@@ -85,7 +87,7 @@ init (void)
 {
   char *module_path;
   
-  g_config = config_dict_init();
+  g_config = config_dict_init ();
 
   /* yeah I know that needs someting better */
   if (config_parse_file ("config/default.cfg", g_config) == SUCCESS)
@@ -102,7 +104,7 @@ init (void)
           return FAILURE;
         }
 
-      strncpy(module_path, DEFMODPATH, strlen (DEFMODPATH) + 1);
+      strncpy (module_path, DEFMODPATH, strlen (DEFMODPATH) + 1);
     }
 
   if (init_modules (module_path) == FAILURE)

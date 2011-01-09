@@ -1,5 +1,5 @@
 /*
- * Crystals (working title) 
+ * Crystals (working title)
  *
  * Copyright (c) 2010 Matt Windsor, Michael Walker and Alexander
  *                    Preisinger.
@@ -36,62 +36,37 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/** @file    util.c
- *  @author  Matt Windsor
- *  @brief   Miscellaneous utility functions.
+/** @file     src/platform/w32-main.c
+ *  @author   Matt Windsor
+ *  @brief    Windows code entry point.
  */
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <stdarg.h>
 
-#include "util.h"
-#include "main.h"
+#include <windows.h>
+
+#include "../main.h"
+#include "w32-main.h"
 
 
-/* - DEFINITIONS - */
+/* -- DEFINITIONS -- */
 
-/* Fatal error. */
+/* Windows entry point.
+ *
+ * This is the usually, in theory, the first function run in the program on Windows,
+ * and is a stub used to load the main function.
+ *
+ * Whether or not WinMain is actually used when the SDL backends are used is
+ * presently unknown, but doubted.
+ */
 
-void
-fatal (const char message[], ...)
+int WINAPI
+WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
-  va_list ap;
-  va_start (ap, message);
-  ERROR_PROCEDURE(message, ap, TRUE);
-}
+  /* Stop gcc complaining about unused parameters */
+  hInstance = hInstance;
+  hPrevInstance = hPrevInstance;
+  lpCmdLine = lpCmdLine;
+  nCmdShow = nCmdShow;
 
-
-/* Non-fatal error. */
-
-void
-error (const char message[], ...)
-{
-  va_list ap;
-  va_start (ap, message);
-  ERROR_PROCEDURE(message, ap, FALSE);
-}
-
-
-/* Standard error reporting procedure. */
-
-void
-std_error (const char message[], va_list ap, int is_fatal)
-{
-  if (is_fatal)
-  	fprintf (stderr, "FATAL: ");
-  else
-    fprintf (stderr, "ERROR: ");
-
-  vfprintf (stderr, message, ap);
-  fprintf (stderr, "\n");
-  va_end (ap);
-
-  fflush (stderr);
-
-  if (is_fatal)
-    {
-	    cleanup ();
-	    exit (1);
-    }
+  return main (0, NULL);
 }

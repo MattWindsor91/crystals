@@ -41,18 +41,23 @@
  *  @brief   Low-level map handling functions.
  */
 
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 
 #include "map.h"
+#include "../util.h"
 #include "../graphics.h"
+
 
 const char FN_TILESET[] = "gfx/tiles.png";
 
 /* FIXME: Remove the data below when map loaders are available. */
 
-static layer_t sg_test_layers[4][101] = 
+static tag_t sg_test_tags[4] = {0, 1, 2, 0};
+
+static layer_t sg_test_layers[4][100] = 
   {{ 9,  5,  5,  5,  5,  5,  5,  5,  5, 10, 
      8,  2,  2,  2,  2,  2,  2,  2,  2,  7,
      8, 13, 13, 13, 13, 13, 13, 13, 13,  7,
@@ -62,7 +67,7 @@ static layer_t sg_test_layers[4][101] =
      8, 13, 13, 13, 13, 13, 13, 13, 13,  7,
      8, 13, 13, 13, 13, 13, 13, 13, 13,  7,
     11, 13, 13, 13, 13, 13, 13, 13, 13, 12,
-     1,  1,  1,  1,  1,  1,  1,  1,  1,  1, 0},
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1},
    { 0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
@@ -72,7 +77,7 @@ static layer_t sg_test_layers[4][101] =
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 1}, 
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0}, 
    { 0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
@@ -82,7 +87,7 @@ static layer_t sg_test_layers[4][101] =
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 0}, 
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0}, 
    { 0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
      0,  0,  0,  0,  4,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  4,  0,  0,  0,  0,  0,
@@ -92,8 +97,9 @@ static layer_t sg_test_layers[4][101] =
      0,  0,  0,  0,  4,  0,  0,  0,  0,  0,
      0,  0,  0,  0,  4,  0,  0,  0,  0,  0,
      0,  6,  6,  6,  6,  6,  6,  6,  6,  0,
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 2} 
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0} 
   };
+
 
 /* Initialise the test map. */
 
@@ -109,100 +115,115 @@ init_test_map (void)
   if (map)
     {
       unsigned int i;
-      for (i = 0; i < 4; i++) 
+
+      for (i = 0; i < map->num_layers; i++) 
         {
-          /* We can assume that (map->width * map->height + 1) fits in unsigned */
+          map->layer_tags[i] = sg_test_tags[i];
+
+          /* We can assume that (map->width * map->height) fits in unsigned */
           memcpy (map->data_layers[i], sg_test_layers[i],
-                  sizeof (unsigned short)
-                  * (unsigned int) (map->width * map->height + 1));
+                  sizeof (layer_t) * (unsigned int) (map->width * map->height));
         }
     }
 
   return map;
 }
 
-/* Initialise a map. */
 
-struct map *
+/* Allocate and initialise a map. */
+
+map_t *
 init_map (int width, 
           int height, 
           unsigned char num_layers)
 {
-  struct map *map;
+  map_t *map;
+  unsigned int i;
+
 
   /* Sanity check */
 
   if (width <= 0 || height <= 0 || num_layers == 0)
     {
-      fprintf (stderr, "MAP: Error: init_map given a zero or negative parameter.\n");
-      fprintf (stderr, "Width: %d; Height: %d; #Layers: %d\n",
+      error ("MAP - init_map - Given a zero or negative parameter.\nWidth: %d; Height: %d; #Layers: %d.",
                width, height, num_layers);
       return NULL;
     }
 
-  map = malloc (sizeof (struct map));
+  map = malloc (sizeof (map_t));
 
-  if (map) 
+  if (map == NULL)
     {
-      map->width = width;
-      map->height = height;
-      map->num_layers = num_layers;
+      error ("MAP - init_map - Map allocation failed.");
+      return NULL;
+    }
 
-      map->data_layers = malloc (sizeof (layer_t*) * num_layers);
+  map->layer_tags = calloc (num_layers, sizeof (tag_t));
 
-      if (map->data_layers)
+  if (map->layer_tags == NULL)
+    {
+      error ("MAP - init_map - Map tag array allocation failed.");
+      cleanup_map (map);
+      return NULL;
+    }
+
+  map->data_layers = calloc (num_layers, sizeof (layer_t*));
+
+  if (map->data_layers == NULL)
+    {
+      error ("MAP - init_map - Map data matrix allocation failed.");
+      cleanup_map (map);
+      return NULL;
+    }
+
+  map->width = width;
+  map->height = height;
+  map->num_layers = num_layers;
+
+  for (i = 0; i < (num_layers); i++)
+    {
+      map->data_layers[i] = malloc (sizeof (layer_t) * (unsigned int) (width * height));
+      if (map->data_layers[i] == NULL)
         {
-          unsigned int i;
-
-          for (i = 0; i < (num_layers); i++)
-            {
-              /* Allocate one extra slot for the layer tag (at the end of the
-                 data). Assert that width and height are positive. */
-              map->data_layers[i] = malloc (sizeof (layer_t)
-                                            * (unsigned int) ((width * height)
-                                                              + 1));
-            }
-        }
-      else
-        {
-          /* Clean up the entire thing, as a map is useless without
-             its data layers. */
-
-          free (map);
-          map = NULL;
+          error ("MAP - init_map - Map data matrix row %d allocation failed.", i);
+          cleanup_map (map);
         }
     }
 
   return map;
 }
 
-layer_t
-get_tag (struct map *map, unsigned int layer)
+
+/* Get the tag associated with a layer. */
+
+tag_t
+get_tag (map_t *map, unsigned int layer)
 {
   if (map == NULL)
     {
-      fprintf (stderr, "MAP: Error: Tried to get tag for a NULL map.\n");
-      return 0;
+      error ("MAP - get_tag - Tried to get tag for a NULL map.");
+      return NULL_TAG;
     }
 
   if (layer >= map->num_layers)
     {
-      fprintf (stderr, "MAP: Error: Tried to get tag for an invalid layer.\n");
-      return 0;
+      error ("MAP - get_tag - Tried to get tag for an invalid layer.");
+      return NULL_TAG;
     }
 
-  return map->data_layers[layer][map->width * map->height];
+  return map->layer_tags[layer];
 }
+
 
 /* Get the highest tag number allocated on a map. */
 
-layer_t
-get_max_tag (struct map *map)
+tag_t
+get_max_tag (map_t *map)
 {
   unsigned int l;
-  layer_t result;
+  tag_t result;
 
-  result = 0;
+  result = NULL_TAG;
 
   if (map)
     {
@@ -216,6 +237,7 @@ get_max_tag (struct map *map)
   return result;
 }
 
+
 /* De-initialise a map. */
 
 void
@@ -227,6 +249,9 @@ cleanup_map (struct map *map)
       if (map->data_layers)
         {
           unsigned int i;
+
+          if (map->layer_tags)
+            free (map->layer_tags);
 
           for (i = 0; i < map->num_layers; i++)
             {

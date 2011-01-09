@@ -67,8 +67,12 @@ init_graphics (void)
 
   if (load_module_gfx ("gfx-sdl", &g_modules) == FAILURE)
     {
-      error ("GRAPHICS - init_graphics - Could not load graphics module.");
-      return FAILURE;
+      if (load_module_gfx ("gfx-directx", &g_modules) == FAILURE)
+        {
+          error ("GRAPHICS - init_graphics - Could not load graphics module.");
+
+          return FAILURE;
+        }
     }
 
   if ((*g_modules.gfx.init_screen_internal)

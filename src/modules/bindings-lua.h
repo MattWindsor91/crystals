@@ -48,6 +48,18 @@
 #include <lauxlib.h>
 #include <lualib.h>
 
+/* Workaround for Windows DLL symbol load failures.
+ *
+ * All outward-facing functions MUST be preceded with
+ * EXPORT so that the DLL loader can see them.
+ */
+
+#ifdef PLATFORM_WINDOWS
+#define EXPORT __declspec( dllexport )
+#else
+#define EXPORT
+#endif /* PLATFORM_WINDOWS */
+
 
 enum {
   L_SUCCESS,  /**< Lua return value if success. */
@@ -55,7 +67,7 @@ enum {
 };
 
 
-/* GOBAL VARIABLES */
+/* GLOBAL VARIABLES */
 
 lua_State *g_lua; /**< Main Lua state which holds the main stack. */
 
@@ -64,13 +76,13 @@ lua_State *g_lua; /**< Main Lua state which holds the main stack. */
 
 /** Initialise the lua module. */
 
-void
+EXPORT void
 init (void);
 
 
 /** Terminate the lua module. */
 
-void
+EXPORT void
 term (void);
 
 
@@ -82,7 +94,7 @@ term (void);
  *  @return Returns SUCCESS if success else FAILURE.
  * */
 
-int
+EXPORT int
 run_file (const char* path);
 
 

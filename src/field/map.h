@@ -42,12 +42,24 @@
  *           functions.
  */
 
+
 #ifndef _MAP_H
 #define _MAP_H
 
+
 /* -- TYPEDEFS -- */
 
+typedef unsigned short tag_t;   /**< Type for layer tags. */
 typedef unsigned short layer_t; /**< Type for layer data. */
+
+
+/* -- CONSTANTS -- */
+
+enum 
+  {
+    NULL_TAG = 0 /**< The tag ID reserved as a null value. */
+  };
+
 
 /* -- STRUCTURES -- */
 
@@ -65,80 +77,95 @@ struct map
   int width;                /**< Width of the map, in tiles. */
   int height;               /**< Height of the map, in tiles. */
   unsigned char num_layers; /**< Number of arrays to store in the map. */
+  tag_t *layer_tags;        /**< Array of map layer tags. */
   layer_t **data_layers;    /**< Pointers to map layer arrays. */
 };
+
+typedef struct map map_t;
+
 
 /* -- GLOBAL VARIABLES -- */
 
 extern struct map *g_map; /**< The map currently in use. (FIXME: is
                              global necessary?) */
 
+
 /* -- PROTOTYPES -- */
 
-/** Initialise the test map.
+/** 
+ * Initialise the test map.
  *
- *  @todo  drop this.
+ * @todo  drop this.
  *
- *  @return  a pointer to the test map, or NULL for allocation
- *  failure.
+ * @return  a pointer to the test map, or NULL for allocation
+ *          failure.
  */
 
-struct map *
+map_t *
 init_test_map (void);
 
-/** Initialise a map.
+
+/**
+ * Initialise a map.
  *
- *  This allocates enough space for a map with the specified width,
- *  height and number of layers, returning a blank map that can then
- *  be populated with tile information
+ * This allocates enough space for a map with the specified width,
+ * height and number of layers, returning a blank map that can then
+ * be populated with tile information
  *
- *  @param width       The width of the map.
- *  @param height      The height of the map.
- *  @param num_layers  The number of layers to reserve.
+ * @param width       The width of the map.
+ * @param height      The height of the map.
+ * @param num_layers  The number of layers to reserve.
  *
- *  @return  a pointer to the map structure, or NULL for allocation
- *  failure.
+ * @return  a pointer to the map structure, or NULL for allocation
+ *          failure.
  */
 
-struct map *
+map_t *
 init_map (int width, 
           int height, 
           unsigned char num_layers);
 
-/** Get the tag number assigned to a particular layer.
+
+/** 
+ * Get the tag number assigned to a particular layer.
  *
- *  @param map    Pointer to the map to query.
+ * @param map    Pointer to the map to query.
  *
- *  @param layer  ID of the layer to retrieve the tag number for.
+ * @param layer  ID of the layer to retrieve the tag number for.
  *
- *  @return  the highest tag number allocated on the map.
- *           If the map pointer given is NULL, or the layer does not 
- *           exist in the given map, 0 is returned and an error is raised.
+ * @return  the highest tag number allocated on the map.
+ *          If the map pointer given is NULL, or the layer does not 
+ *          exist in the given map, 0 is returned and an error is raised.
  */
 
-layer_t
-get_tag (struct map *map, unsigned int layer);
+tag_t
+get_tag (map_t *map, unsigned int layer);
 
-/** Get the highest tag number allocated on a map.
+
+/** 
+ * Get the highest tag number allocated on a map.
  *
- *  @param map  Pointer to the map to query.
+ * @param map  Pointer to the map to query.
  *
- *  @return  the highest tag number allocated on the map.
- *           If the map pointer given is NULL, 0 is returned and an 
- *           error is raised.
+ * @return  the highest tag number allocated on the map.
+ *          If the map pointer given is NULL, 0 is returned and an 
+ *          error is raised.
  */
 
-layer_t
-get_max_tag (struct map *map);
+tag_t
+get_max_tag (map_t *map);
 
-/** De-initialise a map.
+
+/**
+ * De-initialise a map.
  *
- *  This de-allocates all memory consumed by the given map structure.
+ * This de-allocates all memory consumed by the given map structure.
  *
- *  @param map  A pointer to the map to deallocate.
+ * @param map  A pointer to the map to deallocate.
  */
 
 void
-cleanup_map (struct map *map);
+cleanup_map (map_t *map);
+
 
 #endif /* _MAP_H */

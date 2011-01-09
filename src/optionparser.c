@@ -176,7 +176,7 @@ parse_options(int argc, const char* argv[], option options[])
                         }
                       else
                         {
-                          fprintf (stderr, "OPTIONS: Unknown option -%c.\n", argv[i][j]);
+                          error ("OPTIONPARSER - parse_options - Unknown option -%c.", argv[i][j]);
                           return FAILURE;
                         }
                     }
@@ -187,7 +187,7 @@ parse_options(int argc, const char* argv[], option options[])
                           /* At the end of this option, use the next */
                           if (i == argc - 1)
                             {
-                              fprintf (stderr, "OPTIONS: Missing parameter for -%c.\n", argv[i][j]);
+                              error ("OPTIONPARSER - parse_options - Missing parameter for -%c.", argv[i][j]);
                               return FAILURE;
                             }
 
@@ -225,7 +225,7 @@ parse_options(int argc, const char* argv[], option options[])
                           break;
 
                         default:
-                          fprintf (stderr, "OPTIONS: Unknown option type %i.\n", opt.paramtype);
+                          error ("OPTIONPARSER - parse_options - Unknown option type %i.", opt.paramtype);
                           return FAILURE;
                           break;
                         }
@@ -252,7 +252,7 @@ parse_options(int argc, const char* argv[], option options[])
                         }
                       else
                         {
-                          fprintf (stderr, "OPTIONS: Unknown option %s.\n", argv[i]);
+                          error ("OPTIONPARSER - parse_options - Unknown option %s.", argv[i]);
                           return FAILURE;
                         }
                     }
@@ -268,12 +268,12 @@ parse_options(int argc, const char* argv[], option options[])
                         case OPTION_PARAM_INT:
                         case OPTION_PARAM_FLOAT:
                         case OPTION_PARAM_STRING:
-                          fprintf (stderr, "OPTIONS: Parameter missing for option %s.\n", argv[i]);
+                          error ("OPTIONPARSER - parse_options - Parameter missing for option %s.", argv[i]);
                           return FAILURE;
                           break;
 
                         default:
-                          fprintf (stderr, "OPTIONS: Unknown option type %i.\n", opt.paramtype);
+                          error ("OPTIONPARSER - parse_options - Unknown option type %i.", opt.paramtype);
                           return FAILURE;
                           break;
                         }
@@ -294,7 +294,7 @@ parse_options(int argc, const char* argv[], option options[])
 
                   if (is_null_option (opt) == SUCCESS)
                     {
-                      fprintf (stderr, "OPTIONS: Unknown option --%s (parameter '%s').\n", optname, optparam);
+                      error ("OPTIONPARSER - parse_options - Unknown option --%s (parameter '%s').", optname, optparam);
 
                       free (working);
 
@@ -305,7 +305,7 @@ parse_options(int argc, const char* argv[], option options[])
                       switch (opt.paramtype)
                         {
                         case OPTION_PARAM_NONE:
-                          fprintf (stderr, "OPTIONS: Unexpected parameter for argument --%s ('%s').\n", optname, optparam);
+                          error ("OPTIONPARSER - parse_options - Unexpected parameter for argument --%s ('%s').", optname, optparam);
 
                           free (working);
 
@@ -329,7 +329,7 @@ parse_options(int argc, const char* argv[], option options[])
                           break;
 
                         default:
-                          fprintf (stderr, "OPTIONS: Unknown option type %i.\n", opt.paramtype);
+                          error ("OPTIONPARSER - parse_options - Unknown option type %i.", opt.paramtype);
 
                           free (working);
 
