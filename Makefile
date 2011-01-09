@@ -217,7 +217,7 @@ WARN     := -Wall -Wextra -Wshadow -Wpointer-arith -Wcast-align \
 
 # Add bindings object file to the other object files and add the proper CFLAGS and LIBS
 
-OBJ      += $(SRCDIR)/$(BNDDIR)/$(BINDINGS).o
+OBJ      += $(BNDDIR)/$(BINDINGS).o
 
 ifeq ($(BINDINGS), python)
 	LIBS     += `python-config --libs`
