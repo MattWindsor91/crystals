@@ -44,42 +44,11 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "lua.h"
 #include "bindings.h"
 #include "../util.h"
 
-#include <lua.h>
-#include <lauxlib.h>
-#include <lualib.h>
-
 /* -- LUA PROTOTYPES -- */
-
-enum {
-  L_SUCCESS,  /**< Lua return value if success. */
-  L_FAILURE   /**< LUa return value if failure. */
-};
-
-lua_State *g_lua; /**< Main Lua state which holds the main stack. */
-
-/** Generic parameter check function.
- *
- * Check if the parameters that are passed to the function in a lua script are
- * of the you need them and how many arguments.
- *
- * @param lua_State Pass the the lua state that holds the stack.
- * @param func_name The name of the function. To be displayed in error messages.
- * @param sig       A string of chars which defines how many and of which types
- * the paramaters should be. Add 's' for string, 'd' for number and 'b' for
- * boolean. (e.g.: "sdd" = 3 paramters, 1th stirng, 2nd numebr, 3rd number)
- *
- * @return Return SUCCESS if the values in the stack match the sig, eles return
- * FAILURE. (defined in "util.h")
- *
- * @todo Add a table type check if nessecary.
- */
-
-static int
-lua_parameter_check (lua_State *L, const char *func_name, const char *sig);
-
 
 /** Run a test
  * @todo Remove tests.
@@ -103,8 +72,7 @@ init_bindings (void)
   lua_pushcfunction (g_lua, crystals_test); /* push the c function on the lua stack*/
   lua_setglobal (g_lua, "crystals_test"); /* make the c function visible for lua */
   
-  lua_pushcfunction (g_lua, power_test);
-  lua_setglobal (g_lua, "power_test");
+  lua_register (g_lua, "power_test", power_test); /* optional way */
   
   return SUCCESS;
 }
@@ -191,7 +159,7 @@ lua_parameter_check (lua_State *L, const char *func_name, const char sig[])
       switch (sig[i-1])
         {
           case 's':
-            if (lua_type (L, i) != LUA_TSTRING)
+            if (!lua_isstring (L, i))
               {
                 error ("LUA: %s: Parameter %d has to be a string.\n", 
                   func_name, i);
@@ -199,7 +167,7 @@ lua_parameter_check (lua_State *L, const char *func_name, const char sig[])
               }
             break;
           case 'd':
-            if (lua_type (L, i) != LUA_TNUMBER)
+            if (!lua_isnumber (L, i))
               {
                 error ("LUA: %s: Parameter %d has to be a number.\n",
                   func_name, i);
@@ -207,9 +175,16 @@ lua_parameter_check (lua_State *L, const char *func_name, const char sig[])
               }
             break;
           case 'b':
-            if (lua_type (L, i) != LUA_TBOOLEAN)
+            if (!lua_isboolean (L, i))
               {
                 error ("LUA: %s: Parameter %d has to be a boolean.\n",
+                  func_name, i);
+                return FAILURE;
+              }
+          case 't':
+            if (!lua_istable (L, i))
+              {
+                error ("LUA: %s: Parameter %d has to be a table.\n",
                   func_name, i);
                 return FAILURE;
               }
@@ -220,7 +195,7 @@ lua_parameter_check (lua_State *L, const char *func_name, const char sig[])
             break;
         }
     }
-  return SUCCESS;
+  return SUCCESS; 
 }
 
 /* vim: set ts=2 sw=2 softtabstop=2: */
