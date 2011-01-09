@@ -93,7 +93,7 @@ run_script (const char *path)
     }
   else
     {
-      fprintf (stderr, "Couldn't open %s\n", path);
+      error ("Couldn't open %s\n", path);
       return FAILURE;
     }
 }
@@ -132,7 +132,7 @@ crystals_test (lua_State *L)
   if (lua_parameter_check (L, "crystals_test", "s") == FAILURE)
     return L_FAILURE;
 
-  printf("%s\n", lua_tostring (L, 1));
+  printf ("%s\n", lua_tostring (L, 1));
   return L_SUCCESS;
 }
 
