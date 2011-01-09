@@ -88,21 +88,19 @@ create_hash_object (struct hash_object *head[],
 
   if (name == NULL)
     {
-      fprintf (stderr, "HASH: Error: Given name is NULL.\n");
+      error ("HASH - create_hash_object - Given name is NULL.");
       return NULL;
     }
 
   if (head == NULL) 
     {
-      fprintf (stderr, "HASH: Error: Given hash table for %s is NULL.\n",  
-               name);
+      error ("HASH - create_hash_object - Given hash table for %s is NULL.", name);
       return NULL;
     }
 
   if (data == NULL)
     {
-      fprintf (stderr, "HASH: Error: Given data pointer for %s is NULL.\n", 
-               name);
+      error ("HASH - create_hash_object - Given data pointer for %s is NULL.", name);
       return NULL;
     }
 
@@ -112,8 +110,7 @@ create_hash_object (struct hash_object *head[],
 
   if (hash_object == NULL)
     {
-      fprintf (stderr, "HASH: Error: Could not allocate container for %s.\n", 
-               name);
+      error ("HASH - create_hash_object - Could not allocate container for %s.", name);
       return NULL;
     }
 
@@ -129,8 +126,7 @@ create_hash_object (struct hash_object *head[],
 
   if (hash_object->name == NULL)
     {
-      fprintf (stderr, "HASH: Error: Name allocation failed for %s.\n",
-               name);
+      error ("HASH - create_hash_object - Name allocation failed for %s.", name);
       free_hash_object (hash_object);
       return NULL;
     }
@@ -153,8 +149,7 @@ create_hash_object (struct hash_object *head[],
       hash_object->type = DATA_NULL;
       hash_object->data = NULL;     
 
-      fprintf (stderr, "HASH: Error: Could not add %s to hash table.\n", 
-               name);
+      error ("HASH - create_hash_object - Could not add %s to hash table.", name);
 
       free_hash_object (hash_object);
       return NULL;      
@@ -162,6 +157,7 @@ create_hash_object (struct hash_object *head[],
 
   return result;
 }
+
 
 /* Delete a hash object and its associated data. */
 
@@ -180,9 +176,8 @@ free_hash_object (struct hash_object *object)
         {
         case DATA_NULL:
         default:
-          fprintf (stderr,
-                   "HASH: Warn: Hash object %s has data and no type.\n", 
-                   object->name);
+          error ("HASH - free_hash_object - Hash object %s has data and no type.", 
+                 object->name);
           break;
         case DATA_IMAGE:
           free_image ((struct image_t *) object->data);
@@ -202,11 +197,11 @@ free_hash_object (struct hash_object *object)
   free (object);
 }
 
+
 /* Remove a hash object from the given hash table. */
 
 int
-delete_hash_object (struct hash_object *head[], 
-                    const char name[])
+delete_hash_object (struct hash_object *head[], const char name[])
 {
   int h;
   struct hash_object *object, *prev;
@@ -214,8 +209,10 @@ delete_hash_object (struct hash_object *head[],
   h = ascii_hash (name);
   prev = NULL;
 
+
   /* Iterate through the hash bucket to find the correct object, then 
      delete its data and node. */
+
   for (object = head[h]; object != NULL; object = prev->next)
     {
       if (strcmp (name, object->name) == 0)
@@ -231,6 +228,7 @@ delete_hash_object (struct hash_object *head[],
     }
   return FAILURE;
 }
+
 
 /* Delete all hash objects. */
 
@@ -252,6 +250,7 @@ clear_hash_objects (struct hash_object *head[])
   }
 }
 
+
 /* Retrieve an hash table node, or add one to a hash table. */
 
 struct hash_object *
@@ -262,11 +261,14 @@ get_hash_object (struct hash_object *head[],
   int h; 
   struct hash_object *object;
 
+
   /* Get the hash of the object's filename so we can search in the correct 
      bucket. */
+
   h = ascii_hash (name);
 
   /* Now try to find the object. */
+
   for (object = head[h]; object != NULL; object = object->next)
     {
       if (strcmp (name, object->name) == 0)
@@ -277,8 +279,7 @@ get_hash_object (struct hash_object *head[],
 
           if (add_pointer != NULL)
             {
-              fprintf (stderr, "HASH: Error: Duplicate object %s!\n", 
-                       name);
+              error ("HASH - get_hash_object - Duplicate object %s.", name);
 
               free_hash_object (add_pointer);
               return NULL;
@@ -288,8 +289,10 @@ get_hash_object (struct hash_object *head[],
         }
     }
 
+
   /* If we are given a pointer to add, and the object doesn't already 
      exist, then add the object to the start of the linked list. */
+
   if (add_pointer)
     {
       add_pointer->next = head[h];
@@ -302,6 +305,7 @@ get_hash_object (struct hash_object *head[],
   return NULL;
 } 
 
+
 /* Wrapper to get_hash_object for use in finding hash objects. */
 
 struct hash_object *
@@ -310,6 +314,7 @@ find_hash_object (struct hash_object *head[],
 {
   return get_hash_object (head, name, NULL);
 }
+
 
 /* Apply the given function to all members of the hash table. */
 

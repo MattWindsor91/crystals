@@ -47,6 +47,7 @@
 
 #include <windows.h>
 
+
 /* -- DECLARATIONS -- */
 
 /* WinMain is defined in winbase.h. */

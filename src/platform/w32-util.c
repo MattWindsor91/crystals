@@ -1,5 +1,5 @@
 /*
- * Crystals (working title) 
+ * Crystals (working title)
  *
  * Copyright (c) 2010 Matt Windsor, Michael Walker and Alexander
  *                    Preisinger.
@@ -36,58 +36,65 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/** @file    util.c
- *  @author  Matt Windsor
- *  @brief   Miscellaneous utility functions.
+/** @file     src/platform/w32-util.c
+ *  @author   Matt Windsor
+ *  @brief    Miscellaneous utility functions for Windows.
  */
 
-#include <stdlib.h>
-#include <stdio.h>
+
 #include <stdarg.h>
+#include <windows.h>
+#include <strsafe.h>
 
-#include "util.h"
-#include "main.h"
-
-
-/* - DEFINITIONS - */
-
-/* Fatal error. */
-
-void
-fatal (const char message[], ...)
-{
-  va_list ap;
-  va_start (ap, message);
-  ERROR_PROCEDURE(message, ap, TRUE);
-}
+#include "../main.h"
+#include "w32-main.h"
 
 
-/* Non-fatal error. */
+/* -- DEFINITIONS -- */
+
+/* Windows error reporting procedure. */
 
 void
-error (const char message[], ...)
+w32_error (char message[], va_list ap, int is_fatal)
 {
-  va_list ap;
-  va_start (ap, message);
-  ERROR_PROCEDURE(message, ap, FALSE);
-}
+  HANDLE heap;
+  LPTSTR error_string;
 
+  /* Allocate enough memory to store the error string. (Potential TODO: dynamic allocation?) */
 
-/* Standard error reporting procedure. */
+  heap = GetProcessHeap ();
 
-void
-std_error (const char message[], va_list ap, int is_fatal)
-{
-  if (is_fatal)
-  	fprintf (stderr, "FATAL: ");
-  else
-    fprintf (stderr, "ERROR: ");
+  if (heap == NULL)
+    return;
 
-  vfprintf (stderr, message, ap);
-  fprintf (stderr, "\n");
+  error_string = HeapAlloc (heap,
+                            HEAP_ZERO_MEMORY,
+                            1024 * sizeof (TCHAR));
+
+  if (error_string == NULL)
+    return;
+
+  /* Assemble the error string (FATAL/ERROR: <message with ap arguments>). */
+
+  StringCchPrintf (error_string, 
+                   HeapSize (heap, 0, error_string) / sizeof (TCHAR),
+                   TEXT (is_fatal ? "FATAL" : "ERROR")); 
+
+  StringCchVPrintf (error_string,
+                    HeapSize (heap, 0, error_string) / sizeof (TCHAR) - 6,
+                    message,
+                    ap);
+
+  /* Message box. */
+
+  MessageBox (NULL,
+              TEXT (error_string),
+              TEXT (is_fatal ? "Fatal Error" : "Error"),
+              MB_ICONERROR | MB_OK); 
+
+  HeapFree (heap, 0, error_string);
+
   va_end (ap);
-
-  fflush (stderr);
 
   if (is_fatal)
     {

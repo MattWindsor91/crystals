@@ -207,7 +207,7 @@ init_object_image (struct object_image *image, struct object_t *parent)
 
 int
 add_object_image (struct map_view *mapview,
-                  layer_t tag,
+                  tag_t tag,
                   struct object_t *object)
 {
   struct object_rnode *new_rnode;
@@ -242,12 +242,12 @@ add_object_image (struct map_view *mapview,
   /* Assert that a non-NULL mapview must have a non-NULL render queue
      array, due to the nature of the mapview init. */
 
-  /* Can't render to tag 0 - it's the standard "don't render" tag
+  /* Can't render to the null tag - it's the standard "don't render" tag
      index. */
 
-  if (tag == 0)
+  if (tag == NULL_TAG)
     {
-      error ("MAPVIEW - add_object_image - Tried to render to tag 0.");
+      error ("MAPVIEW - add_object_image - Tried to render to null tag.");
       return FAILURE;
     }
 
@@ -482,10 +482,9 @@ render_map_layer (struct map_view *mapview, unsigned char layer)
 void
 render_map_objects (struct map_view *mapview, unsigned char layer)
 {
-  layer_t tag;
-  tag = get_tag (mapview->map, layer);
+  tag_t tag = get_tag (mapview->map, layer);
 
-  if (tag > 0)
+  if (tag > NULL_TAG)
     {
       struct object_rnode *next;
       struct object_image *image;
@@ -613,13 +612,13 @@ mark_dirty_rect (struct map_view *mapview,
 
   if (mapview == NULL)
     {
-      fprintf (stderr, "MAPVIEW: Error: Rect dirtying passed NULL mapview.\n");
+      error ("MAPVIEW - mark_dirty_rect - Rect dirtying passed NULL mapview.");
       return FAILURE;
     }
 
   if (width <= 0 || height <= 0)
     {
-      fprintf (stderr, "MAPVIEW: Error: Rect dirtying passed insane W/H.\n");
+      error (stderr, "MAPVIEW - mark_dirty_rect - Rect dirtying passed invalid width/height.");
       return FAILURE;
     }
 
@@ -726,7 +725,7 @@ add_dirty_rect (struct map_view *mapview,
 
   if (rect == NULL)
     {
-      fprintf (stderr, "MAPVIEW: Error: Cannot alloc a dirty rectangle.\n");
+      error (stderr, "MAPVIEW - add_dirty_rect - Cannot allocate a dirty rectangle.");
       return FAILURE;
     }
 

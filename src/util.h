@@ -81,6 +81,32 @@ enum
                                              values. */
 
 
+/* - PLATFORM-DEPENDENCY FUNCTION MACROS - */
+
+/* ~~ Windows */
+
+#ifdef PLATFORM_WINDOWS
+#define UTIL_PLATFORM_MACROS
+
+#include "platform/w32-util.h" /* Windows error procedures */
+
+/** The procedure to use for outputting an error message. */
+#define ERROR_PROCEDURE(message, ap, is_fatal) w32_error((message), (ap), (is_fatal))
+
+#endif /* PLATFORM_WINDOWS */
+
+
+/* ~~ Generic/standard */
+
+#ifndef UTIL_PLATFORM_MACROS
+#define UTIL_PLATFORM_MACROS
+
+/** The procedure to use for outputting an error message. */
+#define ERROR_PROCEDURE(message, ap, is_fatal) std_error((message), (ap), (is_fatal))
+
+#endif /* not UTIL_PLATFORM_MACROS */
+
+
 /* -- DECLARATIONS -- */
 
 /** 
@@ -114,6 +140,9 @@ error (const char message[], ...);
  * Standard error reporting procedure. 
  *
  * This prints the error message to standard error.
+ *
+ * Alternative error procedures are defined wherever more suitable alternatives
+ * are available (eg GUI message boxes).
  *
  * @param message   The error message/format string.
  * @param ap        The variadic arguments list passed from fatal or error.
