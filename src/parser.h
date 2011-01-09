@@ -44,9 +44,13 @@
 #ifndef _PARSER_H
 #define _PARSER_H
 
+#include "util.h"
+
+/* -- TYPEDEFS -- */
+
 typedef struct dict_t dict_t; /**< Node type for the key-value tree. */
-typedef char bool_t;          /**< Boolean type.
-                                 @todo FIXME: Universal bool type? */
+
+/* -- STRUCTURES -- */
 
 /** Node struct for a key-value tree
  *
@@ -66,7 +70,6 @@ struct dict_t
   /* strcmp == 1 */
   dict_t *right;        /**< Right branch of the node. */
 };
-
 
 /* -- FUNCTION PROTOTYPES -- */
 
@@ -88,7 +91,7 @@ config_dict_init (void);
 * it returns FAILURE. (Defined in util.h)
 */
 
-int
+bool_t
 config_parse_file (const char *path_name, dict_t *root);
 
 
@@ -102,7 +105,7 @@ config_parse_file (const char *path_name, dict_t *root);
  *  the key already exists return FAILURE. (Defined in util.h)
  */
 
-int
+bool_t
 config_add_pair (char *key, char *value, dict_t *node);
 
 

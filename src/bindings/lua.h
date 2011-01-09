@@ -48,11 +48,13 @@
 #include <lauxlib.h>
 #include <lualib.h>
 
- 
- enum {
+#include "../util.h"
+
+enum {
   L_SUCCESS,  /**< Lua return value if success. */
   L_FAILURE   /**< LUa return value if failure. */
 };
+
 
 lua_State *g_lua; /**< Main Lua state which holds the main stack. */
 
@@ -77,7 +79,7 @@ lua_State *g_lua; /**< Main Lua state which holds the main stack. */
  * @todo Add more type checks if nessecary.
  */
 
-static int
+bool_t
 lua_parameter_check (lua_State *L, const char *func_name, const char *sig);
 
 #endif /* _LUA_B_H */
