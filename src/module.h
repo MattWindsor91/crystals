@@ -55,7 +55,7 @@
 
 /** Windows 32-bit - use Windows API to load .dll files. */
 
-#ifdef _WIN32
+#ifdef PLATFORM_WINDOWS
 
 #include <windows.h>
 typedef HMODULE dll_handle;                  /**< Handle type used for DLL modules. */
@@ -65,7 +65,7 @@ typedef FARPROC mod_function_ptr;            /**< Function pointer type used for
 #define DLLCLOSE(x) FreeLibrary(x)           /**< Function used for closing DLLs. */
 #define MODULESUFFIX ".dll"                  /**< Suffix used for DLLs. */
 
-#endif /* _WIN32 */
+#endif /* PLATFORM_WINDOWS */
 
 
 /** UNIX and similar - use dlfcn.h, dlopen etc. to load .so files. */

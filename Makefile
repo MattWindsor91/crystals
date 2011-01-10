@@ -242,8 +242,11 @@ CFLAGS   := -ansi -pedantic -O2 -ggdb -DDEFMODPATH="\"$(MODPATH)\"" $(WARN)
 
 # Flags used:
 
-# USE_LIBDL | Use libdl (dlopen etc.) for loading shared objects.
-#           | This should be used on most if not all non-Windows targets.
+# USE_LIBDL  | Use libdl (dlopen etc.) for loading shared objects.
+#            | This should be used on most if not all non-Windows targets.
+# NO_STRSAFE | On Windows platforms, do not use strsafe.  At time of writing, 
+#            | this causes snprintf etc. to be used instead, which depends on 
+#            | C99 or GNU support.
 
 GNUFLAGS := -DPLATFORM_GNU -DUSE_LIBDL
 GNULIBS  := -ldl -lpthread
@@ -258,14 +261,14 @@ ifeq ($(PLATFORM),windows-mingw32)
 	CC          := i486-mingw32-gcc
 	BUILDPREFIX := /usr/i486-mingw32
 	PKGCONFIG   := i486-mingw32-pkg-config
-	CFLAGS      += -DPLATFORM_WINDOWS
+	CFLAGS      += -DPLATFORM_WINDOWS -DNO_STRSAFE
 	LIBS        += -L/usr/i486-mingw32/lib -lmingw32 -mwindows
 	DLLEXT      := dll
 	BINSUFFIX   := .exe
 	
 	# Add Windows-specific code
 	
-	OBJ         += $(PLATDIR)/w32-main.o
+	OBJ         += $(PLATDIR)/w32-main.o $(PLATDIR)/w32-util.o
 	
 endif
 

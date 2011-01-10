@@ -44,10 +44,10 @@
 
 #include <stdarg.h>
 #include <windows.h>
-#include <strsafe.h>
 
 #include "../main.h"
 #include "w32-main.h"
+#include "w32-util.h"
 
 
 /* -- DEFINITIONS -- */
@@ -55,7 +55,7 @@
 /* Windows error reporting procedure. */
 
 void
-w32_error (char message[], va_list ap, int is_fatal)
+w32_error (const char message[], va_list ap, int is_fatal)
 {
   HANDLE heap;
   LPTSTR error_string;
@@ -76,14 +76,14 @@ w32_error (char message[], va_list ap, int is_fatal)
 
   /* Assemble the error string (FATAL/ERROR: <message with ap arguments>). */
 
-  StringCchPrintf (error_string, 
-                   HeapSize (heap, 0, error_string) / sizeof (TCHAR),
-                   TEXT (is_fatal ? "FATAL" : "ERROR")); 
+  W32_SAFE_SPRINTF (error_string,
+                    HeapSize (heap, 0, error_string) / sizeof (TCHAR),
+                    TEXT (is_fatal ? "FATAL" : "ERROR"));
 
-  StringCchVPrintf (error_string,
-                    HeapSize (heap, 0, error_string) / sizeof (TCHAR) - 6,
-                    message,
-                    ap);
+  W32_SAFE_VSPRINTF (error_string,
+                     HeapSize (heap, 0, error_string) / sizeof (TCHAR) - 6,
+                     message,
+                     ap);
 
   /* Message box. */
 

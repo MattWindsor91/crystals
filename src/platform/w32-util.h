@@ -50,6 +50,31 @@
 
 #include <stdarg.h>
 
+/* -- MACROS -- */
+
+/* mingw32 does not have strsafe.h, so use snprintf and vsnprintf instead of
+ * StringCchPrintf and StringCchVPrintf.
+ */
+
+#ifdef NO_STRSAFE
+
+#include <stdio.h>
+
+#define W32_SAFE_SPRINTF snprintf
+#define W32_SAFE_VSPRINTF vsnprintf
+
+#else /* not NO_STRSAFE */
+
+#include <strsafe.h>
+
+#define W32_SAFE_SPRINTF StringCchPrintf
+#define W32_SAFE_VSPRINTF StringCchVPrintf
+
+#endif /* not NO_STRSAFE */
+
+
+/* -- DECLARATIONS -- */
+
 
 /**
  * Windows error reporting procedure. 
