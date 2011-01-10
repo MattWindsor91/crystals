@@ -38,7 +38,7 @@
 
 /** @file    src/field/mapload.c
  *  @author  Matt Windsor
- *  @brief   map_t loader (ported from Crystalsmap_tEditor).
+ *  @brief   Map loader (ported from Crystalsmap_tEditor).
  */
 
 #include <stdlib.h>
@@ -48,6 +48,7 @@
 #include "mapload.h"
 #include "map.h"
 #include "../util.h"
+#include "../types.h"
 
 
 /* -- CONSTANTS -- */
@@ -161,7 +162,7 @@ read_map_header (FILE *file)
 
   /* Check map format version. */
 
-  if (read_ushort (file) != MAP_VERSION)
+  if (read_uint16 (file) != MAP_VERSION)
     {
       error ("MAPLOAD - read_header - Incorrect map format version.");
       return NULL;
@@ -170,18 +171,18 @@ read_map_header (FILE *file)
 
   /* Read in map dimensions (width, height). */
 
-  width  = read_ushort (file);
-  height = read_ushort (file);
+  width  = read_uint16 (file);
+  height = read_uint16 (file);
 
 
   /* Read in highest layer index. */
 
-  max_layer_index = read_ushort (file);
+  max_layer_index = read_uint16 (file);
 
 
   /* Read in highest zone index. */
 
-  max_zone_index = read_ushort (file);
+  max_zone_index = read_uint16 (file);
 
 
   /* Ignore unused bytes. */
@@ -201,11 +202,9 @@ read_map_header (FILE *file)
  * @param map   The map to populate with the read data.
  *
  * @return  SUCCESS for success, FAILURE otherwise.
- *
- * @throws  IOException
  */
 
-int
+bool_t
 read_layer_tags (FILE *file, map_t *map)
 {
   layer_index_t l;
@@ -214,7 +213,7 @@ read_layer_tags (FILE *file, map_t *map)
     return FAILURE;
 
   for (l = 0; l <= get_max_layer (map); l++)
-    set_layer_tag (map, l, read_ushort (file));
+    set_layer_tag (map, l, read_uint16 (file));
 
   return SUCCESS;
 }
@@ -222,11 +221,11 @@ read_layer_tags (FILE *file, map_t *map)
 
 /* Read the map value data from a file. */
 
-int
+bool_t
 read_map_value_planes (FILE *file, map_t *map)
 {
   layer_index_t l;
-  int result;
+  bool_t result;
 
   if (check_magic_sequence (file, MAGIC_VALUES) == FAILURE)
     return FAILURE;
@@ -251,12 +250,12 @@ read_map_value_planes (FILE *file, map_t *map)
  * @return       SUCCESS for success, FAILURE otherwise.
  */
 
-int
+bool_t
 read_layer_value_plane (FILE *file, map_t *map, layer_index_t layer)
 {
   dimension_t x;
   dimension_t y;
-  int result;
+  bool_t result;
 
   result = SUCCESS;
 
@@ -264,7 +263,7 @@ read_layer_value_plane (FILE *file, map_t *map, layer_index_t layer)
     {
       for (y = 0; y < get_map_height (map) && result == SUCCESS; y++)
         {
-          result = set_tile_value (map, layer, x, y, read_ushort (file));
+          result = set_tile_value (map, layer, x, y, read_uint16 (file));
         }
     }
 
@@ -283,11 +282,11 @@ read_layer_value_plane (FILE *file, map_t *map, layer_index_t layer)
  * @throws  IOException
  */
 
-int
+bool_t
 read_map_zone_planes (FILE *file, map_t *map)
 {
   layer_index_t l;
-  int result;
+  bool_t result;
 
 
   if (check_magic_sequence (file, MAGIC_ZONES) == FAILURE)
@@ -314,7 +313,7 @@ read_map_zone_planes (FILE *file, map_t *map)
  * @throws  IOException
  */
 
-int
+bool_t
 read_layer_zone_plane (FILE *file, map_t *map, unsigned short layer)
 {
   dimension_t x;
@@ -325,7 +324,7 @@ read_layer_zone_plane (FILE *file, map_t *map, unsigned short layer)
     {
       for (y = 0; y < get_map_height (map); y++)
         {
-          set_tile_zone (map, layer, x, y, read_ushort (file));
+          set_tile_zone (map, layer, x, y, read_uint16 (file));
         }
     }
 
@@ -342,11 +341,11 @@ read_layer_zone_plane (FILE *file, map_t *map, unsigned short layer)
  * @return  SUCCESS for success, FAILURE otherwise.
  */
 
-int
+bool_t
 read_map_zone_properties (FILE *file, map_t *map)
 {
   zone_index_t i;
-  int result;
+  bool_t result;
 
   if (check_magic_sequence (file, MAGIC_PROPERTIES) == FAILURE)
     return FAILURE;
@@ -354,7 +353,7 @@ read_map_zone_properties (FILE *file, map_t *map)
   result = SUCCESS;
 
   for (i = 0; i <= get_max_zone (map) && result == SUCCESS; i++)
-    result = set_zone_properties (map, i, read_ushort (file));
+    result = set_zone_properties (map, i, read_uint16 (file));
 
   return SUCCESS;
 }
@@ -369,7 +368,7 @@ read_map_zone_properties (FILE *file, map_t *map)
  * @return          SUCCESS if it is present, FAILURE otherwise.
  */
 
-int
+bool_t
 check_magic_sequence (FILE *file, const char sequence[])
 {
   char *check;
@@ -401,20 +400,20 @@ check_magic_sequence (FILE *file, const char sequence[])
 
 
 /**
- * Read an unsigned short (0-65535) from two bytes in big-endian format.
+ * Read an unsigned 16-bit integer (0-65535) from two bytes in big-endian format.
  *
  * @param   file  The file to read from.
  *
- * @return  the unsigned short.
+ * @return  the unsigned 16-bit integer.
  */
 
-unsigned short
-read_ushort (FILE *file)
+uint16_t
+read_uint16 (FILE *file)
 {
-  unsigned short ushort = 0;
+  uint16_t ushort = 0;
 
-  ushort |= (unsigned short) (fgetc (file) << 8); /* Most significant byte  */
-  ushort |= (unsigned short) (fgetc (file));      /* Least significant byte */
+  ushort |= (uint16_t) (fgetc (file) << 8); /* Most significant byte  */
+  ushort |= (uint16_t) (fgetc (file));      /* Least significant byte */
 
   return ushort;
 }

@@ -169,7 +169,7 @@ init_map (dimension_t width,
 
 /* Set the tag value of a layer. */
 
-int
+bool_t
 set_layer_tag (map_t *map, layer_index_t layer, layer_tag_t tag)
 {
   if (map == NULL)
@@ -192,7 +192,7 @@ set_layer_tag (map_t *map, layer_index_t layer, layer_tag_t tag)
 
 /* Set the property bitfield of a zone. */
 
-int
+bool_t
 set_zone_properties (map_t *map, zone_index_t zone, zone_prop_t properties)
 {
   if (map == NULL)
@@ -214,7 +214,7 @@ set_zone_properties (map_t *map, zone_index_t zone, zone_prop_t properties)
 
 /* Set the value of a tile. */
 
-int
+bool_t
 set_tile_value (map_t *map, layer_index_t layer, dimension_t x, dimension_t y, layer_value_t value)
 {
   if (map == NULL)
@@ -243,7 +243,7 @@ set_tile_value (map_t *map, layer_index_t layer, dimension_t x, dimension_t y, l
 
 /* Set the zone of a tile. */
 
-int
+bool_t
 set_tile_zone (map_t *map, layer_index_t layer, dimension_t x, dimension_t y, layer_zone_t zone)
 {
   if (map == NULL)

@@ -101,7 +101,7 @@ read_map_header (FILE *file);
  * @return      TRUE for success, FALSE otherwise.
  */
 
-int
+bool_t
 read_layer_tags (FILE *file, map_t *map);
 
 
@@ -114,7 +114,7 @@ read_layer_tags (FILE *file, map_t *map);
  * @return      TRUE for success, FALSE otherwise.
  */
 
-int
+bool_t
 read_map_value_planes (FILE *file, map_t *map);
 
 
@@ -128,7 +128,7 @@ read_map_value_planes (FILE *file, map_t *map);
  * @return  TRUE for success, FALSE otherwise.
  */
 
-int
+bool_t
 read_layer_value_plane (FILE *file, map_t *map, layer_index_t layer);
 
 
@@ -141,7 +141,7 @@ read_layer_value_plane (FILE *file, map_t *map, layer_index_t layer);
  * @return  TRUE for success, FALSE otherwise.
  */
 
-int
+bool_t
 read_map_zone_planes (FILE *file, map_t *map);
 
 
@@ -155,7 +155,7 @@ read_map_zone_planes (FILE *file, map_t *map);
  * @return  TRUE for success, FALSE otherwise.
  */
 
-int
+bool_t
 read_layer_zone_plane (FILE *file, map_t *map, layer_index_t layer);
 
 
@@ -168,7 +168,7 @@ read_layer_zone_plane (FILE *file, map_t *map, layer_index_t layer);
  * @return  TRUE for success, FALSE otherwise.
  */
 
-int
+bool_t
 read_map_zone_properties (FILE *file, map_t *map);
 
 
@@ -181,20 +181,20 @@ read_map_zone_properties (FILE *file, map_t *map);
  * @return          TRUE if it is present, FALSE otherwise.
  */
 
-int
+bool_t
 check_magic_sequence (FILE *file, const char sequence[]);
 
 
 /**
- * Read an unsigned short (0-65535) from two bytes in big-endian format.
+ * Read an unsigned 16-bit integer (0-65535) from two bytes in big-endian format.
  *
  * @param  file  The file to read from.
  *
- * @return       the unsigned short.
+ * @return       the unsigned 16-bit integer.
  */
 
-unsigned short
-read_ushort (FILE *file);
+uint16_t
+read_uint16 (FILE *file);
 
 
 #endif /* not _MAPLOAD_H */

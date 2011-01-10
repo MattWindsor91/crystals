@@ -47,20 +47,23 @@
 #define _MAP_H
 
 
+#include "../types.h"
+
+
 /* -- TYPEDEFS -- */
 
-typedef unsigned short dimension_t;    /**< Type for tile-based map dimensions. */
+typedef uint16_t dimension_t;    /**< Type for tile-based map dimensions. */
 
-typedef unsigned short layer_tag_t;    /**< Type for layer tags. */
+typedef uint16_t layer_tag_t;    /**< Type for layer tags. */
 
-typedef signed int     layer_count_t;  /**< Type large enough to hold a layer count. */
-typedef unsigned short layer_index_t;  /**< Type for layer indices. */
-typedef unsigned short layer_value_t;  /**< Type for layer value data. */
-typedef unsigned short layer_zone_t;   /**< Type for layer zone data. */
+typedef int32_t  layer_count_t;  /**< Type large enough to hold a layer count. */
+typedef uint16_t layer_index_t;  /**< Type for layer indices. */
+typedef uint16_t layer_value_t;  /**< Type for layer value data. */
+typedef uint16_t layer_zone_t;   /**< Type for layer zone data. */
 
-typedef signed int     zone_count_t;   /**< Type large enough to hold a zone count. */
-typedef unsigned short zone_index_t;   /**< Type for zone indices. */
-typedef unsigned short zone_prop_t;    /**< Type for zone properties bitfields. */
+typedef int32_t  zone_count_t;   /**< Type large enough to hold a zone count. */
+typedef uint16_t zone_index_t;   /**< Type for zone indices. */
+typedef uint16_t zone_prop_t;    /**< Type for zone properties bitfields. */
 
 /* -- CONSTANTS -- */
 
@@ -105,18 +108,6 @@ extern struct map *g_map; /**< The map currently in use. (FIXME: is
 
 /* -- PROTOTYPES -- */
 
-/** 
- * Initialise the test map.
- *
- * @todo  drop this.
- *
- * @return  a pointer to the test map, or NULL for allocation
- *          failure.
- */
-
-map_t *
-init_test_map (void);
-
 
 /**
  * Initialise a map.
@@ -153,7 +144,7 @@ init_map (dimension_t width,
  * @return       SUCCESS if the operation succeeded, FAILURE otherwise.
  */
 
-int
+bool_t
 set_layer_tag (map_t *map, layer_index_t layer, layer_tag_t tag);
 
 
@@ -167,7 +158,7 @@ set_layer_tag (map_t *map, layer_index_t layer, layer_tag_t tag);
  * @return            SUCCESS if the operation succeeded, FAILURE otherwise.
  */
 
-int
+bool_t
 set_zone_properties (map_t *map, zone_index_t zone, zone_prop_t properties);
 
 
@@ -183,7 +174,7 @@ set_zone_properties (map_t *map, zone_index_t zone, zone_prop_t properties);
  * @return       SUCCESS if the operation succeeded, FAILURE otherwise.
  */
 
-int
+bool_t
 set_tile_value (map_t *map, layer_index_t layer, dimension_t x, dimension_t y, layer_value_t value);
 
 
@@ -199,7 +190,7 @@ set_tile_value (map_t *map, layer_index_t layer, dimension_t x, dimension_t y, l
  * @return  SUCCESS if the operation succeeded, FAILURE otherwise.
  */
 
-int
+bool_t
 set_tile_zone (map_t *map, layer_index_t layer, dimension_t x, dimension_t y, layer_zone_t value);
 
 

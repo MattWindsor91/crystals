@@ -230,7 +230,13 @@ A layer plane is comprised of the tile information for one layer, laid
 out in a left-to-right, top-to-bottom format; each row is stored one
 by one with no delimiter to mark the end of a row.
 
-Layer planes are generally 
+Layer planes are generally placed together sequentially without
+layer-end delimiters in blocks of the same plane type.
+
+There are two types of layer plane defined in this version of the map
+format: the \emph{layer value plane}, which stores \emph{tile
+  values}, and the \emph{layer zone plane}. which stores \emph{tile
+  zones}.
 
 
 \section{Implementation details}
@@ -250,6 +256,7 @@ type \emph{map\_t}.
 
 
 \begin{lstlisting}
+
 typedef unsigned short layer_t; /**< Type for layer data. */
 typedef unsigned short tag_t;   /**< Type for layer tags. */
 
