@@ -102,7 +102,9 @@ run_script (const char *path)
 static int
 power_test (lua_State *L)
 {
-  int x, y, res;
+  lua_Integer x;
+  lua_Integer y;
+  lua_Integer res;
   
   /*NOTE if you call the c function in lua the parameters are on the lua stack
    * thats why we need to check if they are of the right type */
@@ -110,7 +112,7 @@ power_test (lua_State *L)
     return L_FAILURE;
     
   y = lua_tointeger (L, 2); /* get the first parameter from the lua stack*/
-  x = lua_tointeger (L, 1); /* get the second parametr*/
+  x = lua_tointeger (L, 1); /* get the second parameter */
   
   lua_getfield (L, LUA_GLOBALSINDEX, "power"); /* move the function lua power
     to the lua stack */
@@ -120,7 +122,7 @@ power_test (lua_State *L)
   res = lua_tointeger (L, -1); /* get the result from the stack and convert it 
     to an integer */
   
-  printf ("%d ^ %d = %d\n", x, y, res);
+  printf ("%ld ^ %ld = %ld\n", x, y, res);
   
   return L_SUCCESS;
 }
@@ -148,7 +150,7 @@ lua_parameter_check (lua_State *L, const char *func_name, const char sig[])
 
   if (parameters != passed_parameters)
     {
-      error ("LUA: %s: Takes %d argument, %d given.\n", func_name, parameters,
+      error ("LUA: %s: Takes %d argument, %d given.", func_name, parameters,
         passed_parameters);
       return FAILURE;
     }
@@ -160,7 +162,7 @@ lua_parameter_check (lua_State *L, const char *func_name, const char sig[])
           case 's':
             if (!lua_isstring (L, i))
               {
-                error ("LUA: %s: Parameter %d has to be a string.\n", 
+                error ("LUA: %s: Parameter %d has to be a string.",
                   func_name, i);
                 return FAILURE;
               }
@@ -168,7 +170,7 @@ lua_parameter_check (lua_State *L, const char *func_name, const char sig[])
           case 'd':
             if (!lua_isnumber (L, i))
               {
-                error ("LUA: %s: Parameter %d has to be a number.\n",
+                error ("LUA: %s: Parameter %d has to be a number.",
                   func_name, i);
                 return FAILURE;
               }
@@ -176,20 +178,20 @@ lua_parameter_check (lua_State *L, const char *func_name, const char sig[])
           case 'b':
             if (!lua_isboolean (L, i))
               {
-                error ("LUA: %s: Parameter %d has to be a boolean.\n",
+                error ("LUA: %s: Parameter %d has to be a boolean.",
                   func_name, i);
                 return FAILURE;
               }
           case 't':
             if (!lua_istable (L, i))
               {
-                error ("LUA: %s: Parameter %d has to be a table.\n",
+                error ("LUA: %s: Parameter %d has to be a table.",
                   func_name, i);
                 return FAILURE;
               }
             break;
           default:
-              error ("LUA: parameter_check: Uknown sig character %c\n", sig[i]);
+              error ("LUA: parameter_check: Uknown sig character %c", sig[i]);
             return FAILURE;
             break;
         }
