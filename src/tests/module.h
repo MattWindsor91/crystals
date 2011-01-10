@@ -65,21 +65,19 @@ typedef struct
 {
   char *path; /**< Path to the module directory. */
 
-  /** This module exists. */
   struct
   {
     module_data metadata; /**< Metadata for the test module. */
 
     void (*sum_numbers)(int a, int b, int *ans);
     int  (*mul_numbers)(int a, int b);
-  } test;
+  } test; /**< This module exists. */
 
-  /** This one doesn't. */
   struct
   {
     module_data metadata; /**< Metadata for the foo module. */
     void (*bar)(void);    /**< Nonexistent function. */
-  } foo;
+  } foo; /**< This module doesn't. */
 } test_module_set;
 
 /* -- PROTOTYPES -- */
@@ -96,10 +94,12 @@ typedef struct
 int
 init_test_modules (const char *path);
 
+
 /** This closes any loaded modules, run before program termination. */
 
 void
 cleanup_test_modules (void);
+
 
 /** Function to load 'test' module.
  *
@@ -110,6 +110,8 @@ cleanup_test_modules (void);
 
 int
 load_module_test (test_module_set* modules);
+
+
 /** Function to load 'foo' module.
  *
  *  @param modules  Set of test modules.
@@ -119,5 +121,6 @@ load_module_test (test_module_set* modules);
 
 int
 load_module_foo (test_module_set* modules);
+
 
 #endif /* _TEST_MODULE_H */

@@ -56,7 +56,7 @@
 
 /* -- GLOBAL VARIABLES -- */
 
-dict_t *g_config;
+dict_t *g_config = NULL;
 
 
 /* -- DEFINITIONS -- */
@@ -85,26 +85,29 @@ main (int argc, char **argv)
 int
 init (void)
 {
-  char *module_path;
-  
-  g_config = config_dict_init ();
+  char *module_path = NULL;
+  const char *config_path = "config/default.cfg";
 
-  /* yeah I know that needs someting better */
-  if (config_parse_file ("config/default.cfg", g_config) == SUCCESS)
+
+  /* -- Configuration -- */
+
+  g_config = init_config (config_path);
+
+  if (g_config == NULL)
     {
-      module_path = config_get_value ("module_path", g_config);
+      fatal ("MAIN - init - Config parser initialisation failed.");
+      return FAILURE;
     }
-  else
+
+
+  /* -- Module loader ("kernel") -- */
+
+  get_module_root_path (&module_path);
+
+  if (module_path == NULL)
     {
-      module_path = malloc (sizeof (char) * strlen (DEFMODPATH) + 1);
-
-      if (module_path == NULL)
-        {
-          fatal ("MAIN - init - Module path could not be allocated.");
-          return FAILURE;
-        }
-
-      strncpy (module_path, DEFMODPATH, strlen (DEFMODPATH) + 1);
+      fatal ("MAIN - init - Failed to retrieve module path.");
+      return FAILURE;
     }
 
   if (init_modules (module_path) == FAILURE)
@@ -113,24 +116,46 @@ init (void)
       return FAILURE;
     }
 
+
+  /* -- Graphics subsystem -- */
+
   if (init_graphics () == FAILURE)
     {
       fatal ("MAIN - init - Graphics initialisation failed.");
       return FAILURE;
     }
 
-  if (init_bindings () == SUCCESS)
+
+  /* -- Bindings subsystem -- */
+
+  if (init_bindings () == FAILURE)
     {
-        run_script ("tests/lua.lua");
+      fatal ("MAIN - init - Bindings initialisation failed.");
+      return FAILURE;
     }
 
-  init_events ();
+  run_script ("tests/lua.lua");
+
+
+  /* -- Events subsystem -- */
+
+  if (init_events () == FAILURE)
+    {
+      fatal ("MAIN - init - Events initialisation failed.");
+      return FAILURE;
+    }
+
+
+  /* -- State machine -- */
 
   if (set_state (STATE_FIELD) == FAILURE)
     {
       fatal ("MAIN - init - Couldn't enqueue state.");
       return FAILURE;
     }
+
+
+  /* -- Finish -- */
 
   return SUCCESS;
 }

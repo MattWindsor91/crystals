@@ -436,7 +436,7 @@ render_map_layer (struct map_view *mapview, unsigned char layer)
                   int screen_x = (x * TILE_W) - (x_offset % TILE_W);
                   int screen_y = (y * TILE_H) - (y_offset % TILE_H);
                   int layer_offset = true_x  + (true_y * map->height);
-                  int tileset_x = TILE_W * map->data_layers[layer][layer_offset];
+                  int tileset_x = TILE_W * map->tileset_layers[layer][layer_offset];
 
                   if (screen_x < SHRT_MIN
                       || screen_x > SHRT_MAX
@@ -463,7 +463,7 @@ render_map_layer (struct map_view *mapview, unsigned char layer)
                       return;
                     }
 
-                  if (map->data_layers[layer][layer_offset] 
+                  if (map->tileset_layers[layer][layer_offset] 
                       != 0)
                     draw_image_direct (tileset,
                                        (short) tileset_x, 0,

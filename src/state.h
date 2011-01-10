@@ -51,9 +51,12 @@
 #ifndef _STATE_H
 #define _STATE_H
 
+#include "util.h"
+
+
 /* -- TYPE DEFINITIONS -- */
 
-typedef unsigned char state_t; /**< State identifier type. */
+typedef unsigned char state_t;  /**< State identifier type. */
 
 
 /* -- CONSTANTS -- */
@@ -71,7 +74,7 @@ enum
 /** A function table for states, which is to be populated when the
  *  state is initialised.
  *
- *  @todo  This will eventually be rolled into the module system.
+ *  @TODO  This may eventually be rolled into the module system.
  */
 
 struct state_functions
@@ -81,7 +84,7 @@ struct state_functions
    *  @return  SUCCESS if no errors occurred, FAILURE otherwise.
    */
 
-  int
+  bool_t
   (*cleanup) (void);
 
 
@@ -90,80 +93,100 @@ struct state_functions
    *  @return  SUCCESS if no errors occurred, FAILURE otherwise.
    */
 
-  int
+  bool_t
   (*update) (void);
 
 
+  /** Handle a dirty rectangle (eg from the user interface layer).
+   *
+   *  @param x       X co-ordinate of the left edge of the rectangle.
+   *  @param y       Y co-ordinate of the right edge of the rectangle.
+   *  @param width   Width of the rectangle, in pixels.
+   *  @param height  Height of the rectangle, in pixels.
+   *
+   *  @return  SUCCESS if no errors occurred, FAILURE otherwise.
+   */
+
+  bool_t
+  (*dirty_rect) (short x, short y, 
+                 unsigned short width, unsigned short height);
 };
 
-/* -- PROTOTYPES -- */
 
-/** Retrieve the current game state.
+/* -- DECLARATIONS -- */
+
+/**
+ * Retrieve the current game state.
  *
- *  @return  the current game state. 
+ * @return  the current game state identifier.
  */
 
 state_t
 get_state (void);
 
 
-/** Change the current game state.
+/**
+ * Change the current game state.
  *
- *  State changes are actually "lazy" - in order to ensure the
- *  integrity of code executing directly after the state change, this
- *  function does not actually immediately change the state but
- *  instead enqueues a state change (facilitated by the function
- *  change_to_enqueued_state) to occur at the beginning of the next
- *  frame.
+ * State changes are actually "lazy" - in order to ensure the
+ * integrity of code executing directly after the state change, this
+ * function does not actually immediately change the state but
+ * instead enqueues a state change (facilitated by the function
+ * change_to_enqueued_state) to occur at the beginning of the next
+ * frame.
  *
- *  @param new_state  The state to attempt to change to.
+ * @param new_state  The state to attempt to change to.
  *
- *  @return  SUCCESS if no errors occurred, FAILURE otherwise (for
- *  example, trying to enqueue a state change during a quit state).
+ * @return  SUCCESS if no errors occurred, FAILURE otherwise (for
+ * example, trying to enqueue a state change during a quit state).
  */
 
-int
+bool_t
 set_state (state_t new_state);
 
 
-/** Process an enqueued state change, if any.
+/**
+ * Process an enqueued state change, if any.
  *
- *  @return  The current state after any state changes, if
- *           successful.  If there were errors, STATE_NULL (which can
- *           never be changed to) will be returned, and can be trapped
- *           as an error.
+ * @return  The current state after any state changes, if
+ *          successful.  If there were errors, STATE_NULL (which can
+ *          never be changed to) will be returned, and can be trapped
+ *          as an error.
  */
 
-int
+bool_t
 update_state (void);
 
 
-/** Call the initialising function for a given state.
+/**
+ * Call the initialising function for a given state.
  *
- *  @param state  The state to attempt to initialise.
+ * @param state  The state to attempt to initialise.
  *
- *  @return  SUCCESS if no errors occurred, FAILURE otherwise.
+ * @return  SUCCESS if no errors occurred, FAILURE otherwise.
  */
 
-int
+bool_t
 init_state (state_t state);
 
 
-/** Perform per-frame updates for the current state. 
+/**
+ * Perform per-frame updates for the current state.
  *   
- *  @return  SUCCESS if no errors occurred, FAILURE otherwise. 
+ * @return  SUCCESS if no errors occurred, FAILURE otherwise.
  */
 
-int
+bool_t
 state_frame_updates (void);
 
 
-/** Call the cleanup function for the current state.
+/**
+ * Call the cleanup function for the current state.
  *
- *  @return  SUCCESS if no errors occurred, FAILURE otherwise.
+ * @return  SUCCESS if no errors occurred, FAILURE otherwise.
  */
 
-int
+bool_t
 cleanup_state (void);
 
 

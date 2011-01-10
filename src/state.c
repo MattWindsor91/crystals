@@ -54,6 +54,7 @@
 static state_t sg_state = STATE_NULL;          /**< Current state. */
 static state_t sg_enqueued_state = STATE_NULL; /**< Enqueued state. */
 static struct state_functions sg_functions = {NULL,
+                                              NULL, 
                                               NULL};  /**< Function table. */
 
 
@@ -70,7 +71,7 @@ get_state (void)
 
 /* Change the current state. */
 
-int
+bool_t
 set_state (state_t new_state)
 {
   /* Can't change state if we're already quitting, can't change state
@@ -101,7 +102,7 @@ set_state (state_t new_state)
 
 /* Process an enqueued state change, if any, and return the current state. */
 
-int
+bool_t
 update_state (void)
 {
   /* Check to see if there is an enqueued (non-null) state. */
@@ -130,7 +131,7 @@ update_state (void)
 
 /* Initialise a state. */
 
-int
+bool_t
 init_state (state_t state)
 {
   switch (state)
@@ -153,7 +154,7 @@ init_state (state_t state)
 
 /* Perform frame updates for the current state. */
 
-int
+bool_t
 state_frame_updates (void)
 {
   if (sg_functions.update != NULL)
@@ -165,7 +166,7 @@ state_frame_updates (void)
 
 /* Clean up a state. */
 
-int
+bool_t
 cleanup_state (void)
 {
   if (sg_functions.cleanup != NULL)

@@ -44,12 +44,137 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
+#include <string.h>
+#include <limits.h>
 
 #include "util.h"
+#include "parser.h"
 #include "main.h"
 
 
 /* - DEFINITIONS - */
+
+/* ~~ Path retrieval */
+
+/* Get the path to the directory in which all modules are stored. */
+
+void
+get_module_root_path (char **module_path)
+{
+  /* If a string exists here, remove it. */
+
+  if (*module_path != NULL)
+    {
+      free (module_path);
+      *module_path = NULL;
+    }
+
+  /* If configuration loading succeeded, try to grab the module path
+     from the config file.  If this doesn't work, use the default
+     path. */
+
+  if (g_config)
+    {
+      *module_path = config_get_value ("module_path", g_config);
+    }
+
+  if (*module_path == NULL)
+    {
+      error ("UTIL - get_module_path - Cannot read module path from config.");
+
+      /* Copy the default path to the pointer. */
+
+      *module_path = malloc (sizeof (char) * strlen (DEFMODPATH) + 1);
+
+      if (*module_path == NULL)
+        {
+          fatal ("UTIL - get_module_path - Module path could not be allocated.");
+        }
+      else
+        strncpy (*module_path, DEFMODPATH, strlen (DEFMODPATH) + 1);
+    }
+}
+
+
+/* ~~ Safe type conversions */
+
+/* Safely convert a long integer to an unsigned short. */
+
+unsigned short
+to_unsigned_short (long integer)
+{
+  if (integer < 0)
+    {
+      error ("UTIL - to_unsigned_short - Assertion n >= 0 failed.");
+      error ("UTIL - Truncating value to 0.");
+      integer = 0;
+    }
+  else if (integer > USHRT_MAX)
+    {
+      error ("UTIL - to_unsigned_short - Asserton n <= USHRT_MAX failed.");
+      error ("UTIL - Truncating value to unsigned short maximum.");
+      integer = USHRT_MAX;
+    }
+
+  return (unsigned short) integer;
+}
+
+
+/* Safely convert a long integer to a short. */
+
+short
+to_short (long integer)
+{
+  if (integer < SHRT_MIN)
+    {
+      error ("UTIL - to_short - Assertion n >= SHRT_MIN failed.");
+      error ("UTIL - Truncating value to signed short minimum.");
+      integer = SHRT_MIN;
+    }
+  else if (integer > SHRT_MAX)
+    {
+      error ("UTIL - to_short - Assertion n <= SHRT_MAX failed.");
+      error ("UTIL - Truncating value to unsigned short minimum.");
+      integer = SHRT_MAX;
+    }
+
+  return (short) integer;
+}
+
+
+/* Safely convert an unsigned long integer to an unsigned short. */
+
+unsigned short
+unsigned_to_unsigned_short (unsigned long integer)
+{
+  if (integer > USHRT_MAX)
+    {
+      error ("UTIL - unsigned_to_unsigned_short - Assertion n <= USHRT_MAX failed.");
+      error ("UTIL - Truncating value to unsigned short maximum.");
+      integer = USHRT_MAX;
+    }
+
+  return (unsigned short) integer;
+}
+
+
+/* Safely convert an unsigned long integer to a short. */
+
+short
+unsigned_to_short (unsigned long integer)
+{
+  if (integer > SHRT_MAX)
+    {
+      error ("UTIL - to_unsigned_short - Assertion n <= SHRT_MAX failed.");
+      error ("UTIL - Truncating value to unsigned short minimum.");
+      integer = SHRT_MAX;
+    }
+
+  return (short) integer;
+}
+
+
+/* ~~ Error reporting */
 
 /* Fatal error. */
 
@@ -58,7 +183,7 @@ fatal (const char message[], ...)
 {
   va_list ap;
   va_start (ap, message);
-  ERROR_PROCEDURE(message, ap, TRUE);
+  ERROR_PROCEDURE (message, ap, TRUE);
 }
 
 
@@ -69,7 +194,7 @@ error (const char message[], ...)
 {
   va_list ap;
   va_start (ap, message);
-  ERROR_PROCEDURE(message, ap, FALSE);
+  ERROR_PROCEDURE (message, ap, FALSE);
 }
 
 
@@ -79,7 +204,7 @@ void
 std_error (const char message[], va_list ap, int is_fatal)
 {
   if (is_fatal)
-  	fprintf (stderr, "FATAL: ");
+    fprintf (stderr, "FATAL: ");
   else
     fprintf (stderr, "ERROR: ");
 
@@ -91,7 +216,9 @@ std_error (const char message[], va_list ap, int is_fatal)
 
   if (is_fatal)
     {
-	    cleanup ();
-	    exit (1);
+      cleanup ();
+      exit (1);
     }
 }
+
+

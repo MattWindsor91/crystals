@@ -47,14 +47,28 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <limits.h>
 
+#include "main.h"      /* g_config */
+#include "parser.h"    /* Configuration */
 #include "graphics.h"
 #include "module.h"
 #include "util.h"
 
+
+/* -- CONSTANTS -- */
+
+const char DEFGFXPATH[] = "gfx/";
+const char FONT_FILENAME[] = "font.png";
+
+const unsigned short FONT_W = 10;
+const unsigned short FONT_H = 10;
+
+
 /* -- STATIC GLOBAL VARIABLES -- */
 
 static struct hash_object *sg_images[HASH_VALS];
+
 
 /* -- DEFINITIONS -- */
 
@@ -67,12 +81,9 @@ init_graphics (void)
 
   if (load_module_gfx ("gfx-sdl", &g_modules) == FAILURE)
     {
-      if (load_module_gfx ("gfx-directx", &g_modules) == FAILURE)
-        {
-          error ("GRAPHICS - init_graphics - Could not load graphics module.");
+      error ("GRAPHICS - init_graphics - Could not load graphics module.");
 
-          return FAILURE;
-        }
+      return FAILURE;
     }
 
   if ((*g_modules.gfx.init_screen_internal)
@@ -86,6 +97,108 @@ init_graphics (void)
     sg_images[i] = NULL;
 
   return SUCCESS;
+}
+
+
+/* Given a relative path to an image file, append the graphics root
+   path to it and store it in the given pointer. */
+
+char *
+get_absolute_path (const char path[])
+{
+  char *root_path;
+  char *absolute_path;
+
+  /* Get the root path from the configuration, if it exists. */
+
+  root_path = config_get_value ("graphics_path", g_config);
+
+  if (root_path == NULL)
+    {
+      /* Using default path. */
+
+      error ("GRAPHICS - get_absolute_path - No graphics_path in config.");
+      error ("Using default path instead.");
+
+      absolute_path = calloc (strlen (path) + strlen (DEFGFXPATH) + 1, 
+                               sizeof (char));
+
+      if (absolute_path == NULL)
+        {
+          error ("GRAPHICS - get_absolute path - Memory allocation failure.");
+          return NULL;
+        }
+
+      strcat (absolute_path, DEFGFXPATH);
+    }
+  else
+    {
+      /* Using configuration path. */
+
+      absolute_path = calloc (strlen (path) + strlen (root_path) + 1, 
+                               sizeof (char));
+
+      if (absolute_path == NULL)
+        {
+          error ("GRAPHICS - get_absolute path - Memory allocation failure.");
+          return NULL;
+        }
+
+      strcat (absolute_path, root_path);
+    }
+
+  strcat (absolute_path, path);
+
+  return absolute_path;
+}
+
+/* Write a string on the screen, using the standard font. */
+
+void
+write_string (short x, short y,
+              unsigned short box_width, unsigned char alignment,
+              const char string[])
+{
+  char chr;
+  int x1;
+  unsigned short i, length, midpoint;
+  size_t slength;
+
+  slength = strlen (string);
+  length = unsigned_to_unsigned_short (FONT_W * slength);
+  
+  /* Set up alignment. */
+
+  switch (alignment)
+    {
+    default:
+    case ALIGN_LEFT:
+      x1 = x;
+      break;
+    case ALIGN_RIGHT:
+      x1 = unsigned_to_short (box_width - slength);
+      break;
+    case ALIGN_CENTRE:   
+      midpoint = to_unsigned_short (x + (box_width / 2));
+      x1 = to_short (midpoint - (length / 2));
+      break;
+    }
+
+
+  /* Draw each character using the font image. */
+  for (i = 0; i < slength; i++)
+    {
+      chr = string[i];
+      draw_image (FONT_FILENAME, 
+                  to_short ((chr % 16) * FONT_W), 
+                  to_short (((chr - (chr % 16))/16) * FONT_H), 
+                  to_short (x1),
+                  to_short (y),
+                  FONT_W,
+                  FONT_H);
+
+      x1 += FONT_W;
+    }  
 }
 
 
@@ -128,16 +241,7 @@ load_image (const char filename[])
   struct hash_object *image;
   struct hash_object *get_try;
   void *data;
-
-  /* First, check to see if the image isn't already there. */
-
-  get_try = find_hash_object (sg_images, filename);
-
-  if (get_try != NULL)
-    return get_try;
-
-  /* At this point in execution, we have deduced that the image isn't
-     there, so try to load it. */
+  char *path;
 
   /* Sanity-check the filename. */
 
@@ -147,9 +251,38 @@ load_image (const char filename[])
       return NULL;
     }
 
-  /* First, try to load the image data. */
+  /* First, check to see if the image isn't already there. */
 
-  data = (*g_modules.gfx.load_image_data) (filename);
+  get_try = find_hash_object (sg_images, filename);
+
+  if (get_try != NULL)
+    {
+      /* It is. */
+      return get_try;
+    }
+
+  /* At this point in execution, we have deduced that the image isn't
+     there, so try to load it. */
+
+  /* First, expand the filename into an absolute path that we can use
+     to find the image on the filesystem. */
+
+  path = get_absolute_path (filename);
+
+  if (path == NULL)
+    {
+      fatal ("GFX - load_image - Couldn't get absolute path for %s.", 
+             filename);
+      return NULL;
+    }
+
+  /* Next, try to load the image data. */
+
+  data = (*g_modules.gfx.load_image_data) (path);
+
+  /* We no longer need the absolute path, so free it. */
+
+  free (path);
 
   if (data == NULL)
     {

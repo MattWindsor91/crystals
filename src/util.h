@@ -77,11 +77,15 @@ enum
   
 /* -- TYPEDEFS -- */
 
-typedef char bool_t; /**<< Used for TRUE, FALSE, SUCCESS and FAILURE */
+typedef char bool_t; /**<< Used for TRUE, FALSE, SUCCESS and FAILURE. */
+
 
 /* -- FUNCTION MACROS -- */
 
 #define MAX(x, y) ((x) > (y) ? (x) : (y)) /**< Get the maximum of two
+                                             values. */
+
+#define MIN(x, y) ((x) < (y) ? (x) : (y)) /**< Get the minimum of two
                                              values. */
 
 
@@ -95,7 +99,7 @@ typedef char bool_t; /**<< Used for TRUE, FALSE, SUCCESS and FAILURE */
 #include "platform/w32-util.h" /* Windows error procedures */
 
 /** The procedure to use for outputting an error message. */
-#define ERROR_PROCEDURE(message, ap, is_fatal) w32_error((message), (ap), (is_fatal))
+#define ERROR_PROCEDURE w32_error
 
 #endif /* PLATFORM_WINDOWS */
 
@@ -106,14 +110,88 @@ typedef char bool_t; /**<< Used for TRUE, FALSE, SUCCESS and FAILURE */
 #define UTIL_PLATFORM_MACROS
 
 /** The procedure to use for outputting an error message. */
-#define ERROR_PROCEDURE(message, ap, is_fatal) std_error((message), (ap), (is_fatal))
+#define ERROR_PROCEDURE std_error
 
 #endif /* not UTIL_PLATFORM_MACROS */
 
 
 /* -- DECLARATIONS -- */
 
-/** 
+/* ~~ Path retrieval */
+
+/**
+ * Get the path to the directory in which all modules are stored.
+ *
+ * @param module_path  Pointer in which to store the path string.  If
+ *                     this has already been allocated, the function
+ *                     will free it.
+ */
+
+void
+get_module_root_path (char **module_path);
+
+
+/* ~~ Safe type conversions */
+
+/** Safely convert a long integer to an unsigned short. 
+ *
+ *  This will raise an error and return a truncated value if the
+ *  integer lies outside the bounds of the unsigned short range.
+ *
+ *  @param integer  The integer to attempt to convert.
+ *
+ *  @return  The converted integer in unsigned short form.
+ */
+
+unsigned short
+to_unsigned_short (long integer);
+
+
+/** Safely convert a long integer to signed short. 
+ *
+ *  This will raise an error and return a truncated value if the
+ *  integer lies outside the bounds of the signed short range.
+ *
+ *  @param integer  The integer to attempt to convert.
+ *
+ *  @return  The converted integer in signed short form.
+ */
+
+short
+to_short (long integer);
+
+
+/** Safely convert an unsigned long integer to an unsigned short. 
+ *
+ *  This will raise an error and return a truncated value if the
+ *  integer lies outside the bounds of the unsigned short range.
+ *
+ *  @param integer  The integer to attempt to convert.
+ *
+ *  @return  The converted integer in unsigned short form.
+ */
+
+unsigned short
+unsigned_to_unsigned_short (unsigned long integer);
+
+
+/** Safely convert an unsigned long integer to signed short. 
+ *
+ *  This will raise an error and return a truncated value if the
+ *  integer lies outside the bounds of the signed short range.
+ *
+ *  @param integer  The integer to attempt to convert.
+ *
+ *  @return  The converted integer in signed short form.
+ */
+
+short
+unsigned_to_short (unsigned long integer);
+
+
+/* ~~ Error reporting */
+
+/**
  * Fatal error.
  *
  * This shows an error message and attempts to immediately shut down
@@ -156,5 +234,6 @@ error (const char message[], ...);
 
 void
 std_error (const char message[], va_list ap, int is_fatal);
+
 
 #endif /* not _UTIL_H */

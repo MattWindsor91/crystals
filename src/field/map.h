@@ -72,16 +72,15 @@ enum
  *        in the map viewing code. This may change later.
  */
 
-struct map
+typedef struct map
 {
-  int width;                /**< Width of the map, in tiles. */
-  int height;               /**< Height of the map, in tiles. */
-  unsigned char num_layers; /**< Number of arrays to store in the map. */
-  tag_t *layer_tags;        /**< Array of map layer tags. */
-  layer_t **data_layers;    /**< Pointers to map layer arrays. */
-};
-
-typedef struct map map_t;
+  int width;                  /**< Width of the map, in tiles. */
+  int height;                 /**< Height of the map, in tiles. */
+  unsigned char num_layers;   /**< Number of arrays to store in the map. */
+  tag_t *layer_tags;          /**< Array of layer tag identifiers. */ 
+  layer_t **tileset_layers;   /**< Pointers to tileset layer arrays. */
+  layer_t **collision_layers; /**< Pointers to collision layer arrays. */
+} map_t;
 
 
 /* -- GLOBAL VARIABLES -- */

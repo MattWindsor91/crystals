@@ -50,6 +50,10 @@
 
 enum
   {
+    ALIGN_LEFT = 0, /**< Left alignment for text. */
+    ALIGN_CENTRE,   /**< Centre alignment for text. */
+    ALIGN_RIGHT,    /**< Right alignment for text. */
+
     SCREEN_W = 640, /**< Width of the screen (in pixels). 
                        @todo FIXME: Make this changeable at runtime. */
 
@@ -59,6 +63,20 @@ enum
     SCREEN_D = 32   /**< Colour depth of the screen (in bits per
                        pixel.) */
   };
+
+extern const char DEFGFXPATH[]; /**< Default root path for graphics,
+                                   to be invoked if the root path
+                                   cannot be found in the
+                                   configuration file. */
+
+extern const char FONT_FILENAME[]; /**< Filename of the default font. */
+
+extern const unsigned short FONT_W; /**< Width of each character in the font,
+                                       in pixels. */
+
+extern const unsigned short FONT_H; /**< Height of each character in the font,
+                                       in pixels. */
+
 
 
 /* -- PROTOTYPES -- */
@@ -71,6 +89,42 @@ enum
 
 int
 init_graphics (void);
+
+
+/** Given a relative path to an image file, append the graphics root
+ *  path to it and store it in the given pointer. 
+ *
+ *  @param path  The relative path to the image file, for example
+ *  "bob.png".
+ *
+ *  @return  The absolute path to the image file, for example
+ *  "/usr/share/crystals/gfx/bob.png".
+ */
+
+char *
+get_absolute_path (const char path[]);
+
+
+/** Write a string on the screen, using the standard font.
+ *
+ *  A wrapper to the image drawing functions that allows text to be 
+ *  left, centre, or right-aligned on a line of length box_width
+ *  starting at (x, y).
+ *
+ *  @param x          X position of text.
+ *  @param y          Y position of text.
+ *  @param box_width  Width of line to align text on. This need only be given 
+ *                    for centre or right-aligned text.
+ *  @param alignment  Desired alignment (ALIGN_LEFT, ALIGN_CENTRE or
+ *                    ALIGN_RIGHT).
+ *  @param string     The string to write.
+ *
+ */
+
+void
+write_string (short x, short y,
+              unsigned short box_width, unsigned char alignment,
+              const char string[]);
 
 
 /** Fill the screen with the given colour.

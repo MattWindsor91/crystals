@@ -65,13 +65,24 @@ struct dict_t
 {
   char *key;            /**< key item of the node. */
   char *value;          /**< value item of the node. */
-  /* strcmp == -1 */
+  /* strcmp < 0 */
   dict_t *left;         /**< Left branch of the node. */
-  /* strcmp == 1 */
+  /* strcmp > 0 */
   dict_t *right;        /**< Right branch of the node. */
 };
 
 /* -- FUNCTION PROTOTYPES -- */
+
+/** Initialise the config system. 
+ *
+ *  @param config_path  The path to the configuration file to read. 
+ *
+ *  @return  A pointer to the master configuration dictionary.
+ */
+
+dict_t *
+init_config (const char *config_path);
+
 
 /** Initialise a node.
  *
@@ -106,7 +117,7 @@ config_parse_file (const char *path_name, dict_t *root);
  */
 
 bool_t
-config_add_pair (char *key, char *value, dict_t *node);
+config_add_pair (const char *key, const char *value, dict_t *node);
 
 
 /** Get the value of the appropriate key.
@@ -139,6 +150,7 @@ config_item_count (dict_t *node);
 
 void
 config_free_dict (dict_t *node);
+
 
 #endif /* not _PARSER_H */
 

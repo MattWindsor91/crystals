@@ -48,16 +48,64 @@
 
 #include "map.h"
 #include "../util.h"
-#include "../graphics.h"
 
-
-const char FN_TILESET[] = "gfx/tiles.png";
+const char FN_TILESET[] = "tiles.png";
 
 /* FIXME: Remove the data below when map loaders are available. */
 
-static tag_t sg_test_tags[4] = {0, 1, 2, 0};
+static tag_t sg_test_layer_tags[4] =
+  {0, 1, 2, 0};
 
-static layer_t sg_test_layers[4][100] = 
+static layer_t sg_test_tileset_layers[4][100] = 
+  {{ 9,  5,  5,  5,  5,  5,  5,  5,  5, 10, 
+     8,  2,  2,  2,  2,  2,  2,  2,  2,  7,
+     8, 13, 13, 13, 13, 13, 13, 13, 13,  7,
+     8, 13, 13, 13, 13, 13, 13, 13, 13,  7,
+     8, 13, 13, 13, 13, 13, 13, 13, 13,  7,
+     8, 13, 13, 13, 13, 13, 13, 13, 13,  7,
+     8, 13, 13, 13, 13, 13, 13, 13, 13,  7,
+     8, 13, 13, 13, 13, 13, 13, 13, 13,  7,
+    11, 13, 13, 13, 13, 13, 13, 13, 13, 12,
+     1,  1,  1,  1,  1,  1,  1,  1,  1,  1},
+   { 0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  3,  3,  3,  3,  3,  3,  3,  3,  0,
+     0, 14, 14, 14, 14, 14, 14, 14, 14,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0}, 
+   { 0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  3,  3,  3,  3,  3,  3,  3,  3,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0}, 
+   { 0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 
+     0,  0,  0,  0,  4,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  4,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  4,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  4,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  4,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  4,  0,  0,  0,  0,  0,
+     0,  0,  0,  0,  4,  0,  0,  0,  0,  0,
+     0,  6,  6,  6,  6,  6,  6,  6,  6,  0,
+     0,  0,  0,  0,  0,  0,  0,  0,  0,  0} 
+  };
+
+/* (1 >> 0) Blocked from north 
+ * (1 >> 1) Blocked from east
+ * (1 >> 2) Blocked from south
+ * (1 >> 3) Blocked from west
+ */
+
+static layer_t sg_test_collision_layers[4][100] = 
   {{ 9,  5,  5,  5,  5,  5,  5,  5,  5, 10, 
      8,  2,  2,  2,  2,  2,  2,  2,  2,  7,
      8, 13, 13, 13, 13, 13, 13, 13, 13,  7,
@@ -118,10 +166,10 @@ init_test_map (void)
 
       for (i = 0; i < map->num_layers; i++) 
         {
-          map->layer_tags[i] = sg_test_tags[i];
+          map->layer_tags[i] = sg_test_layer_tags[i];
 
           /* We can assume that (map->width * map->height) fits in unsigned */
-          memcpy (map->data_layers[i], sg_test_layers[i],
+          memcpy (map->tileset_layers[i], sg_test_tileset_layers[i],
                   sizeof (layer_t) * (unsigned int) (map->width * map->height));
         }
     }
@@ -133,20 +181,26 @@ init_test_map (void)
 /* Allocate and initialise a map. */
 
 map_t *
-init_map (int width, 
-          int height, 
-          unsigned char num_layers)
+init_map (int width, int height, unsigned char num_layers)
 {
   map_t *map;
   unsigned int i;
 
-
   /* Sanity check */
 
-  if (width <= 0 || height <= 0 || num_layers == 0)
+  if (width <= 0)
     {
-      error ("MAP - init_map - Given a zero or negative parameter.\nWidth: %d; Height: %d; #Layers: %d.",
-               width, height, num_layers);
+      error ("MAP - init_map - Given a non-positive width.");
+      return NULL;
+    }
+  else if (height <= 0)
+    {
+      error ("MAP - init_map - Given a non-positive height.");
+      return NULL;
+    }      
+  else if (num_layers == 0)
+    {
+      error ("MAP - init_map - Given a non-positive number of layers.");
       return NULL;
     }
 
@@ -154,39 +208,58 @@ init_map (int width,
 
   if (map == NULL)
     {
-      error ("MAP - init_map - Map allocation failed.");
+      error ("MAP - init_map - Could not allocate map structure.");
       return NULL;
     }
+
+  /* Initialise some parameters. */
+
+  map->width = width;
+  map->height = height;
+  map->num_layers = num_layers;
+  
+  /* Next, allocate the array of layer tags. */
 
   map->layer_tags = calloc (num_layers, sizeof (tag_t));
 
   if (map->layer_tags == NULL)
     {
-      error ("MAP - init_map - Map tag array allocation failed.");
+      error ("MAP - init_map - Could not allocate layer tag array.");
+
       cleanup_map (map);
-      return NULL;
+      map = NULL;
     }
 
-  map->data_layers = calloc (num_layers, sizeof (layer_t*));
+  /* Next, allocate the array of tileset layers. */
 
-  if (map->data_layers == NULL)
+  map->tileset_layers = malloc (sizeof (layer_t*) * num_layers);
+
+  if (map->tileset_layers == NULL)
     {
-      error ("MAP - init_map - Map data matrix allocation failed.");
+      error ("MAP - init_map - Could not allocate tileset layer set.");
+
+      /* Clean up the entire thing, as a map is useless without
+         its data layers. */
+
       cleanup_map (map);
-      return NULL;
+      map = NULL;      
     }
 
-  map->width = width;
-  map->height = height;
-  map->num_layers = num_layers;
+  /* Now allocate the actual tileset layers. */
 
   for (i = 0; i < (num_layers); i++)
     {
-      map->data_layers[i] = malloc (sizeof (layer_t) * (unsigned int) (width * height));
-      if (map->data_layers[i] == NULL)
+      /* Assert that width and height are positive. */
+      map->tileset_layers[i] = calloc ((unsigned int) ((width * height)), 
+                                       sizeof (layer_t));
+
+      if (map->tileset_layers[i] == NULL)
         {
-          error ("MAP - init_map - Map data matrix row %d allocation failed.", i);
+          error ("MAP - init_map - Could not allocate tileset layer %u.", 
+                 i + 1);
+
           cleanup_map (map);
+          return NULL;
         }
     }
 
@@ -246,7 +319,7 @@ cleanup_map (struct map *map)
   if (map)
     {
       /* Make sure to clean up all the data layers. */
-      if (map->data_layers)
+      if (map->tileset_layers)
         {
           unsigned int i;
 
@@ -255,12 +328,13 @@ cleanup_map (struct map *map)
 
           for (i = 0; i < map->num_layers; i++)
             {
-              if (map->data_layers[i])
-                free (map->data_layers[i]);
+              if (map->tileset_layers[i])
+                free (map->tileset_layers[i]);
             }
 
-          free (map->data_layers);
+          free (map->tileset_layers);
         }
+
       free (map);
     }
 }
