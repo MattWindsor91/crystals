@@ -618,7 +618,7 @@ mark_dirty_rect (struct map_view *mapview,
 
   if (width <= 0 || height <= 0)
     {
-      error (stderr, "MAPVIEW - mark_dirty_rect - Rect dirtying passed invalid width/height.");
+      error ("MAPVIEW - mark_dirty_rect - Rect dirtying passed invalid width/height.");
       return FAILURE;
     }
 
@@ -725,7 +725,7 @@ add_dirty_rect (struct map_view *mapview,
 
   if (rect == NULL)
     {
-      error (stderr, "MAPVIEW - add_dirty_rect - Cannot allocate a dirty rectangle.");
+      error ("MAPVIEW - add_dirty_rect - Cannot allocate a dirty rectangle.");
       return FAILURE;
     }
 
