@@ -65,12 +65,73 @@ enum
     NULLC = '\0' /**< Null character (necessary?) */
   };
 
+
 /* -- FUNCTION MACROS -- */
 
 #define MAX(x, y) ((x) > (y) ? (x) : (y)) /**< Get the maximum of two
                                              values. */
 
+
+#define MIN(x, y) ((x) < (y) ? (x) : (y)) /**< Get the minimum of two
+                                             values. */
+
+
 /* -- DECLARATIONS -- */
+
+/** Safely convert a long integer to an unsigned short. 
+ *
+ *  This will raise an error and return a truncated value if the
+ *  integer lies outside the bounds of the unsigned short range.
+ *
+ *  @param integer  The integer to attempt to convert.
+ *
+ *  @return  The converted integer in unsigned short form.
+ */
+
+unsigned short
+to_unsigned_short (long integer);
+
+
+/** Safely convert a long integer to signed short. 
+ *
+ *  This will raise an error and return a truncated value if the
+ *  integer lies outside the bounds of the signed short range.
+ *
+ *  @param integer  The integer to attempt to convert.
+ *
+ *  @return  The converted integer in signed short form.
+ */
+
+short
+to_short (long integer);
+
+
+/** Safely convert an unsigned long integer to an unsigned short. 
+ *
+ *  This will raise an error and return a truncated value if the
+ *  integer lies outside the bounds of the unsigned short range.
+ *
+ *  @param integer  The integer to attempt to convert.
+ *
+ *  @return  The converted integer in unsigned short form.
+ */
+
+unsigned short
+unsigned_to_unsigned_short (unsigned long integer);
+
+
+/** Safely convert an unsigned long integer to signed short. 
+ *
+ *  This will raise an error and return a truncated value if the
+ *  integer lies outside the bounds of the signed short range.
+ *
+ *  @param integer  The integer to attempt to convert.
+ *
+ *  @return  The converted integer in signed short form.
+ */
+
+short
+unsigned_to_short (unsigned long integer);
 
 /** Fatal error.
  *

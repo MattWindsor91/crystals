@@ -134,7 +134,7 @@ move_object (const char object_name[],
 
 int
 tag_object (const char object_name[],
-            layer_t tag);
+            tag_t tag);
 
 
 /** Change the image associated with an object.

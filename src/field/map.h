@@ -48,6 +48,7 @@
 /* -- TYPEDEFS -- */
 
 typedef unsigned short layer_t; /**< Type for layer data. */
+typedef unsigned char tag_t;    /**< Type for layer tags. */
 
 /* -- STRUCTURES -- */
 
@@ -62,10 +63,13 @@ typedef unsigned short layer_t; /**< Type for layer data. */
 
 struct map
 {
-  int width;                /**< Width of the map, in tiles. */
-  int height;               /**< Height of the map, in tiles. */
-  unsigned char num_layers; /**< Number of arrays to store in the map. */
-  layer_t **data_layers;    /**< Pointers to map layer arrays. */
+  int width;                  /**< Width of the map, in tiles. */
+  int height;                 /**< Height of the map, in tiles. */
+  unsigned char num_layers;   /**< Number of arrays to store in the map. */
+  tag_t *layer_tags;          /**< Array of layer tag identifiers. */ 
+  layer_t **tileset_layers;   /**< Pointers to tileset layer arrays. */
+  layer_t **collision_layers; /**< Pointers to collision layer arrays. */
+  
 };
 
 /* -- GLOBAL VARIABLES -- */

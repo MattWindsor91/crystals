@@ -94,6 +94,19 @@ struct state_functions
   (*update) (void);
 
 
+  /** Handle a dirty rectangle (eg from the user interface layer).
+   *
+   *  @param x       X co-ordinate of the left edge of the rectangle.
+   *  @param y       Y co-ordinate of the right edge of the rectangle.
+   *  @param width   Width of the rectangle, in pixels.
+   *  @param height  Height of the rectangle, in pixels.
+   *
+   *  @return  SUCCESS if no errors occurred, FAILURE otherwise.
+   */
+
+  int
+  (*dirty_rect) (short x, short y, 
+                 unsigned short width, unsigned short height);
 };
 
 /* -- PROTOTYPES -- */

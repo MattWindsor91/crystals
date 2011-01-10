@@ -54,6 +54,7 @@
 static state_t sg_state = STATE_NULL;          /**< Current state. */
 static state_t sg_enqueued_state = STATE_NULL; /**< Enqueued state. */
 static struct state_functions sg_functions = {NULL,
+                                              NULL, 
                                               NULL};  /**< Function table. */
 
 

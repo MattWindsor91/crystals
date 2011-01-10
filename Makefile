@@ -50,7 +50,7 @@ DOC      := $(addprefix $(DOCDIR)/,$(DOC))
 
 ## Compilation toolchain ##
 
-CC       := clang
+CC       := gcc -ggdb
 RM       := rm -f
 DIST	 := $(shell uname -r | sed "s/.*-//")
 
@@ -62,7 +62,7 @@ WARN     := -Wall -Wextra -Wshadow -Wpointer-arith -Wcast-align \
             -Wconversion -Wstrict-prototypes
 
 LIBS     := -ldl -lpthread 
-CFLAGS   := -ansi -pedantic -O2 -ggdb -DDEFMODPATH="\"$(MODPATH)\"" $(WARN)
+CFLAGS   := -ansi -pedantic -O2 -DDEFMODPATH="\"$(MODPATH)\"" $(WARN)
 
 ## Rules ##
 

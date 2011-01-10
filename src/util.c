@@ -45,10 +45,87 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
+#include <limits.h>
 
 #include "util.h"
 #include "parser.h"
 #include "main.h"
+
+/* Safely convert a long integer to an unsigned short. */
+
+unsigned short
+to_unsigned_short (long integer)
+{
+  if (integer < 0)
+    {
+      error ("UTIL - to_unsigned_short - Assertion n >= 0 failed.");
+      error ("UTIL - Truncating value to 0.");
+      integer = 0;
+    }
+  else if (integer > USHRT_MAX)
+    {
+      error ("UTIL - to_unsigned_short - Asserton n <= USHRT_MAX failed.");
+      error ("UTIL - Truncating value to unsigned short maximum.");
+      integer = USHRT_MAX;
+    }
+
+  return (unsigned short) integer;
+}
+
+
+/* Safely convert a long integer to a short. */
+
+short
+to_short (long integer)
+{
+  if (integer < SHRT_MIN)
+    {
+      error ("UTIL - to_short - Assertion n >= SHRT_MIN failed.");
+      error ("UTIL - Truncating value to signed short minimum.");
+      integer = SHRT_MIN;
+    }
+  else if (integer > SHRT_MAX)
+    {
+      error ("UTIL - to_short - Assertion n <= SHRT_MAX failed.");
+      error ("UTIL - Truncating value to unsigned short minimum.");
+      integer = SHRT_MAX;
+    }
+
+  return (short) integer;
+}
+
+
+/* Safely convert an unsigned long integer to an unsigned short. */
+
+unsigned short
+unsigned_to_unsigned_short (unsigned long integer)
+{
+  if (integer > USHRT_MAX)
+    {
+      error ("UTIL - unsigned_to_unsigned_short - Asserton n <= USHRT_MAX failed.");
+      error ("UTIL - Truncating value to unsigned short maximum.");
+      integer = USHRT_MAX;
+    }
+
+  return (unsigned short) integer;
+}
+
+
+/* Safely convert an unsigned long integer to a short. */
+
+short
+unsigned_to_short (unsigned long integer)
+{
+  if (integer > SHRT_MAX)
+    {
+      error ("UTIL - to_unsigned_short - Assertion n <= SHRT_MAX failed.");
+      error ("UTIL - Truncating value to unsigned short minimum.");
+      integer = SHRT_MAX;
+    }
+
+  return (short) integer;
+}
+
 
 /* Fatal error. */
 

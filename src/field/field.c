@@ -47,6 +47,7 @@
 #include "../util.h"
 #include "../events.h"
 #include "../state.h"
+#include "../graphics.h" /* Temporary */
 
 #include "field.h"
 #include "map.h"
@@ -163,6 +164,7 @@ init_field (struct state_functions *function_table)
 
   function_table->update = update_field;
   function_table->cleanup = cleanup_field;
+  function_table->dirty_rect = field_handle_dirty_rect;
 
   return SUCCESS;
 }
@@ -276,8 +278,23 @@ update_field (void)
 {
   field_handle_held_keys ();
   render_map (sg_mapview);
+  write_string (5, 5, 0, ALIGN_LEFT, "Test");
 
   return SUCCESS;
+}
+
+
+/* Handle a dirty rectangle passed from the user interface overlay for
+   field. */
+
+int
+field_handle_dirty_rect (short x, short y,
+                         unsigned short width, unsigned short height)
+{
+  return mark_dirty_rect (sg_mapview,
+                          x + sg_mapview->x_offset, 
+                          y + sg_mapview->y_offset,
+                          width, height);
 }
 
 

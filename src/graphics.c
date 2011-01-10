@@ -47,6 +47,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <limits.h>
 
 #include "main.h"      /* g_config */
 #include "parser.h"    /* Configuration */
@@ -57,7 +58,10 @@
 /* -- CONSTANTS -- */
 
 const char DEFGFXPATH[] = "gfx/";
+const char FONT_FILENAME[] = "font.png";
 
+const unsigned short FONT_W = 10;
+const unsigned short FONT_H = 10;
 
 /* -- STATIC GLOBAL VARIABLES -- */
 
@@ -143,6 +147,55 @@ get_absolute_path (const char path[])
   strcat (absolute_path, path);
 
   return absolute_path;
+}
+
+/* Write a string on the screen, using the standard font. */
+
+void
+write_string (short x, short y,
+              unsigned short box_width, unsigned char alignment,
+              const char string[])
+{
+  char chr;
+  int x1;
+  unsigned short i, length, midpoint;
+  size_t slength;
+
+  slength = strlen (string);
+  length = unsigned_to_unsigned_short (FONT_W * slength);
+  
+  /* Set up alignment. */
+
+  switch (alignment)
+    {
+    default:
+    case ALIGN_LEFT:
+      x1 = x;
+      break;
+    case ALIGN_RIGHT:
+      x1 = unsigned_to_short (box_width - slength);
+      break;
+    case ALIGN_CENTRE:   
+      midpoint = to_unsigned_short (x + (box_width / 2));
+      x1 = to_short (midpoint - (length / 2));
+      break;
+    }
+
+
+  /* Draw each character using the font image. */
+  for (i = 0; i < slength; i++)
+    {
+      chr = string[i];
+      draw_image (FONT_FILENAME, 
+                  to_short ((chr % 16) * FONT_W), 
+                  to_short (((chr - (chr % 16))/16) * FONT_H), 
+                  to_short (x1),
+                  to_short (y),
+                  FONT_W,
+                  FONT_H);
+
+      x1 += FONT_W;
+    }  
 }
 
 

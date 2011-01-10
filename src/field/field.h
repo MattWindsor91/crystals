@@ -159,6 +159,22 @@ int
 update_field (void);
 
 
+/** Handle a dirty rectangle passed from the user interface overlay for
+ *  field.
+ *
+ *  @param x       X co-ordinate of the left edge of the rectangle.
+ *  @param y       Y co-ordinate of the right edge of the rectangle.
+ *  @param width   Width of the rectangle, in pixels.
+ *  @param height  Height of the rectangle, in pixels.
+ *
+ *  @return  SUCCESS if no errors occurred, FAILURE otherwise.
+ */
+
+int
+field_handle_dirty_rect (short x, short y,
+                         unsigned short width, unsigned short height);
+
+
 /** De-initialise the field state.
  *
  *  @return  SUCCESS if no errors were encountered; FAILURE otherwise. 
