@@ -7,8 +7,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gfx-sdl", "src\modules\gfx-
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "event-sdl", "src\modules\event-sdl.vcproj", "{532B40F9-753E-46E3-BC28-D385E4C15595}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bindings-lua", "src\modules\bindings-lua.vcproj", "{06BDCAD7-B361-4824-BA08-FE29BA804F0C}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -27,10 +25,6 @@ Global
 		{532B40F9-753E-46E3-BC28-D385E4C15595}.Debug|Win32.Build.0 = Debug|Win32
 		{532B40F9-753E-46E3-BC28-D385E4C15595}.Release|Win32.ActiveCfg = Release|Win32
 		{532B40F9-753E-46E3-BC28-D385E4C15595}.Release|Win32.Build.0 = Release|Win32
-		{06BDCAD7-B361-4824-BA08-FE29BA804F0C}.Debug|Win32.ActiveCfg = Debug|Win32
-		{06BDCAD7-B361-4824-BA08-FE29BA804F0C}.Debug|Win32.Build.0 = Debug|Win32
-		{06BDCAD7-B361-4824-BA08-FE29BA804F0C}.Release|Win32.ActiveCfg = Release|Win32
-		{06BDCAD7-B361-4824-BA08-FE29BA804F0C}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

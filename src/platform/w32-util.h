@@ -49,6 +49,7 @@
 #define _W32_UTIL_H
 
 #include <stdarg.h>
+#include <windows.h>
 
 /* -- MACROS -- */
 

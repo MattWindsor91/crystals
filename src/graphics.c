@@ -49,8 +49,8 @@
 #include <string.h>
 
 #include "graphics.h"
-#include "util.h"
 #include "module.h"
+#include "util.h"
 
 /* -- STATIC GLOBAL VARIABLES -- */
 

@@ -58,7 +58,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="user32.lib"
+				AdditionalDependencies="User32.lib lua51.lib"
 				LinkIncremental="2"
 				GenerateDebugInformation="true"
 				SubSystem="2"
@@ -131,7 +131,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="windows.lib"
+				AdditionalDependencies="lua51.lib"
 				LinkIncremental="2"
 				GenerateDebugInformation="true"
 				SubSystem="2"
@@ -174,7 +174,7 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath=".\src\bindings.h"
+				RelativePath=".\src\bindings\bindings.h"
 				>
 			</File>
 			<File
@@ -191,6 +191,10 @@
 			</File>
 			<File
 				RelativePath=".\src\hash.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\bindings\lua.h"
 				>
 			</File>
 			<File
@@ -254,10 +258,6 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\src\bindings.c"
-				>
-			</File>
-			<File
 				RelativePath=".\src\events.c"
 				>
 			</File>
@@ -271,6 +271,10 @@
 			</File>
 			<File
 				RelativePath=".\src\hash.c"
+				>
+			</File>
+			<File
+				RelativePath=".\src\bindings\lua.c"
 				>
 			</File>
 			<File
