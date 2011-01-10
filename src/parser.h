@@ -44,9 +44,10 @@
 #ifndef _PARSER_H
 #define _PARSER_H
 
+#include "types.h"
+
+
 typedef struct dict_t dict_t; /**< Node type for the key-value tree. */
-typedef char bool_t;          /**< Boolean type.
-                                 @todo FIXME: Universal bool type? */
 
 /** Node struct for a key-value tree
  *
