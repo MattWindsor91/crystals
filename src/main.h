@@ -44,9 +44,6 @@
 #ifndef _MAIN_H
 #define _MAIN_H
 
-extern struct mapview *g_mapview; /**< Main map view. 
-                                      @todo FIXME: Move this? */
-
 extern struct dict_t *g_config;    /**< Configuration dictionary. */
 
 /** The main function.
@@ -66,17 +63,20 @@ main (int argc, char **argv);
  *           FAILURE otherwise.
  */
 
-int
+bool_t
 init (void);
+
 
 /** Execute the main loop of the program. */
 
 void
 main_loop (void);
 
+
 /** Clean up all initialised subsystems. */
 
 void
 cleanup (void);
+
 
 #endif /* not _MAIN_H */
