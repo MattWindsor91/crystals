@@ -106,7 +106,7 @@ power_test (lua_State *L)
   lua_Integer y;
   lua_Integer res;
   
-  /*NOTE if you call the c function in lua the parameters are on the lua stack
+  /** @note if you call the c function in lua the parameters are on the lua stack
    * thats why we need to check if they are of the right type */
   if (lua_parameter_check (L, "power_test", "dd") == FAILURE)
     return L_FAILURE;
@@ -134,6 +134,7 @@ power_test (lua_State *L)
   lua_pushinteger (L, res);
   lua_pushstring (L, "\n");
   lua_call (L, 6, 0);
+  /* in summary "io.write(x, " ^ ", y, " = ", res ,"\n")" */
   
   return L_SUCCESS;
 }

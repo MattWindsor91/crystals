@@ -38,7 +38,7 @@
 
 /** @file   src/bindings/lua.h
  *  @author Alexander Preisinger
- *  @brief  Lua header file
+ *  @brief  Lua header file.
  */
  
 #ifndef _LUA_B_H
@@ -52,7 +52,7 @@
 
 enum {
   L_SUCCESS,  /**< Lua return value if success. */
-  L_FAILURE   /**< LUa return value if failure. */
+  L_FAILURE   /**< Lua return value if failure. */
 };
 
 
@@ -63,23 +63,22 @@ lua_State *g_lua; /**< Main Lua state which holds the main stack. */
 
 /** Generic parameter check function.
  *
- * Check if the parameters that are passed to the function in a lua script are
- * of the you need them and how many arguments.
+ * Check if the parameters passed within lua matches the parameters needed in C.
  *
- * @param lua_State Pass the the lua state that holds the stack.
- * @param func_name The name of the function. To be displayed in error messages.
+ * @param lua_State lua state that holds the stack.
+ * @param func_name The name of the function. Used for error messages.
  * @param sig       A string of chars which defines how many and of which types
  * the paramaters should be. Add 's' for string, 'd' for number, 't' for a table
  * and 'b' for boolean.
  * (e.g.: "sdd" = 3 paramters, 1th stirng, 2nd numebr, 3rd number)
  *
- * @return Return SUCCESS if the values in the stack match the sig, eles return
- * FAILURE. (defined in "util.h")
+ * @return Return SUCCESS if the values in the stack match the sig[] array,
+ * else return FAILURE. (defined in "util.h")
  *
  * @todo Add more type checks if nessecary.
  */
 
 bool_t
-lua_parameter_check (lua_State *L, const char *func_name, const char *sig);
+lua_parameter_check (lua_State *L, const char *func_name, const char sig[]);
 
 #endif /* _LUA_B_H */

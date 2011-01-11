@@ -55,10 +55,6 @@ typedef struct dict_t dict_t; /**< Node type for the key-value tree. */
 /** Node struct for a key-value tree
  *
  * Stores key, value and two branches
- *
- * If the key to add or the key you want to get is smaller
- * it will stored or searche in the left branch, if the key is bigger
- * it will be stored or searched in the right brach.
  */
 
 struct dict_t
@@ -75,7 +71,7 @@ struct dict_t
 
 /** Initialise the config system. 
  *
- *  @param config_path  The path to the configuration file to read. 
+ *  @param   config_path  Path of the configuration file. 
  *
  *  @return  A pointer to the master configuration dictionary.
  */

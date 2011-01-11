@@ -48,10 +48,10 @@
 
 /** Init language bindings
  *
- *  @return Return SUCCESS if success else FAILURE
+ *  @return Return SUCCESS for success, otherwise FAILURE
  */
 
-int
+bool_t
 init_bindings (void);
 
 
@@ -61,14 +61,14 @@ void
 cleanup_bindings (void);
 
 
-/** Executes the given file.
+/** Executes a script file.
  *
  *  @param  path    Path to the file.
  *
- *  @return SUCCESS for success, FAILURE for failure.
+ *  @return SUCCESS for success, otherwise FAILURE.
  */
 
-int
+bool_t
 run_script (const char *path);
 
 #endif /* _BINDINGS_H */
