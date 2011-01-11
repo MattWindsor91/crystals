@@ -44,7 +44,7 @@
 #ifndef _MAIN_H
 #define _MAIN_H
 
-extern struct map_view *g_mapview; /**< Main map view. 
+extern struct mapview *g_mapview; /**< Main map view. 
                                       @todo FIXME: Move this? */
 
 extern struct dict_t *g_config;    /**< Configuration dictionary. */

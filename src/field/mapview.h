@@ -134,7 +134,7 @@ typedef struct dirty_rectangle
   int width;   /**< Width of the rectangle (in pixels). */
   int height;  /**< Height of the rectangle (in pixels). */
 
-  struct map_view *parent;      /**< Parent map view. */
+  struct mapview *parent;      /**< Parent map view. */
   struct dirty_rectangle *next; /**< Next node in the queue. */
 } dirty_rectangle_t;
 
@@ -146,7 +146,7 @@ typedef struct dirty_rectangle
  *  render pass, and suchlike.
  */
 
-typedef struct map_view
+typedef struct mapview
 {
   int32_t x_offset;           /**< Offset of the left edge of the
                                  screen, in pixels from the left edge

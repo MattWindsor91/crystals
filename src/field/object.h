@@ -48,7 +48,7 @@
 #include "../types.h" /* Types. */
 #include "../hash.h"  /* Hash stuff. */
 #include "map.h"      /* layer_value_t */
-#include "mapview.h"  /* struct object_image, struct map_view */
+#include "mapview.h"  /* struct object_image, struct mapview */
 
 
 /* -- TYPEDEFS -- */
@@ -271,7 +271,7 @@ set_object_coordinates (object_t *object,
 
 bool_t
 set_object_dirty (object_t *object,
-                  struct map_view *mapview);
+                  struct mapview *mapview);
 
 
 /** Delete an object and all associated data.
