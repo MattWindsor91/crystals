@@ -102,27 +102,27 @@ run_script (const char *path)
 static int
 power_test (lua_State *L)
 {
-  lua_Integer x;
-  lua_Integer y;
-  lua_Integer res;
+  int x;
+  int y;
+  int res;
   
   /*NOTE if you call the c function in lua the parameters are on the lua stack
    * thats why we need to check if they are of the right type */
   if (lua_parameter_check (L, "power_test", "dd") == FAILURE)
     return L_FAILURE;
     
-  y = lua_tointeger (L, 2); /* get the first parameter from the lua stack*/
-  x = lua_tointeger (L, 1); /* get the second parameter */
+  y = (int) lua_tointeger (L, 2); /* get the first parameter from the lua stack*/
+  x = (int) lua_tointeger (L, 1); /* get the second parameter */
   
   lua_getfield (L, LUA_GLOBALSINDEX, "power"); /* move the function lua power
     to the lua stack */
   lua_pushinteger (L, x); /* push first parameter to the stack*/
   lua_pushinteger (L, y); /* push second parameter to the stack */
   lua_call (L, 2, 1); /* call the function with 2 parameters and 1 result */
-  res = lua_tointeger (L, -1); /* get the result from the stack and convert it 
+  res = (int) lua_tointeger (L, -1); /* get the result from the stack and convert it 
     to an integer */
   
-  printf ("%ld ^ %ld = %ld\n", x, y, res);
+  printf ("%d ^ %d = %d\n", x, y, res);
   
   return L_SUCCESS;
 }
