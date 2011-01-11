@@ -57,6 +57,8 @@
 
 #include <stdint.h>
 
+typedef uint8_t       bool_t;    /**< Boolean (TRUE/FALSE or SUCCESS/FAILURE) type. */
+
 #else /* not USE_STDINT */
 
 /* Mock stdint.h up, using Windows standard types where possible. */
