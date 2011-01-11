@@ -128,8 +128,9 @@ TESTS    := $(addprefix $(TESTDIR)/,$(TESTS))
 
 OBJ      := main.o hash.o graphics.o events.o
 OBJ      += util.o module.o optionparser.o parser.o state.o
-OBJ      += field/field.o field/map.o field/mapview.o field/object.o
-OBJ      += field/object-api.o field/mapload.o
+OBJ      += field/field.o 
+OBJ      += field/map.o field/mapview.o field/mapload.o
+OBJ      += field/object.o field/object-api.o field/object-image.o
 
 
 # Note: DO NOT add .so or .dll onto the end of module names!

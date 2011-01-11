@@ -41,6 +41,7 @@
  *  @brief   Low-level object functions.
  */
 
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -103,11 +104,11 @@ add_object (const char object_name[],
 
   /* Try to allocate and initialise an object image. */
 
-  object->image = malloc (sizeof (object_image_t));
+  object->image = init_object_image (object);
 
   if (object->image == NULL)
     {
-      error ("OBJECT - add_object - Allocation failed for image of %s.", 
+      error ("OBJECT - add_object - Initialisation failed for image of %s.",
              object_name);
       free_object (object);
       return NULL;
@@ -146,7 +147,6 @@ add_object (const char object_name[],
   object->tag = 0;
   object->is_dirty = FALSE;
 
-  init_object_image (object->image, object);
 
   /* Try to store the object. */
 

@@ -76,39 +76,6 @@ extern const uint16_t TILE_H;
 
 /* -- STRUCTURES -- */
 
-/** An object image. */
-
-typedef struct object_image
-{
-  char *filename;        /**< Name of the image, used when looking up
-                            the image in the image cache. */
-
-  int16_t image_x;       /**< X co-ordinate of the left edge of the
-                            on-image rectangle from which to source
-                            the rendered image, in pixels. */
-
-  int16_t image_y;       /**< Y co-ordinate of the top edge of the
-                            on-image rectangle from which to source
-                            the rendered image, in pixels. */
-
-  int32_t map_x;         /**< X co-ordinate of the left edge of the
-                            on-map rectangle in which to render the
-                            image, in pixels. */
-
-  int32_t map_y;         /**< Y co-ordinate of the top edge of the
-                            on-map rectangle in which to render the
-                            image, in pixels. */
-
-  unsigned short width;  /**< Width of the object image, in pixels. */
-
-  unsigned short height; /**< Height of the object image, in
-                            pixels. */
-
-  struct object *parent; /**< Pointer to the object parent, if any. */
-
-  struct object_image *next; /**< Next node in the queue. */
-} object_image_t;
-
 
 /** An object render queue node. */
 
@@ -209,20 +176,6 @@ mapview_t *
 init_mapview (map_t *map);
 
 
-/** Set all the parameters of an object image node to default values.
- *
- *  @param image   Pointer to the object render queue node.
- *
- *  @param parent  Pointer to the parent object of the object image.
- *
- *  @return SUCCESS if there were no errors encountered; FAILURE
- *  otherwise.
- */
-
-bool_t
-init_object_image (object_image_t *image, struct object *parent);
-
-
 /** Add an object sprite to the rendering queue. 
  *
  *  This should be called from a higher-level function, as it does not
@@ -247,15 +200,6 @@ bool_t
 add_object_image (mapview_t *mapview,
                   layer_value_t tag,
                   struct object *object);
-
-
-/** Free an object image render queue node.
- *
- *  @param image  Pointer to the render node to free. 
- */
-
-void
-free_object_image (object_image_t *image);
 
 
 /** Render the dirty tiles on a map.

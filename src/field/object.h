@@ -48,7 +48,8 @@
 #include "../types.h" /* Types. */
 #include "../hash.h"  /* Hash stuff. */
 #include "map.h"      /* layer_value_t */
-#include "mapview.h"  /* struct object_image, struct mapview */
+#include "object-image.h" /* struct object_image */
+#include "mapview.h"  /* struct mapview */
 
 
 /* -- TYPEDEFS -- */
@@ -87,7 +88,7 @@ typedef struct object
                                  the object is "dirty" (should be
                                  rendered this frame). */
 
-  struct object_image *image; /**< Pointer to the object's associated
+  object_image_t *image;      /**< Pointer to the object's associated
                                  image data. */
 } object_t;
 
@@ -264,10 +265,10 @@ set_object_coordinates (object_t *object,
  *  @param object   Pointer to the object to render.
  *  @param mapview  Pointer to the map view on which to render the
  *                  object.
- *  
+ *
  *  @return  SUCCESS for success; FAILURE otherwise (eg if either
  *  pointer is NULL).
- */ 
+ */
 
 bool_t
 set_object_dirty (object_t *object,

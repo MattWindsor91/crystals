@@ -50,6 +50,7 @@
 #include "mapview.h"
 #include "map.h"
 #include "object.h"
+#include "object-image.h"
 #include "../util.h"
 #include "../module.h"
 #include "../graphics.h"
@@ -173,43 +174,6 @@ init_mapview (map_t *map)
   mark_dirty_rect (mapview, 0, 0, map->width * TILE_W, map->height * TILE_H);
 
   return mapview;
-}
-
-
-/* Set all the parameters of an object image node to default values. */
-
-bool_t
-init_object_image (object_image_t *image, object_t *parent)
-{
-  /* Sanity checking. */
-
-  if (image == NULL)
-    {
-      error ("MAPVIEW - init_object_image - Tried to init null object image.");
-      return FAILURE;
-    }
-
-  if (parent == NULL)
-    {
-      error ("MAPVIEW - init_object_image - Object image has no parent.");
-      return FAILURE;
-    }
-
-  /* End sanity checking. */
-
-
-  image->parent = parent;
-  image->filename = NULL;
-  image->next = NULL;
-
-  image->image_x = 0;
-  image->image_y = 0;
-  image->map_x = 0;
-  image->map_y = 0;
-  image->width = 0;
-  image->height = 0;
-
-  return SUCCESS;
 }
 
 
@@ -349,18 +313,6 @@ add_object_image (mapview_t *mapview,
     }
 }
 
-
-void
-free_object_image (object_image_t *image)
-{
-  if (image)
-    {
-      if (image->filename)
-        free (image->filename);
-
-      free (image);
-    }
-}
 
 
 void
