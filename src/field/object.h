@@ -45,9 +45,15 @@
 #ifndef _OBJECT_H
 #define _OBJECT_H
 
-#include "../hash.h" /* Hash stuff. */
-#include "map.h"     /* layer_t */
-#include "mapview.h" /* struct object_image, struct map_view */
+#include "../types.h" /* Types. */
+#include "../hash.h"  /* Hash stuff. */
+#include "map.h"      /* layer_value_t */
+#include "mapview.h"  /* struct object_image, struct map_view */
+
+
+/* -- TYPEDEFS -- */
+
+typedef uint8_t reference_t; /**< Reference constant type. */
 
 /* -- CONSTANTS -- */
 
@@ -65,7 +71,7 @@ enum
  *  This will inevitably have to be changed!
  */
 
-struct object_t
+typedef struct object
 {
   char *name;                 /**< Descriptive name of the object
                                  (must be unique).
@@ -75,15 +81,15 @@ struct object_t
   char *script_filename;      /**< Filename of the script associated with
                                  the object. */
   
-  tag_t tag;                  /**< The tag on which to render. */
+  layer_tag_t tag;            /**< The tag on which to render. */
 
-  char is_dirty;              /**< Boolean determining whether or not
+  bool_t is_dirty;            /**< Boolean determining whether or not
                                  the object is "dirty" (should be
                                  rendered this frame). */
 
   struct object_image *image; /**< Pointer to the object's associated
                                  image data. */
-};
+} object_t;
 
 
 /* -- GLOBAL VARIABLES -- */
@@ -91,14 +97,14 @@ struct object_t
 extern struct hash_object *g_objects[HASH_VALS]; /**< The object hash
                                                     table. */
 
-/* -- PROTOTYPES -- */
+/* -- DECLARATIONS-- */
 
 /** Initialise the object base.
  *
  *  @return SUCCESS for success, FAILURE otherwise.
  */
 
-int
+bool_t
 init_objects (void);
 
 
@@ -116,7 +122,7 @@ init_objects (void);
  *           error while creating it.
  */
 
-struct object_t *
+object_t *
 add_object (const char object_name[],
             const char script_filename[]);
 
@@ -125,12 +131,13 @@ add_object (const char object_name[],
  *
  *  @param object  Pointer to the object whose tag is to be changed.
  *
- *  @param tag  The tag to associate with the object.
+ *  @param tag     The tag to associate with the object.
+ *
+ *  @return  SUCCESS if no errors occurred; FAILURE otherwise.
  */
 
-int
-set_object_tag (struct object_t *object,
-                tag_t tag);
+bool_t
+set_object_tag (object_t *object, layer_tag_t tag);
 
 
 /** Get the graphic associated with an object.
@@ -141,7 +148,8 @@ set_object_tag (struct object_t *object,
  */
 
 struct object_image *
-get_object_image (struct object_t *object);
+get_object_image (object_t *object);
+
 
 /** Change the graphic associated with an object.
  *
@@ -172,13 +180,13 @@ get_object_image (struct object_t *object);
  *  otherwise.
  */
 
-int
-set_object_image (struct object_t *object, 
+bool_t
+set_object_image (object_t *object,
                   const char filename[],
-                  short image_x,
-                  short image_y,
-                  unsigned short width,
-                  unsigned short height);
+                  int16_t image_x,
+                  int16_t image_y,
+                  uint16_t width,
+                  uint16_t height);
 
 
 /** Retrieve the object's co-ordinates on-map.
@@ -208,11 +216,11 @@ set_object_image (struct object_t *object,
  *  pointer is NULL).
  */ 
 
-int
-get_object_coordinates (struct object_t *object, 
-                        int *x_pointer, 
-                        int *y_pointer,
-                        unsigned short reference);
+bool_t
+get_object_coordinates (object_t *object,
+                        int32_t *x_pointer,
+                        int32_t *y_pointer,
+                        reference_t reference);
 
 
 /** Set the object's co-ordinates on-map.
@@ -244,11 +252,11 @@ get_object_coordinates (struct object_t *object,
  *  pointer is NULL).
  */ 
 
-int
-set_object_coordinates (struct object_t *object, 
-                        int x, 
-                        int y,
-                        unsigned short reference);
+bool_t
+set_object_coordinates (object_t *object,
+                        int32_t x,
+                        int32_t y,
+                        reference_t reference);
 
 
 /** Mark an object as being dirty on the given map view.
@@ -261,9 +269,10 @@ set_object_coordinates (struct object_t *object,
  *  pointer is NULL).
  */ 
 
-int
-set_object_dirty (struct object_t *object, 
+bool_t
+set_object_dirty (object_t *object,
                   struct map_view *mapview);
+
 
 /** Delete an object and all associated data.
  *
@@ -271,7 +280,7 @@ set_object_dirty (struct object_t *object,
  */
 
 void
-free_object (struct object_t *object);
+free_object (object_t *object);
 
 
 /** Remove an object from the object table.
@@ -283,7 +292,7 @@ free_object (struct object_t *object);
  *  was deleted).
  */ 
 
-int
+bool_t
 delete_object (const char object_name[]);
 
 
@@ -307,7 +316,7 @@ clear_objects (void);
  *  created, or NULL otherwise.
  */
 
-struct object_t *
+object_t *
 get_object (const char object_name[], struct hash_object *add_pointer);
 
 
@@ -322,7 +331,7 @@ get_object (const char object_name[], struct hash_object *add_pointer);
  *  otherwise.
  */
 
-int
+bool_t
 dirty_object_test (struct hash_object *hash_object, void *rect_pointer);
 
 
@@ -331,7 +340,7 @@ dirty_object_test (struct hash_object *hash_object, void *rect_pointer);
  *  @param function  Pointer to the function to apply to the
  *                   object.  The function must take the hash object
  *                   as first parameter followed by a void pointer for
- *                   data, and return a SUCCESS/FAILURE int.
+ *                   data, and return a SUCCESS/FAILURE bool_t.
  *
  *  @param data      Void pointer to the data to pass to the function.
  *
@@ -339,9 +348,9 @@ dirty_object_test (struct hash_object *hash_object, void *rect_pointer);
  *  FAILURE otherwise.
  */
 
-int
-apply_to_objects (int (*function) (struct hash_object *object, 
-                                        void *data),
+bool_t
+apply_to_objects (bool_t (*function) (hash_object_t *object,
+                                      void *data),
                   void *data);
 
 

@@ -50,8 +50,10 @@
 #ifndef _OBJECT_API_H
 #define _OBJECT_API_H
 
+
 #include "object.h"
 #include "map.h"
+
 
 /* -- PROTOTYPES -- */
 
@@ -64,7 +66,7 @@
  *  doesn't exist).
  */
 
-int
+bool_t
 focus_camera_on_object (const char object_name[]);
 
 
@@ -97,11 +99,11 @@ focus_camera_on_object (const char object_name[]);
  *  pointer is NULL).
  */ 
 
-int
+bool_t
 position_object (const char object_name[], 
-                 int x,
-                 int y, 
-                 unsigned short reference);
+                 int32_t x,
+                 int32_t y,
+                 reference_t reference);
 
 
 /** Move an object by an offset from its current co-ordinates.
@@ -116,10 +118,10 @@ position_object (const char object_name[],
  *  doesn't exist, or the co-ordinates are out of bounds).
  */
 
-int
+bool_t
 move_object (const char object_name[], 
-             int dx,
-             int dy);
+             int32_t dx,
+             int32_t dy);
 
 
 /** Change the tag associated with an object.
@@ -132,9 +134,9 @@ move_object (const char object_name[],
  *  doesn't exist).
  */
 
-int
+bool_t
 tag_object (const char object_name[],
-            tag_t tag);
+            layer_tag_t tag);
 
 
 /** Change the image associated with an object.
@@ -162,13 +164,13 @@ tag_object (const char object_name[],
  *  doesn't exist, or the co-ordinates are out of bounds).
  */
 
-int
+bool_t
 change_object_image (const char object_name[],
                      const char image_filename[], 
-                     short x_offset,
-                     short y_offset,
-                     unsigned short width, 
-                     unsigned short height);
+                     int16_t x_offset,
+                     int16_t y_offset,
+                     uint16_t width,
+                     uint16_t height);
 
 
 #endif /* not _OBJECT_API_H */

@@ -95,7 +95,9 @@ MODDIR   := modules
 
 DOCDIR   := doc
 
-# More doc later ;-)
+# Subdirectory of SRCDIR in which bindings code is stored.
+# This probably shouldn't be changed.
+
 BNDDIR   := bindings
 
 # Subdirectory of this directory and of SRCDIR in which unit tests
@@ -127,7 +129,7 @@ TESTS    := $(addprefix $(TESTDIR)/,$(TESTS))
 OBJ      := main.o hash.o graphics.o events.o
 OBJ      += util.o module.o optionparser.o parser.o state.o
 OBJ      += field/field.o field/map.o field/mapview.o field/object.o
-OBJ      += field/object-api.o
+OBJ      += field/object-api.o field/mapload.o
 
 
 # Note: DO NOT add .so or .dll onto the end of module names!
@@ -213,9 +215,7 @@ WARN     := -Wall -Wextra -Wshadow -Wpointer-arith -Wcast-align \
             -Wredundant-decls -Wnested-externs -Winline -Wno-long-long \
             -Wconversion -Wstrict-prototypes
              
-# Generic compilation flags.
-
-# Add bindings object file to the other object files and add the proper CFLAGS and LIBS
+# Add bindings object file to the other object files and add the proper CFLAGS and LIBS.
 
 OBJ      += $(BNDDIR)/$(BINDINGS).o
 
@@ -235,7 +235,8 @@ endif
 #		    -I/usr/include/ruby-1.9.1/i686-linux/
 #endif
 
-## Rules ##
+# Generic compilation flags.
+
 CFLAGS   := -ansi -pedantic -O2 -ggdb -DDEFMODPATH="\"$(MODPATH)\"" $(WARN)
 
 ## >> PLATFORM SPECIFICS << ##

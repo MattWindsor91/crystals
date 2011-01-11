@@ -44,7 +44,7 @@
 #ifndef _PARSER_H
 #define _PARSER_H
 
-#include "util.h"
+#include "types.h"
 
 /* -- TYPEDEFS -- */
 

@@ -47,8 +47,11 @@
 #ifndef _FIELD_H
 #define _FIELD_H
 
+#include "mapview.h"   /* mapview_t */
 #include "../events.h" /* event_t */
 #include "../state.h"  /* state_functions */
+#include "../types.h"  /* bool_t */
+
 
 /* -- PROTOTYPES -- */
 
@@ -91,7 +94,7 @@ field_on_special_key_down (event_t *event);
  *  @return SUCCESS for success, FAILURE otherwise.
  */
 
-int
+bool_t
 field_init_callbacks (void);
 
 
@@ -108,7 +111,7 @@ field_cleanup_callbacks (void);
  *  @return  SUCCESS if no errors were encountered; FAILURE otherwise. 
  */
 
-int
+bool_t
 init_field (struct state_functions *function_table);
 
 
@@ -118,7 +121,7 @@ init_field (struct state_functions *function_table);
  *
  */
 
-struct map_view *
+mapview_t *
 get_field_mapview (void);
 
 
@@ -140,7 +143,7 @@ get_field_mapview (void);
  *           otherwise. 
  */
 
-int
+bool_t
 get_field_map_boundaries (int *x0_pointer,
                           int *y0_pointer,
                           int *x1_pointer,
@@ -153,9 +156,12 @@ void
 field_handle_held_keys (void);
 
 
-/** Perform per-frame updates for field. */
+/** Perform per-frame updates for field.
+ *
+ *  @return  SUCCESS if no errors occurred, FAILURE otherwise.
+ */
 
-int
+bool_t
 update_field (void);
 
 
@@ -170,7 +176,7 @@ update_field (void);
  *  @return  SUCCESS if no errors occurred, FAILURE otherwise.
  */
 
-int
+bool_t
 field_handle_dirty_rect (short x, short y,
                          unsigned short width, unsigned short height);
 
@@ -180,7 +186,7 @@ field_handle_dirty_rect (short x, short y,
  *  @return  SUCCESS if no errors were encountered; FAILURE otherwise. 
  */
 
-int
+bool_t
 cleanup_field (void);
 
 #endif /* not _FIELD_H */

@@ -52,46 +52,50 @@
 #ifndef _MAPVIEW_H
 #define _MAPVIEW_H
 
+
 #include "map.h"
+#include "../types.h"
 
 /* -- CONSTANTS -- */
 
-/** Width of one tile. 
+/** Width of one tile, in pixels.
  *
  *  @todo FIXME: read this from tileset data.
  */
 
-extern const unsigned short TILE_W;
+extern const uint16_t TILE_W;
 
-/** Height of one tile. 
+
+/** Height of one tile, in pixels.
  *
  *  @todo FIXME: read this from tileset data.
  */
 
-extern const unsigned short TILE_H;
+extern const uint16_t TILE_H;
+
 
 /* -- STRUCTURES -- */
 
 /** An object image. */
 
-struct object_image
+typedef struct object_image
 {
   char *filename;        /**< Name of the image, used when looking up
                             the image in the image cache. */
 
-  short image_x;         /**< X co-ordinate of the left edge of the
+  int16_t image_x;       /**< X co-ordinate of the left edge of the
                             on-image rectangle from which to source
                             the rendered image, in pixels. */
 
-  short image_y;         /**< Y co-ordinate of the top edge of the
+  int16_t image_y;       /**< Y co-ordinate of the top edge of the
                             on-image rectangle from which to source
                             the rendered image, in pixels. */
 
-  int map_x;             /**< X co-ordinate of the left edge of the
+  int32_t map_x;         /**< X co-ordinate of the left edge of the
                             on-map rectangle in which to render the
                             image, in pixels. */
 
-  int map_y;             /**< Y co-ordinate of the top edge of the
+  int32_t map_y;         /**< Y co-ordinate of the top edge of the
                             on-map rectangle in which to render the
                             image, in pixels. */
 
@@ -100,39 +104,39 @@ struct object_image
   unsigned short height; /**< Height of the object image, in
                             pixels. */
 
-  struct object_t *parent; /**< Pointer to the object parent, if any. */
+  struct object *parent; /**< Pointer to the object parent, if any. */
 
   struct object_image *next; /**< Next node in the queue. */
-};
+} object_image_t;
 
 
 /** An object render queue node. */
 
-struct object_rnode
+typedef struct object_rnode
 {
-  struct object_t *object;    /**< Pointer to the object. */
+  struct object   *object;    /**< Pointer to the object. */
   struct object_image *image; /**< Pointer to the object image linked
                                  to the object, for expedience. */
   struct object_rnode *next;  /**< Next node in the queue. */
-};
+} render_node_t;
 
 
 /** A dirty rectangle queue node. */
 
-struct dirty_rectangle
+typedef struct dirty_rectangle
 {
   int start_x; /**< X co-ordinate of the left edge of the rectangle
-                  (in tiles from left of map). */
+                    (in pixels from left side of map). */
 
-  int start_y; /**< Y co-ordinate of the top of the rectangle (in
-                  tiles from top of map). */
+  int start_y; /**< Y co-ordinate of the top edge of the rectangle
+                    (in pixels from top side of map). */
 
-  int width;   /**< Width of the rectangle (in tiles). */
-  int height;  /**< Height of the rectangle (in tiles). */
+  int width;   /**< Width of the rectangle (in pixels). */
+  int height;  /**< Height of the rectangle (in pixels). */
 
   struct map_view *parent;      /**< Parent map view. */
   struct dirty_rectangle *next; /**< Next node in the queue. */
-};
+} dirty_rectangle_t;
 
 
 /** A map viewpoint.
@@ -142,19 +146,19 @@ struct dirty_rectangle
  *  render pass, and suchlike.
  */
 
-struct map_view
+typedef struct map_view
 {
-  int x_offset;               /**< Offset of the left edge of the
+  int32_t x_offset;           /**< Offset of the left edge of the
                                  screen, in pixels from the left edge
                                  of the map.  Can be negative. */
 
-  int y_offset;               /**< Offset of the top edge of the
+  int32_t y_offset;           /**< Offset of the top edge of the
                                  screen, in pixels from the top edge
                                  of the map. Can be negative.*/
 
-  struct map *map;            /**< Pointer to the map being viewed. */
+  map_t *map;                 /**< Pointer to the map being viewed. */
 
-  unsigned char *dirty_tiles; /**< Matrix of "dirty" tiles, or tiles
+  layer_count_t *dirty_tiles; /**< Matrix of "dirty" tiles, or tiles
                                  to be re-rendered on the next
                                  rendering pass. 
 
@@ -171,19 +175,20 @@ struct map_view
                                      (equal to the highest tag used
                                      by the map). */
 
-  struct object_rnode **object_queue; /**< The head array of queues of
+  render_node_t **object_queue; /**< The head array of queues of
                                          object pointers to be rendered
                                          on the next pass.  There will
                                          be num_object_queues heads in
                                          this block.*/
   
-  struct dirty_rectangle *dirty_rectangles; /**< Stack of dirty
+  dirty_rectangle_t *dirty_rectangles; /**< Stack of dirty
                                                rectangles. */
-};
+} mapview_t;
 
 
 #include "object.h" /* object_t; cannot be included before
                        structures. */
+
 
 /* -- GLOBAL VARIABLES -- */
 
@@ -200,8 +205,8 @@ extern const char FN_TILESET[]; /**< Tileset filename. */
  *  failure.
  */
 
-struct map_view *
-init_mapview (struct map *map);
+mapview_t *
+init_mapview (map_t *map);
 
 
 /** Set all the parameters of an object image node to default values.
@@ -214,8 +219,8 @@ init_mapview (struct map *map);
  *  otherwise.
  */
 
-int
-init_object_image (struct object_image *image, struct object_t *parent);
+bool_t
+init_object_image (object_image_t *image, struct object *parent);
 
 
 /** Add an object sprite to the rendering queue. 
@@ -238,10 +243,10 @@ init_object_image (struct object_image *image, struct object_t *parent);
  *  otherwise.
  */
 
-int
-add_object_image (struct map_view *mapview,
-                  layer_t tag,
-                  struct object_t *object);
+bool_t
+add_object_image (mapview_t *mapview,
+                  layer_value_t tag,
+                  struct object *object);
 
 
 /** Free an object image render queue node.
@@ -250,7 +255,7 @@ add_object_image (struct map_view *mapview,
  */
 
 void
-free_object_image (struct object_image *image);
+free_object_image (object_image_t *image);
 
 
 /** Render the dirty tiles on a map.
@@ -259,7 +264,7 @@ free_object_image (struct object_image *image);
  */
 
 void
-render_map (struct map_view *mapview);
+render_map (mapview_t *mapview);
 
 
 /** Render a given layer on a map.
@@ -270,7 +275,7 @@ render_map (struct map_view *mapview);
  */
 
 void
-render_map_layer (struct map_view *mapview, unsigned char layer);
+render_map_layer (mapview_t *mapview, layer_index_t layer);
 
 
 /** Render any map objects to be placed on top of this layer.
@@ -285,22 +290,22 @@ render_map_layer (struct map_view *mapview, unsigned char layer);
  */
 
 void
-render_map_objects (struct map_view *mapview, unsigned char layer);
+render_map_objects (mapview_t *mapview, layer_index_t layer);
 
 
 /** Scroll the map on-screen, re-rendering it in its new position.
  *
- *  @param mapview    The map view to render.
+ *  @param mapview   The map view to render.
  *
- *  @param x_offset   The X co-ordinate offset to scroll by.
+ *  @param x_offset  The X co-ordinate offset to scroll by, in pixels.
  *
- *  @param y_offset   The Y co-ordinate offset to scroll by.
+ *  @param y_offset  The Y co-ordinate offset to scroll by, in pixels.
  */
 
 void
-scroll_map (struct map_view *mapview, 
-            short x_offset, 
-            short y_offset);
+scroll_map (mapview_t *mapview,
+            int16_t x_offset,
+            int16_t y_offset);
 
 
 /** Mark a rectangle of tiles as being dirty.
@@ -315,37 +320,37 @@ scroll_map (struct map_view *mapview,
  *  @param mapview  Pointer to the map view to render.
  *
  *  @param start_x  The X co-ordinate of the start of the rectangle,
- *                  as a tile offset from the left edge of the map.
+ *                  as a pixel offset from the left edge of the map.
  *
  *  @param start_y  The Y co-ordinate of the start of the rectangle, 
- *                  as a tile offset from the top edge of the map.
+ *                  as a pixel offset from the top edge of the map.
  *
- *  @param width    Width of the tile rectangle, in tiles.
+ *  @param width    Width of the tile rectangle, in pixels.
  *
- *  @param height   Height of the tile rectangle, in tiles.
+ *  @param height   Height of the tile rectangle, in pixels.
  *
  *  @return SUCCESS if there were no errors encountered; FAILURE
  *  otherwise.
  */
 
-int
-mark_dirty_rect (struct map_view *mapview,
-                 int start_x,
-                 int start_y,
-                 int width,
-                 int height);
+bool_t
+mark_dirty_rect (mapview_t *mapview,
+                 int32_t start_x,
+                 int32_t start_y,
+                 int32_t width,
+                 int32_t height);
 
 
 /** De-initialise a mapview.
  *
  *  @warning This frees the mapview structure, but NOT the map
- *  connected to it.  Use cleanup_map to remove the map.
+ *  connected to it.  Use free_map to remove the map.
  *
  *  @param mapview  Pointer to the map view to de-allocate.
  */
 
 void
-cleanup_mapview (struct map_view *mapview);
+free_mapview (mapview_t *mapview);
 
 
 #endif /* _MAPVIEW_H */

@@ -47,10 +47,23 @@
 #define _MAP_H
 
 
+#include "../types.h"
+
+
 /* -- TYPEDEFS -- */
 
-typedef unsigned short tag_t;   /**< Type for layer tags. */
-typedef unsigned short layer_t; /**< Type for layer data. */
+typedef uint16_t dimension_t;    /**< Type for tile-based map dimensions. */
+
+typedef uint16_t layer_tag_t;    /**< Type for layer tags. */
+
+typedef int32_t  layer_count_t;  /**< Type large enough to hold a layer count. */
+typedef uint16_t layer_index_t;  /**< Type for layer indices. */
+typedef uint16_t layer_value_t;  /**< Type for layer value data. */
+typedef uint16_t layer_zone_t;   /**< Type for layer zone data. */
+
+typedef int32_t  zone_count_t;   /**< Type large enough to hold a zone count. */
+typedef uint16_t zone_index_t;   /**< Type for zone indices. */
+typedef uint16_t zone_prop_t;    /**< Type for zone properties bitfields. */
 
 
 /* -- CONSTANTS -- */
@@ -74,12 +87,17 @@ enum
 
 typedef struct map
 {
-  int width;                  /**< Width of the map, in tiles. */
-  int height;                 /**< Height of the map, in tiles. */
-  unsigned char num_layers;   /**< Number of arrays to store in the map. */
-  tag_t *layer_tags;          /**< Array of layer tag identifiers. */ 
-  layer_t **tileset_layers;   /**< Pointers to tileset layer arrays. */
-  layer_t **collision_layers; /**< Pointers to collision layer arrays. */
+  dimension_t width;                /**< Width of the map, in tiles. */
+  dimension_t height;               /**< Height of the map, in tiles. */
+
+  zone_index_t    max_zone_index;   /**< Highest zone index in the map. */
+  zone_prop_t    *zone_properties;  /**< Array of zone property bitfields. */
+
+  layer_index_t   max_layer_index;  /**< Highest layer index in the map. */
+  layer_tag_t    *layer_tags;       /**< Array of map layer tags. */
+  layer_value_t **value_planes;     /**< Pointers to map layer value planes. */
+  layer_zone_t  **zone_planes;      /**< Pointers to map layer value planes. */
+
 } map_t;
 
 
@@ -91,19 +109,6 @@ extern struct map *g_map; /**< The map currently in use. (FIXME: is
 
 /* -- PROTOTYPES -- */
 
-/** 
- * Initialise the test map.
- *
- * @todo  drop this.
- *
- * @return  a pointer to the test map, or NULL for allocation
- *          failure.
- */
-
-map_t *
-init_test_map (void);
-
-
 /**
  * Initialise a map.
  *
@@ -111,18 +116,110 @@ init_test_map (void);
  * height and number of layers, returning a blank map that can then
  * be populated with tile information
  *
- * @param width       The width of the map.
- * @param height      The height of the map.
- * @param num_layers  The number of layers to reserve.
+ * @param width            The width of the map, in tiles.
+ * @param height           The height of the map, in tiles.
+ * @param max_layer_index  The maximum layer index in the map
+ *                         (number of layers to reserve, minus one).
+ * @param max_zone_index   The maximum zone index in the map
+ *                         (number of zones to reserve, minus one).
  *
- * @return  a pointer to the map structure, or NULL for allocation
- *          failure.
+ * @return  a pointer to the map structure, or NULL if an error occurred
+ *          during initialisation.
  */
 
 map_t *
-init_map (int width, 
-          int height, 
-          unsigned char num_layers);
+init_map (dimension_t width,
+          dimension_t height,
+          layer_index_t max_layer_index,
+          zone_index_t max_zone_index);
+
+
+/**
+ * Set the tag value of a layer.
+ *
+ * @param map    Pointer to the map to modify.
+ * @param layer  Index of the layer on the map to modify.
+ * @param tag    The new layer tag.
+ *
+ * @return       SUCCESS if the operation succeeded, FAILURE otherwise.
+ */
+
+bool_t
+set_layer_tag (map_t *map, layer_index_t layer, layer_tag_t tag);
+
+
+/**
+ * Set the properties bitfield of a zone..
+ *
+ * @param map         Pointer to the map to modify.
+ * @param zone        Index of the zone on the map to modify.
+ * @param properties  The new properties bitfield.
+ *
+ * @return            SUCCESS if the operation succeeded, FAILURE otherwise.
+ */
+
+bool_t
+set_zone_properties (map_t *map, zone_index_t zone, zone_prop_t properties);
+
+
+/**
+ * Set the value of a tile.
+ *
+ * @param map    Pointer to the map to modify.
+ * @param layer  Index of the layer on the map to modify.
+ * @param x      X co-ordinate, in tiles, of the tile to modify.
+ * @param y      Y co-ordinate, in tiles, of the tile to modify.
+ * @param value  The new value of the tile.
+ *
+ * @return       SUCCESS if the operation succeeded, FAILURE otherwise.
+ */
+
+bool_t
+set_tile_value (map_t *map, layer_index_t layer, dimension_t x, dimension_t y, layer_value_t value);
+
+
+/**
+ * Set the zone of a tile.
+ *
+ * @param map    Pointer to the map to modify.
+ * @param layer  Index of the layer on the map to modify.
+ * @param x      X co-ordinate, in tiles, of the tile to modify.
+ * @param y      Y co-ordinate, in tiles, of the tile to modify.
+ * @param zone   The new zone of the tile.
+ *
+ * @return  SUCCESS if the operation succeeded, FAILURE otherwise.
+ */
+
+bool_t
+set_tile_zone (map_t *map, layer_index_t layer, dimension_t x, dimension_t y, layer_zone_t value);
+
+
+/**
+ * Get the width of a map, in tiles.
+ *
+ * @param map  Pointer to the map to query.
+ *
+ * @return     The width of the map, in tiles.
+ *             If the map is NULL, an error will be raised and 0
+ *             will be returned.
+ */
+
+dimension_t
+get_map_width (map_t *map);
+
+
+/**
+ * Get the height of a map, in tiles.
+ *
+ * @param map  Pointer to the map to query.
+ *
+ * @return     The height of the map, in tiles.
+ *             If the map is NULL, an error will be raised and 0
+ *             will be returned.
+ */
+
+dimension_t
+get_map_height (map_t *map);
 
 
 /** 
@@ -137,8 +234,8 @@ init_map (int width,
  *          exist in the given map, 0 is returned and an error is raised.
  */
 
-tag_t
-get_tag (map_t *map, unsigned int layer);
+layer_tag_t
+get_layer_tag (map_t *map, layer_index_t layer);
 
 
 /** 
@@ -146,13 +243,41 @@ get_tag (map_t *map, unsigned int layer);
  *
  * @param map  Pointer to the map to query.
  *
- * @return  the highest tag number allocated on the map.
- *          If the map pointer given is NULL, 0 is returned and an 
- *          error is raised.
+ * @return     the highest tag number allocated on the map.
+ *             If the map pointer given is NULL, 0 is returned and an
+ *             error is raised.
  */
 
-tag_t
+layer_tag_t
 get_max_tag (map_t *map);
+
+
+/**
+ * Get the highest layer index allocated on a map.
+ *
+ * @param map  Pointer to the map to query.
+ *
+ * @return     the highest layer index allocated on the map.
+ *             If the map pointer given is NULL, 0 is returned and an
+ *             error is raised.
+ */
+
+layer_index_t
+get_max_layer (map_t *map);
+
+
+/**
+ * Get the highest zone index allocated on a map.
+ *
+ * @param map  Pointer to the map to query.
+ *
+ * @return     the highest zone index allocated on the map.
+ *             If the map pointer given is NULL, 0 is returned and an
+ *             error is raised.
+ */
+
+zone_index_t
+get_max_zone (map_t *map);
 
 
 /**
@@ -164,7 +289,7 @@ get_max_tag (map_t *map);
  */
 
 void
-cleanup_map (map_t *map);
+free_map (map_t *map);
 
 
 #endif /* _MAP_H */

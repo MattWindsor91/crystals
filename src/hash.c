@@ -50,11 +50,18 @@
 #include "graphics.h"     /* free_image. */
 #include "field/object.h" /* free_object. */
 
-int
+
+/* -- DEFINITIONS -- */
+
+/* Return a basic hash of the given ASCII string, suitable for use in
+ *  indexing for a hash table.
+ */
+
+hash_value_t
 ascii_hash (const char string[])
 {
   unsigned char *p;
-  int h;
+  hash_value_t h;
 
   h = 0;
 
@@ -72,19 +79,20 @@ ascii_hash (const char string[])
   return h % HASH_VALS;
 }
 
+
 /* Create a hash object with the given data and link it to the given
    hash table. */
 
-struct hash_object *
-create_hash_object (struct hash_object *head[], 
+hash_object_t *
+create_hash_object (hash_object_t *head[],
                     const char name[], 
-                    unsigned char type, 
+                    hash_type_t type,
                     void *data)
 {
-  struct hash_object *hash_object;
-  struct hash_object *result;
+  hash_object_t *hash_object;
+  hash_object_t *result;
 
-  /* Sanity-checking. */
+  /* Sanity checking. */
 
   if (name == NULL)
     {
@@ -104,9 +112,12 @@ create_hash_object (struct hash_object *head[],
       return NULL;
     }
 
+  /* End sanity checking. */
+
+
   /* Now try to allocate the container. */
 
-  hash_object = malloc (sizeof (struct hash_object));
+  hash_object = malloc (sizeof (hash_object_t));
 
   if (hash_object == NULL)
     {
@@ -162,7 +173,7 @@ create_hash_object (struct hash_object *head[],
 /* Delete a hash object and its associated data. */
 
 void
-free_hash_object (struct hash_object *object)
+free_hash_object (hash_object_t *object)
 {
   if (object == NULL)
     return;
@@ -186,7 +197,7 @@ free_hash_object (struct hash_object *object)
           /* Insert sound freeing code here. */
           break;
         case DATA_OBJECT:
-          free_object ((struct object_t *) object->data);
+          free_object ((object_t *) object->data);
           break;
         }
     }
@@ -200,11 +211,11 @@ free_hash_object (struct hash_object *object)
 
 /* Remove a hash object from the given hash table. */
 
-int
-delete_hash_object (struct hash_object *head[], const char name[])
+bool_t
+delete_hash_object (hash_object_t *head[], const char name[])
 {
-  int h;
-  struct hash_object *object, *prev;
+  hash_value_t h;
+  hash_object_t *object, *prev;
 
   h = ascii_hash (name);
   prev = NULL;
@@ -233,10 +244,10 @@ delete_hash_object (struct hash_object *head[], const char name[])
 /* Delete all hash objects. */
 
 void
-clear_hash_objects (struct hash_object *head[])
+clear_hash_objects (hash_object_t *head[])
 {
   int i;
-  struct hash_object *p, *next;
+  hash_object_t *p, *next;
   
   for (i = 0; i < HASH_VALS; i++)
     {
@@ -253,13 +264,13 @@ clear_hash_objects (struct hash_object *head[])
 
 /* Retrieve an hash table node, or add one to a hash table. */
 
-struct hash_object *
-get_hash_object (struct hash_object *head[], 
+hash_object_t *
+get_hash_object (hash_object_t *head[],
                  const char name[],
-                 struct hash_object *add_pointer)
+                 hash_object_t *add_pointer)
 {
-  int h; 
-  struct hash_object *object;
+  hash_value_t h;
+  hash_object_t *object;
 
 
   /* Get the hash of the object's filename so we can search in the correct 
@@ -308,8 +319,8 @@ get_hash_object (struct hash_object *head[],
 
 /* Wrapper to get_hash_object for use in finding hash objects. */
 
-struct hash_object *
-find_hash_object (struct hash_object *head[], 
+hash_object_t *
+find_hash_object (hash_object_t *head[],
                   const char name[])
 {
   return get_hash_object (head, name, NULL);
@@ -318,16 +329,16 @@ find_hash_object (struct hash_object *head[],
 
 /* Apply the given function to all members of the hash table. */
 
-int
-apply_to_hash_objects (struct hash_object *head[], 
-                       int (*function) (struct hash_object *object, 
-                                        void *data),
+bool_t
+apply_to_hash_objects (hash_object_t *head[],
+                       bool_t (*function) (hash_object_t *object,
+                                           void *data),
                        void *data)
 {
   int i;
-  int result;
-  int temp_result;
-  struct hash_object *hash_object;
+  bool_t result;
+  bool_t temp_result;
+  hash_object_t *hash_object;
 
   result = SUCCESS;
 

@@ -45,7 +45,16 @@
 #ifndef _HASH_H
 #define _HASH_H
 
+
 #include <stdarg.h>
+
+#include "types.h"
+
+
+/* -- TYPEDEFS -- */
+
+typedef uint8_t  hash_type_t;   /**< The type of hash object. */
+typedef uint32_t hash_value_t;  /**< The hash of a hash object. */
 
 /* -- CONSTANTS -- */
 
@@ -72,15 +81,16 @@ enum
 
 /** A generic hash table data container. */
 
-struct hash_object
+typedef struct hash_object
 {
-  char *name;               /**< Unique name/identifier of the
-                               object. */
-  unsigned char type;       /**< The type ID of data held in the 
-                               object. */
-  void *data;               /**< Data held by the object. */
-  struct hash_object *next; /**< The next object in the hash chain. */
-};
+  char *name;                /**< Unique name/identifier of the
+                                object. */
+  hash_type_t type;          /**< The type ID of data held in the
+                                object. */
+  void *data;                /**< Data held by the object. */
+  struct hash_object *next;  /**< The next object in the hash chain. */
+} hash_object_t;
+
 
 /* -- PROTOTYPES -- */
 
@@ -93,8 +103,9 @@ struct hash_object
  *  inclusive.
  */
 
-int
+hash_value_t
 ascii_hash (const char string[]);
+
 
 /** Create a hash object with the given data and link it to the given
  *  hash table.
@@ -112,11 +123,12 @@ ascii_hash (const char string[]);
  *  or NULL otherwise.
  */
 
-struct hash_object *
-create_hash_object (struct hash_object *head[], 
+hash_object_t *
+create_hash_object (hash_object_t *head[],
                     const char name[], 
-                    unsigned char type, 
+                    hash_type_t type,
                     void *data);
+
 
 /** Delete a hash object and its associated data.
  *
@@ -127,7 +139,8 @@ create_hash_object (struct hash_object *head[],
  */
 
 void
-free_hash_object (struct hash_object *object);
+free_hash_object (hash_object_t *object);
+
 
 /** Remove a hash object from the given hash table.
  *
@@ -140,9 +153,10 @@ free_hash_object (struct hash_object *object);
  *  was deleted).
  */ 
 
-int
-delete_hash_object (struct hash_object *head[], 
+bool_t
+delete_hash_object (hash_object_t *head[],
                     const char name[]);
+
 
 /** Deletes all containers in the given hash table.
  *
@@ -150,7 +164,8 @@ delete_hash_object (struct hash_object *head[],
  */
 
 void
-clear_hash_objects (struct hash_object *head[]);
+clear_hash_objects (hash_object_t *head[]);
+
 
 /** Retrieve an hash table node, or add one to a hash table.
  *
@@ -168,10 +183,11 @@ clear_hash_objects (struct hash_object *head[]);
  *  if found or created, or NULL otherwise.
  */
 
-struct hash_object *
-get_hash_object (struct hash_object *head[], 
+hash_object_t *
+get_hash_object (hash_object_t *head[],
                  const char name[],
-                 struct hash_object *add_pointer);
+                 hash_object_t *add_pointer);
+
 
 /** Wrapper to get_hash_object for use in finding hash objects.
  *
@@ -180,9 +196,10 @@ get_hash_object (struct hash_object *head[],
  *  @param name  Unique name/identifier of the object.
  */
 
-struct hash_object *
-find_hash_object (struct hash_object *head[], 
+hash_object_t *
+find_hash_object (hash_object_t *head[],
                   const char name[]);
+
 
 /** Apply the given function to all members of the hash table.
  *
@@ -191,7 +208,7 @@ find_hash_object (struct hash_object *head[],
  *  @param function  Pointer to the function to apply to the
  *                   object.  The function must take the hash object
  *                   as first parameter followed by a void pointer for
- *                   data, and return a SUCCESS/FAILURE int.
+ *                   data, and return a SUCCESS/FAILURE bool_t.
  *
  *  @param data      Void pointer to the data to pass to the function.
  *
@@ -199,10 +216,10 @@ find_hash_object (struct hash_object *head[],
  *  FAILURE otherwise.
  */
 
-int
-apply_to_hash_objects (struct hash_object *head[], 
-                       int (*function) (struct hash_object *object, 
-                                        void *data),
+bool_t
+apply_to_hash_objects (hash_object_t *head[],
+                       bool_t (*function) (hash_object_t *object,
+                                           void *data),
                        void *data);
 
 #endif /* not _HASH_H */

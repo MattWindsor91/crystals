@@ -49,10 +49,13 @@
 #include "object-api.h"
 #include "../util.h"
 
+
 static struct hash_object *sg_objects[HASH_VALS];
 
 
-int
+/* Initialise the object base. */
+
+bool_t
 init_objects (void)
 {
   unsigned int i;
@@ -64,11 +67,13 @@ init_objects (void)
 }
 
 
-struct object_t *
+/* Create a new object and add it to the object table. */
+
+object_t *
 add_object (const char object_name[],
             const char script_filename[])
 {
-  struct object_t *object;
+  object_t *object;
   struct hash_object *result;
 
   /* Sanity-check passed strings. */
@@ -87,7 +92,7 @@ add_object (const char object_name[],
 
   /* Try to allocate an object. */
 
-  object = malloc (sizeof (struct object_t));
+  object = malloc (sizeof (object_t));
 
   if (object == NULL)
     {
@@ -98,7 +103,7 @@ add_object (const char object_name[],
 
   /* Try to allocate and initialise an object image. */
 
-  object->image = malloc (sizeof (struct object_image));
+  object->image = malloc (sizeof (object_image_t));
 
   if (object->image == NULL)
     {
@@ -158,21 +163,25 @@ add_object (const char object_name[],
       return NULL;
     }
 
-  return (struct object_t*) result->data;
+  return (object_t*) result->data;
 }
 
 
 /* Change the tag associated with an object. */
 
-int
-set_object_tag (struct object_t *object, 
-                tag_t tag)
+bool_t
+set_object_tag (object_t *object, layer_tag_t tag)
 {
+  /* Sanity checking. */
+
   if (object == NULL)
     {
       error ("OBJECT - set_object_tag - Tried to set tag of null object.");
       return FAILURE;
     }
+
+  /* End sanity checking. */
+
 
   object->tag = tag;
   
@@ -182,14 +191,19 @@ set_object_tag (struct object_t *object,
 
 /* Get the graphic associated with an object. */
 
-struct object_image *
-get_object_image (struct object_t *object)
+object_image_t *
+get_object_image (object_t *object)
 {
+  /* Sanity checking. */
+
   if (object == NULL)
     {
       error ("OBJECT - get_object_image - Tried to get image of null object.");
       return NULL;
     }
+
+  /* End sanity checking. */
+
 
   return object->image;
 }
@@ -197,13 +211,13 @@ get_object_image (struct object_t *object)
 
 /* Change the graphic associated with an object. */
 
-int
-set_object_image (struct object_t *object, 
+bool_t
+set_object_image (object_t *object,
                   const char filename[],
-                  short image_x,
-                  short image_y,
-                  unsigned short width,
-                  unsigned short height)
+                  int16_t image_x,
+                  int16_t image_y,
+                  uint16_t width,
+                  uint16_t height)
 {
   /* Sanity checking. */
 
@@ -253,11 +267,13 @@ set_object_image (struct object_t *object,
 }
 
 
-int
-get_object_coordinates (struct object_t *object, 
-                        int *x_pointer,
-                        int *y_pointer,
-                        unsigned short reference)
+/* Retrieve the object's co-ordinates on-map. */
+
+bool_t
+get_object_coordinates (object_t *object,
+                        int32_t *x_pointer,
+                        int32_t *y_pointer,
+                        reference_t reference)
 {
   /* Sanity checking. */
 
@@ -274,6 +290,9 @@ get_object_coordinates (struct object_t *object,
       return FAILURE;
     }
 
+  /* End sanity checking. */
+
+
   *x_pointer = object->image->map_x;
   *y_pointer = object->image->map_y;
 
@@ -284,11 +303,13 @@ get_object_coordinates (struct object_t *object,
 }
 
 
-int
-set_object_coordinates (struct object_t *object,
-                        int x, 
-                        int y,
-                        unsigned short reference)
+/* Set the object's co-ordinates on map. */
+
+bool_t
+set_object_coordinates (object_t *object,
+                        int32_t x,
+                        int32_t y,
+                        reference_t reference)
 {
   /* Sanity checking. */
 
@@ -304,6 +325,9 @@ set_object_coordinates (struct object_t *object,
              object->name);
       return FAILURE;
     }
+
+  /* End sanity checking. */
+
 
   /* No point setting coordinates if they're the same. */
 
@@ -334,9 +358,11 @@ set_object_coordinates (struct object_t *object,
 }
 
 
-int
-set_object_dirty (struct object_t *object, 
-                  struct map_view *mapview)
+/* Mark an object as being dirty on the given map view. */
+
+bool_t
+set_object_dirty (object_t *object,
+                  mapview_t *mapview)
 {
   /* Sanity checking. */
 
@@ -351,6 +377,9 @@ set_object_dirty (struct object_t *object,
       error ("OBJECT - set_object_dirty - Tried dirtying on a NULL mapview.");
       return FAILURE;
     }
+
+  /* End sanity checking. */
+
 
   /* If we're already dirty, no need to run this again. */
 
@@ -402,7 +431,7 @@ set_object_dirty (struct object_t *object,
 
 
 void
-free_object (struct object_t *object)
+free_object (object_t *object)
 {
   if (object)
     {
@@ -420,14 +449,18 @@ free_object (struct object_t *object)
 }
 
 
-int
+/* Remove an object from the object table. */
+
+bool_t
 delete_object (const char object_name[])
 {
   return delete_hash_object (sg_objects, object_name);
 }
 
 
-struct object_t *
+/* Retrieve an object, or add an object to the object table. */
+
+object_t *
 get_object (const char object_name[], struct hash_object *add_pointer)
 {
   struct hash_object *result;
@@ -437,15 +470,20 @@ get_object (const char object_name[], struct hash_object *add_pointer)
   if (result == NULL)
     return NULL;
   else
-    return (struct object_t*) result->data;
+    return (object_t*) result->data;
 } 
 
 
-int
+
+/* Check to see whether the given object falls within the given dirty
+ * rectangle and, if so, mark the object as dirty.
+ */
+
+bool_t
 dirty_object_test (struct hash_object *hash_object, void *rect_pointer)
 {
-  struct object_t *object;
-  struct map_view *mapview;
+  object_t *object;
+  mapview_t *mapview;
   struct dirty_rectangle *rect;
 
   int start_x;
@@ -473,7 +511,7 @@ dirty_object_test (struct hash_object *hash_object, void *rect_pointer)
       return FAILURE;
     }
 
-  object = (struct object_t *) hash_object->data;
+  object = (object_t *) hash_object->data;
   rect = (struct dirty_rectangle *) rect_pointer;
 
  /* If an object is already dirty, don't bother checking. */
@@ -504,16 +542,20 @@ dirty_object_test (struct hash_object *hash_object, void *rect_pointer)
 }
 
 
-int
-apply_to_objects (int (*function) (struct hash_object *object, 
-                                   void *data),
-                   void *data)
+/** Apply the given function to all objects. */
+
+bool_t
+apply_to_objects (bool_t (*function) (hash_object_t *object,
+                                      void *data),
+                  void *data)
 {
   return apply_to_hash_objects (sg_objects, 
                                 function, 
                                 data);
 }
 
+
+/** Clean up the objects subsystem. */
 
 void
 cleanup_objects (void)

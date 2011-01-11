@@ -54,17 +54,17 @@
 
 /* -- STATIC GLOBAL VARIABLES -- */
 
-static struct object_t *sg_camera_focus = NULL; /** Current object with camera focus. */
+static object_t *sg_camera_focus = NULL; /** Current object with camera focus. */
 
 
 /* -- DEFINITIONS -- */
 
 /* Set an object as the camera focus point. */
 
-int
+bool_t
 focus_camera_on_object (const char object_name[])
 {
-  struct object_t *object;
+  object_t *object;
 
   /* Sanity checking. */
 
@@ -91,13 +91,13 @@ focus_camera_on_object (const char object_name[])
 
 /* Move an object by an offset from its current co-ordinates. */
 
-int
+bool_t
 move_object (const char object_name[], 
              int dx,
              int dy)
 {
-  struct object_t *object;
-  struct map_view *mapview;
+  object_t *object;
+  mapview_t *mapview;
 
   /* These four ints are used for boundary checking later. */
   
@@ -201,14 +201,14 @@ move_object (const char object_name[],
 
 /* Move an object to a new absolute position. */
 
-int
+bool_t
 position_object (const char object_name[], 
                  int x,
                  int y, 
-                 unsigned short reference)
+                 reference_t reference)
 {
-  struct object_t *object;
-  struct map_view *mapview;
+  object_t *object;
+  mapview_t *mapview;
 
   /* These four ints are used for boundary checking later. */
   
@@ -293,11 +293,10 @@ position_object (const char object_name[],
 
 /* Change the tag associated with an object. */
 
-int
-tag_object (const char object_name[],
-            tag_t tag)
+bool_t
+tag_object (const char object_name[], layer_tag_t tag)
 {
-  struct object_t *object;
+  object_t *object;
 
   if (object_name == NULL)
     {
@@ -320,7 +319,7 @@ tag_object (const char object_name[],
 
 /* Change the image associated with an object. */
 
-int
+bool_t
 change_object_image (const char object_name[],
                      const char image_filename[], 
                      short x_offset,
@@ -328,8 +327,8 @@ change_object_image (const char object_name[],
                      unsigned short width, 
                      unsigned short height)
 {
-  struct object_t *object;
-  struct map_view *mapview;
+  object_t *object;
+  mapview_t *mapview;
 
   /* These four ints are used for boundary checking later. */
   

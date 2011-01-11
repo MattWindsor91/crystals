@@ -51,14 +51,16 @@
 
 #include "field.h"
 #include "map.h"
+#include "mapload.h"
 #include "mapview.h"
 #include "object.h"
 #include "object-api.h"
 
+
 /* -- STATIC GLOBAL VARIABLES -- */
 
-static struct map *sg_map;
-static struct map_view *sg_mapview;
+static map_t *sg_map;
+static mapview_t *sg_mapview;
 
 /* Test callbacks, woo */
 
@@ -67,6 +69,7 @@ static unsigned char sg_field_held_special_keys[256];
 static event_callback *sg_field_skeyupcb;
 static event_callback *sg_field_skeydowncb;
 static event_callback *sg_field_quitcb;
+
 
 /* -- DEFINITIONS -- */
 
@@ -105,7 +108,9 @@ field_on_special_key_down (event_t *event)
 
 /* Regular functions. */
 
-int
+/* Initialise the field state. */
+
+bool_t
 init_field (struct state_functions *function_table)
 {
   memset (sg_field_held_special_keys, 0, sizeof (unsigned char) * 256);
@@ -116,7 +121,7 @@ init_field (struct state_functions *function_table)
       return FAILURE;
     }
 
-  sg_map = init_test_map ();
+  sg_map = load_map ("maps/test.map");
 
   if (sg_map == NULL)
     {
@@ -172,7 +177,7 @@ init_field (struct state_functions *function_table)
 
 /* Retrieve the map view currently in use. */
 
-struct map_view *
+mapview_t *
 get_field_mapview (void)
 {
   return sg_mapview;
@@ -181,7 +186,7 @@ get_field_mapview (void)
 
 /* Retrieve the boundaries of the map currently in use. */
 
-int
+bool_t
 get_field_map_boundaries (int *x0_pointer,
                           int *y0_pointer,
                           int *x1_pointer,
@@ -233,7 +238,7 @@ field_handle_held_keys (void)
 
 /* Initialise input callbacks. */
 
-int
+bool_t
 field_init_callbacks (void)
 {
   sg_field_skeyupcb = install_callback (field_on_special_key_up, SPECIAL_KEY_UP_EVENT);
@@ -273,7 +278,7 @@ field_cleanup_callbacks (void)
 
 /* Perform per-frame updates for field. */
 
-int
+bool_t
 update_field (void)
 {
   field_handle_held_keys ();
@@ -287,7 +292,7 @@ update_field (void)
 /* Handle a dirty rectangle passed from the user interface overlay for
    field. */
 
-int
+bool_t
 field_handle_dirty_rect (short x, short y,
                          unsigned short width, unsigned short height)
 {
@@ -300,11 +305,11 @@ field_handle_dirty_rect (short x, short y,
 
 /* De-initialise the field state. */
 
-int
+bool_t
 cleanup_field (void)
 {
-  cleanup_mapview (sg_mapview);
-  cleanup_map (sg_map);
+  free_mapview (sg_mapview);
+  free_map (sg_map);
   cleanup_objects ();
 
   field_cleanup_callbacks ();

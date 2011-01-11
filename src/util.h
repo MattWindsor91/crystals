@@ -50,6 +50,8 @@
 
 #include <stdarg.h>
 
+#include "types.h"  /* Standard types as used in crystals. */
+
 /* -- CONSTANTS -- */
 
 /* Windows likes to define these already. */
@@ -74,10 +76,6 @@ enum
     WEST,        /**< West (left) cardinal direction. */
     NULLC = '\0' /**< Null character (necessary?) */
   };
-  
-/* -- TYPEDEFS -- */
-
-typedef char bool_t; /**<< Used for TRUE, FALSE, SUCCESS and FAILURE. */
 
 
 /* -- FUNCTION MACROS -- */

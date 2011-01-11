@@ -45,7 +45,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "parser.h" /* includes util.h */
+#include "util.h"
+#include "parser.h"
 
 
 /* Initialise the config system. */
