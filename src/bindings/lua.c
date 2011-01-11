@@ -62,7 +62,7 @@ crystals_test (lua_State *L);
 
 /* -- INTERNAL DEFINITIONS -- */
 
-int
+bool_t
 init_bindings (void)
 {
   g_lua = lua_open ();
@@ -82,7 +82,7 @@ cleanup_bindings (void)
   lua_close (g_lua);
 }
 
-int
+bool_t
 run_script (const char *path)
 {
   if (luaL_loadfile (g_lua, path) == L_SUCCESS)
