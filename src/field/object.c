@@ -74,7 +74,7 @@ add_object (const char object_name[],
             const char script_filename[])
 {
   object_t *object;
-  struct hash_object *result;
+  hash_object_t *result;
 
   /* Sanity-check passed strings. */
 
