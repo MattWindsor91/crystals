@@ -218,6 +218,9 @@
 				>
 			</File>
 			<File
+				RelativePath=".\src\field\object-image.h"
+				>
+			<File
 				RelativePath=".\src\field\object.h"
 				>
 			</File>
@@ -315,6 +318,9 @@
 				RelativePath=".\src\field\object-api.c"
 				>
 			</File>
+			<File
+				RelativePath=".\src\field\object-image.c"
+				>
 			<File
 				RelativePath=".\src\field\object.c"
 				>
