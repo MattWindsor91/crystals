@@ -82,7 +82,7 @@ main (int argc, char **argv)
 
 /* Initialise all engine subsystems. */
 
-int
+bool_t
 init (void)
 {
   char *module_path = NULL;

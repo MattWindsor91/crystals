@@ -41,8 +41,12 @@
  *  @brief  Prototypes and declarations for main functions.
  */
 
+
 #ifndef _MAIN_H
 #define _MAIN_H
+
+
+#include "types.h"
 
 extern struct dict_t *g_config;    /**< Configuration dictionary. */
 
