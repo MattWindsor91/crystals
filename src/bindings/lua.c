@@ -36,9 +36,11 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/** @file   src/bindings/lua.c
- *  @author Alexander Preisinger
- *  @brief  Lua module for scripting.
+/** 
+ * @file    src/bindings/lua.c
+ * @author  Alexander Preisinger
+ * @brief   Lua module for scripting. Contains to most basic functions for 
+ *          embedding the lua interpreter and testing.
  */
 
 #include <stdio.h>
@@ -49,7 +51,8 @@
 
 /* -- LUA PROTOTYPES -- */
 
-/** Run a test
+/** 
+ * Run a test
  * @todo Remove tests.
  */
 
@@ -106,8 +109,10 @@ power_test (lua_State *L)
   lua_Integer y;
   lua_Integer res;
   
-  /** @note if you call the c function in lua the parameters are on the lua stack
-   * thats why we need to check if they are of the right type */
+  /** 
+   * @note  if you call the c function in lua the parameters are on the 
+   *        lua stack thats why we need to check if they are of the right type 
+   */
   if (lua_parameter_check (L, "power_test", "dd") == FAILURE)
     return L_FAILURE;
     
@@ -211,4 +216,4 @@ lua_parameter_check (lua_State *L, const char *func_name, const char sig[])
   return SUCCESS; 
 }
 
-/* vim: set ts=2 sw=2 softtabstop=2: */
+/* vim: set et ts=2 sw=2 softtabstop=2: */

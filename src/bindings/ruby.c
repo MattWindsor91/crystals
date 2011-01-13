@@ -36,9 +36,10 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/** @file src/bindings/ruby.c
- *  @author Alexander Preisinger
- *  @brief Ruby module for scripting.
+/** 
+ * @file    src/bindings/ruby.c
+ * @author  Alexander Preisinger
+ * @brief   Ruby module for scripting.
  */
 
 #include <stdio.h>
@@ -50,7 +51,7 @@
 
 /* -- INTERNAL DEFINITIONS -- */
 
-int
+bool_t
 init_bindings (void)
 {
   ruby_init ();
@@ -65,7 +66,7 @@ cleanup_bindings (void)
   ruby_finalize (); 
 }
 
-int
+bool_t
 run_script (const char* path)
 {
   rb_load_file (path);

@@ -36,9 +36,10 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/** @file   src/bindings/python.c
- *  @author Alexander Preisinger
- *  @brief  Python module for scripting.
+/** 
+ * @file   src/bindings/python.c
+ * @author Alexander Preisinger
+ * @brief  Python module for embedding the python interpreter.
  */
 
 /* the python header should always be first */
@@ -53,7 +54,9 @@
 
 /* -- PYTHON PROTOTYPES AND STRUCTS*/
 
-/** Run a test */
+/** 
+ * Run a test 
+ */
 
 static PyObject*
 crystals_init (void);
@@ -78,7 +81,7 @@ crystals_mod = {
 
 /* -- INTERNAL DEFINITIONS -- */
 
-int
+bool_t
 init_bindings (void)
 {
   Py_Initialize(); 
@@ -91,11 +94,11 @@ cleanup_bindings (void)
   Py_Finalize();
 }
 
-int
+bool_t
 run_script (const char* path)
 {
   FILE *file_stream;
-  short EXIT;
+  bool_t EXIT;
 
   PyImport_AppendInittab("crystals", &crystals_init);
 
@@ -139,4 +142,4 @@ crystals_test (PyObject *self, PyObject *args)
   return Py_None;
 }
 
-/* vim: set st=2 sw=2 softtabstop=2: */
+/* vim: set et st=2 sw=2 softtabstop=2: */

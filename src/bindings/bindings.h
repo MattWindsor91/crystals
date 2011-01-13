@@ -36,9 +36,10 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/** @file   src/bindings/bindings.h
- *  @author Alexander Preisinger
- *  @brief  Prototypes and declarations for generic language bindings.
+/** 
+ * @file   src/bindings/bindings.h
+ * @author Alexander Preisinger
+ * @brief  Prototypes and declarations for generic language bindings.
  */
 
 #ifndef _BINDINGS_H
@@ -46,26 +47,30 @@
 
 /* -- PROTOTYPES -- */
 
-/** Init language bindings
+/** 
+ * Init language bindings
  *
- *  @return Return SUCCESS for success, otherwise FAILURE
+ * @return Return SUCCESS for success, otherwise FAILURE
  */
 
 bool_t
 init_bindings (void);
 
 
-/** Cleanup language bindings */
+/** 
+ * Cleanup language bindings 
+ */
 
 void
 cleanup_bindings (void);
 
 
-/** Executes a script file.
+/** 
+ * Executes a script file.
  *
- *  @param  path    Path to the file.
+ * @param  path    Path to the file.
  *
- *  @return SUCCESS for success, otherwise FAILURE.
+ * @return SUCCESS for success, otherwise FAILURE.
  */
 
 bool_t
@@ -73,4 +78,4 @@ run_script (const char *path);
 
 #endif /* _BINDINGS_H */
 
-/* vim: set ts=2 sw=2 softtabstop=2: */
+/* vim: set et ts=2 sw=2 softtabstop=2: */

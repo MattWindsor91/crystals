@@ -36,9 +36,10 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/** @file   src/bindings/lua.h
- *  @author Alexander Preisinger
- *  @brief  Lua header file.
+/** 
+ * @file   src/bindings/lua.h
+ * @author Alexander Preisinger
+ * @brief  Lua header file for.
  */
  
 #ifndef _LUA_B_H
@@ -61,24 +62,26 @@ lua_State *g_lua; /**< Main Lua state which holds the main stack. */
 
 /* -- PROTOTYPES -- */
 
-/** Generic parameter check function.
- *
+/** 
+ * Generic parameter check function.
  * Check if the parameters passed within lua matches the parameters needed in C.
  *
- * @param lua_State lua state that holds the stack.
- * @param func_name The name of the function. Used for error messages.
- * @param sig       A string of chars which defines how many and of which types
- * the paramaters should be. Add 's' for string, 'd' for number, 't' for a table
- * and 'b' for boolean.
- * (e.g.: "sdd" = 3 paramters, 1th stirng, 2nd numebr, 3rd number)
+ * @param lua_State   lua state that holds the stack.
+ * @param func_name   The name of the function. Used for error messages.
+ * @param sig         A string of chars which defines how many and of which 
+ *                    types the paramaters should be. Add 's' for string, 'd' 
+ *                    for number, 't' for a table and 'b' for boolean. (e.g.: 
+ *                    "sdd" = 3 paramters, 1th string, 2nd number, 3rd number)
  *
- * @return Return SUCCESS if the values in the stack match the sig[] array,
- * else return FAILURE. (defined in "util.h")
+ * @return  Return SUCCESS if the values in the stack match the sig[] array,
+ *          else return FAILURE. (defined in "util.h")
  *
- * @todo Add more type checks if nessecary.
+ * @todo    Add more type checks if nessecary.
  */
 
 bool_t
 lua_parameter_check (lua_State *L, const char *func_name, const char sig[]);
 
 #endif /* _LUA_B_H */
+
+/* vim: set et ts=2 sw=2 softtabstop=2: */

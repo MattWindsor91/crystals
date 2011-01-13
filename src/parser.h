@@ -36,9 +36,10 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/** @file   src/parser.h
- *  @author Alexander Preisinger
- *  @brief  Prototypes and declarations for the configuration parser.
+/** 
+ * @file    src/parser.h
+ * @author  Alexander Preisinger
+ * @brief   Prototypes and declarations for the configuration parser.
  */
 
 #ifndef _PARSER_H
@@ -69,79 +70,87 @@ struct dict_t
 
 /* -- FUNCTION PROTOTYPES -- */
 
-/** Initialise the config system. 
+/** 
+ * Initialise the config system. 
  *
- *  @param   config_path  Path of the configuration file. 
+ * @param   config_path    Path of the configuration file. 
  *
- *  @return  A pointer to the master configuration dictionary.
+ * @return  A pointer to the master configuration dictionary.
  */
 
 dict_t *
 init_config (const char *config_path);
 
 
-/** Initialise a node.
+/** 
+ * Initialise a node.
  *
- *  @return Return the initialized node.
+ * @return Return the initialized node.
  */
 
 dict_t*
 config_dict_init (void);
 
 
-/** Parse configuration file.
-*
-* @param path_name  The path to the configuration file.
-* @param root       Pass a dict_t node, which can already contain informations.
-*
-* @return Returns SUCCESS, if file has valid syntax and can be parsed, else
-* it returns FAILURE. (Defined in util.h)
-*/
+/** 
+ * Parse configuration file.
+ *
+ * @param   path_name   The path to the configuration file.
+ * @param   root        Pass a dict_t node, which can already 
+ *                      contain informations.
+ *
+ * @return  Returns SUCCESS, if file has valid syntax and can be parsed, else
+ *          it returns FAILURE. (Defined in util.h)
+ */
 
 bool_t
 config_parse_file (const char *path_name, dict_t *root);
 
 
-/** Function for adding a key-value pair to the tree.
+/** 
+ * Function for adding a key-value pair to the tree.
  *
- *  @param key   The string which will be added as key.
- *  @param value The string which will be added as key.
- *  @param node  The branch in which the key-value pair will be added.
+ * @param   key     The string which will be added as key.
+ * @param   value   The string which will be added as key.
+ * @param   node    The branch in which the key-value pair will be added.
  *
- *  @return Returns SUCCESS, if the key-value pair can be added, if not or
- *  the key already exists return FAILURE. (Defined in util.h)
+ * @return  Returns SUCCESS, if the key-value pair was added, otherwise or
+ *          the key already exists return FAILURE. (Defined in util.h)
  */
 
 bool_t
 config_add_pair (const char *key, const char *value, dict_t *node);
 
 
-/** Get the value of the appropriate key.
+/** 
+ * Get the value of the appropriate key.
  *
- * @param key   Pass a string, which will be searched in the tree.
- * @param node  The root node which contains the information.
+ * @param   key     Pass a string, which will be searched in the tree.
+ * @param   node    The root node which contains the information.
  *
- * @return Return the value to the appropriate key or NULL if none is found.
+ * @return  Return the value to the appropriate key or NULL if none is found.
  */
 
 char*
 config_get_value (const char *key, dict_t *node);
 
 
-/** Return the numbers of items in the dictionary type
+/** 
+ * Return the numbers of items in the dictionary type
  *
- * @param node A dictionary node.
+ * @param   node    A dictionary node.
  *
- * @return The numbers of key-value pairs in the dictionary.
+ * @return  The numbers of key-value pairs in the dictionary.
  */
 
 int
 config_item_count (dict_t *node);
 
 
-/** Function for freeing allocated memory in nodes.
+/** 
+ * Function for freeing allocated memory in nodes.
  *
- * @param node The data in the node will be freed.
+ * @param   node    Node type.
  */
 
 void
