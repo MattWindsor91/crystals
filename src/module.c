@@ -160,7 +160,7 @@ get_module (const char* modulepath, module_data *module)
 
   if (module->lib_handle == NULL)
     {
-      print_dll_error ("get_module");
+      DLLERROR("get_module");
       return FAILURE;
     }
 
@@ -180,44 +180,20 @@ get_module (const char* modulepath, module_data *module)
 }
 
 
-/* Print the last DLL-acquisition error message, if any. */
-
-void
-print_dll_error (const char function_name[])
-{
-  /* Unix-likes use libdl, so use dlerror to get DLL error */
 #ifdef USE_LIBDL
 
+/* Raise the last DLL-acquisition error message, if any. */
+
+void
+std_get_dll_error (const char function_name[])
+{
   char *dlerr = dlerror ();
 
   if (dlerr != NULL)
-    error ("MODULE - %s - Failed with dlerr: %s",
-           function_name, dlerr);
+    error ("MODULE - %s - Failed with dlerr: %s", function_name, dlerr);
+}
 
 #endif /* USE_LIBDL */
-
-  /* If on Windows, use the Windows API instead */
-#ifdef PLATFORM_WINDOWS
-
-  LPVOID lpMsgBuf;
-  DWORD dw = GetLastError ();
-
-  FormatMessage ((FORMAT_MESSAGE_ALLOCATE_BUFFER
-                  | FORMAT_MESSAGE_FROM_SYSTEM
-                  | FORMAT_MESSAGE_IGNORE_INSERTS),
-                 NULL,
-                 dw,
-                 MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-                 (LPTSTR) &lpMsgBuf,
-                 0, NULL);
-
-  error ("MODULE - %s - Failed with error %d: %s",
-         function_name, dw, lpMsgBuf);
-
-  LocalFree (lpMsgBuf);
-
-#endif
-}
 
 
 /* This loads a pointer to a function from a module */
@@ -231,7 +207,7 @@ get_module_function (module_data module, const char *function, mod_function_ptr 
 
   if (*func == NULL)
     {
-      print_dll_error ("get_module_function");
+      DLLERROR("get_module_function");
       return FAILURE;
     }
 

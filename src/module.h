@@ -47,6 +47,8 @@
 #ifndef _MODULE_H
 #define _MODULE_H
 
+
+#include "types.h"
 #include "events.h"
 
 
@@ -60,13 +62,7 @@
 
 #ifdef PLATFORM_WINDOWS
 
-#include <windows.h>
-typedef HMODULE dll_handle;                  /**< Handle type used for DLL modules. */
-typedef FARPROC mod_function_ptr;            /**< Function pointer type used for DLLs. */
-#define DLLOPEN(x) LoadLibrary(x)            /**< Function used for opening DLLs. */
-#define DLLLOOKUP(x,y) GetProcAddress(x,y)   /**< Function used for looking up DLL symbols. */
-#define DLLCLOSE(x) FreeLibrary(x)           /**< Function used for closing DLLs. */
-#define MODULESUFFIX ".dll"                  /**< Suffix used for DLLs. */
+#include "platform/w32-module.h"
 
 #endif /* PLATFORM_WINDOWS */
 
@@ -76,11 +72,14 @@ typedef FARPROC mod_function_ptr;            /**< Function pointer type used for
 #ifdef USE_LIBDL
 
 #include <dlfcn.h>
+
 typedef void* dll_handle;                    /**< Handle type used for SO modules. */
 typedef void* mod_function_ptr;              /**< Function pointer type used for SOs. */
+
 #define DLLOPEN(x) dlopen(x, RTLD_LAZY)      /**< Function used for opening SOs. */
 #define DLLLOOKUP(x,y) dlsym(x,y)            /**< Function used for looking up SO symbols. */
 #define DLLCLOSE(x) dlclose(x)               /**< Function used for closing SOs. */
+#define DLLERROR(x) std_get_dll_error(x)     /**< Function used for getting SO errors. */
 #define MODULESUFFIX ".so"                   /**< Function used for SOs. */
 
 #endif /* USE_LIBDL */
@@ -414,16 +413,24 @@ bool_t
 get_module (const char* modulepath, module_data *module);
 
 
+#ifdef USE_LIBDL
+
 /**
- * Print the last DLL-acquisition error message, if any.
+ * Raise the last DLL-acquisition error message, if any.
  *
- * @param function_name  The name of the function calling print_dll_error,
- * to display in the message.
+ * This is the standard version of the dll error function, which uses libdl.
+ * Alternative versions for non-libdl platforms are given in platform-specific
+ * code files (src/platform/PLATFORM-module.{c, h}).
+ *
+ * @param function_name  The name of the function calling get_dll_error,
+ *                       to display in the message.
  *
  */
 
 void
-print_dll_error (const char function_name[]);
+std_get_dll_error (const char function_name[]);
+
+#endif /* USE_LIBDL */
 
 
 /**
