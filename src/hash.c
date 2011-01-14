@@ -224,7 +224,7 @@ delete_hash_object (hash_object_t *head[], const char name[])
   /* Iterate through the hash bucket to find the correct object, then 
      delete its data and node. */
 
-  for (object = head[h]; object != NULL; object = prev->next)
+  for (object = head[h]; object != NULL; object = object->next)
     {
       if (strcmp (name, object->name) == 0)
         {
