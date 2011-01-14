@@ -55,8 +55,10 @@
 
 module_set g_modules; /* The set of all modules in use */
 
+
 /* This initialises the struct of modules to NULL and sets the load path */
-int
+
+bool_t
 init_modules (const char *path)
 {
   g_modules.path = malloc (sizeof (char) * (strlen (path) + 1));
@@ -78,7 +80,9 @@ init_modules (const char *path)
   return FAILURE;
 }
 
+
 /* This does the bare minimum initialisation for a module */
+
 void
 module_bare_init (module_data *module)
 {
@@ -87,21 +91,22 @@ module_bare_init (module_data *module)
   module->term       = NULL;
 }
 
+
 /* This gets the path of a module, storing it in out */
-int
+
+bool_t
 get_module_path (const char* module, const char* modulespath, char** out)
 {
   char *path;
 
-  path = (char*) malloc (sizeof (char) * (strlen (modulespath)
-                                          + strlen (module)
-                                          + strlen (MODULESUFFIX) + 1));
+  path = calloc (strlen (modulespath) + strlen (module)
+                 + strlen (MODULESUFFIX) + 1, sizeof (char));
 
   if (path)
     {
-      strcpy (path, modulespath);
-      strcat (path, module);
-      strcat (path, MODULESUFFIX);
+      strncpy (path, modulespath, strlen (modulespath));
+      strncat (path, module, strlen (module));
+      strncat (path, MODULESUFFIX, strlen (MODULESUFFIX));
     }
   else
     {
@@ -116,16 +121,18 @@ get_module_path (const char* module, const char* modulespath, char** out)
 
 /* This finds the filename of a module and calls get_module */
 
-int
+bool_t
 get_module_by_name (const char* name, const char *modulespath, module_data *module)
 {
-  /* Soon-to-be return value of get_module */
-  int out;
-  /* Get the name of the module */
-  char *modulepath;
-  if (get_module_path (name, modulespath, &modulepath) == FAILURE) return FAILURE;
+  bool_t out;        /* Soon-to-be return value of get_module */
+  char *modulepath;  /* Buffer in which to store path to the module. */
+
+  if (get_module_path (name, modulespath, &modulepath) == FAILURE)
+    return FAILURE;
+
 
   /* And get the module */
+
   if (modulepath)
     {
       out = get_module (modulepath, module);
@@ -139,11 +146,12 @@ get_module_by_name (const char* name, const char *modulespath, module_data *modu
     }
 }
 
+
 /* This opens a module file and runs any init code */
-int
+
+bool_t
 get_module (const char* modulepath, module_data *module)
 {
-  /*char *dlerr;*/
 
   if (module->lib_handle != NULL)
     return FAILURE;
@@ -152,68 +160,45 @@ get_module (const char* modulepath, module_data *module)
 
   if (module->lib_handle == NULL)
     {
-      print_dll_error ("get_module");
+      DLLERROR("get_module");
       return FAILURE;
     }
 
 
   /* Get init and termination functions if present */
+
   get_module_function (*module, "init", (mod_function_ptr*) &module->init);
   get_module_function (*module, "term", (mod_function_ptr*) &module->term);
 
+
   /* Execute init function if present */
+
   if (module->init != NULL)
-    {
-      (*module->init) ();
-    }
+    (*module->init) ();
 
   return SUCCESS;
 }
 
 
-/* Print the last DLL-acquisition error message, if any. */
-
-void
-print_dll_error (const char function_name[])
-{
-  /* Unix-likes use libdl, so use dlerror to get DLL error */
 #ifdef USE_LIBDL
 
+/* Raise the last DLL-acquisition error message, if any. */
+
+void
+std_get_dll_error (const char function_name[])
+{
   char *dlerr = dlerror ();
 
   if (dlerr != NULL)
-    error ("MODULE - %s - Failed with dlerr: %s",
-           function_name, dlerr);
+    error ("MODULE - %s - Failed with dlerr: %s", function_name, dlerr);
+}
 
 #endif /* USE_LIBDL */
-
-  /* If on Windows, use the Windows API instead */
-#ifdef PLATFORM_WINDOWS
-
-  LPVOID lpMsgBuf;
-  DWORD dw = GetLastError ();
-
-  FormatMessage ((FORMAT_MESSAGE_ALLOCATE_BUFFER
-                  | FORMAT_MESSAGE_FROM_SYSTEM
-                  | FORMAT_MESSAGE_IGNORE_INSERTS),
-                 NULL,
-                 dw,
-                 MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-                 (LPTSTR) &lpMsgBuf,
-                 0, NULL);
-
-  error ("MODULE - %s - Failed with error %d: %s",
-         function_name, dw, lpMsgBuf);
-
-  LocalFree (lpMsgBuf);
-
-#endif
-}
 
 
 /* This loads a pointer to a function from a module */
 
-int
+bool_t
 get_module_function (module_data module, const char *function, mod_function_ptr *func)
 {
   /** char *dlerr; */
@@ -222,16 +207,17 @@ get_module_function (module_data module, const char *function, mod_function_ptr 
 
   if (*func == NULL)
     {
-      print_dll_error ("get_module_function");
+      DLLERROR("get_module_function");
       return FAILURE;
     }
 
   return SUCCESS;
 }
 
+
 /* Load a graphics module. */
 
-int
+bool_t
 load_module_gfx (const char* name, module_set* modules)
 {
   if (get_module_by_name (name, modules->path, &modules->gfx.metadata) == FAILURE)
@@ -285,9 +271,10 @@ load_module_gfx (const char* name, module_set* modules)
   return SUCCESS;
 }
 
+
 /* Load an event module. */
 
-int
+bool_t
 load_module_event (const char *name, module_set *modules)
 {
   if (get_module_by_name (name, modules->path, &modules->event.metadata)
@@ -311,6 +298,7 @@ load_module_event (const char *name, module_set *modules)
   return SUCCESS;
 }
 
+
 /* This closes an individual module and runs any termination code */
 
 void
@@ -327,6 +315,7 @@ close_module (module_data *module)
       DLLCLOSE (module->lib_handle);
     }
 }
+
 
 /* This closes any loaded modules, run before program termination */
 

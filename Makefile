@@ -273,6 +273,7 @@ ifeq ($(PLATFORM),windows-mingw32)
 	# Add Windows-specific code
 	
 	OBJ         += $(PLATDIR)/w32-main.o $(PLATDIR)/w32-util.o
+        OBJ         += $(PLATDIR)/w32-module.o
 	
 endif
 
