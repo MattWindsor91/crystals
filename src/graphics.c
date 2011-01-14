@@ -79,7 +79,7 @@ init_graphics (void)
 {
   unsigned int i;
 
-  if (load_module_gfx (config_get_value ("graphics_module", g_config), &g_modules) == FAILURE)
+  if (load_module_gfx (cfg_get ("graphics_module", g_config), &g_modules) == FAILURE)
     {
       error ("GRAPHICS - init_graphics - Could not load graphics module.");
 
