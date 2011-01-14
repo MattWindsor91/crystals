@@ -111,7 +111,7 @@ get_absolute_path (const char path[])
 
   /* Get the root path from the configuration, if it exists. */
 
-  root_path = config_get_value ("graphics_path", g_config);
+  root_path = cfg_get ("graphics_path", g_config);
 
   if (root_path == NULL)
     {

@@ -75,7 +75,7 @@ get_module_root_path (char **module_path)
 
   if (g_config)
     {
-      *module_path = config_get_value ("module_path", g_config);
+      *module_path = cfg_get ("module_path", g_config);
     }
 
   if (*module_path == NULL)

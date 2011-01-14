@@ -187,8 +187,8 @@ cleanup (void)
   cleanup_graphics ();
   cleanup_bindings ();
   cleanup_modules ();
-  config_free_dict (g_config);
+  cfg_free (g_config);
 }
 
 
-/* vim: set ts=2 sw=2 softtabstop=2: */
+/* vim: set et ts=2 sw=2 softtabstop=2: */

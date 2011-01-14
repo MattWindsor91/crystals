@@ -83,16 +83,6 @@ init_config (const char *config_path);
 
 
 /** 
- * Initialise a node.
- *
- * @return Return the initialized node.
- */
-
-dict_t*
-config_dict_init (void);
-
-
-/** 
  * Parse configuration file.
  *
  * @param   path_name   The path to the configuration file.
@@ -104,7 +94,7 @@ config_dict_init (void);
  */
 
 bool_t
-config_parse_file (const char *path_name, dict_t *root);
+cfg_parse (const char *path_name, dict_t **root);
 
 
 /** 
@@ -119,7 +109,7 @@ config_parse_file (const char *path_name, dict_t *root);
  */
 
 bool_t
-config_add_pair (const char *key, const char *value, dict_t *node);
+cfg_add (const char *key, const char *value, dict_t **node);
 
 
 /** 
@@ -131,8 +121,8 @@ config_add_pair (const char *key, const char *value, dict_t *node);
  * @return  Return the value to the appropriate key or NULL if none is found.
  */
 
-char*
-config_get_value (const char *key, dict_t *node);
+char *
+cfg_get (const char *key, dict_t *node);
 
 
 /** 
@@ -143,8 +133,8 @@ config_get_value (const char *key, dict_t *node);
  * @return  The numbers of key-value pairs in the dictionary.
  */
 
-int
-config_item_count (dict_t *node);
+size_t
+cfg_items (dict_t *node);
 
 
 /** 
@@ -154,7 +144,7 @@ config_item_count (dict_t *node);
  */
 
 void
-config_free_dict (dict_t *node);
+cfg_free (dict_t *node);
 
 
 #endif /* not _PARSER_H */

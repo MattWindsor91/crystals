@@ -238,7 +238,7 @@ endif
 
 # Generic compilation flags.
 
-CFLAGS   := -ansi -pedantic -O2 -ggdb -DDEFMODPATH="\"$(MODPATH)\"" $(WARN)
+CFLAGS   := -ansi -pedantic -O2 -g3 -ggdb -DDEFMODPATH="\"$(MODPATH)\"" $(WARN)
 
 ## >> PLATFORM SPECIFICS << ##
 

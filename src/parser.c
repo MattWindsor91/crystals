@@ -36,9 +36,10 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/** @file   src/parser.c
- *  @author Alexander Preisinger
- *  @brief  Configuration parser.
+/** 
+ * @file    src/parser.c
+ * @author  Alexander Preisinger
+ * @brief   Configuration parser.
  */
 
 #include <stdio.h>
@@ -54,33 +55,24 @@
 dict_t *
 init_config (const char *config_path)
 {
-  dict_t *config;
+  dict_t *config = NULL;
 
   /* Sanity check the inbound path. */
 
   if (config_path == NULL)
     {
       error ("PARSER - init_config - Given NULL path to config file.");
-      return NULL;
     }
-
-  config = config_dict_init ();
-
-  if (config == NULL)
+  else 
     {
-      error ("PARSER - init_config - Failed to init config dict.");
-      return NULL;
+      if ((cfg_parse (config_path, &config)) == FAILURE)
+        {
+          error ("PARSER - init_config - Could not parse config file.");
+          cfg_free (config);
+          config = NULL;
+        }
     }
-
-  /* Now try to parse the configuration.  If we fail, destroy the dict. */
-
-  if (config_parse_file (config_path, config) == FAILURE)
-    {
-      error ("PARSER - init_config - Could not parse config file.");
-      config_free_dict (config);
-      return NULL;
-    }
-
+    
   return config;
 }
 
@@ -88,7 +80,7 @@ init_config (const char *config_path)
 /* Parse configuration file. */
 
 bool_t
-config_parse_file (const char *path_name, dict_t *root)
+cfg_parse (const char *path_name, dict_t **root)
 {
   /* simple booleans b_* */
   bool_t b_key = FALSE;
@@ -101,13 +93,13 @@ config_parse_file (const char *path_name, dict_t *root)
   char c;
   int line_counter = 1;
 
-  char *key, *sk;
-  char *value, *sv;
-
+  char *key, *key_head;
+  char *value, *value_head;
+  
   FILE *stream;
 
-  sk = key = malloc (sizeof (char) * 100);
-  sv = value = malloc (sizeof (char) * 100);
+  key_head = key = calloc (100, sizeof (char));
+  value_head = value = calloc (100, sizeof (char));
 
   stream = fopen (path_name, "r");
 
@@ -116,10 +108,10 @@ config_parse_file (const char *path_name, dict_t *root)
       while ((c = (char) fgetc (stream)) != EOF && b_error == FALSE)
         {
           /* check if someone wants to exploit us */
-          if (key - sk == 99)
+          if (key - key_head == 99)
             {
-              error ("PARSER: Key is too long: %d \n", line_counter);
-              break;
+              error ("PARSER - cfg_parse - Key is too long: %d.", line_counter);
+              return FAILURE;
             }
           if (b_ignore)
             {
@@ -128,11 +120,12 @@ config_parse_file (const char *path_name, dict_t *root)
                   if (b_key && b_value)
                     {
                       *value = '\0';
-                      key = sk;
-                      value = sv;
-                      if (config_add_pair (key, value, root) == FAILURE)
+                      key = key_head;
+                      value = value_head;
+                      if (cfg_add (key, value, root) == FAILURE)
                         {
-                          error ("PARSER: Key is already present: %d \n",
+                          error (
+                            "PARSER - cfg_parse - Key is already present: %d.",
                             line_counter);
                           b_error = TRUE;
                         }
@@ -153,7 +146,7 @@ config_parse_file (const char *path_name, dict_t *root)
                     /* key is present but not a value */
                     if (b_key == TRUE && b_value == FALSE)
                       {
-                        error ("PARSER: Invalid config syntax at line %d \n",
+                        error ("PARSER - cfg_parse - Invalid config syntax at line %d.",
                           line_counter);
                         b_error = TRUE;
                       }
@@ -166,8 +159,8 @@ config_parse_file (const char *path_name, dict_t *root)
                     /* key is present but not a value */
                     if (b_key == TRUE && b_value == FALSE)
                       {
-                        error ("PARSER: Invalid config syntax at line %d \n",
-                          line_counter);
+                        error ("PARSER - cfg_parse - Invalid config syntax at line %d.", 
+                              line_counter);
                         b_error = TRUE;
                       }
                     else
@@ -175,13 +168,12 @@ config_parse_file (const char *path_name, dict_t *root)
                         if (b_key)
                           {
                             *value = '\0';
-                            key = sk;
-                            value = sv;
-                            if (config_add_pair (key, value, root) == FAILURE)
+                            key = key_head;
+                            value = value_head;
+                            if (cfg_add (key, value, root) == FAILURE)
                               {
-                                error (
-                                  "PARSER: Key is already present: %d \n",
-                                  line_counter);
+                                error ("PARSER - cfg_parse - Key is already present: %d.", 
+                                line_counter);
                                 b_error = TRUE;
                               }
                           }
@@ -201,8 +193,8 @@ config_parse_file (const char *path_name, dict_t *root)
                       }
                     else
                       {
-                        error ("PARSER: Invalid config syntax at line %d \n",
-                          line_counter);
+                        error ("PARSER - cfg_parse - Invalid config syntax at line %d.",
+                              line_counter);
                         b_error = TRUE;
                       }
                     break;
@@ -215,8 +207,8 @@ config_parse_file (const char *path_name, dict_t *root)
                   default:
                     if (b_whitespace == TRUE && b_value == TRUE)
                       {
-                        error ("PARSER: Invalid config syntax at line %d \n",
-                          line_counter);
+                        error ("PARSER - cfg_parse - Invalid config syntax at line %d.",
+                              line_counter);
                         b_error = TRUE;
                       }
                     else
@@ -245,16 +237,15 @@ config_parse_file (const char *path_name, dict_t *root)
     }
   else
     {
-      error ("PARSER: Could not open the file %s .\n", path_name);
+      error ("PARSER - cfg_parse - Could not open the file %s.", path_name);
     }
 
   free (key);
   free (value);
 
-  if (b_error == TRUE) {
-    root = config_dict_init ();
+  if (b_error == TRUE) 
     return FAILURE;
-  }
+  
   else
     return SUCCESS;
 }
@@ -263,20 +254,16 @@ config_parse_file (const char *path_name, dict_t *root)
 /* Function for freeing allocated memory in nodes. */
 
 void
-config_free_dict (dict_t *node)
+cfg_free (dict_t *node)
 {
   if (node != NULL)
     {
-      if (node->key == NULL)
-        free (node);
-      else
-        {
-          config_free_dict (node->left);
-          config_free_dict (node->right);
-          free (node->key);
-          free (node->value);
-          free (node);
-        }
+      cfg_free (node->left);
+      cfg_free (node->right);
+      free (node->key);
+      free (node->value);
+      free (node);
+      node = NULL;
     }
 }
 
@@ -284,17 +271,17 @@ config_free_dict (dict_t *node)
 /* Get the value of the appropriate key. */
 
 char *
-config_get_value (const char *key, dict_t *node)
+cfg_get (const char *key, dict_t *node)
 {
-  if (node->key != NULL)
+  if (node != NULL)
     {
       if (strcmp (key, node->key) < 0)
         {
-          return config_get_value (key, node->left);
+          return cfg_get (key, node->left);
         }
       else if (strcmp (key, node->key) > 0)
         {
-          return config_get_value (key, node->right);
+          return cfg_get (key, node->right);
         }
       else
         {
@@ -311,87 +298,88 @@ config_get_value (const char *key, dict_t *node)
 /* Function for adding a key-value pair to the tree. */
 
 bool_t
-config_add_pair (const char *key, const char *value, dict_t *node)
+cfg_add (const char *key, const char *value, dict_t **root)
 {
   /* Sanity check */
+    
+  dict_t *node = *root;
+  dict_t *parent = *root;
+  bool_t left = FALSE;
 
   if (key == NULL)
     {
-      error ("PARSER - config_add_pair - Key is NULL.");
+      error ("PARSER - cfg_add - Key is NULL.");
       return FAILURE;
     }
   else if (value == NULL)
     {
-      error ("PARSER - config_add_pair - Value is NULL.");
+      error ("PARSER - cfg_add - Value is NULL.");
       return FAILURE;
     }
-  else if (node == NULL)
-    {
-      error ("PARSER - config_add_pair - Node is NULL.");
-      return FAILURE;
-    }
-
+    
   /* End sanity check. */
-
-
-  if (node->key == NULL)
+  
+  while (node != NULL) 
     {
-      node->key = malloc (sizeof (char) * strlen (key) + 1);
-      strncpy (node->key, key, strlen (key) + 1);
-
-      node->value = malloc (sizeof (char) * strlen (value) + 1);
-      strncpy (node->value, value, strlen (value) + 1);
-
-      node->left = config_dict_init ();
-      node->right = config_dict_init ();
-
-      return SUCCESS;
-    }
-  else
-    {
-      if (strcmp (key, node->key) < 0)
+      parent = node; /* keep track of the previous node */
+      
+      if (strcmp (key, node->key) < 0) 
         {
-          return config_add_pair (key, value, node->left);
-        }
+          node = node->left;
+          left = TRUE;
+        } 
       else if (strcmp (key, node->key) > 0)
         {
-          return config_add_pair (key, value, node->right);
+          node = node->right;
+          left = FALSE;
         }
-      else
+      else 
         {
+          error ("PARSER - cfg_add - Duplicate keys.");
           return FAILURE;
         }
     }
+  
+  node = malloc (sizeof (dict_t));
+  
+  node->key = calloc (strlen (key) + 1, sizeof (char));
+  strncpy (node->key, key, strlen (key));
+
+  node->value = calloc (strlen (value) + 1, sizeof (char));
+  strncpy (node->value, value, strlen (value));
+
+  node->left = NULL;
+  node->right = NULL;
+  
+  if (parent != NULL) 
+    {
+      if (left)
+        parent->left = node;
+      else
+        parent->right = node;
+    }
+  else
+      *root = node;
+    
+  return SUCCESS;
 }
 
 
 /* Return the numbers of items in the dictionary type */
 
-int
-config_item_count (dict_t *node)
+size_t
+cfg_items (dict_t *node)
 {
-  if (node->key == NULL)
+  if (node == NULL)
     {
       return 0;
     }
   else
     {
-      return config_item_count (node->left) + config_item_count (node->right) + 1;
+      return cfg_items (node->left) 
+           + cfg_items (node->right)
+           + 1; /* The node itself */
     }
-}
-
-
-/* Initialize a node. */
-
-dict_t*
-config_dict_init (void)
-{
-  dict_t *node = malloc (sizeof (dict_t));
-  node->key = NULL;
-  node->value = NULL;
-  node->left = NULL;
-  node->right = NULL;
-  return node;
 }
 
 /* vim: set ts=2 sw=2 softtabstop=2: */
