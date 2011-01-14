@@ -37,47 +37,30 @@
  */
 
 /** 
- * @file   src/bindings/bindings.h
- * @author Alexander Preisinger
- * @brief  Prototypes and declarations for generic language bindings.
+ * @file    src/bindings/dummy.c
+ * @author  Alexander Preisinger
+ * @brief   Dummy bindings for checking internal code.
  */
 
-#ifndef _BINDINGS_H
-#define _BINDINGS_H
+#include "bindings.h"
 
-#include "../util.h"
-
-/* -- PROTOTYPES -- */
-
-/** 
- * Init language bindings
- *
- * @return Return SUCCESS for success, otherwise FAILURE
- */
+/* -- INTERNAL DEFINITIONS -- */
 
 bool_t
-init_bindings (void);
-
-
-/** 
- * Cleanup language bindings 
- */
+init_bindings (void)
+{
+  return SUCCESS;
+}
 
 void
-cleanup_bindings (void);
-
-
-/** 
- * Executes a script file.
- *
- * @param  path    Path to the file.
- *
- * @return SUCCESS for success, otherwise FAILURE.
- */
+cleanup_bindings (void)
+{}
 
 bool_t
-run_script (const char *path);
-
-#endif /* _BINDINGS_H */
+run_script (const char *path)
+{
+  (void) path;
+  return SUCCESS;
+}
 
 /* vim: set et ts=2 sw=2 softtabstop=2: */
