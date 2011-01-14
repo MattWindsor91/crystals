@@ -50,6 +50,8 @@
 #include <string.h>
 #include <stdio.h>
 
+#include "main.h" /* g_config */
+#include "parser.h"
 #include "events.h"
 #include "module.h"
 #include "util.h"
@@ -64,7 +66,7 @@ static struct event_base *sg_event_base; /**< Event base. */
 int
 init_events (void)
 {
-  if (load_module_event ("event-sdl", &g_modules) == FAILURE)
+  if (load_module_event (config_get_value ("event_module", g_config), &g_modules) == FAILURE)
     {
       error ("EVENTS - init_events - Could not load events module.");
       return FAILURE;

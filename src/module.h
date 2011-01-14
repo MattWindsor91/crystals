@@ -36,16 +36,21 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/** @file    src/module.h
- *  @author  Michael Walker
- *  @brief   Prototypes and declarations for module loading and
- *           unloading functions.
+/**
+ * @file    src/module.h
+ * @author  Michael Walker
+ * @brief   Prototypes and declarations for module loading and
+ *          unloading functions.
  */
+
 
 #ifndef _MODULE_H
 #define _MODULE_H
 
+
+#include "types.h"
 #include "events.h"
+
 
 /* -- MACROS -- */
 
@@ -57,13 +62,7 @@
 
 #ifdef PLATFORM_WINDOWS
 
-#include <windows.h>
-typedef HMODULE dll_handle;                  /**< Handle type used for DLL modules. */
-typedef FARPROC mod_function_ptr;            /**< Function pointer type used for DLLs. */
-#define DLLOPEN(x) LoadLibrary(x)            /**< Function used for opening DLLs. */
-#define DLLLOOKUP(x,y) GetProcAddress(x,y)   /**< Function used for looking up DLL symbols. */
-#define DLLCLOSE(x) FreeLibrary(x)           /**< Function used for closing DLLs. */
-#define MODULESUFFIX ".dll"                  /**< Suffix used for DLLs. */
+#include "platform/w32-module.h"
 
 #endif /* PLATFORM_WINDOWS */
 
@@ -73,11 +72,14 @@ typedef FARPROC mod_function_ptr;            /**< Function pointer type used for
 #ifdef USE_LIBDL
 
 #include <dlfcn.h>
+
 typedef void* dll_handle;                    /**< Handle type used for SO modules. */
 typedef void* mod_function_ptr;              /**< Function pointer type used for SOs. */
+
 #define DLLOPEN(x) dlopen(x, RTLD_LAZY)      /**< Function used for opening SOs. */
 #define DLLLOOKUP(x,y) dlsym(x,y)            /**< Function used for looking up SO symbols. */
 #define DLLCLOSE(x) dlclose(x)               /**< Function used for closing SOs. */
+#define DLLERROR(x) std_get_dll_error(x)     /**< Function used for getting SO errors. */
 #define MODULESUFFIX ".so"                   /**< Function used for SOs. */
 
 #endif /* USE_LIBDL */
@@ -85,12 +87,14 @@ typedef void* mod_function_ptr;              /**< Function pointer type used for
 
 /* -- STRUCTURES -- */
 
-/** The module metadata structure.
+/**
+ * The module metadata structure.
  *
- *  This contains the basic data that all modules require to function.
+ * This contains the basic data that all modules require to function.
  */
 
 #ifndef TESTSUITE
+
 typedef struct
 {
   void *lib_handle; /**< The dynamic loading handle for the module. */
@@ -102,32 +106,35 @@ typedef struct
   (*term) (void); /**< Pointer to the module's termination
                      function. */
 } module_data;
+
 #endif /* TESTSUITE */
 
 
-/** The graphics module vtable.
+/**
+ * The graphics module vtable.
  *
- *  This contains function pointers for the graphics class of modules,
- *  along with module metadata.
+ * This contains function pointers for the graphics class of modules,
+ * along with module metadata.
  */
 
 typedef struct
 {
   module_data metadata; /**< Metadata for the graphics module. */
 
-  /** Initialise a screen of a given width, height and depth.
+  /**
+   * Initialise a screen of a given width, height and depth.
    *
-   *  The screen's data will automatically be deleted, if not sooner,
-   *  when the module is unloaded (ie, via the module's term
-   *  function).
+   * The screen's data will automatically be deleted, if not sooner,
+   * when the module is unloaded (ie, via the module's term
+   * function).
    *
-   *  @todo Fullscreen option?
+   * @todo Fullscreen option?
    *
-   *  @param width   Width of the screen, in pixels.
-   *  @param height  Height of the screen, in pixels.
-   *  @param depth   Colour depth of the screen, in bits per pixel.
+   * @param width   Width of the screen, in pixels.
+   * @param height  Height of the screen, in pixels.
+   * @param depth   Colour depth of the screen, in bits per pixel.
    *
-   *  @return  SUCCESS for success; FAILURE otherwise.
+   * @return  SUCCESS for success; FAILURE otherwise.
    */
 
 
@@ -136,24 +143,25 @@ typedef struct
                            unsigned short height,
                            unsigned char depth);
 
-  /** Draw a rectangle of colour on-screen.
+  /**
+   * Draw a rectangle of colour on-screen.
    *
-   *  Depending on the graphics module, the colour displayed on screen
-   *  may not exactly match the desired colour.
+   * Depending on the graphics module, the colour displayed on screen
+   * may not exactly match the desired colour.
    *
-   *  @param x       X co-ordinate of the left edge of the rectangle.
+   * @param x       X co-ordinate of the left edge of the rectangle.
    *
-   *  @param y       Y co-ordinate of the top edge of the rectangle.
+   * @param y       Y co-ordinate of the top edge of the rectangle.
    *
-   *  @param width   The width of the rectangle, in pixels.
+   * @param width   The width of the rectangle, in pixels.
    *
-   *  @param height  The height of the rectangle, in pixels.
+   * @param height  The height of the rectangle, in pixels.
    *
-   *  @param red     The red component of the fill colour (0-255).
+   * @param red     The red component of the fill colour (0-255).
    *
-   *  @param green   The green component of the fill colour (0-255).
+   * @param green   The green component of the fill colour (0-255).
    *
-   *  @param blue    The blue component of the fill colour (0-255).
+   * @param blue    The blue component of the fill colour (0-255).
    */
 
 
@@ -166,66 +174,69 @@ typedef struct
                          unsigned char green,
                          unsigned char blue);
 
-  /** Load an image and return its data in the module's native
-   *  format.
+  /**
+   * Load an image and return its data in the module's native
+   * format.
    *
-   *  As the exact format returned varies from module to module, you
-   *  will likely only want to use this function through the graphics
-   *  subsystem's wrapper function, load_image, which also stores the
-   *  data into a cache.
+   * As the exact format returned varies from module to module, you
+   * will likely only want to use this function through the graphics
+   * subsystem's wrapper function, load_image, which also stores the
+   * data into a cache.
    *
-   *  @param filename  The path to the file to load.
+   * @param filename  The path to the file to load.
    *
-   *  @return  a pointer to a memory location containing image data
-   *  which can eventually be passed to the module's draw_image
-   *  function.
+   * @return  a pointer to a memory location containing image data
+   * which can eventually be passed to the module's draw_image
+   * function.
    */
 
   void *
   (*load_image_data) (const char filename[]);
 
 
-  /** Free image data retrieved by load_image_data.
+  /**
+   * Free image data retrieved by load_image_data.
    *
-   *  Since the nature of the image data in question varies from
-   *  module to module, simply freeing the data directly may not be
-   *  sufficient to unload the image from memory, hence the existence
-   *  of this function.
+   * Since the nature of the image data in question varies from
+   * module to module, simply freeing the data directly may not be
+   * sufficient to unload the image from memory, hence the existence
+   * of this function.
    *
-   *  @param data  A pointer to a memory location containing image
-   *               data (in the module's native format) to be freed.
+   * @param data  A pointer to a memory location containing image
+   *              data (in the module's native format) to be freed.
    */
 
   int
   (*free_image_data) (void *data);
 
 
-  /** Draw a rectangular portion of an image on-screen.
+  /**
+   * Draw a rectangular portion of an image on-screen.
    *
-   *  This should not be called directly, but instead accessed through
-   *  the graphics subsystem's draw_image function (see graphics.h).
+   * This should not be called directly, but instead accessed through
+   * the graphics subsystem's draw_image function (see graphics.h).
    *
-   *  @param image     The image data, in the graphics module-specific
-   *                   format returned by load_image_data.
+   * @param image     The image data, in the graphics module-specific
+   *                  format returned by load_image_data.
    *
-   *  @param image_x   The X-coordinate of the left edge of the
-   *                   on-image rectangle to display.
+   * @param image_x   The X-coordinate of the left edge of the
+   *                  on-image rectangle to display.
    *
-   *  @param image_y   The Y-coordinate of the top edge of the
-   *                   on-image rectangle to display.
+   * @param image_y   The Y-coordinate of the top edge of the
+   *                  on-image rectangle to display.
    *
-   *  @param screen_x  The X-coordinate of the left edge of the
-   *                   on-screen rectangle to place the image in.
+   * @param screen_x  The X-coordinate of the left edge of the
+   *                  on-screen rectangle to place the image in.
    *
-   *  @param screen_y  The Y-coordinate of the top edge of the
-   *                   on-screen rectangle to place the image in.
+   * @param screen_y  The Y-coordinate of the top edge of the
+   *                  on-screen rectangle to place the image in.
    *
-   *  @param width     The width of the rectangle.
+   * @param width     The width of the rectangle.
    *
-   *  @param height    The height of the rectangle.
+   * @param height    The height of the rectangle.
    *
-   *  @return  SUCCESS for success, FAILURE otherwise. In most
-   *           cases, a failure will simply cause the image to not appear.
+   * @return  SUCCESS for success, FAILURE otherwise. In most
+   *          cases, a failure will simply cause the image to not appear.
    */
 
   int
@@ -244,13 +255,14 @@ typedef struct
   (*update_screen_internal) (void);
 
 
-  /** Translate the screen by a co-ordinate pair, leaving damage.
+  /**
+   * Translate the screen by a co-ordinate pair, leaving damage.
    *
-   *  @param x_offset  The X co-ordinate offset in which to scroll the 
-   *                   screen.
+   * @param x_offset  The X co-ordinate offset in which to scroll the
+   *                  screen.
    *
-   *  @param y_offset  The Y co-ordinate offset in which to scroll the 
-   *                   screen.
+   * @param y_offset  The Y co-ordinate offset in which to scroll the
+   *                  screen.
    */
 
   int
@@ -259,42 +271,45 @@ typedef struct
 
 } module_gfx;
 
-/** The event module vtable.
+/**
+ * The event module vtable.
  *
- *  This contains function pointers for the event-handler class of
- *  modules, along with module metadata.
+ * This contains function pointers for the event-handler class of
+ * modules, along with module metadata.
  */
 
 typedef struct
 {
   module_data metadata; /**< Metadata for the event module. */
 
-  /** Process all waiting events.
+  /**
+   * Process all waiting events.
    *
-   *  This reads events from the module's events backend (for example,
-   *  SDL's events system) and then proceeds to pass them up to the
-   *  main events subsystem after being processed into the general
-   *  event format (see events.h).
+   * This reads events from the module's events backend (for example,
+   * SDL's events system) and then proceeds to pass them up to the
+   * main events subsystem after being processed into the general
+   * event format (see events.h).
    */
 
   void
   (*process_events_internal) (void);
 
-  /** Register an event release handle with the event module.
+  /**
+   * Register an event release handle with the event module.
    *
-   *  The event release handle is a function that the event module
-   *  calls once per event handled, and is expected to distribute the
-   *  event to registered callbacks.  It is necessary to supply a
-   *  pointer to this function, rather than directly calling it, due
-   *  to the nature of the module loading environment.
+   * The event release handle is a function that the event module
+   * calls once per event handled, and is expected to distribute the
+   * event to registered callbacks.  It is necessary to supply a
+   * pointer to this function, rather than directly calling it, due
+   * to the nature of the module loading environment.
    *
-   *  The function to be passed should, in all or almost all
-   *  circumstances, be event.c's implementation of event_release.
+   * The function to be passed should, in all or almost all
+   * circumstances, be event.c's implementation of event_release.
    *
-   *  @param handle  The event release handle to register. This should
-   *                 be a function that takes an event_t pointer as
-   *                 its sole parameter and distributes that event to
-   *                 the rest of the system.
+   * @param handle  The event release handle to register. This should
+   *                be a function that takes an event_t pointer as
+   *                its sole parameter and distributes that event to
+   *                the rest of the system.
    */
 
   void
@@ -302,10 +317,11 @@ typedef struct
 
 } module_event;
 
-/** The module set.
+/**
+ * The module set.
  *
- *  This contains the functions for engine bindings to different
- *  programming languages
+ * This contains the functions for engine bindings to different
+ * programming languages and backends.
  */
 
 typedef struct
@@ -325,158 +341,178 @@ typedef struct
 extern module_set g_modules;
 
 
-/* -- PROTOTYPES -- */
+/* -- DECLARATIONS -- */
 
-/** Initialise the g_modules structure.
+/**
+ * Initialise the g_modules structure.
  *
- *  @param path The path to the modules.
+ * @param path  The path to the modules.
  *
- *  @return Either SUCCESS or FAILURE (defined in main.h).
+ *  @return  SUCCESS if no errors occurred, FAILURE otherwise.
  */
 
-int
+bool_t
 init_modules (const char *path);
 
 
-/** Perform the minimum initialisation needed for a module
+/**
+ * Perform the minimum initialisation needed for a module.
  *
- *  This is called for every module as part of init_modules.
+ * This is called for every module as part of init_modules.
  *
- *  @param module Pointer to the module_data structure to initialise.
+ * @param module  Pointer to the module_data structure to initialise.
  */
 
 void
 module_bare_init (module_data *module);
 
 
-/** Get the path to a module, given its name.
+/**
+ * Get the path to a module, given its name.
  *
- *  @param module      The name of the module
- *  @param modulespath The path where modules are stored
- *  @param out         A string to store the path in
+ * @param module       The name of the module
+ * @param modulespath  The path where modules are stored
+ * @param out          A string to store the path in
  *
- *  @return Either SUCCESS or FAILURE (defined in main.h).
+ * @return  SUCCESS if no errors occurred, FAILURE otherwise.
  */
 
-int
+bool_t
 get_module_path (const char *module, const char *modulespath, char **out);
 
 
-/** Find and load a module by name.
+/**
+ * Find and load a module by name.
  *
- *  This finds and loads a module, initialising the module_data struct so it can be
- *  used by get_module_function.
+ * This finds and loads a module, initialising the module_data struct so it can be
+ * used by get_module_function.
  *
- *  @param name        The name of the module
- *  @param modulespath The path where modules are stored
- *  @param module      Pointer to the module_data structure to use
+ * @param name        The name of the module
+ * @param modulespath The path where modules are stored
+ * @param module      Pointer to the module_data structure to use
  *
- *  @return Either SUCCESS or FAILURE (defined in main.h)
+ * @return  SUCCESS if no errors occurred, FAILURE otherwise.
  */
 
-int
+bool_t
 get_module_by_name (const char* name, const char *modulespath, module_data *module);
 
-/** Find and load a module by filename
+/**
+ * Find and load a module by filename
  *
- *  This finds and loads a module, initialising the module_data struct so it can be
- *  used by get_module_function.
+ * This finds and loads a module, initialising the module_data struct so it can be
+ * used by get_module_function.
  *
- *  @param modulepath The filename of the module
- *  @param module     Pointer to the module_data structure to use
+ * @param modulepath  The filename of the module
+ * @param module      Pointer to the module_data structure to use
  *
- *  @return Either SUCCESS or FAILURE (defined in main.h)
+ * @return  SUCCESS if no errors occurred, FAILURE otherwise.
  */
 
-int
+bool_t
 get_module (const char* modulepath, module_data *module);
 
 
+#ifdef USE_LIBDL
+
 /**
- * Print the last DLL-acquisition error message, if any.
+ * Raise the last DLL-acquisition error message, if any.
  *
- * @param function_name  The name of the function calling print_dll_error,
- * to display in the message.
+ * This is the standard version of the dll error function, which uses libdl.
+ * Alternative versions for non-libdl platforms are given in platform-specific
+ * code files (src/platform/PLATFORM-module.{c, h}).
+ *
+ * @param function_name  The name of the function calling get_dll_error,
+ *                       to display in the message.
  *
  */
 
 void
-print_dll_error (const char function_name[]);
+std_get_dll_error (const char function_name[]);
+
+#endif /* USE_LIBDL */
 
 
-/** Find a pointer to a function within a module.
+/**
+ * Find a pointer to a function within a module.
  *
- *  This finds a pointer to a named symbol (only tested for functions, currently) in
- *  a loaded module.
+ * This finds a pointer to a named symbol (only tested for functions, currently) in
+ * a loaded module.
  *
- *  @param metadata The module_data structure for the desired module.
- *  @param function The name of the symbol to be loaded.
- *  @param func     A pointer to where the symbol pointer will be stored.
+ * @param metadata The module_data structure for the desired module.
+ * @param function The name of the symbol to be loaded.
+ * @param func     A pointer to where the symbol pointer will be stored.
  *
- *  @return Either SUCCESS or FAILURE (defined in main.h)
+ * @return  SUCCESS if no errors occurred, FAILURE otherwise.
  */
 
-int
-get_module_function (module_data metadata, const char *function, mod_function_ptr *func);
+bool_t
+get_module_function (module_data metadata, const char *function,
+                     mod_function_ptr *func);
 
 
-/** Load the graphics module.
+/**
+ * Load the graphics module.
  *
- *  This loads a graphics module and sets up g_modules.gfx.
+ * This loads a graphics module and sets up g_modules.gfx.
  *
- *  @param name    The name of the module to load (without the extension).
- *  @param modules The module_set structure to use
+ * @param name     The name of the module to load (without the extension).
+ * @param modules  The module_set structure to use.
  *
- *  @return Either SUCCESS or FAILURE (defined in main.h).
+ * @return Either SUCCESS or FAILURE (defined in main.h).
  */
 
-int
+bool_t
 load_module_gfx (const char* name, module_set* modules);
 
 
-/** Load the event module.
+/**
+ * Load the event module.
  *
- *  This loads an event module and sets up g_modules.event.
+ * This loads an event module and sets up g_modules.event.
  *
- *  @param name    The name of the module to load (without the extension).
- *  @param modules The module_set structure to use
+ * @param name     The name of the module to load (without the extension).
+ * @param modules  The module_set structure to use.
  *
- *  @return Either SUCCESS or FAILURE (defined in main.h).
+ * @return  SUCCESS if no errors occurred, FAILURE otherwise.
  */
 
-int
+bool_t
 load_module_event (const char* name, module_set* modules);
 
 
-/** Load the language binding module.
+/**
+ * Load the language binding module.
  *
- *  This loads an event module and sets up g_modules.event.
+ * This loads an event module and sets up g_modules.event.
  *
- *  @param name    The name of the module to load (without the extension).
- *  @param modules The module_set structure to use
+ * @param name     The name of the module to load (without the extension).
+ * @param modules  The module_set structure to use.
  *
- *  @return Either SUCCESS or FAILURE (defined in main.h).
+ * @return  SUCCESS if no errors occurred, FAILURE otherwise.
  */
 
-int
+bool_t
 load_module_bindings (const char* name, module_set* modules);
 
 
-/** Close an individual module.
+/**
+ * Close an individual module.
  *
- *  This runs any term function which is present in the module and closes
- *  the open libdl handle to it.
+ * This runs any term function which is present in the module and closes
+ * the open handle to it.
  *
- *  @param module A pointer to the module_data struct to close.
+ * @param module A pointer to the module_data struct to close.
  */
 
 void
 close_module (module_data *module);
 
 
-/** Clean up all modules in the g_modules structure.
+/**
+ * Clean up all modules in the g_modules structure.
  *
- *  This runs close_module on every module.
+ * This runs close_module on every module.
  */
 
 void
