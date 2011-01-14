@@ -150,7 +150,7 @@ OBJ      += field/object.o field/object-api.o field/object-image.o
 #         | Works on:  windows, gnu and gnu variants.
 #         | NOTE: Use event-sdl if using this backend.
 
-SOBJ     := gfx-sdl
+SOBJ     := gfx-sdl gfx-dummy
 
 # Events backends #
 
@@ -165,7 +165,7 @@ SOBJ     := gfx-sdl
 #           | 
 #           | Works on:  windows, gnu and gnu variants.
 
-SOBJ     += event-sdl
+SOBJ     += event-sdl event-dummy
 
 # Scripting bindings #
 
