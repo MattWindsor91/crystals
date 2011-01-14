@@ -226,8 +226,6 @@ delete_hash_object (hash_object_t *head[], const char name[])
 
   for (object = head[h]; object != NULL; object = object->next)
     {
-      prev = object;
-
       if (strcmp (name, object->name) == 0)
         {
           if (prev == NULL)
@@ -238,6 +236,8 @@ delete_hash_object (hash_object_t *head[], const char name[])
           free_hash_object (object);
           return SUCCESS;
       }
+      
+      prev = object;
     }
   return FAILURE;
 }
