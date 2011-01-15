@@ -51,6 +51,7 @@
 
 #include "main.h"      /* g_config */
 #include "parser.h"    /* Configuration */
+#include "state.h"     /* State dirty rectangles handling */
 #include "graphics.h"
 #include "module.h"
 #include "util.h"
@@ -199,6 +200,11 @@ write_string (short x, short y,
 
       x1 += FONT_W;
     }  
+
+
+  /* Instruct the current state to update the screen. */
+
+  state_handle_dirty_rect (x, y, length, FONT_H);
 }
 
 
