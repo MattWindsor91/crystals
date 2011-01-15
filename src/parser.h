@@ -133,7 +133,7 @@ cfg_get (const char *key, dict_t *node);
  * @return  The numbers of key-value pairs in the dictionary.
  */
 
-size_t
+unsigned int
 cfg_items (dict_t *node);
 
 

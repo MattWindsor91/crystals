@@ -49,6 +49,9 @@
 #include "util.h"
 #include "parser.h"
 
+#ifdef TESTSUITE
+void error (const char message[], ...) { (void) message; }
+#endif
 
 /* Initialise the config system. */
 
@@ -367,7 +370,7 @@ cfg_add (const char *key, const char *value, dict_t **root)
 
 /* Return the numbers of items in the dictionary type */
 
-size_t
+unsigned int
 cfg_items (dict_t *node)
 {
   if (node == NULL)

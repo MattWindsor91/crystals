@@ -53,14 +53,12 @@
 int
 main (void)
 {
-  dict_t *mydict = config_dict_init ();
+  dict_t *mydict = init_config ("config/default.cfg");
 
-  if (config_parse_file ("../../config/default.cfg", mydict) == SUCCESS)
-    {
-      printf ("module_path = %s\n", config_get_value ("module_path", mydict));
-    }
+  if (mydict != NULL)
+    printf ("module_path = %s\n", cfg_get ("module_path", mydict));
 
-  config_free_dict (mydict);
+  cfg_free (mydict);
   return 0;
 
 }
