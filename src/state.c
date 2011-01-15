@@ -102,7 +102,7 @@ set_state (state_t new_state)
 
 /* Process an enqueued state change, if any, and return the current state. */
 
-bool_t
+state_t
 update_state (void)
 {
   /* Check to see if there is an enqueued (non-null) state. */

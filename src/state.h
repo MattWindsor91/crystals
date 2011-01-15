@@ -154,7 +154,7 @@ set_state (state_t new_state);
  *          as an error.
  */
 
-bool_t
+state_t
 update_state (void);
 
 
