@@ -174,6 +174,7 @@ SOBJ     += event-sdl event-dummy
 
 # lua    | Lua bindings backend.
 # python | Python bindings backend.
+# dummy  | Dummy bindings for memory tests.
 
 BINDINGS := lua
 
@@ -216,18 +217,6 @@ WARN     := -Wall -Wextra -Wshadow -Wpointer-arith -Wcast-align \
             -Wredundant-decls -Wnested-externs -Winline -Wno-long-long \
             -Wconversion -Wstrict-prototypes
              
-# Add bindings object file to the other object files and add the proper CFLAGS and LIBS.
-
-OBJ      += $(BNDDIR)/$(BINDINGS).o
-
-ifeq ($(BINDINGS), python)
-	LIBS     += `python-config --libs`
-	CFLAGS   += -I/usr/include/python3.1 -DNDEBUG
-endif
-
-ifeq ($(BINDINGS), lua)
-	LIBS     += `pkg-config --libs lua`
-endif
 
 # Not possible to use with -ansi cflag
 #ifeq ($(BINDINGS), ruby)
@@ -291,12 +280,24 @@ endif
 # GNU/Linux #
 
 ifeq ($(PLATFORM),gnu-linux)
-    CFLAGS    += $(GNUFLAGS) -DPLATFORM_GNU_LINUX
-    LIBS      += $(GNULIBS)
+	CFLAGS    += $(GNUFLAGS) -DPLATFORM_GNU_LINUX
+	LIBS      += $(GNULIBS)
 	PKGCONFIG := $(BUILDPREFIX)/bin/pkg-config
-    DLLEXT    := so
+	DLLEXT    := so
 endif
 
+# Add bindings object file to the other object files and add the proper CFLAGS and LIBS.
+
+OBJ      += $(BNDDIR)/$(BINDINGS).o
+
+ifeq ($(BINDINGS), python)
+	LIBS     += `python-config --libs`
+	CFLAGS   += `python-config --includes` -DNDEBUG
+endif
+
+ifeq ($(BINDINGS), lua)
+	LIBS     += `$(PKGCONFIG) --libs lua`
+endif
 
 ## ! LAST-MINUTE AUTOMATED MAGIC ##
 
