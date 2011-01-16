@@ -36,21 +36,25 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/** @file    graphics.c
- *  @author  Matt Windsor
- *  @brief   Generic graphics system.
+/**
+ * @file    graphics.c
+ * @author  Matt Windsor
+ * @brief   Generic graphics system.
  *
- *  @todo FIXME: Add graphics location to graphics paths at run-time 
- *               instead of hard-coding it.
+ * @todo FIXME: Add graphics location to graphics paths at run-time
+ *              instead of hard-coding it.
  */
+
 
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <limits.h>
 
+#include "types.h"     /* Integer types */
 #include "main.h"      /* g_config */
 #include "parser.h"    /* Configuration */
+#include "state.h"     /* State dirty rectangles handling */
 #include "graphics.h"
 #include "module.h"
 #include "util.h"
@@ -61,30 +65,32 @@
 const char DEFGFXPATH[] = "gfx/";
 const char FONT_FILENAME[] = "font.png";
 
-const unsigned short FONT_W = 10;
-const unsigned short FONT_H = 10;
+const uint16_t FONT_W = 10;
+const uint16_t FONT_H = 10;
 
 
 /* -- STATIC GLOBAL VARIABLES -- */
 
-static struct hash_object *sg_images[HASH_VALS];
+static hash_object_t *sg_images[HASH_VALS];
 
 
 /* -- DEFINITIONS -- */
 
 /* Initialise the graphics subsystem. */
 
-int
+bool_t
 init_graphics (void)
 {
-  unsigned int i;
+  int i;
 
   if (load_module_gfx (cfg_get ("graphics_module", g_config), &g_modules) == FAILURE)
     {
       error ("GRAPHICS - init_graphics - Could not load graphics module.");
-
       return FAILURE;
     }
+
+
+  /* Call on the graphics backend to create a screen. */
 
   if ((*g_modules.gfx.init_screen_internal)
       (SCREEN_W, SCREEN_H, SCREEN_D) == FAILURE)
@@ -92,9 +98,13 @@ init_graphics (void)
       error ("GRAPHICS - init_graphics - Could not init screen.");
       return FAILURE;
     }
+
+
+  /* Initialise the image list. */
  
   for (i = 0; i < HASH_VALS; i++)
     sg_images[i] = NULL;
+
 
   return SUCCESS;
 }
@@ -115,7 +125,7 @@ get_absolute_path (const char path[])
 
   if (root_path == NULL)
     {
-      /* Using default path. */
+      /* Using default path (this is a fallback). */
 
       error ("GRAPHICS - get_absolute_path - No graphics_path in config.");
       error ("Using default path instead.");
@@ -129,7 +139,7 @@ get_absolute_path (const char path[])
           return NULL;
         }
 
-      strcat (absolute_path, DEFGFXPATH);
+      strncat (absolute_path, DEFGFXPATH, strlen (DEFGFXPATH));
     }
   else
     {
@@ -144,30 +154,37 @@ get_absolute_path (const char path[])
           return NULL;
         }
 
-      strcat (absolute_path, root_path);
+      strncat (absolute_path, root_path, strlen (root_path));
     }
 
-  strcat (absolute_path, path);
+  strncat (absolute_path, path, strlen (path));
 
   return absolute_path;
 }
 
+
 /* Write a string on the screen, using the standard font. */
 
 void
-write_string (short x, short y,
-              unsigned short box_width, unsigned char alignment,
+write_string (int16_t x, int16_t y,
+              uint16_t box_width, alignment_t alignment,
               const char string[])
 {
   char chr;
-  int x1;
-  unsigned short i, length, midpoint;
-  size_t slength;
+
+  size_t slength;    /* Length of the string, in characters. */
+
+  int16_t x1;
+  uint16_t i;
+  uint16_t length;   /* Length of the string on-screen, in pixels. */
+  uint16_t midpoint;
+
 
   slength = strlen (string);
   length = unsigned_to_unsigned_short (FONT_W * slength);
+
   
-  /* Set up alignment. */
+  /* Use the given alignment to . */
 
   switch (alignment)
     {
@@ -190,21 +207,26 @@ write_string (short x, short y,
     {
       chr = string[i];
       draw_image (FONT_FILENAME, 
-                  to_short ((chr % 16) * FONT_W), 
-                  to_short (((chr - (chr % 16))/16) * FONT_H), 
+                  to_short ((chr % 16) * FONT_W),
+                  to_short (((chr - (chr % 16))/16) * FONT_H),
                   to_short (x1),
                   to_short (y),
                   FONT_W,
                   FONT_H);
 
-      x1 += FONT_W;
+      x1 = to_short (x1 + FONT_W);
     }  
+
+
+  /* Instruct the current state to update the screen. */
+
+  state_handle_dirty_rect (x, y, length, FONT_H);
 }
 
 
 /* Update the screen. */
 
-int
+bool_t
 update_screen (void)
 {
   return (*g_modules.gfx.update_screen_internal) ();
@@ -213,10 +235,8 @@ update_screen (void)
 
 /* Fill the screen with the given colour. */
 
-int
-fill_screen (unsigned char red, 
-             unsigned char green, 
-             unsigned char blue)
+bool_t
+fill_screen (uint8_t red, uint8_t green, uint8_t blue)
 {
   return (*g_modules.gfx.draw_rect_internal)
     (0, 0, SCREEN_W, SCREEN_H, red, green, blue);
@@ -225,8 +245,8 @@ fill_screen (unsigned char red,
 
 /* Translate the screen by a co-ordinate pair, leaving damage. */
 
-int
-scroll_screen (short x_offset, short y_offset)
+bool_t
+scroll_screen (int16_t x_offset, int16_t y_offset)
 {
   return (*g_modules.gfx.scroll_screen_internal)
     (x_offset, y_offset);
@@ -235,15 +255,16 @@ scroll_screen (short x_offset, short y_offset)
 
 /* Load an image. */
 
-struct hash_object *
+hash_object_t *
 load_image (const char filename[])
 {
-  struct hash_object *image;
-  struct hash_object *get_try;
+  hash_object_t *image;
+  hash_object_t *get_try;
   void *data;
   char *path;
 
-  /* Sanity-check the filename. */
+
+  /* Sanity checking. */
 
   if (filename == NULL)
     {
@@ -251,21 +272,22 @@ load_image (const char filename[])
       return NULL;
     }
 
+  /* End sanity checking. */
+
+
   /* First, check to see if the image isn't already there. */
 
   get_try = find_hash_object (sg_images, filename);
 
   if (get_try != NULL)
     {
-      /* It is. */
+      /* It is - return the existing image. */
       return get_try;
     }
 
-  /* At this point in execution, we have deduced that the image isn't
-     there, so try to load it. */
 
-  /* First, expand the filename into an absolute path that we can use
-     to find the image on the filesystem. */
+  /* At this point in execution, we have deduced that the image isn't
+     there, so try to load it and serve it as a new hash object. */
 
   path = get_absolute_path (filename);
 
@@ -276,11 +298,7 @@ load_image (const char filename[])
       return NULL;
     }
 
-  /* Next, try to load the image data. */
-
   data = (*g_modules.gfx.load_image_data) (path);
-
-  /* We no longer need the absolute path, so free it. */
 
   free (path);
 
@@ -291,7 +309,6 @@ load_image (const char filename[])
       return NULL;
     }
 
-  /* Then try to allocate a hash object. */
 
   image = create_hash_object (sg_images, 
                               filename, 
@@ -306,13 +323,14 @@ load_image (const char filename[])
       return NULL;
     }
 
+
   return image;
 }
 
 
 /* Free image data. */
 
-int
+bool_t
 free_image (void *image)
 {
   if (image == NULL)
@@ -328,18 +346,15 @@ free_image (void *image)
 
 /* Draw a rectangular portion of an image on-screen. */
 
-int
-draw_image (const char filename[],
-            short image_x,
-            short image_y,
-            short screen_x,
-            short screen_y,
-            unsigned short width,
-            unsigned short height)
+bool_t
+draw_image (const char filename[], int16_t image_x, int16_t image_y,
+            int16_t screen_x, int16_t screen_y, uint16_t width,
+            uint16_t height)
 {
-  struct hash_object *img;
+  hash_object_t *img;
 
-  /* Try to load the image if it isn't already loaded. */
+
+  /* Get image object from filename. */
 
   img = load_image (filename);
 
@@ -364,14 +379,10 @@ draw_image (const char filename[],
 /* Draw a rectangular portion of an image on-screen, using a direct
    pointer to the driver-specific image data. */
 
-int
-draw_image_direct (void *data,
-                   short image_x,
-                   short image_y,
-                   short screen_x,
-                   short screen_y,
-                   unsigned short width,
-                   unsigned short height)
+bool_t
+draw_image_direct (void *data, int16_t image_x, int16_t image_y,
+                   int16_t screen_x, int16_t screen_y, uint16_t width,
+                   uint16_t height)
 {
   return (*g_modules.gfx.draw_image_internal) (data,
                                                image_x,
@@ -385,7 +396,7 @@ draw_image_direct (void *data,
 
 /* Delete an image previously loaded into the image cache. */
 
-int
+bool_t
 delete_image (const char filename[])
 {
   return delete_hash_object (sg_images, filename);
@@ -403,7 +414,7 @@ clear_images (void)
 
 /* Retrieve an image from the image cache. */
 
-struct hash_object *
+hash_object_t *
 find_image (const char filename[])
 {
   return get_hash_object (sg_images, filename, NULL);

@@ -102,7 +102,7 @@ set_state (state_t new_state)
 
 /* Process an enqueued state change, if any, and return the current state. */
 
-bool_t
+state_t
 update_state (void)
 {
   /* Check to see if there is an enqueued (non-null) state. */
@@ -164,6 +164,20 @@ state_frame_updates (void)
 }
 
 
+
+/* Instruct the current state to handle a dirty rectangle. */
+
+bool_t
+state_handle_dirty_rect (short x, short y,
+                         unsigned short width, unsigned short height)
+{
+  if (sg_functions.dirty_rect != NULL)
+    return sg_functions.dirty_rect (x, y, width, height);
+  else
+    return FAILURE;
+}
+
+
 /* Clean up a state. */
 
 bool_t
@@ -176,12 +190,12 @@ cleanup_state (void)
           fatal ("STATE - cleanup_state - Cleanup failure.");
           return FAILURE;
         }
-      else
-        {
-          /* Clean up the function pointers. */
-          sg_functions.cleanup = NULL;
-          sg_functions.update = NULL;
-        }
+
+      /* Clean up the function pointers. */
+
+      sg_functions.cleanup = NULL;
+      sg_functions.update = NULL;
+      sg_functions.dirty_rect = NULL;
     }
 
   return SUCCESS;

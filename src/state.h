@@ -154,7 +154,7 @@ set_state (state_t new_state);
  *          as an error.
  */
 
-bool_t
+state_t
 update_state (void);
 
 
@@ -178,6 +178,21 @@ init_state (state_t state);
 
 bool_t
 state_frame_updates (void);
+
+
+/** Instruct the current state to handle a dirty rectangle.
+ *
+ *  @param x       X co-ordinate of the left edge of the rectangle.
+ *  @param y       Y co-ordinate of the right edge of the rectangle.
+ *  @param width   Width of the rectangle, in pixels.
+ *  @param height  Height of the rectangle, in pixels.
+ *
+ *  @return  SUCCESS if no errors occurred, FAILURE otherwise.
+ */
+
+bool_t
+state_handle_dirty_rect (short x, short y,
+                         unsigned short width, unsigned short height);
 
 
 /**
