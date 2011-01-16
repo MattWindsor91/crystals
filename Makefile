@@ -387,18 +387,9 @@ clean-bindings:
 ### Test Suite
 
 tests: CFLAGS += -DTESTSUITE -DMODPATH="\"$(shell pwd)/$(TESTDIR)/$(MODDIR)/\""
-tests: $(TESTS)
-	@echo "Running tests..."
-	@for file in $(TESTS); do $$file &>/dev/null || echo "Test '$$file' failed."; done
-
-$(TESTDIR)/module: $(SRCDIR)/module.o $(SRCDIR)/$(TESTDIR)/module.o $(SRCDIR)/$(TESTDIR)/$(MODDIR)/test.$(DLLEXT)
-	@$(CC) $(CFLAGS) $(SRCDIR)/module.o $(SRCDIR)/$(TESTDIR)/module.o -ldl -o $@ >/dev/null
-
-$(TESTDIR)/optionparser: $(SRCDIR)/optionparser.o $(SRCDIR)/$(TESTDIR)/optionparser.o
-	@$(CC) $(CFLAGS) $(SRCDIR)/optionparser.o $(SRCDIR)/$(TESTDIR)/optionparser.o -o $@ >/dev/null
-
-$(TESTDIR)/parser: $(SRCDIR)/parser.o $(SRCDIR)/$(TESTDIR)/parser.o
-	@$(CC) $(CFLAGS) $(SRCDIR)/parser.o $(SRCDIR)/$(TESTDIR)/parser.o -o $@ >/dev/null
+#tests: $(TESTS)
+#	@echo "Running tests..."
+#	@for file in $(TESTS); do $$file &>/dev/null || echo "Test '$$file' failed."; done
 
 clean-tests:
 	@echo "Cleaning tests..."
