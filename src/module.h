@@ -138,10 +138,10 @@ typedef struct
    */
 
 
-  int
-  (*init_screen_internal) (unsigned short width,
-                           unsigned short height,
-                           unsigned char depth);
+  bool_t
+  (*init_screen_internal) (uint16_t width,
+                           uint16_t height,
+                           uint8_t depth);
 
   /**
    * Draw a rectangle of colour on-screen.
@@ -165,14 +165,14 @@ typedef struct
    */
 
 
-  int
-  (*draw_rect_internal) (short x,
-                         short y,
-                         unsigned short width,
-                         unsigned short height,
-                         unsigned char red,
-                         unsigned char green,
-                         unsigned char blue);
+  bool_t
+  (*draw_rect_internal) (int16_t x,
+                         int16_t y,
+                         uint16_t width,
+                         uint16_t height,
+                         uint8_t red,
+                         uint8_t green,
+                         uint8_t blue);
 
   /**
    * Load an image and return its data in the module's native
@@ -206,7 +206,7 @@ typedef struct
    *              data (in the module's native format) to be freed.
    */
 
-  int
+  bool_t
   (*free_image_data) (void *data);
 
 
@@ -239,19 +239,19 @@ typedef struct
    *          cases, a failure will simply cause the image to not appear.
    */
 
-  int
+  bool_t
   (*draw_image_internal) (void *image,
-                          short image_x,
-                          short image_y,
-                          short screen_x,
-                          short screen_y,
-                          unsigned short width,
-                          unsigned short height);
+                          int16_t image_x,
+                          int16_t image_y,
+                          int16_t screen_x,
+                          int16_t screen_y,
+                          uint16_t width,
+                          uint16_t height);
 
 
   /** Update the screen. */
 
-  int
+  bool_t
   (*update_screen_internal) (void);
 
 
@@ -265,8 +265,8 @@ typedef struct
    *                  screen.
    */
 
-  int
-  (*scroll_screen_internal) (short x_offset, short y_offset);
+  bool_t
+  (*scroll_screen_internal) (int16_t x_offset, int16_t y_offset);
 
 
 } module_gfx;
