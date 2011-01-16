@@ -43,7 +43,7 @@
  */
 
 /* the python header should always be first */
-#include "Python.h"
+#include <Python.h>
 
 #include <stdio.h>
 #include "bindings.h"
