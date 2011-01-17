@@ -36,10 +36,12 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/** @file     src/main.c
- *  @author   Matt Windsor
- *  @brief    Main functions.
+/**
+ * @file     src/main.c
+ * @author   Matt Windsor
+ * @brief    Main functions.
  */
+
 
 #include <stdlib.h>
 #include <string.h>
@@ -53,6 +55,12 @@
 #include "events.h"
 #include "graphics.h"
 #include "bindings/bindings.h"
+
+
+/* -- CONSTANTS -- */
+
+const char *DEFAULT_CONFIG_PATH = "config/default.cfg";
+
 
 /* -- GLOBAL VARIABLES -- */
 
@@ -69,11 +77,14 @@ int
 main (int argc, char **argv)
 {
   /* Placeholder for command line stuff. */
+
   argc = argc;
   argv = argv;
 
+
   if (init () == SUCCESS)
     main_loop ();
+
 
   cleanup ();
   return 0;
@@ -86,12 +97,11 @@ bool_t
 init (void)
 {
   char *module_path = NULL;
-  const char *config_path = "config/default.cfg";
 
 
   /* -- Configuration -- */
 
-  g_config = init_config (config_path);
+  g_config = init_config (DEFAULT_CONFIG_PATH);
 
   if (g_config == NULL)
     {
