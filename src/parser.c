@@ -49,10 +49,6 @@
 #include "util.h"
 #include "parser.h"
 
-#ifdef TESTSUITE
-void error (const char message[], ...) { (void) message; }
-#endif
-
 /* Initialise the config system. */
 
 dict_t *
