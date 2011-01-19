@@ -36,10 +36,12 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/** @file    util.c
- *  @author  Matt Windsor
- *  @brief   Miscellaneous utility functions.
+/**
+ * @file    util.c
+ * @author  Matt Windsor
+ * @brief   Miscellaneous utility functions.
  */
+
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -54,14 +56,14 @@
 
 /* - DEFINITIONS - */
 
-/* ~~ Path retrieval */
+/* -- Path retrieval -- */
 
 /* Get the path to the directory in which all modules are stored. */
 
 void
 get_module_root_path (char **module_path)
 {
-  /* If a string exists here, remove it. */
+  /* If a string exists here, free it. */
 
   if (*module_path != NULL)
     {
@@ -69,14 +71,14 @@ get_module_root_path (char **module_path)
       *module_path = NULL;
     }
 
+
   /* If configuration loading succeeded, try to grab the module path
      from the config file.  If this doesn't work, use the default
      path. */
 
   if (g_config)
-    {
-      *module_path = cfg_get ("module_path", g_config);
-    }
+    *module_path = cfg_get ("module_path", g_config);
+
 
   if (*module_path == NULL)
     {
@@ -84,12 +86,10 @@ get_module_root_path (char **module_path)
 
       /* Copy the default path to the pointer. */
 
-      *module_path = malloc (sizeof (char) * strlen (DEFMODPATH) + 1);
+      *module_path = calloc (strlen (DEFMODPATH) + 1, sizeof (char));
 
       if (*module_path == NULL)
-        {
-          fatal ("UTIL - get_module_path - Module path could not be allocated.");
-        }
+        fatal ("UTIL - get_module_path - Module path could not be allocated.");
       else
         strncpy (*module_path, DEFMODPATH, strlen (DEFMODPATH) + 1);
     }
@@ -98,79 +98,79 @@ get_module_root_path (char **module_path)
 
 /* ~~ Safe type conversions */
 
-/* Safely convert a long integer to an unsigned short. */
+/* Safely convert a long integer to a 16-bit unsigned integer. */
 
-unsigned short
-to_unsigned_short (long integer)
+uint16_t
+long_to_uint16 (long integer)
 {
   if (integer < 0)
     {
-      error ("UTIL - to_unsigned_short - Assertion n >= 0 failed.");
+      error ("UTIL - long_to_uint16 - Assertion n >= 0 failed.");
       error ("UTIL - Truncating value to 0.");
       integer = 0;
     }
-  else if (integer > USHRT_MAX)
+  else if (integer > UINT16_MAX)
     {
-      error ("UTIL - to_unsigned_short - Asserton n <= USHRT_MAX failed.");
-      error ("UTIL - Truncating value to unsigned short maximum.");
-      integer = USHRT_MAX;
+      error ("UTIL - long_to_uint16 - Assertion n <= UINT16_MAX failed.");
+      error ("UTIL - Truncating value to uint16_t maximum.");
+      integer = UINT16_MAX;
     }
 
-  return (unsigned short) integer;
+  return (uint16_t) integer;
 }
 
 
-/* Safely convert a long integer to a short. */
+/* Safely convert a long integer to a signed 16_bit integer. */
 
-short
-to_short (long integer)
+int16_t
+long_to_int16 (long integer)
 {
-  if (integer < SHRT_MIN)
+  if (integer < INT16_MIN)
     {
-      error ("UTIL - to_short - Assertion n >= SHRT_MIN failed.");
-      error ("UTIL - Truncating value to signed short minimum.");
-      integer = SHRT_MIN;
+      error ("UTIL - long_to_int16 - Assertion n >= INT16_MIN failed.");
+      error ("UTIL - Truncating value to int16_t minimum.");
+      integer = INT16_MIN;
     }
-  else if (integer > SHRT_MAX)
+  else if (integer > INT16_MAX)
     {
-      error ("UTIL - to_short - Assertion n <= SHRT_MAX failed.");
-      error ("UTIL - Truncating value to unsigned short minimum.");
-      integer = SHRT_MAX;
+      error ("UTIL - long_to_int16 - Assertion n <= INT16_MAX failed.");
+      error ("UTIL - Truncating value to int16_t minimum.");
+      integer = INT16_MAX;
     }
 
-  return (short) integer;
+  return (int16_t) integer;
 }
 
 
-/* Safely convert an unsigned long integer to an unsigned short. */
+/* Safely convert an unsigned long integer to an unsigned 16-bit integer. */
 
-unsigned short
-unsigned_to_unsigned_short (unsigned long integer)
+uint16_t
+ulong_to_uint16 (unsigned long integer)
 {
-  if (integer > USHRT_MAX)
+  if (integer > UINT16_MAX)
     {
-      error ("UTIL - unsigned_to_unsigned_short - Assertion n <= USHRT_MAX failed.");
-      error ("UTIL - Truncating value to unsigned short maximum.");
-      integer = USHRT_MAX;
+      error ("UTIL - ulong_to_uint16 - Assertion n <= UINT16_MAX failed.");
+      error ("UTIL - Truncating value to uint16_t maximum.");
+      integer = UINT16_MAX;
     }
 
-  return (unsigned short) integer;
+  return (uint16_t) integer;
 }
 
 
-/* Safely convert an unsigned long integer to a short. */
+/* Safely convert an unsigned long integer to a signed 16-bit integer. */
 
-short
-unsigned_to_short (unsigned long integer)
+int16_t
+ulong_to_int16 (unsigned long integer)
 {
-  if (integer > SHRT_MAX)
-    {
-      error ("UTIL - to_unsigned_short - Assertion n <= SHRT_MAX failed.");
-      error ("UTIL - Truncating value to unsigned short minimum.");
-      integer = SHRT_MAX;
-    }
+  if (integer > INT16_MAX)
+      {
+        error ("UTIL - ulong_to_int16 - Assertion n <= INT16_MAX failed.");
+        error ("UTIL - Truncating value to int16_t minimum.");
+        integer = INT16_MAX;
+      }
 
-  return (short) integer;
+  return (int16_t) integer;
 }
 
 

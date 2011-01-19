@@ -142,7 +142,7 @@ get_module_root_path (char **module_path);
  */
 
 unsigned short
-to_unsigned_short (long integer);
+long_to_uint16 (long integer);
 
 
 /** Safely convert a long integer to signed short. 
@@ -156,7 +156,7 @@ to_unsigned_short (long integer);
  */
 
 short
-to_short (long integer);
+long_to_int16 (long integer);
 
 
 /** Safely convert an unsigned long integer to an unsigned short. 
@@ -170,7 +170,7 @@ to_short (long integer);
  */
 
 unsigned short
-unsigned_to_unsigned_short (unsigned long integer);
+ulong_to_uint16 (unsigned long integer);
 
 
 /** Safely convert an unsigned long integer to signed short. 
@@ -184,7 +184,7 @@ unsigned_to_unsigned_short (unsigned long integer);
  */
 
 short
-unsigned_to_short (unsigned long integer);
+ulong_to_int16 (unsigned long integer);
 
 
 /* ~~ Error reporting */
