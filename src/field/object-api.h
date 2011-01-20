@@ -100,9 +100,7 @@ focus_camera_on_object (const char object_name[]);
  */ 
 
 bool_t
-position_object (const char object_name[], 
-                 int32_t x,
-                 int32_t y,
+position_object (const char object_name[], int32_t x, int32_t y,
                  reference_t reference);
 
 

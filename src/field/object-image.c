@@ -36,16 +36,16 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/** @file    src/field/object-image.c
- *  @author  Matt Windsor
- *  @brief   Object image operations.
+/**
+ * @file    src/field/object-image.c
+ * @author  Matt Windsor
+ * @brief   Object image operations.
  */
 
 
 #include <stdlib.h>
 
 #include "object-image.h"
-#include "object.h"
 #include "../types.h"
 #include "../util.h"
 
@@ -53,20 +53,10 @@
 /* Set all the parameters of an object image node to default values. */
 
 object_image_t *
-init_object_image (object_t *parent)
+init_object_image (void)
 {
   object_image_t *image;
 
-
-  /* Sanity checking. */
-
-  if (parent == NULL)
-    {
-      error ("OBJECT-IMAGE - init_object_image - Object image has no parent.");
-      return NULL;
-    }
-
-  /* End sanity checking. */
 
   image = malloc (sizeof (object_image_t));
 
@@ -79,7 +69,6 @@ init_object_image (object_t *parent)
 
   /* Initialise everything else. */
 
-  image->parent = parent;
   image->filename = NULL;
   image->next = NULL;
 

@@ -36,9 +36,10 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/** @file    src/field/object.c
- *  @author  Matt Windsor
- *  @brief   Low-level object functions.
+/**
+ * @file    src/field/object.c
+ * @author  Matt Windsor
+ * @brief   Low-level object functions.
  */
 
 
@@ -51,8 +52,12 @@
 #include "../util.h"
 
 
+/* -- STATIC GLOBAL VARIABLES -- */
+
 static struct hash_object *sg_objects[HASH_VALS];
 
+
+/* -- DEFINITIONS -- */
 
 /* Initialise the object base. */
 
@@ -104,7 +109,7 @@ add_object (const char object_name[],
 
   /* Try to allocate and initialise an object image. */
 
-  object->image = init_object_image (object);
+  object->image = init_object_image ();
 
   if (object->image == NULL)
     {

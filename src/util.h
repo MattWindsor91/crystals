@@ -36,14 +36,16 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/** @file    util.h
- *  @author  Matt Windsor
- *  @brief   Miscellaneous utility prototypes and declarations.
+/**
+ * @file    util.h
+ * @author  Matt Windsor
+ * @brief   Miscellaneous utility prototypes and declarations.
  *
- *  This, and its corresponding C file, contain things that are
- *  undeserving of their own code file, but nevertheless useful for
- *  the engine.
+ * This, and its corresponding C file, contain things that are
+ * undeserving of their own code file, but nevertheless useful for
+ * the engine.
  */
+
 
 #ifndef _UTIL_H
 #define _UTIL_H
@@ -51,6 +53,7 @@
 #include <stdarg.h>
 
 #include "types.h"  /* Standard types as used in crystals. */
+
 
 /* -- CONSTANTS -- */
 
@@ -92,7 +95,7 @@ enum
 /* ~~ Windows */
 
 #ifdef PLATFORM_WINDOWS
-#define UTIL_PLATFORM_MACROS
+#define UTIL_PLATFORM_MACROS  /**< If set, platform macros have been set. */
 
 #include "platform/w32-util.h" /* Windows error procedures */
 
@@ -105,7 +108,7 @@ enum
 /* ~~ Generic/standard */
 
 #ifndef UTIL_PLATFORM_MACROS
-#define UTIL_PLATFORM_MACROS
+#define UTIL_PLATFORM_MACROS  /**< If set, platform macros have been set. */
 
 /** The procedure to use for outputting an error message. */
 #define ERROR_PROCEDURE std_error

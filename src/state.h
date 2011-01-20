@@ -48,6 +48,7 @@
  *  run instead.
  */
 
+
 #ifndef _STATE_H
 #define _STATE_H
 
@@ -74,7 +75,7 @@ enum
 /** A function table for states, which is to be populated when the
  *  state is initialised.
  *
- *  @TODO  This may eventually be rolled into the module system.
+ *  @todo  This may eventually be rolled into the module system.
  */
 
 struct state_functions

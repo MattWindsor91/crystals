@@ -92,25 +92,30 @@ focus_camera_on_object (const char object_name[])
 /* Move an object by an offset from its current co-ordinates. */
 
 bool_t
-move_object (const char object_name[], 
-             int dx,
-             int dy)
+move_object (const char object_name[], int32_t dx, int32_t dy)
 {
   object_t *object;
   mapview_t *mapview;
 
+
   /* These four ints are used for boundary checking later. */
   
-  int start_x;
-  int start_y;
-  int end_x;
-  int end_y;
+  int32_t start_x;
+  int32_t start_y;
+  int32_t end_x;
+  int32_t end_y;
+
+
+  /* Sanity checking. */
 
   if (object_name == NULL)
     {
       error ("OBJECT-API - move_object - Null object name.");
       return FAILURE;
     }
+
+  /* End sanity checking. */
+
 
   object = get_object (object_name, NULL);
 
@@ -187,12 +192,12 @@ move_object (const char object_name[],
 
   if (object == sg_camera_focus)
     {
-      /* Assert SCREEN_W and SCREEN_H are always short */
+      /* Assert SCREEN_W and SCREEN_H are always int16_t */
       if (dx <= SCREEN_W 
           || dy <= SCREEN_H
           || dx >= -SCREEN_W
           || dy >= -SCREEN_H)
-        scroll_map (mapview, (short) dx, (short) dy);
+        scroll_map (mapview, (int16_t) dx, (int16_t) dy);
     }
 
   return SUCCESS;
@@ -202,9 +207,7 @@ move_object (const char object_name[],
 /* Move an object to a new absolute position. */
 
 bool_t
-position_object (const char object_name[], 
-                 int x,
-                 int y, 
+position_object (const char object_name[], int32_t x, int32_t y,
                  reference_t reference)
 {
   object_t *object;
@@ -217,11 +220,17 @@ position_object (const char object_name[],
   int end_x;
   int end_y;
 
+
+  /* Sanity checking. */
+
   if (object_name == NULL)
     {
       error ("OBJECT-API - position_object - Null object name.");
       return FAILURE;
     }
+
+  /* End sanity checking. */
+
 
   object = get_object (object_name, NULL);
 
@@ -247,6 +256,7 @@ position_object (const char object_name[],
       return FAILURE;
     }
 
+
   /* Check we're not moving the object out of bounds. */
 
   if (get_field_map_boundaries (&start_x, 
@@ -267,6 +277,7 @@ position_object (const char object_name[],
       return FAILURE;
     }
 
+
   /* Mark old location as dirty. */
 
   mark_dirty_rect (mapview,
@@ -275,6 +286,7 @@ position_object (const char object_name[],
                    object->image->width, 
                    object->image->height);
 
+
   /* Try to move object. */
 
   if (set_object_coordinates (object, 
@@ -282,6 +294,7 @@ position_object (const char object_name[],
                               y, reference) 
       == FAILURE)
     return FAILURE;
+
 
   /* Set object as newly dirty. */
 
@@ -298,11 +311,17 @@ tag_object (const char object_name[], layer_tag_t tag)
 {
   object_t *object;
 
+
+  /* Sanity checking. */
+
   if (object_name == NULL)
     {
       error ("OBJECT-API - tag_object - Null object name.");
       return FAILURE;
     }
+
+  /* End sanity checking. */
+
 
   object = get_object (object_name, NULL);
 
@@ -322,20 +341,21 @@ tag_object (const char object_name[], layer_tag_t tag)
 bool_t
 change_object_image (const char object_name[],
                      const char image_filename[], 
-                     short x_offset,
-                     short y_offset,
-                     unsigned short width, 
-                     unsigned short height)
+                     int16_t x_offset,
+                     int16_t y_offset,
+                     uint16_t width,
+                     uint16_t height)
 {
   object_t *object;
   mapview_t *mapview;
 
   /* These four ints are used for boundary checking later. */
   
-  int start_x;
-  int start_y;
-  int end_x;
-  int end_y;
+  int32_t start_x;
+  int32_t start_y;
+  int32_t end_x;
+  int32_t end_y;
+
 
   if (image_filename == NULL)
     {

@@ -149,7 +149,7 @@ set_layer_tag (map_t *map, layer_index_t layer, layer_tag_t tag);
 
 
 /**
- * Set the properties bitfield of a zone..
+ * Set the properties bitfield of a zone.
  *
  * @param map         Pointer to the map to modify.
  * @param zone        Index of the zone on the map to modify.
@@ -175,7 +175,8 @@ set_zone_properties (map_t *map, zone_index_t zone, zone_prop_t properties);
  */
 
 bool_t
-set_tile_value (map_t *map, layer_index_t layer, dimension_t x, dimension_t y, layer_value_t value);
+set_tile_value (map_t *map, layer_index_t layer, dimension_t x, dimension_t y,
+                layer_value_t value);
 
 
 /**
@@ -191,7 +192,8 @@ set_tile_value (map_t *map, layer_index_t layer, dimension_t x, dimension_t y, l
  */
 
 bool_t
-set_tile_zone (map_t *map, layer_index_t layer, dimension_t x, dimension_t y, layer_zone_t value);
+set_tile_zone (map_t *map, layer_index_t layer, dimension_t x, dimension_t y,
+               layer_zone_t zone);
 
 
 /**

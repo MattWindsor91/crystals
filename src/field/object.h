@@ -36,25 +36,27 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/** @file    src/field/object.h
- *  @author  Matt Windsor
- *  @brief   Prototypes and declarations for low-level object
- *           functions.
+/**
+ * @file    src/field/object.h
+ * @author  Matt Windsor
+ * @brief   Prototypes and declarations for low-level object
+ *          functions.
  */
 
 #ifndef _OBJECT_H
 #define _OBJECT_H
 
-#include "../types.h" /* Types. */
-#include "../hash.h"  /* Hash stuff. */
-#include "map.h"      /* layer_value_t */
-#include "object-image.h" /* struct object_image */
-#include "mapview.h"  /* struct mapview */
+#include "../types.h"      /* Types.         */
+#include "../hash.h"       /* Hash stuff.    */
+#include "map.h"           /* layer_value_t  */
+#include "object-image.h"  /* object_image_t */
+#include "mapview.h"       /* mapview_t      */
 
 
 /* -- TYPEDEFS -- */
 
 typedef uint8_t reference_t; /**< Reference constant type. */
+
 
 /* -- CONSTANTS -- */
 
@@ -67,9 +69,10 @@ enum
 
 /* -- STRUCTURES -- */
 
-/** An object node in the object hash table.
+/**
+ * An object node in the object hash table.
  *
- *  This will inevitably have to be changed!
+ * sshis will inevitably have to be changed!
  */
 
 typedef struct object
