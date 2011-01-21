@@ -201,7 +201,7 @@ error (const char message[], ...)
 /* Standard error reporting procedure. */
 
 void
-std_error (const char message[], va_list ap, int is_fatal)
+std_error (const char message[], va_list ap, bool_t is_fatal)
 {
   if (is_fatal)
     fprintf (stderr, "FATAL: ");
@@ -213,6 +213,7 @@ std_error (const char message[], va_list ap, int is_fatal)
   va_end (ap);
 
   fflush (stderr);
+
 
   if (is_fatal)
     {
