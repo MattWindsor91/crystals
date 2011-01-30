@@ -54,19 +54,33 @@ enum dialog_type
 {
   SIMPLE_TEXT,
   CHOICES,
-  GOTO
+  SET_EVENT, /**<< changes the status of a specific event */
+  SET_ITEM, /**<< Player gets an item */
+  SET_ATTR, /**<< increases Player attributes or skills */
+  GOTO /**<< simple dialog specific goto */
 };
 
 
 /* -- UNIONS -- */
 
 union dialog_action {
+  struct dialog_event *event;
+  struct item_node    *item;
   struct choices_node *choices;
-  struct dialog_node  *next_node;
+  struct dialog_node  *content;
   char                *goto_id;
 };
 
 /* -- STRUCTURES -- */ 
+
+struct dialog_root 
+{
+  struct dialog_node  *content;
+  struct dialog_node  **subcontents;
+  uint8_t             sc_n; /**<< amount of subcontents */
+  struct dialog_requirements *requirements;
+  xmlNode             xml_root;
+};
 
 /**
  * choices_node
@@ -87,17 +101,12 @@ struct dialog_node
                                            maybe some sort of ID? */
   char                *text;
   char                *sc_id; /**<< is only set for subcontents, otherwise NULL */
-  enum   dialog_type  type;
-  struct choices_node *choices;
-  struct dialog_node  *next_node;
+  enum  dialog_type   type;
+  union dialog_action *action;
 };
 
-struct dialog_root 
+struct dialog_requirements
 {
-  struct dialog_node  *content;
-  struct dialog_node  **subcontents;
-  uint8_t             sc_n; /**<< amount of subcontents */
-  xmlNode             xml_root;
 };
 
 /* -- DECLARAITONS -- */
