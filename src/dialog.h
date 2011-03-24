@@ -107,6 +107,8 @@ struct dialog_node
 
 struct dialog_requirements
 {
+  enum event_type *events;
+  enum attr_type  *attr;
 };
 
 /* -- DECLARAITONS -- */
