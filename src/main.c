@@ -78,8 +78,8 @@ main (int argc, char **argv)
 {
   /* Placeholder for command line stuff. */
 
-  argc = argc;
-  argv = argv;
+  (void) argc;
+  (void) argv;
 
 
   if (init () == SUCCESS)

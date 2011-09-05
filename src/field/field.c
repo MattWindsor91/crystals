@@ -67,9 +67,9 @@ static mapview_t *sg_mapview;
 
 static unsigned char sg_field_held_special_keys[256];
 
-static event_callback *sg_field_skeyupcb;
-static event_callback *sg_field_skeydowncb;
-static event_callback *sg_field_quitcb;
+static event_callback_t *sg_field_skeyupcb;
+static event_callback_t *sg_field_skeydowncb;
+static event_callback_t *sg_field_quitcb;
 
 
 /* -- DEFINITIONS -- */
@@ -81,7 +81,7 @@ static event_callback *sg_field_quitcb;
 void
 field_on_quit (event_t *event)
 {
-  event = event;
+  (void) event;
   set_state (STATE_QUIT);
 }
 

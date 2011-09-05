@@ -48,7 +48,7 @@
 
 
 #include "types.h"
-
+#include "parser.h" /**<< for configuration*/
 
 /* -- CONSTANTS -- */
 
@@ -57,7 +57,7 @@ extern const char *DEFAULT_CONFIG_PATH;  /**< Default config file path. */
 
 /* -- GLOBAL VARIABLES -- */
 
-extern struct dict_t *g_config;    /**< Configuration dictionary. */
+extern dict_t *g_config;    /**< Configuration dictionary. */
 
 
 /* -- DECLARATIONS -- */

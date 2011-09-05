@@ -36,25 +36,29 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/** @file   src/events.c
- *  @author Matt Windsor
- *  @brief  Generic portion of events system.
+/**
+ * @file   src/events.c
+ * @author Matt Windsor
+ * @brief  Generic portion of events system.
  *
- *  The events system is based on the concept of callbacks.  Other
- *  parts of the code register their functions as callbacks attached
- *  to event types, and will have them triggered as those events are
- *  detected and handled by the drivers.
+ * The events system is based on the concept of callbacks.  Other
+ * parts of the code register their functions as callbacks attached
+ * to event types, and will have them triggered as those events are
+ * detected and handled by the drivers.
  */
+
 
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
 
-#include "main.h" /* g_config */
+#include "main.h"   /* g_config */
+#include "types.h"  /* Integer types */
 #include "parser.h"
 #include "events.h"
 #include "module.h"
 #include "util.h"
+
 
 /* -- STATIC GLOBAL VARIABLES -- */
 
@@ -63,10 +67,10 @@ static struct event_base *sg_event_base; /**< Event base. */
 
 /* -- DEFINITIONS -- */
 
-int
+bool_t
 init_events (void)
 {
-  if (load_module_event (cfg_get ("event_module", g_config), &g_modules) == FAILURE)
+  if (load_module_event (cfg_get_str ("modules", "event_module", g_config), &g_modules) == FAILURE)
     {
       error ("EVENTS - init_events - Could not load events module.");
       return FAILURE;
@@ -99,31 +103,32 @@ process_events (void)
 
 /* Install a callback. */
 
-struct event_callback *
-install_callback (void (*callback) (event_t *event), int types)
+event_callback_t *
+install_callback (void (*callback) (event_t *event), event_type_t types)
 {   
-  struct event_callback *pnew, *p;
+  event_callback_t *pnew;
+  event_callback_t **p;
   
-  pnew = malloc (sizeof (struct event_callback));
+  pnew = malloc (sizeof (event_callback_t));
 
-  if (pnew)
+  if (pnew == NULL)
     {
-      pnew->callback = callback;
-      pnew->types = types;
-      pnew->next = NULL;
-
-      /* Link to list */
-      if (sg_event_base->callbacks == NULL)
-        sg_event_base->callbacks = pnew;
-      else
-        {
-          for (p = sg_event_base->callbacks; p->next != NULL; p = p->next)
-            ; /* Do nothing until p->next is NULL. */
-
-          p->next = pnew;
-      
-        }
+      error ("EVENTS - install_callback - Could not allocate callback node.");
+      return NULL;
     }
+
+
+  pnew->callback = callback;
+  pnew->types = types;
+  pnew->next = NULL;
+
+  /* Link to list */
+
+  for (p = &(sg_event_base->callbacks); *p != NULL; p = &(*p)->next)
+    ; /* Do nothing until *p is NULL. */
+
+  pnew->next = *p;
+  *p = pnew;
 
   return pnew;
 }
@@ -131,35 +136,38 @@ install_callback (void (*callback) (event_t *event), int types)
 
 /* Unload a callback. */
 
-int
-unload_callback (struct event_callback *ptr)
+bool_t
+unload_callback (event_callback_t *callback)
 {
-  struct event_callback *p;
+  event_callback_t **p;
 
-  if (ptr)
+
+  /* Sanity checking. */
+
+  if (callback == NULL)
     {
-      /* Corner-case for if ptr is the first callback. */
-      if (sg_event_base->callbacks == ptr)
+      error ("EVENTS - unload_callback - Given a NULL callback to delete.");
+      return FAILURE;
+    }
+
+  /* End sanity checking. */
+
+
+  for (p = &(sg_event_base->callbacks); *p != NULL; p = &(*p)->next)
+    {
+      if (*p == callback)
         {
-          sg_event_base->callbacks = ptr->next;
-          free (ptr);
+          /* Replace callback with the next entry then delete it. */
+
+          *p = (*p)->next;
+          free (callback);
+
           return SUCCESS;
         }
-
-      for (p = sg_event_base->callbacks; p->next != NULL; p = p->next)
-        {
-          if (p->next == ptr)
-            {
-              /* Now we've found the list node before this one, replace its 
-                 next pointer with the to-be-unloaded node's next pointer. */
-              p->next = ptr->next;
-
-              /* Now delete the callback. */
-              free(ptr);
-              return SUCCESS;
-            }
-        }
     }
+
+
+  /* No matches found. */
 
   return FAILURE;
 }
@@ -170,11 +178,12 @@ unload_callback (struct event_callback *ptr)
 void
 event_release (event_t *event)
 {
-  struct event_callback *p;
+  event_callback_t *p;
 
   for (p = sg_event_base->callbacks; p != NULL; p = p->next)
     {
       /* Trigger all callbacks with the relevant type. */
+
       if (p->types & event->type)
         p->callback (event);
     }

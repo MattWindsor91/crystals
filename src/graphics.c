@@ -83,7 +83,7 @@ init_graphics (void)
 {
   int i;
 
-  if (load_module_gfx (cfg_get ("graphics_module", g_config), &g_modules) == FAILURE)
+  if (load_module_gfx (cfg_get_str ("modules", "graphics_module", g_config), &g_modules) == FAILURE)
     {
       error ("GRAPHICS - init_graphics - Could not load graphics module.");
       return FAILURE;
@@ -121,7 +121,7 @@ get_absolute_path (const char path[])
 
   /* Get the root path from the configuration, if it exists. */
 
-  root_path = cfg_get ("graphics_path", g_config);
+  root_path = cfg_get_str ("gfx", "graphics_path", g_config);
 
   if (root_path == NULL)
     {
@@ -184,7 +184,7 @@ write_string (int16_t x, int16_t y,
   length = ulong_to_uint16 (FONT_W * slength);
 
   
-  /* Use the given alignment to . */
+  /* Use the given alignment to position text. */
 
   switch (alignment)
     {
@@ -203,6 +203,7 @@ write_string (int16_t x, int16_t y,
 
 
   /* Draw each character using the font image. */
+
   for (i = 0; i < slength; i++)
     {
       chr = string[i];
