@@ -45,16 +45,25 @@
 #ifndef _XML_H
 #define _XML_H
 
-#include <libxml/parser.h>
 #include <libxml/tree.h>
 
-xmlNode*
-parse_xml_file (const char *p);
+#include "util.h"
+
+typedef xmlNode xml_node_t;
+
+xml_node_t*
+xml_parse_doc (const char *p);
+
+bool_t
+xml_verify_doc (xml_node_t *root, const char *root_name);
 
 void
-free_xml_file (xmlNode *root);
+xml_free_doc (xml_node_t *root);
 
 void
 cleanup_xml (void);
 
 #endif /* _XML_H */
+
+/* vim: set ts=2 sw=2 softtabstop=2 cinoptions=>4,n-2,{2,^-2,:2,=2,g0,h2,p5,t0,+2,(0,u0,w1,m1: */
+

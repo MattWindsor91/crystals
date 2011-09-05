@@ -45,10 +45,10 @@
  
 #include "xml.h"
 
-xmlNode 
-parse_xml_file (const char *p)
+xmlNode* 
+xml_parse_doc (const char *p)
 {    
-  xmlDoc *doc = NULL;
+  xmlDoc  *doc  = NULL;
   xmlNode *root = NULL;
 
   /*
@@ -58,29 +58,53 @@ parse_xml_file (const char *p)
    */
   LIBXML_TEST_VERSION
 
-  doc = xmlReadFile (p, NULL, 0);
+  doc = xmlParseFile (p);
 
-  if (doc == NULL) {
+  if (doc == NULL) 
+    {
       /* fprintf instead of error for testing purposes */
-      fprintf (stderr, "XML - parse_xml_file - could not parse file %s", p);
-  }
+      error ("XML - parse_xml_file - Could not parse file %s", p);
+      xmlFreeDoc(doc);
+      return NULL;
+    }
   else
-    /*Get the root element node */
-    root = xmlDocGetRootElement(doc);
-    
-  return root;
+    {
+      /*Get the root element node */
+      root = xmlDocGetRootElement(doc);
+
+      if (root == NULL)
+        {
+          error ("XML - parse_xml_file - Empty document: %s", p);
+          xmlFreeDoc(doc);
+          return NULL;
+        }
+      else
+        return root;
+
+    }
+}
+
+bool_t
+xml_verify_doc (xmlNode *root, const char *root_name)
+{
+  if (!xmlStrcmp(root->name, (const xmlChar *) root_name))
+    return TRUE;
+  else
+    return FALSE;
 }
 
 void
-free_xml_file (xmlNode *root)
+xml_free_doc (xmlNode *root)
 {
-  xmlFreeNode (root); /**<< @todo check if it frees all connected nodes too, 
-                                  or if it just frees one node */
-  root = NULL;
+  xmlFreeDoc (root->doc);
 }
 
+/* isn't really need */
 void
 cleanup_xml (void) 
 {
   xmlCleanupParser ();
 }
+
+/* vim: set ts=2 sw=2 softtabstop=2 cinoptions=>4,n-2,{2,^-2,:2,=2,g0,h2,p5,t0,+2,(0,u0,w1,m1: */
+
