@@ -46,6 +46,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <limits.h>
+#include <glib-2.0/glib/gstrfuncs.h>
 
 #include "mapview.h"
 #include "map.h"
@@ -349,24 +350,15 @@ render_map_layer (mapview_t *mapview, layer_index_t layer)
 
   map_t *map;
 
-  struct hash_object *tileset_object;
-  void *tileset;
+  image_t *tileset;
 
   /* Try to grab the tileset. */
 
-  tileset_object = load_image (FN_TILESET);
-
-  if (tileset_object == NULL)
-    {
-      fatal ("MAPVIEW - render_map_layer - Couldn't load tileset.");
-      return;
-    }
-
-  tileset = tileset_object->data;
+  tileset = load_image (FN_TILESET);
 
   if (tileset == NULL)
     {
-      fatal ("MAPVIEW - render_map_layer - Tileset has NULL data.");
+      fatal ("MAPVIEW - render_map_layer - Couldn't load tileset.");
       return;
     }
 
