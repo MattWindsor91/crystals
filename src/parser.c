@@ -105,7 +105,7 @@ int32_t
 cfg_get_int (const char *group, const char *key, dict_t *cfg)
 {
   GError *err = NULL;
-  int32_t ret = NULL;
+  int32_t ret;
 
   ret = g_key_file_get_integer (cfg, group, key, &err);
   
