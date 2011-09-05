@@ -119,6 +119,5 @@ cfg_get_int (const char *group, const char *key, dict_t *cfg)
     return ret;
 }
 
-
-/* vim: set ts=2 sw=2 softtabstop=2: */
+/* vim: set ts=2 sw=2 softtabstop=2 cinoptions=>4,n-2,{2,^-2,:2,=2,g0,h2,p5,t0,+2,(0,u0,w1,m1: */
 
