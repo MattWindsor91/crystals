@@ -81,7 +81,7 @@ static event_callback *sg_field_quitcb;
 void
 field_on_quit (event_t *event)
 {
-  event = event;
+  (void) event;
   set_state (STATE_QUIT);
 }
 
