@@ -50,12 +50,19 @@
 dict_t *
 init_config (const char *config_path)
 {
+  GError *err = NULL;
   GKeyFile *config = g_key_file_new(); 
   
-  /* FIXME: GError handling */
-  g_key_file_load_from_file(config, config_path, G_KEY_FILE_NONE, NULL);
+  g_key_file_load_from_file (config, config_path, G_KEY_FILE_NONE, &err);
 
-  return config;
+  if (err != NULL)
+    {
+      fatal ("PARSER: Unable to read conifg file: %s\n", err->message);
+      g_error_free (err);
+      return NULL;
+    }
+  else 
+    return config;
 }
 
 
@@ -76,8 +83,20 @@ cfg_free (dict_t *cfg)
 char *
 cfg_get_str (const char *group, const char *key, dict_t *cfg)
 { 
-  /* FIXME: GError handling */
-  return g_key_file_get_string(cfg, group, key, NULL);
+  GError *err = NULL;
+  char *ret   = NULL;
+
+  ret = g_key_file_get_string (cfg, group, key, &err);
+  
+  if (err != NULL)
+    {
+      error ("PARSER: Unable to read string value: %s\n", err->message);
+      g_error_free (err);
+      return NULL;
+    }
+  else 
+    return ret;
+
 }
 
 /* Get the integer value of the appropriate key. */
@@ -85,10 +104,20 @@ cfg_get_str (const char *group, const char *key, dict_t *cfg)
 int32_t
 cfg_get_int (const char *group, const char *key, dict_t *cfg)
 {
-  /* FIXME: GError handling */
-  return g_key_file_get_integer(cfg, group, key, NULL);
-}
+  GError *err = NULL;
+  int32_t ret = NULL;
 
+  ret = g_key_file_get_integer (cfg, group, key, &err);
+  
+  if (err != NULL)
+    {
+      error ("PARSER: Unable to read integer value: %s\n", err->message);
+      g_error_free (err);
+      return 0;
+    }
+  else 
+    return ret;
+}
 
 
 /* vim: set ts=2 sw=2 softtabstop=2: */
