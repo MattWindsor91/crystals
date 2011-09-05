@@ -62,7 +62,6 @@ xml_parse_doc (const char *p)
 
   if (doc == NULL) 
     {
-      /* fprintf instead of error for testing purposes */
       error ("XML - parse_xml_file - Could not parse file %s", p);
       xmlFreeDoc(doc);
       return NULL;
@@ -99,7 +98,7 @@ xml_free_doc (xmlNode *root)
   xmlFreeDoc (root->doc);
 }
 
-/* isn't really need */
+/* isn't really needed */
 void
 cleanup_xml (void) 
 {
