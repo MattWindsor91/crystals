@@ -86,6 +86,23 @@ typedef signed char    int8_t;    /**< Signed 8-bit integer. */
 typedef signed short   int16_t;   /**< Signed 16-bit integer. */
 typedef signed int     int32_t;   /**< Signed 32-bit integer. */
 
+
+/* -- CONSTANTS -- */
+
+enum
+  {
+    UINT8_MAX  = 255,         /**< Maximum value of uint8_t.  */
+    UINT16_MAX = 65535,       /**< Maximum value of uint16_t. */
+    UINT32_MAX = 4294967295,  /**< Maximum value of uint32_t. */
+    INT8_MIN   = -128,        /**< Minimum value of int8_t.   */
+    INT16_MIN  = -32768,      /**< Minimum value of int16_t.  */
+    INT32_MIN  = -2147483648, /**< Minimum value of int32_t.  */
+    INT8_MAX   = 127,         /**< Maximum value of int8_t.   */
+    INT16_MAX  = 32767,       /**< Maximum value of int16_t.  */
+    INT32_MAX  = 2147483647   /**< Maximum value of int32_t.  */
+  };
+
+
 #endif /* not TYPES_DEFINED */
 
 #endif /* _TYPES_H */

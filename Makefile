@@ -176,7 +176,7 @@ SOBJ     += event-sdl event-dummy
 # python | Python bindings backend.
 # dummy  | Dummy bindings for memory tests.
 
-BINDINGS := lua
+BINDINGS := dummy
 
 ## Documentation ##
 
@@ -285,6 +285,12 @@ ifeq ($(PLATFORM),gnu-linux)
 	PKGCONFIG := $(BUILDPREFIX)/bin/pkg-config
 	DLLEXT    := so
 endif
+
+
+# FIXME
+CFLAGS   += `pkg-config glib-2.0 --cflags`
+LIBS     += `pkg-config glib-2.0 --libs`
+
 
 # Add bindings object file to the other object files and add the proper CFLAGS and LIBS.
 

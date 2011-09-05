@@ -36,14 +36,16 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/** @file    util.h
- *  @author  Matt Windsor
- *  @brief   Miscellaneous utility prototypes and declarations.
+/**
+ * @file    util.h
+ * @author  Matt Windsor
+ * @brief   Miscellaneous utility prototypes and declarations.
  *
- *  This, and its corresponding C file, contain things that are
- *  undeserving of their own code file, but nevertheless useful for
- *  the engine.
+ * This, and its corresponding C file, contain things that are
+ * undeserving of their own code file, but nevertheless useful for
+ * the engine.
  */
+
 
 #ifndef _UTIL_H
 #define _UTIL_H
@@ -52,9 +54,10 @@
 
 #include "types.h"  /* Standard types as used in crystals. */
 
+
 /* -- CONSTANTS -- */
 
-/* Windows likes to define these already. */
+/* Windows likes to define these already, so undefine them if present. */
 
 #ifdef TRUE
 #undef TRUE
@@ -64,27 +67,50 @@
 #undef FALSE
 #endif /* FALSE */
 
+
 enum
   {
-    SUCCESS = 1, /**< Value raised by functions upon success. */
-    FAILURE = 0, /**< Value raised by functions upon failure. */
-    TRUE = 1,    /**< Boolean true value. */
-    FALSE = 0,   /**< Boolean false value. */
-    NORTH = 0,   /**< North (up) cardinal direction. */
-    EAST,        /**< East (right) cardinal direction. */
-    SOUTH,       /**< South (down) cardinal direction. */
-    WEST,        /**< West (left) cardinal direction. */
-    NULLC = '\0' /**< Null character (necessary?) */
+    /* Boolean return values.
+     *
+     * Use these instead of TRUE/FALSE as the return type of functions that
+     * attempt to complete a task.
+     */
+
+    SUCCESS = 1,   /**< Value raised by functions upon success. */
+    FAILURE = 0,   /**< Value raised by functions upon failure. */
+
+
+    /* Boolean constants.
+     *
+     * In return types, these should generally only be used when returning
+     * the value of a boolean variable or property.  To denote whether or
+     * not a function that is attempting to complete a task has succeeded
+     * or failed, use the above SUCCESS and FAILURE constants instead.
+     */
+
+    TRUE    = 1,   /**< Boolean true value. */
+    FALSE   = 0,   /**< Boolean false value. */
+
+
+    /* Cardinal directions. */
+
+    NORTH   = 0,   /**< North (up) cardinal direction. */
+    EAST    = 1,   /**< East (right) cardinal direction. */
+    SOUTH   = 2,   /**< South (down) cardinal direction. */
+    WEST    = 3,   /**< West (left) cardinal direction. */
+
+
+    /* Miscellanea. */
+
+    NULLC   = '\0' /**< Null character (necessary?) */
   };
 
 
 /* -- FUNCTION MACROS -- */
 
-#define MAX(x, y) ((x) > (y) ? (x) : (y)) /**< Get the maximum of two
-                                             values. */
+#define MAX(x, y) ((x) > (y) ? (x) : (y)) /**< Get the maximum of two values. */
 
-#define MIN(x, y) ((x) < (y) ? (x) : (y)) /**< Get the minimum of two
-                                             values. */
+#define MIN(x, y) ((x) < (y) ? (x) : (y)) /**< Get the minimum of two values. */
 
 
 /* - PLATFORM-DEPENDENCY FUNCTION MACROS - */
@@ -92,7 +118,7 @@ enum
 /* ~~ Windows */
 
 #ifdef PLATFORM_WINDOWS
-#define UTIL_PLATFORM_MACROS
+#define UTIL_PLATFORM_MACROS  /**< If set, platform macros have been set. */
 
 #include "platform/w32-util.h" /* Windows error procedures */
 
@@ -105,7 +131,7 @@ enum
 /* ~~ Generic/standard */
 
 #ifndef UTIL_PLATFORM_MACROS
-#define UTIL_PLATFORM_MACROS
+#define UTIL_PLATFORM_MACROS  /**< If set, platform macros have been set. */
 
 /** The procedure to use for outputting an error message. */
 #define ERROR_PROCEDURE std_error
@@ -142,7 +168,7 @@ get_module_root_path (char **module_path);
  */
 
 unsigned short
-to_unsigned_short (long integer);
+long_to_uint16 (long integer);
 
 
 /** Safely convert a long integer to signed short. 
@@ -156,7 +182,7 @@ to_unsigned_short (long integer);
  */
 
 short
-to_short (long integer);
+long_to_int16 (long integer);
 
 
 /** Safely convert an unsigned long integer to an unsigned short. 
@@ -170,7 +196,7 @@ to_short (long integer);
  */
 
 unsigned short
-unsigned_to_unsigned_short (unsigned long integer);
+ulong_to_uint16 (unsigned long integer);
 
 
 /** Safely convert an unsigned long integer to signed short. 
@@ -184,7 +210,7 @@ unsigned_to_unsigned_short (unsigned long integer);
  */
 
 short
-unsigned_to_short (unsigned long integer);
+ulong_to_int16 (unsigned long integer);
 
 
 /* ~~ Error reporting */
@@ -231,7 +257,7 @@ error (const char message[], ...);
  */
 
 void
-std_error (const char message[], va_list ap, int is_fatal);
+std_error (const char message[], va_list ap, bool_t is_fatal);
 
 
 #endif /* not _UTIL_H */

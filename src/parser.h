@@ -45,28 +45,12 @@
 #ifndef _PARSER_H
 #define _PARSER_H
 
+#include <glib.h>
 #include "types.h"
 
 /* -- TYPEDEFS -- */
 
-typedef struct dict_t dict_t; /**< Node type for the key-value tree. */
-
-/* -- STRUCTURES -- */
-
-/** Node struct for a key-value tree
- *
- * Stores key, value and two branches
- */
-
-struct dict_t
-{
-  char *key;            /**< key item of the node. */
-  char *value;          /**< value item of the node. */
-  /* strcmp < 0 */
-  dict_t *left;         /**< Left branch of the node. */
-  /* strcmp > 0 */
-  dict_t *right;        /**< Right branch of the node. */
-};
+typedef GKeyFile dict_t; /**< Node type for the key-value tree. */
 
 /* -- FUNCTION PROTOTYPES -- */
 
@@ -83,70 +67,40 @@ init_config (const char *config_path);
 
 
 /** 
- * Parse configuration file.
- *
- * @param   path_name   The path to the configuration file.
- * @param   root        Pass a dict_t node, which can already 
- *                      contain informations.
- *
- * @return  Returns SUCCESS, if file has valid syntax and can be parsed, else
- *          it returns FAILURE. (Defined in util.h)
- */
-
-bool_t
-cfg_parse (const char *path_name, dict_t **root);
-
-
-/** 
- * Function for adding a key-value pair to the tree.
- *
- * @param   key     The string which will be added as key.
- * @param   value   The string which will be added as key.
- * @param   node    The branch in which the key-value pair will be added.
- *
- * @return  Returns SUCCESS, if the key-value pair was added, otherwise or
- *          the key already exists return FAILURE. (Defined in util.h)
- */
-
-bool_t
-cfg_add (const char *key, const char *value, dict_t **node);
-
-
-/** 
- * Get the value of the appropriate key.
+ * Get the string value of the appropriate key.
  *
  * @param   key     Pass a string, which will be searched in the tree.
- * @param   node    The root node which contains the information.
+ * @param   cfg     The root node which contains the information.
  *
  * @return  Return the value to the appropriate key or NULL if none is found.
  */
 
 char *
-cfg_get (const char *key, dict_t *node);
-
+cfg_get_str (const char *group, const char *key, dict_t *cfg);
 
 /** 
- * Return the numbers of items in the dictionary type
+ * Get the integer value of the appropriate key.
  *
- * @param   node    A dictionary node.
+ * @param   key     Pass a string, which will be searched in the tree.
+ * @param   cfg     The root node which contains the information.
  *
- * @return  The numbers of key-value pairs in the dictionary.
+ * @return  Return the value to the appropriate key or NULL if none is found.
  */
 
-unsigned int
-cfg_items (dict_t *node);
-
+int32_t
+cfg_get_int (const char *group, const char *key, dict_t *cfg);
 
 /** 
- * Function for freeing allocated memory in nodes.
+ * Function for freeing allocated memory in cfgs.
  *
- * @param   node    Node type.
+ * @param   cfg     Node type.
  */
 
 void
-cfg_free (dict_t *node);
+cfg_free (dict_t *cfg);
 
 
 #endif /* not _PARSER_H */
 
-/* vim: set ts=2 sw=2 softtabstop=2: */
+/* vim: set ts=2 sw=2 softtabstop=2 cinoptions=>4,n-2,{2,^-2,:2,=2,g0,h2,p5,t0,+2,(0,u0,w1,m1: */
+

@@ -83,7 +83,7 @@ init_graphics (void)
 {
   int i;
 
-  if (load_module_gfx (cfg_get ("graphics_module", g_config), &g_modules) == FAILURE)
+  if (load_module_gfx (cfg_get_str ("modules", "graphics_module", g_config), &g_modules) == FAILURE)
     {
       error ("GRAPHICS - init_graphics - Could not load graphics module.");
       return FAILURE;
@@ -121,7 +121,7 @@ get_absolute_path (const char path[])
 
   /* Get the root path from the configuration, if it exists. */
 
-  root_path = cfg_get ("graphics_path", g_config);
+  root_path = cfg_get_str ("gfx", "graphics_path", g_config);
 
   if (root_path == NULL)
     {
@@ -181,7 +181,7 @@ write_string (int16_t x, int16_t y,
 
 
   slength = strlen (string);
-  length = unsigned_to_unsigned_short (FONT_W * slength);
+  length = ulong_to_uint16 (FONT_W * slength);
 
   
   /* Use the given alignment to position text. */
@@ -193,11 +193,11 @@ write_string (int16_t x, int16_t y,
       x1 = x;
       break;
     case ALIGN_RIGHT:
-      x1 = unsigned_to_short (box_width - slength);
+      x1 = ulong_to_int16 (box_width - slength);
       break;
     case ALIGN_CENTRE:   
-      midpoint = to_unsigned_short (x + (box_width / 2));
-      x1 = to_short (midpoint - (length / 2));
+      midpoint = long_to_uint16 (x + (box_width / 2));
+      x1 = long_to_int16 (midpoint - (length / 2));
       break;
     }
 
@@ -208,14 +208,14 @@ write_string (int16_t x, int16_t y,
     {
       chr = string[i];
       draw_image (FONT_FILENAME, 
-                  to_short ((chr % 16) * FONT_W),
-                  to_short (((chr - (chr % 16))/16) * FONT_H),
-                  to_short (x1),
-                  to_short (y),
+                  long_to_int16 ((chr % 16) * FONT_W),
+                  long_to_int16 (((chr - (chr % 16))/16) * FONT_H),
+                  long_to_int16 (x1),
+                  long_to_int16 (y),
                   FONT_W,
                   FONT_H);
 
-      x1 = to_short (x1 + FONT_W);
+      x1 = long_to_int16 (x1 + FONT_W);
     }  
 
 

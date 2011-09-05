@@ -70,7 +70,7 @@ static struct event_base *sg_event_base; /**< Event base. */
 bool_t
 init_events (void)
 {
-  if (load_module_event (cfg_get ("event_module", g_config), &g_modules) == FAILURE)
+  if (load_module_event (cfg_get_str ("modules", "event_module", g_config), &g_modules) == FAILURE)
     {
       error ("EVENTS - init_events - Could not load events module.");
       return FAILURE;

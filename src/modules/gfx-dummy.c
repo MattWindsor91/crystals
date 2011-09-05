@@ -42,188 +42,10 @@
  * @brief   Dummy graphics backend.
  */
 
-#include "../util.h" /* Constants. */
 
-/* Workaround for Windows DLL symbol load failures.
- *
- * All outward-facing functions MUST be preceded with
- * EXPORT so that the DLL loader can see them.
- */
-
-#ifdef PLATFORM_WINDOWS
-#define EXPORT __declspec(dllexport)
-#else
-#define EXPORT
-#endif /* PLATFORM_WINDOWS */
-
-
-/* -- PROTOTYPES -- */
-
-/** 
- * Initialise the module. 
- */
-
-EXPORT bool_t
-init (void);
-
-
-/** 
- * Terminate the module, freeing any remaining data dynamically
- * allocated by the module. 
- */
-
-EXPORT void
-term (void);
-
-
-/** 
- * Initialise a screen of a given width, height and depth.
- *
- * The screen's data will automatically be deleted, if not sooner,
- * when the module is unloaded (ie, via the module's term
- * function).
- *
- * @todo Fullscreen option?
- *
- * @param width   Width of the screen, in pixels.
- * @param height  Height of the screen, in pixels.
- * @param depth   Colour depth of the screen, in bits per pixel.
- *
- * @return  SUCCESS for success; FAILURE otherwise.
- */
-
-EXPORT bool_t
-init_screen_internal (unsigned short width,
-                      unsigned short height,
-                      unsigned char depth);
-
-
-/**
- * Draw a rectangle of colour on-screen.
- *
- * Depending on the graphics module, the colour displayed on screen
- * may not exactly match the desired colour.
- *
- * @param x       X co-ordinate of the left edge of the rectangle.
- *
- * @param y       Y co-ordinate of the top edge of the rectangle.
- *
- * @param width   The width of the rectangle, in pixels.
- *
- * @param height  The height of the rectangle, in pixels.
- *
- * @param red     The red component of the fill colour (0-255).
- *
- * @param green   The green component of the fill colour (0-255).
- *
- * @param blue    The blue component of the fill colour (0-255).
- */
-
-EXPORT bool_t
-draw_rect_internal (short x,
-                    short y, 
-                    unsigned short width,
-                    unsigned short height, 
-                    unsigned char red,
-                    unsigned char green,
-                    unsigned char blue);
-
-
-/**
- * Load an image and return its data in the module's native
- * format.
- *
- * As the exact format returned varies from module to module, you
- * will likely only want to use this function through the graphics
- * subsystem's wrapper function, load_image, which also stores the
- * data into a cache.
- *
- * @param filename  The path to the file to load.
- *
- * @return  a pointer to a memory location containing image data
- *          which can eventually be passed to the module's draw_image
- *          function.
- */
-
-EXPORT void *
-load_image_data (const char filename[]);
-
-
-/** 
- * Free image data retrieved by load_image_data.
- *
- * Since the nature of the image data in question varies from
- * module to module, simply freeing the data directly may not be
- * sufficient to unload the image from memory, hence the existence
- * of this function.
- *
- * @param data  A pointer to a memory location containing image
- *              data (in the module's native format) to be freed.
- */
-
-EXPORT bool_t
-free_image_data (void *data);
-
-
-/**
- * Draw a rectangular portion of an image on-screen.
- *
- * This should not be called directly, but instead accessed through
- * the graphics subsystem's draw_image function (see graphics.h).
- *
- * @param image     The image data, in the graphics module-specific
- *                  format returned by load_image_data.
- *
- * @param image_x   The X-coordinate of the left edge of the
- *                  on-image rectangle to display.
- *
- * @param image_y   The Y-coordinate of the top edge of the
- *                  on-image rectangle to display.
- *
- * @param screen_x  The X-coordinate of the left edge of the
- *                  on-screen rectangle to place the image in.
- *
- * @param screen_y  The Y-coordinate of the top edge of the
- *                  on-screen rectangle to place the image in.
- *
- * @param width     The width of the rectangle.
- *
- * @param height    The height of the rectangle.
- *
- * @return  SUCCESS for success, FAILURE otherwise. In most
- *          cases, a failure will simply cause the image to not appear.
- */
-
-EXPORT bool_t
-draw_image_internal (void *image, 
-                     short image_x,
-                     short image_y,
-                     short screen_x,
-                     short screen_y,
-                     unsigned short width,
-                     unsigned short height);
-
-
-/** 
- * Update the screen. 
- */
-
-EXPORT bool_t
-update_screen_internal (void);
-
-
-/** 
- * Translate the screen by a co-ordinate pair, leaving damage.
- *
- * @param x_offset  The X co-ordinate offset in which to scroll the 
- *                  screen.
- *
- * @param y_offset  The Y co-ordinate offset in which to scroll the 
- *                  screen.
- */
-
-EXPORT bool_t
-scroll_screen_internal (short x_offset, short y_offset);
+#include "gfx-module.h"  /* Module header file. */
+#include "../util.h"     /* Constants. */
+#include "../types.h"    /* Type definitions. */
 
 
 /* -- DEFINITIONS -- */
@@ -249,13 +71,15 @@ term (void)
 /* Initialise a screen of a given width, height and depth. */
 
 EXPORT bool_t
-init_screen_internal (unsigned short width,
-                      unsigned short height,
-                      unsigned char depth)
+init_screen_internal (uint16_t width,
+                      uint16_t height,
+                      uint8_t depth)
 {
   (void) width;
   (void) height;  
   (void) depth;  
+
+
   return SUCCESS;
 }
 
@@ -263,13 +87,13 @@ init_screen_internal (unsigned short width,
 /* Draw a rectangle of colour on-screen. */
 
 EXPORT bool_t
-draw_rect_internal (short x,
-                    short y, 
-                    unsigned short width,
-                    unsigned short height, 
-                    unsigned char red,
-                    unsigned char green,
-                    unsigned char blue)
+draw_rect_internal (int16_t x,
+                    int16_t y,
+                    uint16_t width,
+                    uint16_t height,
+                    uint8_t red,
+                    uint8_t green,
+                    uint8_t blue)
 {
   (void) x;
   (void) y;
@@ -279,8 +103,10 @@ draw_rect_internal (short x,
   (void) green;
   (void) blue;
 
+
   return SUCCESS;
 }
+
 
 /* Load an image and return its data in the module's native format. */
 
@@ -288,6 +114,8 @@ EXPORT void *
 load_image_data (const char filename[])
 { 
   (void) filename;
+
+
   return (void *) 1; /* pretend you didn't see it */
 }
 
@@ -298,6 +126,8 @@ EXPORT bool_t
 free_image_data (void *data)
 {
   (void) data;
+
+
   return SUCCESS;
 }
 
@@ -306,12 +136,12 @@ free_image_data (void *data)
 
 EXPORT bool_t
 draw_image_internal (void *image,
-                     short image_x,
-                     short image_y,
-                     short screen_x,
-                     short screen_y,
-                     unsigned short width,
-                     unsigned short height)
+                     int16_t image_x,
+                     int16_t image_y,
+                     int16_t screen_x,
+                     int16_t screen_y,
+                     uint16_t width,
+                     uint16_t height)
 {
   (void) image;
   (void) image_x;
@@ -320,6 +150,8 @@ draw_image_internal (void *image,
   (void) screen_y;
   (void) width;
   (void) height;
+
+
   return SUCCESS;
 }
 
@@ -336,9 +168,11 @@ update_screen_internal (void)
 /* Translate the screen by a co-ordinate pair, leaving damage. */
 
 EXPORT bool_t
-scroll_screen_internal (short x_offset, short y_offset)
+scroll_screen_internal (int16_t x_offset, int16_t y_offset)
 {
   (void) x_offset;
   (void) y_offset;
+
+
   return SUCCESS;
 }
