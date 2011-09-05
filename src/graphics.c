@@ -184,7 +184,7 @@ write_string (int16_t x, int16_t y,
   length = unsigned_to_unsigned_short (FONT_W * slength);
 
   
-  /* Use the given alignment to . */
+  /* Use the given alignment to position text. */
 
   switch (alignment)
     {
@@ -203,6 +203,7 @@ write_string (int16_t x, int16_t y,
 
 
   /* Draw each character using the font image. */
+
   for (i = 0; i < slength; i++)
     {
       chr = string[i];

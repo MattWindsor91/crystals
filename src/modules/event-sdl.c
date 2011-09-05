@@ -276,8 +276,8 @@ mouse_motion (event_t *event, SDL_Event *sdlevent)
       && sdlevent->motion.y < bottom)
     {
       event->motion.type = MOUSE_MOTION_EVENT;
-      event->motion.xraw = event->motion.x = sdlevent->motion.x;
-      event->motion.yraw = event->motion.y = sdlevent->motion.y;
+      event->motion.x = sdlevent->motion.x;
+      event->motion.y = sdlevent->motion.y;
       event->motion.deltax = sdlevent->motion.xrel;
       event->motion.deltay = sdlevent->motion.yrel;
     }
