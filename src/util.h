@@ -108,9 +108,13 @@ enum
 
 /* -- FUNCTION MACROS -- */
 
+#ifndef MAX
 #define MAX(x, y) ((x) > (y) ? (x) : (y)) /**< Get the maximum of two values. */
+#endif
 
+#ifndef MIN
 #define MIN(x, y) ((x) < (y) ? (x) : (y)) /**< Get the minimum of two values. */
+#endif
 
 
 /* - PLATFORM-DEPENDENCY FUNCTION MACROS - */

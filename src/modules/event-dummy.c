@@ -143,3 +143,6 @@ process_events_internal (void)
   event.type = QUIT_EVENT;
   (*sg_event_release) (&event);
 }
+
+/* vim: set ts=2 sw=2 softtabstop=2 cinoptions=>4,n-2,{2,^-2,:2,=2,g0,h2,p5,t0,+2,(0,u0,w1,m1: */
+

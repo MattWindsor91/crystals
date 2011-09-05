@@ -215,7 +215,7 @@ MODPATH  := $(shell pwd)/$(MODDIR)/\0
 WARN     := -Wall -Wextra -Wshadow -Wpointer-arith -Wcast-align \
             -Wwrite-strings -Wmissing-prototypes -Wmissing-declarations \
             -Wredundant-decls -Wnested-externs -Winline -Wno-long-long \
-            -Wconversion -Wstrict-prototypes
+            -Wstrict-prototypes
              
 
 # Not possible to use with -ansi cflag
