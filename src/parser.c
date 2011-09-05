@@ -57,7 +57,7 @@ init_config (const char *config_path)
 
   if (err != NULL)
     {
-      fatal ("PARSER: Unable to read conifg file: %s\n", err->message);
+      fatal ("PARSER - init_config - Unable to read conifg file: %s\n", err->message);
       g_error_free (err);
       return NULL;
     }
@@ -90,7 +90,7 @@ cfg_get_str (const char *group, const char *key, dict_t *cfg)
   
   if (err != NULL)
     {
-      error ("PARSER: Unable to read string value: %s\n", err->message);
+      error ("PARSER - cfg_get_str - Unable to read string value: %s\n", err->message);
       g_error_free (err);
       return NULL;
     }
@@ -111,7 +111,7 @@ cfg_get_int (const char *group, const char *key, dict_t *cfg)
   
   if (err != NULL)
     {
-      error ("PARSER: Unable to read integer value: %s\n", err->message);
+      error ("PARSER - cfg_get_int - Unable to read integer value: %s\n", err->message);
       g_error_free (err);
       return 0;
     }
