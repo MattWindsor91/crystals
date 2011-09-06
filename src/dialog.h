@@ -45,84 +45,116 @@
 #ifndef _DIALOG_H
 #define _DIALOG_H
 
+#include <glib.h>
+
 #include "types.h"
 #include "xml.h"
 
-/* -- ENUMS -- */
+/* -- TYPEDEFS -- */
 
-enum dialog_type 
+/* dialog types */
+typedef enum dialog_type 
 {
-  SIMPLE_TEXT,
+  TEXT,
   CHOICES,
   SET_EVENT, /**<< changes the status of a specific event */
-  SET_ITEM, /**<< Player gets an item */
-  SET_ATTR, /**<< increases Player attributes or skills */
-  GOTO /**<< simple dialog specific goto */
-};
+  SET_ITEM,  /**<< player gets an item */
+  SET_ATTR,  /**<< increases player attributes or skills */
+  SET_EXP    /**<< set experience points */
+} dlg_type_t;
 
-
-/* -- UNIONS -- */
-
-union dialog_action {
-  struct dialog_event *event;
-  struct item_node    *item;
-  struct choices_node *choices;
-  struct dialog_node  *content;
-  char                *goto_id;
-};
-
-/* -- STRUCTURES -- */ 
-
-struct dialog_root 
+typedef struct dialog_text
 {
-  struct dialog_node  *content;
-  struct dialog_node  **subcontents;
-  uint8_t             sc_n; /**<< amount of subcontents */
-  struct dialog_requirements *requirements;
-  xmlNode             xml_root;
-};
+  char *actor_id;
+  char *text;
+} dlg_text_id;
 
-/**
- * choices_node
- * 
- * @todo either use the first bits of text as description and use dialog_node
- *       instead of choices_node, or find a better way of solving this.
- */
-struct choices_node 
+typedef struct dialog_choises
 {
-  char                *description;
-  char                *text;
-  struct choices_node *next_node; 
-};
+  char      *actor_id;
+  GPtrArray *descrptions; /**<< */
+  GPtrArray *content_ids; /**<< */
+  /* Those two arrays have to have the same length */
+} dlg_choices_t;
 
-struct dialog_node 
+typedef struct dialog_event
 {
-  void                speaker; /**<< @todo find a way to map to a speaker, 
-                                           maybe some sort of ID? */
-  char                *text;
-  char                *sc_id; /**<< is only set for subcontents, otherwise NULL */
-  enum  dialog_type   type;
-  union dialog_action *action;
-};
+  char *name;
+  char *state;
+} dlg_event_t;
 
-struct dialog_requirements
+typedef struct dialog_item
 {
-  enum event_type *events;
-  enum attr_type  *attr;
-};
+  char    *name;
+  int32_t amount;
+} dlg_item_t;
+
+typedef struct dialog_attribute
+{
+  char    *name;
+  int32_t *value; /**<< value to add to the chosen attribute */
+} dlg_attr_t;
+
+typedef union dialog_action 
+{
+  dlg_event_t   *event;
+  dlg_item_t    *item;
+  dlg_choices_t *choices;
+  dlg_text_t    *text;
+  dlg_attr_t    *attr;
+  int32_t       *exp;
+  char          *goto_id;
+} dlg_action_t;
+
+typedef struct dialog_contents
+{
+  char         *content_id;
+  dlg_type_t   type;
+  dlg_action_t *action;
+} dlg_content_t;  
+
+typedef struct dialog_root 
+{
+  GPtrArray  *requirements;
+  GPtrArray  *contents;
+  xml_node_t *xml_root;
+} dlg_t;
+
+
+/* requirements types */
+typedef enum requirement_type
+{
+  EVENT, /**<< all sorts of ingame events from triggers or other dialogs */
+  ATTR,  /**<< is a special attribute or skill required for the conversation */
+  ITEM,  /**<< an item, you found your the stolen flowers, yay */
+  LEVEL  /**<< a specified level, maybe to enter a dangerous cave :O */
+} req_type_t;
+
+typedef union requirement_action
+{
+  dlg_event_t *event;
+  dlg_item_t  *item;
+  dlg_attr_t  *attr;
+  int32_t     *lvl;
+} req_action_t;
+
+typedef struct requirement
+{
+  req_type_t   type;
+  req_action_t *action;
+} req_t;
 
 /* -- DECLARAITONS -- */
 
-struct dialog_root*
-parse_dialog_file (const char *p);
+dlg_t*
+dlg_parse_file (const char *p);
+
+/* fun api stuff to come*/
 
 void
-free_dialog (struct dialog_root *r);
-
-static void 
-xml_to_dlg (struct dialog_root *dlg_root, xmlNode *node, xmlNode *xml_root);
-
-static void 
-add_dialog_content (struct dialog_node **xml_node, xmlNode *xml_node);
+dlg_free (dlg_t *dlg);
 
 #endif /* _DIALOG_H */
+
+/* vim: set ts=2 sw=2 softtabstop=2 cinoptions=>4,n-2,{2,^-2,:2,=2,g0,h2,p5,t0,+2,(0,u0,w1,m1: */
+
