@@ -67,9 +67,9 @@ typedef struct dialog_text
 {
   char *actor_id;
   char *text;
-} dlg_text_id;
+} dlg_text_t;
 
-typedef struct dialog_choises
+typedef struct dialog_choices
 {
   char      *actor_id;
   GPtrArray *descrptions; /**<< */
@@ -77,11 +77,11 @@ typedef struct dialog_choises
   /* Those two arrays have to have the same length */
 } dlg_choices_t;
 
-typedef struct dialog_event
+typedef struct dialog_quest
 {
   char *name;
   char *state;
-} dlg_event_t;
+} dlg_quest_t;
 
 typedef struct dialog_item
 {
@@ -97,12 +97,13 @@ typedef struct dialog_attribute
 
 typedef union dialog_action 
 {
-  dlg_event_t   *event;
+  dlg_quest_t   *quest;
   dlg_item_t    *item;
   dlg_choices_t *choices;
   dlg_text_t    *text;
   dlg_attr_t    *attr;
   int32_t       *exp;
+  char          *event;
   char          *goto_id;
 } dlg_action_t;
 
@@ -125,6 +126,7 @@ typedef struct dialog_root
 typedef enum requirement_type
 {
   EVENT, /**<< all sorts of ingame events from triggers or other dialogs */
+  QUEST, /**<< did you accept, complete or failed a quest */
   ATTR,  /**<< is a special attribute or skill required for the conversation */
   ITEM,  /**<< an item, you found your the stolen flowers, yay */
   LEVEL  /**<< a specified level, maybe to enter a dangerous cave :O */
@@ -132,9 +134,10 @@ typedef enum requirement_type
 
 typedef union requirement_action
 {
-  dlg_event_t *event;
+  dlg_quest_t *quest;
   dlg_item_t  *item;
   dlg_attr_t  *attr;
+  char        *evet
   int32_t     *lvl;
 } req_action_t;
 
@@ -144,7 +147,7 @@ typedef struct requirement
   req_action_t *action;
 } req_t;
 
-/* -- DECLARAITONS -- */
+/* -- DECLARATIONS -- */
 
 dlg_t*
 dlg_parse_file (const char *p);
