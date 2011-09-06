@@ -46,7 +46,7 @@
 #ifndef _OBJECT_H
 #define _OBJECT_H
 
-#include "glib.h" /* GHFunc */
+#include <glib.h> /* GHFunc */
 
 #include "../types.h"      /* Types.         */
 #include "map.h"           /* layer_value_t  */

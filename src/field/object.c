@@ -47,7 +47,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "glib.h"
+#include <glib.h>
 
 #include "object.h"
 #include "object-api.h"
