@@ -74,7 +74,7 @@ focus_camera_on_object (const char object_name[])
       return FAILURE;
     }
 
-  object = get_object (object_name, NULL);
+  object = get_object (object_name);
 
   if (object == NULL)
     {
@@ -117,7 +117,7 @@ move_object (const char object_name[], int32_t dx, int32_t dy)
   /* End sanity checking. */
 
 
-  object = get_object (object_name, NULL);
+  object = get_object (object_name);
 
   if (object == NULL)
     {
@@ -232,7 +232,7 @@ position_object (const char object_name[], int32_t x, int32_t y,
   /* End sanity checking. */
 
 
-  object = get_object (object_name, NULL);
+  object = get_object (object_name);
 
   if (object == NULL)
     {
@@ -323,7 +323,7 @@ tag_object (const char object_name[], layer_tag_t tag)
   /* End sanity checking. */
 
 
-  object = get_object (object_name, NULL);
+  object = get_object (object_name);
 
   if (object == NULL)
     {
@@ -369,7 +369,7 @@ change_object_image (const char object_name[],
       return FAILURE;
     }
 
-  object = get_object (object_name, NULL);
+  object = get_object (object_name);
 
   if (object == NULL)
     {

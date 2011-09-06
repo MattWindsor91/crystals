@@ -47,6 +47,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <glib.h>
+
 #include "object.h"
 #include "object-api.h"
 #include "../util.h"
@@ -54,7 +56,7 @@
 
 /* -- STATIC GLOBAL VARIABLES -- */
 
-static struct hash_object *sg_objects[HASH_VALS];
+static GHashTable *sg_objects;
 
 
 /* -- DEFINITIONS -- */
@@ -64,12 +66,19 @@ static struct hash_object *sg_objects[HASH_VALS];
 bool_t
 init_objects (void)
 {
-  unsigned int i;
+  sg_objects = g_hash_table_new_full (g_str_hash,
+                                      g_str_equal,
+                                      free,
+                                      free_object);
 
-  for (i = 0; i < HASH_VALS; i++)
-    sg_objects[i] = NULL;
-
-  return SUCCESS;
+  if (sg_objects)
+    {
+      return SUCCESS;
+    }
+  else
+    {
+      return FAILURE;
+    }
 }
 
 
@@ -80,7 +89,6 @@ add_object (const char object_name[],
             const char script_filename[])
 {
   object_t *object;
-  hash_object_t *result;
 
   /* Sanity-check passed strings. */
 
@@ -121,8 +129,7 @@ add_object (const char object_name[],
 
   /* Try to copy the object name over. */
 
-  object->name = malloc (sizeof (char) * (strlen (object_name) + 1));
-
+  object->name = g_strdup (object_name);
   if (object->name == NULL)
     {
       error ("OBJECT - add_object - Allocation failed for name of %s.", 
@@ -131,14 +138,10 @@ add_object (const char object_name[],
       return NULL;
     }
 
-  strncpy (object->name, object_name,
-           sizeof (char) * strlen (object_name) + 1);
 
   /* Try to copy the filename over. */
 
-  object->script_filename = malloc (sizeof (char)
-                                    * (strlen (script_filename) + 1));
-
+  object->script_filename = g_strdup (script_filename);
   if (object->script_filename == NULL)
     {
       error ("OBJECT - add_object - Allocation failed for filename of %s.", 
@@ -155,20 +158,11 @@ add_object (const char object_name[],
 
   /* Try to store the object. */
 
-  result = create_hash_object (sg_objects, 
-                               object_name,
-                               DATA_OBJECT, 
-                               object);
-
-  if (result == NULL)
-    {
-      error ("OBJECT - add_object - Store failed for %s.", 
-               object_name);
-      free_object (object);
-      return NULL;
-    }
-
-  return (object_t*) result->data;
+  g_hash_table_insert (sg_objects,
+                       g_strdup(object_name),
+                       object);
+  
+  return object;
 }
 
 
@@ -436,20 +430,21 @@ set_object_dirty (object_t *object,
 
 
 void
-free_object (object_t *object)
+free_object (void *object)
 {
-  if (object)
+  object_t *objectc = (object_t *) object;
+  if (objectc)
     {
-      if (object->name)
-        free (object->name);
+      if (objectc->name)
+        free (objectc->name);
 
-      if (object->script_filename)
-        free (object->script_filename);
+      if (objectc->script_filename)
+        free (objectc->script_filename);
 
-      if (object->image)
-        free_object_image (object->image);
+      if (objectc->image)
+        free_object_image (objectc->image);
 
-      free (object);
+      free (objectc);
     }
 }
 
@@ -459,23 +454,16 @@ free_object (object_t *object)
 bool_t
 delete_object (const char object_name[])
 {
-  return delete_hash_object (sg_objects, object_name);
+  return g_hash_table_remove (sg_objects, object_name);
 }
 
 
-/* Retrieve an object, or add an object to the object table. */
+/* Retrieve an object. */
 
 object_t *
-get_object (const char object_name[], struct hash_object *add_pointer)
+get_object (const char object_name[])
 {
-  struct hash_object *result;
-
-  result = get_hash_object (sg_objects, object_name, add_pointer);
-
-  if (result == NULL)
-    return NULL;
-  else
-    return (object_t*) result->data;
+  return g_hash_table_lookup(sg_objects, object_name);
 } 
 
 
@@ -484,45 +472,40 @@ get_object (const char object_name[], struct hash_object *add_pointer)
  * rectangle and, if so, mark the object as dirty.
  */
 
-bool_t
-dirty_object_test (struct hash_object *hash_object, void *rect_pointer)
+void
+dirty_object_test (void *key, void *object, void *rect_pointer)
 {
-  object_t *object;
   mapview_t *mapview;
+  object_t *objectc = (object_t*) object;
   struct dirty_rectangle *rect;
-
+  
   int start_x;
   int start_y;
   int width;
   int height;
+  
+  (void) key; /* Avoid unused warnings */
 
-  /* Sanity-check the hash object and dirty rectangle data. */
+  /* Sanity-check the dirty rectangle data. */
 
-  if (hash_object == NULL)
+  if (objectc == NULL)
     {
-      error ("OBJECT - dirty_object_test - Given hash object is NULL.\n");
-      return FAILURE;
-    }
-
-  if (hash_object->data == NULL)
-    {
-      error ("OBJECT - dirty_object_test - Hash object has no data.\n");
-      return FAILURE;
+      error ("OBJECT - dirty_object_test - Object has no data.\n");
     }
 
   if (rect_pointer == NULL)
     {
       error ("OBJECT - dirty_object_test - Given dirty rect pointer is NULL.\n");
-      return FAILURE;
     }
 
-  object = (object_t *) hash_object->data;
   rect = (struct dirty_rectangle *) rect_pointer;
 
  /* If an object is already dirty, don't bother checking. */
 
-  if (object->is_dirty == TRUE)
-    return SUCCESS;
+  if (objectc->is_dirty == TRUE)
+    {
+      return;
+    }
 
   mapview = rect->parent;
   start_x = rect->start_x;
@@ -533,30 +516,27 @@ dirty_object_test (struct hash_object *hash_object, void *rect_pointer)
   /* Use separating axis theorem, sort of, to decide whether the
      object rect and the dirty rect intersect. */
 
-  if ((object->image->map_x <= (start_x + width - 1))
-      && (object->image->map_x
-          + object->image->width >= start_x)
-      && (object->image->map_y <= (start_y + height - 1))
-      && (object->image->map_y
-          + object->image->height >= start_y))
+  if ((objectc->image->map_x <= (start_x + width - 1))
+      && (objectc->image->map_x
+          + objectc->image->width >= start_x)
+      && (objectc->image->map_y <= (start_y + height - 1))
+      && (objectc->image->map_y
+          + objectc->image->height >= start_y))
     {
-      set_object_dirty (object, mapview);
+      set_object_dirty (objectc, mapview);
     }
-
-  return SUCCESS;
 }
 
 
 /** Apply the given function to all objects. */
 
-bool_t
-apply_to_objects (bool_t (*function) (hash_object_t *object,
-                                      void *data),
+void
+apply_to_objects (GHFunc function,
                   void *data)
 {
-  return apply_to_hash_objects (sg_objects, 
-                                function, 
-                                data);
+  g_hash_table_foreach (sg_objects, 
+                        function, 
+                        data);
 }
 
 
@@ -565,5 +545,5 @@ apply_to_objects (bool_t (*function) (hash_object_t *object,
 void
 cleanup_objects (void)
 {
-  clear_hash_objects (sg_objects);
+  g_hash_table_destroy (sg_objects);
 }

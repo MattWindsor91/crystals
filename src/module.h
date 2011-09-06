@@ -47,42 +47,13 @@
 #ifndef _MODULE_H
 #define _MODULE_H
 
+#include <gmodule.h> /* GModule */
 
 #include "types.h"
 #include "events.h"
 
 
-/* -- MACROS -- */
-
-/* The following macros are used for the purposes of POSIX and Windows
- * compatibility with regards to dynamic library loading.
- */
-
-/** Windows 32-bit - use Windows API to load .dll files. */
-
-#ifdef PLATFORM_WINDOWS
-
-#include "platform/w32-module.h"
-
-#endif /* PLATFORM_WINDOWS */
-
-
-/** UNIX and similar - use dlfcn.h, dlopen etc. to load .so files. */
-
-#ifdef USE_LIBDL
-
-#include <dlfcn.h>
-
-typedef void* dll_handle;                    /**< Handle type used for SO modules. */
-typedef void* mod_function_ptr;              /**< Function pointer type used for SOs. */
-
-#define DLLOPEN(x) dlopen(x, RTLD_LAZY)      /**< Function used for opening SOs. */
-#define DLLLOOKUP(x,y) dlsym(x,y)            /**< Function used for looking up SO symbols. */
-#define DLLCLOSE(x) dlclose(x)               /**< Function used for closing SOs. */
-#define DLLERROR(x) std_get_dll_error(x)     /**< Function used for getting SO errors. */
-#define MODULESUFFIX ".so"                   /**< Function used for SOs. */
-
-#endif /* USE_LIBDL */
+typedef void* mod_function_ptr; /**< Function pointer type used for SOs. */
 
 
 /* -- STRUCTURES -- */
@@ -97,7 +68,7 @@ typedef void* mod_function_ptr;              /**< Function pointer type used for
 
 typedef struct
 {
-  void *lib_handle; /**< The dynamic loading handle for the module. */
+  GModule *lib_handle; /**< The dynamic loading handle for the module. */
 
   void
   (*init) (void); /**< Pointer to the module's initialisation
@@ -413,26 +384,6 @@ bool_t
 get_module (const char* modulepath, module_data *module);
 
 
-#ifdef USE_LIBDL
-
-/**
- * Raise the last DLL-acquisition error message, if any.
- *
- * This is the standard version of the dll error function, which uses libdl.
- * Alternative versions for non-libdl platforms are given in platform-specific
- * code files (src/platform/PLATFORM-module.{c, h}).
- *
- * @param function_name  The name of the function calling get_dll_error,
- *                       to display in the message.
- *
- */
-
-void
-std_get_dll_error (const char function_name[]);
-
-#endif /* USE_LIBDL */
-
-
 /**
  * Find a pointer to a function within a module.
  *
@@ -494,6 +445,15 @@ load_module_event (const char* name, module_set* modules);
 
 bool_t
 load_module_bindings (const char* name, module_set* modules);
+
+
+/**
+ * Raise the last DLL-acquisition error message, if any.
+ * 
+ * @param function_name The name of the calling function.
+ */
+void
+get_dll_error (const char function_name[]);
 
 
 /**

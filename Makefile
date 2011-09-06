@@ -126,7 +126,7 @@ TESTS    := $(addprefix $(TESTDIR)/,$(TESTS))
 # The following object list represents the core of the engine 
 # and thus generally does not need altering by users.
 
-OBJ      := main.o hash.o graphics.o events.o
+OBJ      := main.o graphics.o events.o
 OBJ      += util.o module.o optionparser.o parser.o state.o
 OBJ      += field/field.o 
 OBJ      += field/map.o field/mapview.o field/mapload.o
@@ -233,15 +233,13 @@ CFLAGS   := -ansi -pedantic -O2 -g3 -ggdb -DDEFMODPATH="\"$(MODPATH)\"" $(WARN)
 
 # Flags used:
 
-# USE_LIBDL  | Use libdl (dlopen etc.) for loading shared objects.
-#            | This should be used on most if not all non-Windows targets.
 # NO_STRSAFE | On Windows platforms, do not use strsafe.  At time of writing, 
 #            | this causes snprintf etc. to be used instead, which depends on 
 #            | C99 or GNU support.
 # USE_STDINT | On Windows platforms, use stdint.h (depends on C99 or 
 #            | GNU support) instead of Windows API types.
 
-GNUFLAGS := -DPLATFORM_GNU -DUSE_LIBDL
+GNUFLAGS := -DPLATFORM_GNU
 GNULIBS  := -ldl -lpthread
 
 # Windows using mingw32 #
@@ -288,8 +286,8 @@ endif
 
 
 # FIXME
-CFLAGS   += `pkg-config glib-2.0 --cflags`
-LIBS     += `pkg-config glib-2.0 --libs`
+CFLAGS   += `pkg-config glib-2.0 gmodule-2.0 --cflags`
+LIBS     += `pkg-config glib-2.0 gmodule-2.0 --libs`
 
 
 # Add bindings object file to the other object files and add the proper CFLAGS and LIBS.
