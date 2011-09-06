@@ -183,7 +183,10 @@ fatal (const char message[], ...)
 {
   va_list ap;
   va_start (ap, message);
-  ERROR_PROCEDURE (message, ap, TRUE);
+  g_logv (G_LOG_DOMAIN, G_LOG_LEVEL_CRITICAL, message, ap);
+  
+  cleanup ();
+  exit (1);
 }
 
 
@@ -194,32 +197,7 @@ error (const char message[], ...)
 {
   va_list ap;
   va_start (ap, message);
-  ERROR_PROCEDURE (message, ap, FALSE);
-}
-
-
-/* Standard error reporting procedure. */
-
-void
-std_error (const char message[], va_list ap, bool_t is_fatal)
-{
-  if (is_fatal)
-    fprintf (stderr, "FATAL: ");
-  else
-    fprintf (stderr, "ERROR: ");
-
-  vfprintf (stderr, message, ap);
-  fprintf (stderr, "\n");
-  va_end (ap);
-
-  fflush (stderr);
-
-
-  if (is_fatal)
-    {
-      cleanup ();
-      exit (1);
-    }
+  g_logv (G_LOG_DOMAIN, G_LOG_LEVEL_WARNING, message, ap);
 }
 
 

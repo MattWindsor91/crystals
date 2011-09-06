@@ -49,12 +49,12 @@
 
 /* -- INCLUDES -- */
 
-#include "hash.h"  /* Hash stuff. */
 #include "types.h" /* Types */
 
 
 /* -- TYPEDEFS -- */
 
+typedef void image_t;         /**< Generic image data type. */
 typedef uint8_t alignment_t;  /**< Text alignment modifier type. */
 
 
@@ -204,7 +204,7 @@ scroll_screen (int16_t x_offset, int16_t y_offset);
  *                  NULL otherwise.
  */
 
-hash_object_t *
+image_t *
 load_image (const char filename[]);
 
 
@@ -215,12 +215,10 @@ load_image (const char filename[]);
  * free_image_data function.
  *
  * @param image  Pointer to the image data to free.
- *
- * @return       SUCCESS for success; FAILURE otherwise.
  */
 
-bool_t
-free_image (void *image);
+void
+free_image (image_t *image);
 
 
 /**
@@ -314,11 +312,11 @@ clear_images (void);
  *
  * @param filename  The filename of the image to retrieve.
  *
- * @return          A pointer to the hash object encapsulating the
- *                  image if found, or NULL otherwise.
+ * @return          A pointer to the image if found, 
+ *                  or NULL otherwise.
  */
 
-hash_object_t *
+image_t *
 find_image (const char filename[]);
 
 

@@ -46,6 +46,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <gmodule.h> /* Module loading support */
+
 #ifdef TESTSUITE
 #include "tests/module.h"
 #endif /* TESTSUITE */
@@ -61,6 +63,12 @@ module_set g_modules; /* The set of all modules in use */
 bool_t
 init_modules (const char *path)
 {
+  if (g_module_supported () == FALSE)
+    {
+      error ("MODULE - init_modules - Module loading not supported.");
+      return FAILURE;
+    }
+  
   g_modules.path = malloc (sizeof (char) * (strlen (path) + 1));
 
   if (g_modules.path)
@@ -100,13 +108,12 @@ get_module_path (const char* module, const char* modulespath, char** out)
   char *path;
 
   path = calloc (strlen (modulespath) + strlen (module)
-                 + strlen (MODULESUFFIX) + 1, sizeof (char));
+                 + 1, sizeof (char));
 
   if (path)
     {
       strncpy (path, modulespath, strlen (modulespath));
       strncat (path, module, strlen (module));
-      strncat (path, MODULESUFFIX, strlen (MODULESUFFIX));
     }
   else
     {
@@ -156,11 +163,11 @@ get_module (const char* modulepath, module_data *module)
   if (module->lib_handle != NULL)
     return FAILURE;
 
-  module->lib_handle = DLLOPEN(modulepath);
+  module->lib_handle = g_module_open(modulepath, 0);
 
   if (module->lib_handle == NULL)
     {
-      DLLERROR("get_module");
+      get_dll_error ("get_module");
       return FAILURE;
     }
 
@@ -180,20 +187,17 @@ get_module (const char* modulepath, module_data *module)
 }
 
 
-#ifdef USE_LIBDL
-
 /* Raise the last DLL-acquisition error message, if any. */
 
 void
-std_get_dll_error (const char function_name[])
+get_dll_error (const char function_name[])
 {
-  char *dlerr = dlerror ();
+  const char *dlerr = g_module_error ();
 
   if (dlerr != NULL)
     error ("MODULE - %s - Failed with dlerr: %s", function_name, dlerr);
 }
 
-#endif /* USE_LIBDL */
 
 
 /* This loads a pointer to a function from a module */
@@ -201,13 +205,13 @@ std_get_dll_error (const char function_name[])
 bool_t
 get_module_function (module_data module, const char *function, mod_function_ptr *func)
 {
-  /** char *dlerr; */
+  gboolean success;
+  
+  success = g_module_symbol (module.lib_handle, function, func);
 
-  *func = DLLLOOKUP(module.lib_handle, function);
-
-  if (*func == NULL)
+  if (!success)
     {
-      DLLERROR("get_module_function");
+      get_dll_error ("get_module_function");
       return FAILURE;
     }
 
@@ -312,7 +316,7 @@ close_module (module_data *module)
           (*module->term) ();
         }
       /* Close the lib handle */
-      DLLCLOSE (module->lib_handle);
+      g_module_close (module->lib_handle);
     }
 }
 

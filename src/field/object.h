@@ -46,8 +46,9 @@
 #ifndef _OBJECT_H
 #define _OBJECT_H
 
+#include <glib.h> /* GHFunc */
+
 #include "../types.h"      /* Types.         */
-#include "../hash.h"       /* Hash stuff.    */
 #include "map.h"           /* layer_value_t  */
 #include "object-image.h"  /* object_image_t */
 #include "mapview.h"       /* mapview_t      */
@@ -95,11 +96,6 @@ typedef struct object
                                  image data. */
 } object_t;
 
-
-/* -- GLOBAL VARIABLES -- */
-
-extern struct hash_object *g_objects[HASH_VALS]; /**< The object hash
-                                                    table. */
 
 /* -- DECLARATIONS-- */
 
@@ -284,7 +280,7 @@ set_object_dirty (object_t *object,
  */
 
 void
-free_object (object_t *object);
+free_object (void *object);
 
 
 /** Remove an object from the object table.
@@ -306,55 +302,44 @@ void
 clear_objects (void);
 
 
-/** Retrieve an object, or add an object to the object table.
+/** Retrieve an object.
  *
  *  @param object_name  The name of the object concerned. 
  *
- *  @param add_pointer  If this is non-NULL, the function will attempt
- *                      to add the object pointed to by this function
- *                      to the object table.  Otherwise, the function
- *                      will try to find existing objects with the
- *                      given name.
- *
- *  @return  A pointer to the object with the given name if found or
- *  created, or NULL otherwise.
+ *  @return  A pointer to the object with the given name if found, or 
+ *           NULL otherwise.
  */
 
 object_t *
-get_object (const char object_name[], struct hash_object *add_pointer);
+get_object (const char object_name[]);
 
 
 /** Check to see whether the given object falls within the given dirty
  *  rectangle and, if so, mark the object as dirty.
  *
- *  @param hash_object   The hash container of the object to test.
+ *  @param key           The name of the object (ignored).
+ * 
+ *  @param object        The object to test.
  *
  *  @param rect_pointer  Void pointer to the dirty rectangle to test.
- *
- *  @return SUCCESS if there were no errors encountered; FAILURE
- *  otherwise.
  */
 
-bool_t
-dirty_object_test (struct hash_object *hash_object, void *rect_pointer);
+void
+dirty_object_test (void *key, void *object, void *rect_pointer);
 
 
 /** Apply the given function to all objects.
  *
  *  @param function  Pointer to the function to apply to the
- *                   object.  The function must take the hash object
+ *                   object.  The function must take the object
  *                   as first parameter followed by a void pointer for
- *                   data, and return a SUCCESS/FAILURE bool_t.
+ *                   data.
  *
  *  @param data      Void pointer to the data to pass to the function.
- *
- *  @return SUCCESS if all applications of the function succeeded,
- *  FAILURE otherwise.
  */
 
-bool_t
-apply_to_objects (bool_t (*function) (hash_object_t *object,
-                                      void *data),
+void
+apply_to_objects (GHFunc function,
                   void *data);
 
 

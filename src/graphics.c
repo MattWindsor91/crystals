@@ -71,7 +71,7 @@ const uint16_t FONT_H = 10;
 
 /* -- STATIC GLOBAL VARIABLES -- */
 
-static hash_object_t *sg_images[HASH_VALS];
+static GHashTable *sg_images = NULL;
 
 
 /* -- DEFINITIONS -- */
@@ -81,8 +81,6 @@ static hash_object_t *sg_images[HASH_VALS];
 bool_t
 init_graphics (void)
 {
-  int i;
-
   if (load_module_gfx (cfg_get_str ("modules", "graphics_module", g_config), &g_modules) == FAILURE)
     {
       error ("GRAPHICS - init_graphics - Could not load graphics module.");
@@ -102,9 +100,10 @@ init_graphics (void)
 
   /* Initialise the image list. */
  
-  for (i = 0; i < HASH_VALS; i++)
-    sg_images[i] = NULL;
-
+  sg_images = g_hash_table_new_full(g_str_hash,
+                                    g_str_equal,
+                                    free,
+                                    free_image);
 
   return SUCCESS;
 }
@@ -256,11 +255,10 @@ scroll_screen (int16_t x_offset, int16_t y_offset)
 
 /* Load an image. */
 
-hash_object_t *
+void *
 load_image (const char filename[])
 {
-  hash_object_t *image;
-  hash_object_t *get_try;
+  void *get_try;
   void *data;
   char *path;
 
@@ -278,7 +276,7 @@ load_image (const char filename[])
 
   /* First, check to see if the image isn't already there. */
 
-  get_try = find_hash_object (sg_images, filename);
+  get_try = g_hash_table_lookup (sg_images, filename);
 
   if (get_try != NULL)
     {
@@ -311,36 +309,22 @@ load_image (const char filename[])
     }
 
 
-  image = create_hash_object (sg_images, 
-                              filename, 
-                              DATA_IMAGE, 
-                              data);
-
-  if (image == NULL)
-    {
-      fatal ("GFX - load_image - Hash object create failed for %s.", 
-             filename);
-      free_image (data);
-      return NULL;
-    }
-
-
-  return image;
+  g_hash_table_insert(sg_images, g_strdup(filename), data);
+  return data;
 }
 
 
 /* Free image data. */
 
-bool_t
-free_image (void *image)
+void
+free_image (image_t *image)
 {
   if (image == NULL)
     {
       error ("GFX - free_image - Tried to free NULL image.");
-      return FAILURE;
     }
 
-  return (*g_modules.gfx.free_image_data) (image);
+  (*g_modules.gfx.free_image_data) (image);
 }
 
 
@@ -352,7 +336,7 @@ draw_image (const char filename[], int16_t image_x, int16_t image_y,
             int16_t screen_x, int16_t screen_y, uint16_t width,
             uint16_t height)
 {
-  hash_object_t *img;
+  image_t *img;
 
 
   /* Get image object from filename. */
@@ -367,7 +351,7 @@ draw_image (const char filename[], int16_t image_x, int16_t image_y,
       return FAILURE;
     }
 
-  return draw_image_direct (img->data, 
+  return draw_image_direct (img, 
                             image_x, 
                             image_y, 
                             screen_x, 
@@ -400,7 +384,7 @@ draw_image_direct (void *data, int16_t image_x, int16_t image_y,
 bool_t
 delete_image (const char filename[])
 {
-  return delete_hash_object (sg_images, filename);
+  return g_hash_table_remove (sg_images, filename);
 }
 
 
@@ -409,16 +393,16 @@ delete_image (const char filename[])
 void
 clear_images (void)
 {
-  clear_hash_objects (sg_images);
+  g_hash_table_destroy (sg_images);
 }
 
 
 /* Retrieve an image from the image cache. */
 
-hash_object_t *
+image_t *
 find_image (const char filename[])
 {
-  return get_hash_object (sg_images, filename, NULL);
+  return g_hash_table_lookup (sg_images, filename);
 }
 
 
