@@ -46,7 +46,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "gmodule.h" /* Module loading support */
+#include <gmodule.h> /* Module loading support */
 
 #ifdef TESTSUITE
 #include "tests/module.h"
