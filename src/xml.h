@@ -49,13 +49,48 @@
 
 #include "util.h"
 
+/* -- TYPEDEFS -- */
+
+/**
+ * xml_node_t
+ *
+ * This structure is taken directly from libxml2 and has various pointers
+ *
+ * childeren        The first children
+ * last             The last children
+ * next             The next sibling
+ * prev             The previous sibling
+ * parent           The parent pointer
+ *
+ * Always check for NULL pointers!
+ */
+
 typedef xmlNode xml_node_t;
+
+/**
+ * xml_type_t
+ *
+ * A node can also have different types. At the moment we are only interested
+ * content types like:
+ *
+ * XML_ELEMENT_NODE   An element node that has a name, content and properties
+ * XML_TEXT_NODE      A node that only contains text. (Sometimes just "")
+ * XML_COMMENT_NODE   Comment block.
+ */
+
+typedef xmlElementType xml_type_t;
+
+
+/* -- FUNCTION PROTOTYPES -- */
 
 xml_node_t*
 xml_parse_doc (const char *p);
 
 bool_t
 xml_verify_doc (xml_node_t *root, const char *root_name);
+
+xml_type_t
+xml_get_node_type (xml_node_t *node);
 
 const char*
 xml_get_node_prop (xml_node_t *node, const char *prop);

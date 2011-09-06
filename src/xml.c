@@ -92,6 +92,12 @@ xml_verify_doc (xmlNode *root, const char *root_name)
     return FALSE;
 }
 
+xml_type_t
+xml_get_node_type (xmlNode *node)
+{
+  return node->type;
+}
+
 const char*
 xml_get_node_prop (xmlNode *node, const char *prop)
 {
