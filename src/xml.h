@@ -52,7 +52,7 @@
 /* -- TYPEDEFS -- */
 
 /**
- * xml_node_t
+ * XML Node
  *
  * This structure is taken directly from libxml2 and has various pointers
  *
@@ -68,7 +68,7 @@
 typedef xmlNode xml_node_t;
 
 /**
- * xml_type_t
+ * XML Node Type
  *
  * A node can also have different types. At the moment we are only interested
  * content types like:
@@ -83,23 +83,83 @@ typedef xmlElementType xml_type_t;
 
 /* -- FUNCTION PROTOTYPES -- */
 
+/**
+ * Parses a XML document
+ *
+ * @param  p   The path to the document
+ *
+ * @return     Returns a XML node to the root element
+ */
+
 xml_node_t*
 xml_parse_doc (const char *p);
+
+
+/**
+ * Verify the document, by checking the name of the root element
+ *
+ * @param root       The root node.
+ * @param root_name  The name the root element is supposed to have
+ *
+ * @return           Either TRUE if the name is the same or FALSE
+ */
 
 bool_t
 xml_verify_doc (xml_node_t *root, const char *root_name);
 
+
+/**
+ * Return the XML Node Type
+ * node->type can also be used to get the type
+ *
+ * @param node   A valid XML node
+ *
+ * @return       The type of the node.
+ */
+
 xml_type_t
 xml_get_node_type (xml_node_t *node);
+
+
+/**
+ * Get the a specific property
+ *
+ * @param node   A valid XML node
+ * @param prop   The name of the property
+ *
+ * @return       The string value of the property
+ */
 
 const char*
 xml_get_node_prop (xml_node_t *node, const char *prop);
 
+
+/**
+ * Get the content of a node
+ *
+ * @param node   A valid XML node
+ * 
+ * @return       Returns all content inside the node
+ */
+
 const char*
 xml_get_node_content (xml_node_t *node);
 
+
+/**
+ * Free the open docmunent
+ *
+ * @param root    The root node or any node
+ */
+
 void
 xml_free_doc (xml_node_t *root);
+
+
+/**
+ * Clean up the XML praser.
+ * At the moment only calling xml_free_doc is sufficient.
+ */
 
 void
 cleanup_xml (void);
