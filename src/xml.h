@@ -57,6 +57,12 @@ xml_parse_doc (const char *p);
 bool_t
 xml_verify_doc (xml_node_t *root, const char *root_name);
 
+const char*
+xml_get_node_prop (xml_node_t *node, const char *prop);
+
+const char*
+xml_get_node_content (xml_node_t *node);
+
 void
 xml_free_doc (xml_node_t *root);
 

@@ -92,6 +92,18 @@ xml_verify_doc (xmlNode *root, const char *root_name)
     return FALSE;
 }
 
+const char*
+xml_get_node_prop (xmlNode *node, const char *prop)
+{
+  return (const char *) xmlGetProp (node, (const xmlChar *) prop);
+}
+
+const char*
+xml_get_node_content (xmlNode *node)
+{
+  return (const char *) xmlNodeGetContent (node);
+}
+
 void
 xml_free_doc (xmlNode *root)
 {
