@@ -484,7 +484,7 @@ dirty_object_test (void *key, void *object, void *rect_pointer)
   int width;
   int height;
   
-  key = key; /* Avoid unused warnings */
+  (void) key; /* Avoid unused warnings */
 
   /* Sanity-check the dirty rectangle data. */
 
