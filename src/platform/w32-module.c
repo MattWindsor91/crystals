@@ -69,7 +69,7 @@ w32_get_dll_error (const char function_name[])
                  (LPTSTR) &lpMsgBuf,
                  0, NULL);
 
-  error ("MODULE - %s - Failed with error %d: %s", function_name, dw, lpMsgBuf);
+  g_critical ("MODULE - %s - Failed with error %d: %s", function_name, dw, lpMsgBuf);
 
   LocalFree (lpMsgBuf);
 }

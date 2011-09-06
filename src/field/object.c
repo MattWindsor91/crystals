@@ -94,13 +94,13 @@ add_object (const char object_name[],
 
   if (object_name == NULL)
     {
-      error ("OBJECT - add_object - Object name is NULL.");
+      g_critical ("OBJECT - add_object - Object name is NULL.");
       return NULL;
     }
 
   if (script_filename == NULL)
     {
-      error ("OBJECT - add_object - Script filename is NULL.");
+      g_critical ("OBJECT - add_object - Script filename is NULL.");
       return NULL;
     }
 
@@ -110,7 +110,7 @@ add_object (const char object_name[],
 
   if (object == NULL)
     {
-      error ("OBJECT - add_object - Allocation failed for %s.", 
+      g_critical ("OBJECT - add_object - Allocation failed for %s.", 
              object_name);
       return NULL;
     }
@@ -121,7 +121,7 @@ add_object (const char object_name[],
 
   if (object->image == NULL)
     {
-      error ("OBJECT - add_object - Initialisation failed for image of %s.",
+      g_critical ("OBJECT - add_object - Initialisation failed for image of %s.",
              object_name);
       free_object (object);
       return NULL;
@@ -132,7 +132,7 @@ add_object (const char object_name[],
   object->name = g_strdup (object_name);
   if (object->name == NULL)
     {
-      error ("OBJECT - add_object - Allocation failed for name of %s.", 
+      g_critical ("OBJECT - add_object - Allocation failed for name of %s.", 
              object_name);
       free_object (object);
       return NULL;
@@ -144,7 +144,7 @@ add_object (const char object_name[],
   object->script_filename = g_strdup (script_filename);
   if (object->script_filename == NULL)
     {
-      error ("OBJECT - add_object - Allocation failed for filename of %s.", 
+      g_critical ("OBJECT - add_object - Allocation failed for filename of %s.", 
                object_name);
       free_object (object);
       return NULL;
@@ -175,7 +175,7 @@ set_object_tag (object_t *object, layer_tag_t tag)
 
   if (object == NULL)
     {
-      error ("OBJECT - set_object_tag - Tried to set tag of null object.");
+      g_critical ("OBJECT - set_object_tag - Tried to set tag of null object.");
       return FAILURE;
     }
 
@@ -197,7 +197,7 @@ get_object_image (object_t *object)
 
   if (object == NULL)
     {
-      error ("OBJECT - get_object_image - Tried to get image of null object.");
+      g_critical ("OBJECT - get_object_image - Tried to get image of null object.");
       return NULL;
     }
 
@@ -222,20 +222,20 @@ set_object_image (object_t *object,
 
   if (object == NULL)
     {
-      error ("OBJECT - set_object_image - Tried to set image of null object.");
+      g_critical ("OBJECT - set_object_image - Tried to set image of null object.");
       return FAILURE;
     }
 
   if (object->image == NULL)
     {
-      error ("OBJECT - set_object_image - Object %s has no image dataset.", 
+      g_critical ("OBJECT - set_object_image - Object %s has no image dataset.", 
              object->name);
       return FAILURE;
     }
 
   if (filename == NULL)
     {
-      error ("OBJECT - set_object_image - Tried to set image FN to null.");
+      g_critical ("OBJECT - set_object_image - Tried to set image FN to null.");
       return FAILURE;
     }
 
@@ -248,7 +248,7 @@ set_object_image (object_t *object,
 
   if (object->image->filename == NULL)
     {
-      error ("OBJECT - set_object_image - Couldn't alloc image FN for %s.",
+      g_critical ("OBJECT - set_object_image - Couldn't alloc image FN for %s.",
              object->name);
       return FAILURE;
     }
@@ -278,13 +278,13 @@ get_object_coordinates (object_t *object,
 
   if (object == NULL)
     {
-      error ("OBJECT - get_object_coordinates - Tried to get coords of NULL object.");
+      g_critical ("OBJECT - get_object_coordinates - Tried to get coords of NULL object.");
       return FAILURE;
     }
 
   if (object->image == NULL)
     {
-      error ("OBJECT - get_object_coordinates - Object %s has no image dataset.", 
+      g_critical ("OBJECT - get_object_coordinates - Object %s has no image dataset.", 
              object->name);
       return FAILURE;
     }
@@ -314,13 +314,13 @@ set_object_coordinates (object_t *object,
 
   if (object == NULL)
     {
-      error ("OBJECT - set_object_coordinates - Tried to get coords of NULL object.");
+      g_critical ("OBJECT - set_object_coordinates - Tried to get coords of NULL object.");
       return FAILURE;
     }
 
   if (object->image == NULL)
     {
-      error ("OBJECT - set_object_coordinates - Object %s has no image dataset.", 
+      g_critical ("OBJECT - set_object_coordinates - Object %s has no image dataset.", 
              object->name);
       return FAILURE;
     }
@@ -345,7 +345,7 @@ set_object_coordinates (object_t *object,
 
       if (object->image->map_y < object->image->height - 1)
         {
-          fatal ("OBJECT - set_object_coordinates - Object %s has bad coords.", 
+          g_error ("OBJECT - set_object_coordinates - Object %s has bad coords.", 
                    object->name);
           return FAILURE;
         }
@@ -367,13 +367,13 @@ set_object_dirty (object_t *object,
 
   if (object == NULL)
     {
-      error ("OBJECT - set_object_dirty - Tried to set a NULL object dirty.");
+      g_critical ("OBJECT - set_object_dirty - Tried to set a NULL object dirty.");
       return FAILURE;
     }
 
   if (mapview == NULL)
     {
-      error ("OBJECT - set_object_dirty - Tried dirtying on a NULL mapview.");
+      g_critical ("OBJECT - set_object_dirty - Tried dirtying on a NULL mapview.");
       return FAILURE;
     }
 
@@ -400,7 +400,7 @@ set_object_dirty (object_t *object,
       || (object->image->map_y + object->image->height 
           > mapview->map->height * TILE_H))
     {
-      error ("OBJECT - set_object_dirty - Object %s out of bounds.", 
+      g_critical ("OBJECT - set_object_dirty - Object %s out of bounds.", 
                object->name);
       return FAILURE;
     }
@@ -490,12 +490,12 @@ dirty_object_test (void *key, void *object, void *rect_pointer)
 
   if (objectc == NULL)
     {
-      error ("OBJECT - dirty_object_test - Object has no data.\n");
+      g_critical ("OBJECT - dirty_object_test - Object has no data.\n");
     }
 
   if (rect_pointer == NULL)
     {
-      error ("OBJECT - dirty_object_test - Given dirty rect pointer is NULL.\n");
+      g_critical ("OBJECT - dirty_object_test - Given dirty rect pointer is NULL.\n");
     }
 
   rect = (struct dirty_rectangle *) rect_pointer;

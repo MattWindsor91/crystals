@@ -85,7 +85,7 @@ load_map (const char path[])
 
   if (file == NULL)
     {
-      error ("MAPLOAD - read_map - Couldn't open file.");
+      g_critical ("MAPLOAD - read_map - Couldn't open file.");
       return NULL;
     }
 
@@ -93,34 +93,34 @@ load_map (const char path[])
 
   if (map == NULL)
     {
-      error ("MAPLOAD - load_map - Header read failed.");
+      g_critical ("MAPLOAD - load_map - Header read failed.");
       return NULL;
     }
 
   if (read_layer_tags (file, map) == FAILURE)
     {
-      error ("MAPLOAD - load_map - Layer tag read failed.");
+      g_critical ("MAPLOAD - load_map - Layer tag read failed.");
       free_map (map);
       return NULL;
     }
 
   if (read_map_value_planes (file, map) == FAILURE)
     {
-      error ("MAPLOAD - load_map - Value planes failed.");
+      g_critical ("MAPLOAD - load_map - Value planes failed.");
       free_map (map);
       return NULL;
     }
 
   if (read_map_zone_planes (file, map) == FAILURE)
     {
-      error ("MAPLOAD - load_map - Zone planes read failed.");
+      g_critical ("MAPLOAD - load_map - Zone planes read failed.");
       free_map (map);
       return NULL;
     }
 
   if (read_map_zone_properties (file, map) == FAILURE)
     {
-      error ("MAPLOAD - load_map - Zone properties read failed.");
+      g_critical ("MAPLOAD - load_map - Zone properties read failed.");
       free_map (map);
       return NULL;
     }
@@ -155,7 +155,7 @@ read_map_header (FILE *file)
 
   if (check_magic_sequence (file, MAGIC_HEADER) == FAILURE)
     {
-      error ("MAPLOAD - read_header - Not a map file.");
+      g_critical ("MAPLOAD - read_header - Not a map file.");
       return NULL;
     }
 
@@ -164,7 +164,7 @@ read_map_header (FILE *file)
 
   if (read_uint16 (file) != MAP_VERSION)
     {
-      error ("MAPLOAD - read_header - Incorrect map format version.");
+      g_critical ("MAPLOAD - read_header - Incorrect map format version.");
       return NULL;
     }
 
@@ -378,7 +378,7 @@ check_magic_sequence (FILE *file, const char sequence[])
 
   if (check == NULL)
     {
-      error ("MAPLOAD - check_magic_sequence - Could not allocate check string.");
+      g_critical ("MAPLOAD - check_magic_sequence - Could not allocate check string.");
       return FAILURE;
     }
 
@@ -389,7 +389,7 @@ check_magic_sequence (FILE *file, const char sequence[])
       if (check[i] != sequence[i])
         {
           free (check);
-          error ("MAPLOAD - check_magic_sequence - Magic sequence not present.");
+          g_critical ("MAPLOAD - check_magic_sequence - Magic sequence not present.");
           return FAILURE;
         }
     }

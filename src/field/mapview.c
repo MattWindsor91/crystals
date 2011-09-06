@@ -103,7 +103,7 @@ init_mapview (map_t *map)
 
   if (map == NULL)
     {
-      error ("MAPVIEW - init_mapview - Passed map pointer is null.");
+      g_critical ("MAPVIEW - init_mapview - Passed map pointer is null.");
       return NULL;
     }
 
@@ -111,7 +111,7 @@ init_mapview (map_t *map)
 
   if (mapview == NULL)
     {
-      error ("MAPVIEW - init_mapview - Couldn't allocate map view.");
+      g_critical ("MAPVIEW - init_mapview - Couldn't allocate map view.");
       return NULL;
     }
             
@@ -126,7 +126,7 @@ init_mapview (map_t *map)
 
   if (width <= 0 || height <= 0)
     {
-      error ("MAPVIEW - init_mapview - Map W/H are non-positive.");
+      g_critical ("MAPVIEW - init_mapview - Map W/H are non-positive.");
       return NULL;
     }
 
@@ -135,7 +135,7 @@ init_mapview (map_t *map)
 
   if (mapview->dirty_tiles == NULL)
     {
-      error ("MAPVIEW - init_mapview - Couldn't allocate dirty tilemap.");
+      g_critical ("MAPVIEW - init_mapview - Couldn't allocate dirty tilemap.");
       free_mapview (mapview);
       return NULL;
     }
@@ -150,7 +150,7 @@ init_mapview (map_t *map)
 
   if (mapview->num_object_queues == 0)
     {
-      error ("MAPVIEW - init_mapview - No tags in map; please fix map.");
+      g_critical ("MAPVIEW - init_mapview - No tags in map; please fix map.");
       free_mapview (mapview);
       return NULL;
     }
@@ -162,7 +162,7 @@ init_mapview (map_t *map)
 
   if (mapview->object_queue == NULL)
     {
-      error ("MAPVIEW - init_mapview - Couldn't allocate object queues.");
+      g_critical ("MAPVIEW - init_mapview - Couldn't allocate object queues.");
       free_mapview (mapview);
       return NULL;
     }
@@ -194,7 +194,7 @@ add_object_image (mapview_t *mapview,
 
   if (mapview == NULL)
     {
-      error ("MAPVIEW - add_object_image - Tried to render to NULL mapview.");
+      g_critical ("MAPVIEW - add_object_image - Tried to render to NULL mapview.");
       return FAILURE;
     }
 
@@ -202,7 +202,7 @@ add_object_image (mapview_t *mapview,
 
   if (object == NULL)
     {
-      error ("MAPVIEW - add_object_image - Tried to render a NULL object.");
+      g_critical ("MAPVIEW - add_object_image - Tried to render a NULL object.");
       return FAILURE;
     }
 
@@ -213,7 +213,7 @@ add_object_image (mapview_t *mapview,
 
   if (image == NULL)
     {
-      error ("MAPVIEW - add_object_image - Tried to render a NULL image.");
+      g_critical ("MAPVIEW - add_object_image - Tried to render a NULL image.");
       return FAILURE;
     }
 
@@ -225,7 +225,7 @@ add_object_image (mapview_t *mapview,
 
   if (tag == NULL_TAG)
     {
-      error ("MAPVIEW - add_object_image - Tried to render to null tag.");
+      g_critical ("MAPVIEW - add_object_image - Tried to render to null tag.");
       return FAILURE;
     }
 
@@ -238,19 +238,19 @@ add_object_image (mapview_t *mapview,
 
   if (tag > mapview->num_object_queues)
     {
-      error ("MAPVIEW - add_object_image - Tag specified too high.");
+      g_critical ("MAPVIEW - add_object_image - Tag specified too high.");
       return FAILURE;
     }
 
   if (image->filename == NULL)
     {
-      error ("MAPVIEW - add_object_image - Filename is NULL.");
+      g_critical ("MAPVIEW - add_object_image - Filename is NULL.");
       return FAILURE;
     }
 
   if (image->width == 0 || image->height == 0)
     {
-      error ("MAPVIEW - add_object_image - Zero object render width/height.");
+      g_critical ("MAPVIEW - add_object_image - Zero object render width/height.");
       return FAILURE;
     }
 
@@ -262,7 +262,7 @@ add_object_image (mapview_t *mapview,
 
   if (new_rnode == NULL)
     {
-      error ("MAPVIEW - add_object_image - Allocation failed for rnode.");
+      g_critical ("MAPVIEW - add_object_image - Allocation failed for rnode.");
       return FAILURE;
     }
 
@@ -358,7 +358,7 @@ render_map_layer (mapview_t *mapview, layer_index_t layer)
 
   if (tileset == NULL)
     {
-      fatal ("MAPVIEW - render_map_layer - Couldn't load tileset.");
+      g_error ("MAPVIEW - render_map_layer - Couldn't load tileset.");
       return;
     }
 
@@ -411,15 +411,15 @@ render_map_layer (mapview_t *mapview, layer_index_t layer)
                       || screen_y < SHRT_MIN
                       || screen_y > SHRT_MAX)
                     {
-                      error ("MAPVIEW - render_map_layer - Screen X and Y are outside short bounds.");
-                      fatal ("^-- THIS SHOULD NEVER HAPPEN!");
+                      g_critical ("MAPVIEW - render_map_layer - Screen X and Y are outside short bounds.");
+                      g_error ("^-- THIS SHOULD NEVER HAPPEN!");
                       return;
                     }
 
                   if (layer_offset < 0 
                       || layer_offset >= (map->width * map->height))
                     {
-                      fatal ("MAPVIEW - render_map_layer - Layer offset out of bounds.");
+                      g_error ("MAPVIEW - render_map_layer - Layer offset out of bounds.");
                       return;
                     }
 
@@ -427,7 +427,7 @@ render_map_layer (mapview_t *mapview, layer_index_t layer)
                   if (tileset_x < 0
                       || tileset_x > SHRT_MAX)
                     {
-                      fatal ("MAPVIEW - render_map_layer - Tileset X is outside short bounds.");
+                      g_error ("MAPVIEW - render_map_layer - Tileset X is outside short bounds.");
                       return;
                     }
 
@@ -469,7 +469,7 @@ render_map_objects (mapview_t *mapview, layer_index_t layer)
 
           if (image == NULL)
             {
-              error ("MAPVIEW - render_map_objects - Failed to get object image.");
+              g_critical ("MAPVIEW - render_map_objects - Failed to get object image.");
               return;
             }
 
@@ -505,7 +505,7 @@ scroll_map (mapview_t *mapview,
 
   if (mapview == NULL)
     {
-      error ("MAPVIEW - scroll_map - Map view is NULL.");
+      g_critical ("MAPVIEW - scroll_map - Map view is NULL.");
       return;
     }
 
@@ -515,7 +515,7 @@ scroll_map (mapview_t *mapview,
   if (x_offset == SHRT_MIN
       || y_offset == SHRT_MIN)
     {
-      error ("MAPVIEW - scroll_map - Offset too big.");
+      g_critical ("MAPVIEW - scroll_map - Offset too big.");
       return;
     }
 
@@ -589,13 +589,13 @@ mark_dirty_rect (mapview_t *mapview,
 
   if (mapview == NULL)
     {
-      error ("MAPVIEW - mark_dirty_rect - Rect dirtying passed NULL mapview.");
+      g_critical ("MAPVIEW - mark_dirty_rect - Rect dirtying passed NULL mapview.");
       return FAILURE;
     }
 
   if (width <= 0 || height <= 0)
     {
-      error ("MAPVIEW - mark_dirty_rect - Rect dirtying passed invalid width/height.");
+      g_critical ("MAPVIEW - mark_dirty_rect - Rect dirtying passed invalid width/height.");
       return FAILURE;
     }
 
@@ -703,7 +703,7 @@ add_dirty_rect (mapview_t *mapview,
 
   if (rect == NULL)
     {
-      error ("MAPVIEW - add_dirty_rect - Cannot allocate a dirty rectangle.");
+      g_critical ("MAPVIEW - add_dirty_rect - Cannot allocate a dirty rectangle.");
       return FAILURE;
     }
 

@@ -72,7 +72,7 @@ init_events (void)
 {
   if (load_module_event (cfg_get_str ("modules", "event_module", g_config), &g_modules) == FAILURE)
     {
-      error ("EVENTS - init_events - Could not load events module.");
+      g_critical ("EVENTS - init_events - Could not load events module.");
       return FAILURE;
     }
 
@@ -82,7 +82,7 @@ init_events (void)
 
   if (sg_event_base == NULL)
     {
-      error ("EVENTS - init_events - Could not allocate events base.");
+      g_critical ("EVENTS - init_events - Could not allocate events base.");
       return FAILURE;
     }
 
@@ -113,7 +113,7 @@ install_callback (void (*callback) (event_t *event), event_type_t types)
 
   if (pnew == NULL)
     {
-      error ("EVENTS - install_callback - Could not allocate callback node.");
+      g_critical ("EVENTS - install_callback - Could not allocate callback node.");
       return NULL;
     }
 
@@ -146,7 +146,7 @@ unload_callback (event_callback_t *callback)
 
   if (callback == NULL)
     {
-      error ("EVENTS - unload_callback - Given a NULL callback to delete.");
+      g_critical ("EVENTS - unload_callback - Given a NULL callback to delete.");
       return FAILURE;
     }
 

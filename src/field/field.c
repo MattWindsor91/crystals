@@ -118,7 +118,7 @@ init_field (struct state_functions *function_table)
 
   if (field_init_callbacks () == FAILURE)
     {
-      fatal ("FIELD - init_field - Could not install event callbacks.");
+      g_error ("FIELD - init_field - Could not install event callbacks.");
       return FAILURE;
     }
 
@@ -126,13 +126,13 @@ init_field (struct state_functions *function_table)
 
   if (sg_map == NULL)
     {
-      fatal ("FIELD - init_field - Map initialisation failed.");
+      g_error ("FIELD - init_field - Map initialisation failed.");
       return FAILURE;
     }
 
   if (init_objects () == FAILURE)
     {
-      fatal ("FIELD - init_field - Objects initialisation failed.");
+      g_error ("FIELD - init_field - Objects initialisation failed.");
       return FAILURE;
     }
   
@@ -140,7 +140,7 @@ init_field (struct state_functions *function_table)
 
   if (sg_mapview == NULL)
     {
-      fatal ("FIELD - init_field - Map view initialisation failed.");
+      g_error ("FIELD - init_field - Map view initialisation failed.");
       return FAILURE;
     }
 
@@ -200,7 +200,7 @@ get_field_map_boundaries (int *x0_pointer,
       || y0_pointer == NULL
       || y1_pointer == NULL)
     {
-      error ("FIELD - get_field_map_boundaries - Passed NULL pointer.");
+      g_critical ("FIELD - get_field_map_boundaries - Passed NULL pointer.");
       return FAILURE;
     }
 

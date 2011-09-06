@@ -70,7 +70,7 @@ focus_camera_on_object (const char object_name[])
 
   if (object_name == NULL)
     {
-      error ("OBJECT-API - focus_camera_on_object - Null object name.");
+      g_critical ("OBJECT-API - focus_camera_on_object - Null object name.");
       return FAILURE;
     }
 
@@ -78,7 +78,7 @@ focus_camera_on_object (const char object_name[])
 
   if (object == NULL)
     {
-      error ("OBJECT-API - focus_camera_on_object - Couldn't get object %s.", 
+      g_critical ("OBJECT-API - focus_camera_on_object - Couldn't get object %s.", 
              object_name);
       return FAILURE;
     }
@@ -110,7 +110,7 @@ move_object (const char object_name[], int32_t dx, int32_t dy)
 
   if (object_name == NULL)
     {
-      error ("OBJECT-API - move_object - Null object name.");
+      g_critical ("OBJECT-API - move_object - Null object name.");
       return FAILURE;
     }
 
@@ -121,14 +121,14 @@ move_object (const char object_name[], int32_t dx, int32_t dy)
 
   if (object == NULL)
     {
-      error ("OBJECT-API - move_object - Couldn't get object %s.", 
+      g_critical ("OBJECT-API - move_object - Couldn't get object %s.", 
              object_name);
       return FAILURE;
     }
 
   if (object->image == NULL)
     {
-      error ("OBJECT-API - move_object - Object %s has no image dataset.", 
+      g_critical ("OBJECT-API - move_object - Object %s has no image dataset.", 
              object->name);
       return FAILURE;
     }
@@ -137,7 +137,7 @@ move_object (const char object_name[], int32_t dx, int32_t dy)
 
   if (mapview == NULL)
     {
-      error ("OBJECT-API - move_object - No field map view.");
+      g_critical ("OBJECT-API - move_object - No field map view.");
       return FAILURE;
     }
 
@@ -153,7 +153,7 @@ move_object (const char object_name[], int32_t dx, int32_t dy)
                                 &end_x,
                                 &end_y) == FAILURE)
     {
-      error ("OBJECT-API - move_object - Couldn't get map boundaries.");
+      g_critical ("OBJECT-API - move_object - Couldn't get map boundaries.");
       return FAILURE;
     }
 
@@ -162,7 +162,7 @@ move_object (const char object_name[], int32_t dx, int32_t dy)
       || object->image->map_x + object->image->width + dx >= end_x
       || object->image->map_y + object->image->height + dy >= end_y)
     {
-      error ("OBJECT-API - move_object - Tried to move out of bounds.");
+      g_critical ("OBJECT-API - move_object - Tried to move out of bounds.");
       return FAILURE;
     }
 
@@ -225,7 +225,7 @@ position_object (const char object_name[], int32_t x, int32_t y,
 
   if (object_name == NULL)
     {
-      error ("OBJECT-API - position_object - Null object name.");
+      g_critical ("OBJECT-API - position_object - Null object name.");
       return FAILURE;
     }
 
@@ -236,14 +236,14 @@ position_object (const char object_name[], int32_t x, int32_t y,
 
   if (object == NULL)
     {
-      error ("OBJECT-API - position_object - Couldn't get object %s.", 
+      g_critical ("OBJECT-API - position_object - Couldn't get object %s.", 
              object_name);
       return FAILURE;
     }
 
   if (object->image == NULL)
     {
-      error ("OBJECT-API - position_object - Object %s has no image dataset.", 
+      g_critical ("OBJECT-API - position_object - Object %s has no image dataset.", 
              object->name);
       return FAILURE;
     }
@@ -252,7 +252,7 @@ position_object (const char object_name[], int32_t x, int32_t y,
 
   if (mapview == NULL)
     {
-      error ("OBJECT-API - position_object - No field map view.");
+      g_critical ("OBJECT-API - position_object - No field map view.");
       return FAILURE;
     }
 
@@ -264,7 +264,7 @@ position_object (const char object_name[], int32_t x, int32_t y,
                                 &end_x,
                                 &end_y) == FAILURE)
     {
-      error ("OBJECT-API - position_object - Couldn't get map boundaries.");
+      g_critical ("OBJECT-API - position_object - Couldn't get map boundaries.");
       return FAILURE;
     }
 
@@ -273,7 +273,7 @@ position_object (const char object_name[], int32_t x, int32_t y,
       || x + object->image->width >= end_x
       || y + object->image->height >= end_y)
     {
-      error ("OBJECT-API - position_object - Tried to move out of bounds.");
+      g_critical ("OBJECT-API - position_object - Tried to move out of bounds.");
       return FAILURE;
     }
 
@@ -316,7 +316,7 @@ tag_object (const char object_name[], layer_tag_t tag)
 
   if (object_name == NULL)
     {
-      error ("OBJECT-API - tag_object - Null object name.");
+      g_critical ("OBJECT-API - tag_object - Null object name.");
       return FAILURE;
     }
 
@@ -327,7 +327,7 @@ tag_object (const char object_name[], layer_tag_t tag)
 
   if (object == NULL)
     {
-      error ("OBJECT-API - tag_object - Couldn't get object %s.", 
+      g_critical ("OBJECT-API - tag_object - Couldn't get object %s.", 
              object_name);
       return FAILURE;
     }
@@ -359,13 +359,13 @@ change_object_image (const char object_name[],
 
   if (image_filename == NULL)
     {
-      error ("OBJECT-API -change_object_image - Null filename.");
+      g_critical ("OBJECT-API -change_object_image - Null filename.");
       return FAILURE;
     }
 
   if (object_name == NULL)
     {
-      error ("OBJECT-API - change_object_image - Null object name.");
+      g_critical ("OBJECT-API - change_object_image - Null object name.");
       return FAILURE;
     }
 
@@ -373,14 +373,14 @@ change_object_image (const char object_name[],
 
   if (object == NULL)
     {
-      error ("OBJECT-API - change_object_image - Couldn't get object %s.", 
+      g_critical ("OBJECT-API - change_object_image - Couldn't get object %s.", 
              object_name);
       return FAILURE;
     }
 
   if (object->image == NULL)
     {
-      error ("OBJECT-API - change_object_image - Object %s has no image dataset.", 
+      g_critical ("OBJECT-API - change_object_image - Object %s has no image dataset.", 
              object->name);
       return FAILURE;
     }
@@ -389,7 +389,7 @@ change_object_image (const char object_name[],
 
   if (mapview == NULL)
     {
-      error ("OBJECT-API - change_object_image - No field map view.");
+      g_critical ("OBJECT-API - change_object_image - No field map view.");
       return FAILURE;
     }
 
@@ -401,7 +401,7 @@ change_object_image (const char object_name[],
                                 &end_x,
                                 &end_y) == FAILURE)
     {
-      error ("OBJECT-API - change_object_image - Couldn't get map boundaries.");
+      g_critical ("OBJECT-API - change_object_image - Couldn't get map boundaries.");
       return FAILURE;
     }
 
@@ -410,7 +410,7 @@ change_object_image (const char object_name[],
       || object->image->map_x + width >= end_x
       || object->image->map_y + height >= end_y)
     {
-      error ("OBJECT-API - change_object_image - Tried to move out of bounds.");
+      g_critical ("OBJECT-API - change_object_image - Tried to move out of bounds.");
       return FAILURE;
     }
 
@@ -421,7 +421,7 @@ change_object_image (const char object_name[],
                         width,
                         height) == FAILURE)
     {
-      error ("OBJECT-API - change_object_image - Could not set image.");
+      g_critical ("OBJECT-API - change_object_image - Could not set image.");
       return FAILURE;
     }
 
