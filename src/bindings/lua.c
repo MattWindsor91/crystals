@@ -95,7 +95,7 @@ run_script (const char *path)
     }
   else
     {
-      g_critical ("Couldn't open %s\n", path);
+      error ("Couldn't open %s\n", path);
       return FAILURE;
     }
 }
@@ -167,7 +167,7 @@ lua_parameter_check (lua_State *L, const char *func_name, const char sig[])
 
   if (parameters != passed_parameters)
     {
-      g_critical ("LUA: %s: Takes %d argument, %d given.", func_name, parameters,
+      error ("LUA: %s: Takes %d argument, %d given.", func_name, parameters,
         passed_parameters);
       return FAILURE;
     }
@@ -179,7 +179,7 @@ lua_parameter_check (lua_State *L, const char *func_name, const char sig[])
           case 's':
             if (!lua_isstring (L, i))
               {
-                g_critical ("LUA: %s: Parameter %d has to be a string.",
+                error ("LUA: %s: Parameter %d has to be a string.",
                   func_name, i);
                 return FAILURE;
               }
@@ -187,7 +187,7 @@ lua_parameter_check (lua_State *L, const char *func_name, const char sig[])
           case 'd':
             if (!lua_isnumber (L, i))
               {
-                g_critical ("LUA: %s: Parameter %d has to be a number.",
+                error ("LUA: %s: Parameter %d has to be a number.",
                   func_name, i);
                 return FAILURE;
               }
@@ -195,20 +195,20 @@ lua_parameter_check (lua_State *L, const char *func_name, const char sig[])
           case 'b':
             if (!lua_isboolean (L, i))
               {
-                g_critical ("LUA: %s: Parameter %d has to be a boolean.",
+                error ("LUA: %s: Parameter %d has to be a boolean.",
                   func_name, i);
                 return FAILURE;
               }
           case 't':
             if (!lua_istable (L, i))
               {
-                g_critical ("LUA: %s: Parameter %d has to be a table.",
+                error ("LUA: %s: Parameter %d has to be a table.",
                   func_name, i);
                 return FAILURE;
               }
             break;
           default:
-              g_critical ("LUA: parameter_check: Uknown sig character %c", sig[i]);
+              error ("LUA: parameter_check: Uknown sig character %c", sig[i]);
             return FAILURE;
             break;
         }

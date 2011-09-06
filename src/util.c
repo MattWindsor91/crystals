@@ -82,14 +82,14 @@ get_module_root_path (char **module_path)
 
   if (*module_path == NULL)
     {
-      g_critical ("UTIL - get_module_path - Cannot read module path from config.");
+      error ("UTIL - get_module_path - Cannot read module path from config.");
 
       /* Copy the default path to the pointer. */
 
       *module_path = calloc (strlen (DEFMODPATH) + 1, sizeof (char));
 
       if (*module_path == NULL)
-        g_error ("UTIL - get_module_path - Module path could not be allocated.");
+        fatal ("UTIL - get_module_path - Module path could not be allocated.");
       else
         strncpy (*module_path, DEFMODPATH, strlen (DEFMODPATH) + 1);
     }
@@ -105,14 +105,14 @@ long_to_uint16 (long integer)
 {
   if (integer < 0)
     {
-      g_critical ("UTIL - long_to_uint16 - Assertion n >= 0 failed.");
-      g_critical ("UTIL - Truncating value to 0.");
+      error ("UTIL - long_to_uint16 - Assertion n >= 0 failed.");
+      error ("UTIL - Truncating value to 0.");
       integer = 0;
     }
   else if (integer > UINT16_MAX)
     {
-      g_critical ("UTIL - long_to_uint16 - Assertion n <= UINT16_MAX failed.");
-      g_critical ("UTIL - Truncating value to uint16_t maximum.");
+      error ("UTIL - long_to_uint16 - Assertion n <= UINT16_MAX failed.");
+      error ("UTIL - Truncating value to uint16_t maximum.");
       integer = UINT16_MAX;
     }
 
@@ -127,14 +127,14 @@ long_to_int16 (long integer)
 {
   if (integer < INT16_MIN)
     {
-      g_critical ("UTIL - long_to_int16 - Assertion n >= INT16_MIN failed.");
-      g_critical ("UTIL - Truncating value to int16_t minimum.");
+      error ("UTIL - long_to_int16 - Assertion n >= INT16_MIN failed.");
+      error ("UTIL - Truncating value to int16_t minimum.");
       integer = INT16_MIN;
     }
   else if (integer > INT16_MAX)
     {
-      g_critical ("UTIL - long_to_int16 - Assertion n <= INT16_MAX failed.");
-      g_critical ("UTIL - Truncating value to int16_t minimum.");
+      error ("UTIL - long_to_int16 - Assertion n <= INT16_MAX failed.");
+      error ("UTIL - Truncating value to int16_t minimum.");
       integer = INT16_MAX;
     }
 
@@ -149,8 +149,8 @@ ulong_to_uint16 (unsigned long integer)
 {
   if (integer > UINT16_MAX)
     {
-      g_critical ("UTIL - ulong_to_uint16 - Assertion n <= UINT16_MAX failed.");
-      g_critical ("UTIL - Truncating value to uint16_t maximum.");
+      error ("UTIL - ulong_to_uint16 - Assertion n <= UINT16_MAX failed.");
+      error ("UTIL - Truncating value to uint16_t maximum.");
       integer = UINT16_MAX;
     }
 
@@ -165,12 +165,61 @@ ulong_to_int16 (unsigned long integer)
 {
   if (integer > INT16_MAX)
       {
-        g_critical ("UTIL - ulong_to_int16 - Assertion n <= INT16_MAX failed.");
-        g_critical ("UTIL - Truncating value to int16_t minimum.");
+        error ("UTIL - ulong_to_int16 - Assertion n <= INT16_MAX failed.");
+        error ("UTIL - Truncating value to int16_t minimum.");
         integer = INT16_MAX;
       }
 
   return (int16_t) integer;
+}
+
+
+/* ~~ Error reporting */
+
+/* Fatal error. */
+
+void
+fatal (const char message[], ...)
+{
+  va_list ap;
+  va_start (ap, message);
+  ERROR_PROCEDURE (message, ap, TRUE);
+}
+
+
+/* Non-fatal error. */
+
+void
+error (const char message[], ...)
+{
+  va_list ap;
+  va_start (ap, message);
+  ERROR_PROCEDURE (message, ap, FALSE);
+}
+
+
+/* Standard error reporting procedure. */
+
+void
+std_error (const char message[], va_list ap, bool_t is_fatal)
+{
+  if (is_fatal)
+    fprintf (stderr, "FATAL: ");
+  else
+    fprintf (stderr, "ERROR: ");
+
+  vfprintf (stderr, message, ap);
+  fprintf (stderr, "\n");
+  va_end (ap);
+
+  fflush (stderr);
+
+
+  if (is_fatal)
+    {
+      cleanup ();
+      exit (1);
+    }
 }
 
 

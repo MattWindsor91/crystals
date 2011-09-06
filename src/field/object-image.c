@@ -62,7 +62,7 @@ init_object_image (void)
 
   if (image == NULL)
      {
-       g_critical ("OBJECT-IMAGE - init_object_image - Tried to init null object image.");
+       error ("OBJECT-IMAGE - init_object_image - Tried to init null object image.");
        return NULL;
      }
 

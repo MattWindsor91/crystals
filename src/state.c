@@ -80,17 +80,17 @@ set_state (state_t new_state)
 
   if (sg_state == STATE_QUIT)
     {
-      g_critical ("STATE - set_state - Tried to change state while quitting.");
+      error ("STATE - set_state - Tried to change state while quitting.");
       return FAILURE;
     }
   else if (new_state == STATE_NULL)
     {
-      g_critical ("STATE - set_state - Tried to change to null state.");
+      error ("STATE - set_state - Tried to change to null state.");
       return FAILURE;
     }
   else if (sg_state == new_state)
     {
-      g_critical ("STATE - set_state - Tried to change to current state.");
+      error ("STATE - set_state - Tried to change to current state.");
       return FAILURE;
     }
 
@@ -112,13 +112,13 @@ update_state (void)
 
   if (cleanup_state () == FAILURE)
     {
-      g_critical ("STATE - update_state - Cleanup of old state failed.");
+      error ("STATE - update_state - Cleanup of old state failed.");
       return STATE_NULL;
     }
 
   if (init_state (sg_enqueued_state) == FAILURE)
     {
-      g_critical ("STATE - update_state - Init of new state failed.");
+      error ("STATE - update_state - Init of new state failed.");
       return STATE_NULL;
     }
 
@@ -144,7 +144,7 @@ init_state (state_t state)
       break;
     default:
       /* Invalid state. */
-      g_critical ("STATE - init_state - Invalid state ID %u.", 
+      error ("STATE - init_state - Invalid state ID %u.", 
              state);
       return FAILURE;
       break;
@@ -187,7 +187,7 @@ cleanup_state (void)
     {
       if (sg_functions.cleanup () == FAILURE)
         {
-          g_error ("STATE - cleanup_state - Cleanup failure.");
+          fatal ("STATE - cleanup_state - Cleanup failure.");
           return FAILURE;
         }
 

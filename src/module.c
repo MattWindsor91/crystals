@@ -65,7 +65,7 @@ init_modules (const char *path)
 {
   if (g_module_supported () == FALSE)
     {
-      g_critical ("MODULE - init_modules - Module loading not supported.");
+      error ("MODULE - init_modules - Module loading not supported.");
       return FAILURE;
     }
   
@@ -82,7 +82,7 @@ init_modules (const char *path)
     }
   else
     {
-      g_critical ("MODULE - init_modules - Couldn't allocate modules path.");
+      error ("MODULE - init_modules - Couldn't allocate modules path.");
     }
 
   return FAILURE;
@@ -117,7 +117,7 @@ get_module_path (const char* module, const char* modulespath, char** out)
     }
   else
     {
-      g_critical ("MODULE - get_module_path - couldn't allocate module path.");
+      error ("MODULE - get_module_path - couldn't allocate module path.");
       return FAILURE;
     }
 
@@ -148,7 +148,7 @@ get_module_by_name (const char* name, const char *modulespath, module_data *modu
     }
   else
     {
-      g_critical ("MODULE - get_module_by_name - couldn't find module path.");
+      error ("MODULE - get_module_by_name - couldn't find module path.");
       return FAILURE;
     }
 }
@@ -195,7 +195,7 @@ get_dll_error (const char function_name[])
   const char *dlerr = g_module_error ();
 
   if (dlerr != NULL)
-    g_critical ("MODULE - %s - Failed with dlerr: %s", function_name, dlerr);
+    error ("MODULE - %s - Failed with dlerr: %s", function_name, dlerr);
 }
 
 

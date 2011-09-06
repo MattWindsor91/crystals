@@ -50,7 +50,7 @@
 #ifndef _UTIL_H
 #define _UTIL_H
 
-#include <glib.h> /* Error reporting */
+#include <stdarg.h>
 
 #include "types.h"  /* Standard types as used in crystals. */
 
@@ -215,6 +215,53 @@ ulong_to_uint16 (unsigned long integer);
 
 short
 ulong_to_int16 (unsigned long integer);
+
+
+/* ~~ Error reporting */
+
+/**
+ * Fatal error.
+ *
+ * This shows an error message and attempts to immediately shut down
+ * the game.
+ * 
+ * @param message  Message to print.  This function automatically
+ *                 prepends and appends FATAL: and a newline respectively. 
+ */
+
+void
+fatal (const char message[], ...);
+
+
+/** 
+ * Non-fatal error.
+ *
+ * This shows an error message only.
+ * 
+ * @param message  Message to print.  This function automatically
+ *                 prepends and appends ERROR: and a newline respectively. 
+ */
+
+void
+error (const char message[], ...);
+
+
+/**
+ * Standard error reporting procedure. 
+ *
+ * This prints the error message to standard error.
+ *
+ * Alternative error procedures are defined wherever more suitable alternatives
+ * are available (eg GUI message boxes).
+ *
+ * @param message   The error message/format string.
+ * @param ap        The variadic arguments list passed from fatal or error.
+ * @param is_fatal  Whether or not the error is fatal.  If the error is 
+ *                  fatal, the program will be halted.
+ */
+
+void
+std_error (const char message[], va_list ap, bool_t is_fatal);
 
 
 #endif /* not _UTIL_H */

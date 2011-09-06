@@ -98,13 +98,14 @@ init (void)
 {
   char *module_path = NULL;
 
+
   /* -- Configuration -- */
 
   g_config = init_config (DEFAULT_CONFIG_PATH);
 
   if (g_config == NULL)
     {
-      g_error ("MAIN - init - Config parser initialisation failed.");
+      fatal ("MAIN - init - Config parser initialisation failed.");
       return FAILURE;
     }
 
@@ -115,13 +116,13 @@ init (void)
 
   if (module_path == NULL)
     {
-      g_error ("MAIN - init - Failed to retrieve module path.");
+      fatal ("MAIN - init - Failed to retrieve module path.");
       return FAILURE;
     }
 
   if (init_modules (module_path) == FAILURE)
     {
-      g_error ("MAIN - init - Module initialisation failed.");
+      fatal ("MAIN - init - Module initialisation failed.");
       return FAILURE;
     }
 
@@ -130,7 +131,7 @@ init (void)
 
   if (init_graphics () == FAILURE)
     {
-      g_error ("MAIN - init - Graphics initialisation failed.");
+      fatal ("MAIN - init - Graphics initialisation failed.");
       return FAILURE;
     }
 
@@ -139,7 +140,7 @@ init (void)
 
   if (init_bindings () == FAILURE)
     {
-      g_error ("MAIN - init - Bindings initialisation failed.");
+      fatal ("MAIN - init - Bindings initialisation failed.");
       return FAILURE;
     }
 
@@ -150,7 +151,7 @@ init (void)
 
   if (init_events () == FAILURE)
     {
-      g_error ("MAIN - init - Events initialisation failed.");
+      fatal ("MAIN - init - Events initialisation failed.");
       return FAILURE;
     }
 
@@ -159,7 +160,7 @@ init (void)
 
   if (set_state (STATE_FIELD) == FAILURE)
     {
-      g_error ("MAIN - init - Couldn't enqueue state.");
+      fatal ("MAIN - init - Couldn't enqueue state.");
       return FAILURE;
     }
 

@@ -83,7 +83,7 @@ init_graphics (void)
 {
   if (load_module_gfx (cfg_get_str ("modules", "graphics_module", g_config), &g_modules) == FAILURE)
     {
-      g_critical ("GRAPHICS - init_graphics - Could not load graphics module.");
+      error ("GRAPHICS - init_graphics - Could not load graphics module.");
       return FAILURE;
     }
 
@@ -93,7 +93,7 @@ init_graphics (void)
   if ((*g_modules.gfx.init_screen_internal)
       (SCREEN_W, SCREEN_H, SCREEN_D) == FAILURE)
     {
-      g_critical ("GRAPHICS - init_graphics - Could not init screen.");
+      error ("GRAPHICS - init_graphics - Could not init screen.");
       return FAILURE;
     }
 
@@ -126,15 +126,15 @@ get_absolute_path (const char path[])
     {
       /* Using default path (this is a fallback). */
 
-      g_critical ("GRAPHICS - get_absolute_path - No graphics_path in config.");
-      g_critical ("Using default path instead.");
+      error ("GRAPHICS - get_absolute_path - No graphics_path in config.");
+      error ("Using default path instead.");
 
       absolute_path = calloc (strlen (path) + strlen (DEFGFXPATH) + 1, 
                                sizeof (char));
 
       if (absolute_path == NULL)
         {
-          g_critical ("GRAPHICS - get_absolute path - Memory allocation failure.");
+          error ("GRAPHICS - get_absolute path - Memory allocation failure.");
           return NULL;
         }
 
@@ -149,7 +149,7 @@ get_absolute_path (const char path[])
 
       if (absolute_path == NULL)
         {
-          g_critical ("GRAPHICS - get_absolute path - Memory allocation failure.");
+          error ("GRAPHICS - get_absolute path - Memory allocation failure.");
           return NULL;
         }
 
@@ -267,7 +267,7 @@ load_image (const char filename[])
 
   if (filename == NULL)
     {
-      g_error ("GFX - load_image - Filename is NULL.");
+      fatal ("GFX - load_image - Filename is NULL.");
       return NULL;
     }
 
@@ -292,7 +292,7 @@ load_image (const char filename[])
 
   if (path == NULL)
     {
-      g_error ("GFX - load_image - Couldn't get absolute path for %s.", 
+      fatal ("GFX - load_image - Couldn't get absolute path for %s.", 
              filename);
       return NULL;
     }
@@ -303,7 +303,7 @@ load_image (const char filename[])
 
   if (data == NULL)
     {
-      g_error ("GFX - load_image - Couldn't load image data for %s.", 
+      fatal ("GFX - load_image - Couldn't load image data for %s.", 
              filename);
       return NULL;
     }
@@ -321,7 +321,7 @@ free_image (image_t *image)
 {
   if (image == NULL)
     {
-      g_critical ("GFX - free_image - Tried to free NULL image.");
+      error ("GFX - free_image - Tried to free NULL image.");
     }
 
   (*g_modules.gfx.free_image_data) (image);
@@ -345,7 +345,7 @@ draw_image (const char filename[], int16_t image_x, int16_t image_y,
 
   if (img == NULL)
     {
-      g_critical ("GFX - draw_image - Image load failure for %s.", 
+      error ("GFX - draw_image - Image load failure for %s.", 
              filename);
 
       return FAILURE;

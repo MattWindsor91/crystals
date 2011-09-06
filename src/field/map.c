@@ -69,7 +69,7 @@ init_map (dimension_t width,
 
   if (width == 0 || height == 0)
     {
-      g_critical ("MAP - init_map - Given a zero width or height");
+      error ("MAP - init_map - Given a zero width or height", width, height);
       return NULL;
     }
 
@@ -80,7 +80,7 @@ init_map (dimension_t width,
 
   if (map == NULL)
     {
-      g_critical ("MAP - init_map - Map allocation failed.");
+      error ("MAP - init_map - Map allocation failed.");
       return NULL;
     }
 
@@ -104,7 +104,7 @@ init_map (dimension_t width,
 
   if (map->layer_tags == NULL)
     {
-      g_critical ("MAP - init_map - Map tag array allocation failed.");
+      error ("MAP - init_map - Map tag array allocation failed.");
       free_map (map);
       return NULL;
     }
@@ -116,7 +116,7 @@ init_map (dimension_t width,
 
   if (map->zone_properties == NULL)
     {
-      g_critical ("MAP - init_map - Map zone property array allocation failed.");
+      error ("MAP - init_map - Map zone property array allocation failed.");
       free_map (map);
       return NULL;
     }
@@ -128,7 +128,7 @@ init_map (dimension_t width,
 
   if (map->value_planes == NULL)
     {
-      g_critical ("MAP - init_map - Map value plane array allocation failed.");
+      error ("MAP - init_map - Map value plane array allocation failed.");
       free_map (map);
       return NULL;
     }
@@ -138,7 +138,7 @@ init_map (dimension_t width,
 
   if (map->zone_planes == NULL)
     {
-      g_critical ("MAP - init_map - Map zone plane array allocation failed.");
+      error ("MAP - init_map - Map zone plane array allocation failed.");
       free_map (map);
       return NULL;
     }
@@ -151,14 +151,14 @@ init_map (dimension_t width,
       map->value_planes[i] = calloc ((size_t) width * height, sizeof (layer_value_t));
       if (map->value_planes[i] == NULL)
         {
-          g_critical ("MAP - init_map - Map value plane allocation failed for layer %d.", i);
+          error ("MAP - init_map - Map value plane allocation failed for layer %d.", i);
           free_map (map);
         }
 
       map->zone_planes[i] = calloc ((size_t) width * height, sizeof (layer_zone_t));
       if (map->zone_planes[i] == NULL)
         {
-          g_critical ("MAP - init_map - Map zone plane allocation failed for layer %d.", i);
+          error ("MAP - init_map - Map zone plane allocation failed for layer %d.", i);
           free_map (map);
         }
 
@@ -177,13 +177,13 @@ get_layer_tag (map_t *map, layer_index_t layer)
 
   if (map == NULL)
     {
-      g_critical ("MAP - get_layer_tag - Tried to get tag for a NULL map.");
+      error ("MAP - get_layer_tag - Tried to get tag for a NULL map.");
       return NULL_TAG;
     }
 
   if (layer > map->max_layer_index)
     {
-      g_critical ("MAP - get_layer_tag - Tried to get tag for an invalid layer.");
+      error ("MAP - get_layer_tag - Tried to get tag for an invalid layer.");
       return NULL_TAG;
     }
 
@@ -203,13 +203,13 @@ set_layer_tag (map_t *map, layer_index_t layer, layer_tag_t tag)
 
   if (map == NULL)
     {
-      g_critical ("MAP - set_tile_value - Given map pointer is NULL.");
+      error ("MAP - set_tile_value - Given map pointer is NULL.");
       return FAILURE;
     }
 
   if (layer > map->max_layer_index)
     {
-      g_critical ("MAP - set_tile_value - Given layer does not exist.");
+      error ("MAP - set_tile_value - Given layer does not exist.");
       return FAILURE;
     }
 
@@ -231,13 +231,13 @@ set_zone_properties (map_t *map, zone_index_t zone, zone_prop_t properties)
 
   if (map == NULL)
     {
-      g_critical ("MAP - set_tile_value - Given map pointer is NULL.");
+      error ("MAP - set_tile_value - Given map pointer is NULL.");
       return FAILURE;
     }
 
   if (zone > map->max_zone_index)
     {
-      g_critical ("MAP - set_tile_value - Given zone does not exist.");
+      error ("MAP - set_tile_value - Given zone does not exist.");
       return FAILURE;
     }
 
@@ -259,19 +259,19 @@ set_tile_value (map_t *map, layer_index_t layer,
 
   if (map == NULL)
     {
-      g_critical ("MAP - set_tile_value - Given map pointer is NULL.");
+      error ("MAP - set_tile_value - Given map pointer is NULL.");
       return FAILURE;
     }
 
   if (layer > map->max_layer_index)
     {
-      g_critical ("MAP - set_tile_value - Given layer does not exist.");
+      error ("MAP - set_tile_value - Given layer does not exist.");
       return FAILURE;
     }
 
   if (x >= map->width || y >= map->height)
     {
-      g_critical ("MAP - set_tile_value - Tile out of bounds.");
+      error ("MAP - set_tile_value - Tile out of bounds.");
       return FAILURE;
     }
 
@@ -294,25 +294,25 @@ set_tile_zone (map_t *map, layer_index_t layer,
 
   if (map == NULL)
     {
-      g_critical ("MAP - set_tile_zone - Given map pointer is NULL.");
+      error ("MAP - set_tile_zone - Given map pointer is NULL.");
       return FAILURE;
     }
 
   if (layer > map->max_layer_index)
     {
-      g_critical ("MAP - set_tile_zone - Given layer does not exist.");
+      error ("MAP - set_tile_zone - Given layer does not exist.");
       return FAILURE;
     }
 
   if (zone > map->max_zone_index)
     {
-      g_critical ("MAP - set_tile_zone - Given zone does not exist.");
+      error ("MAP - set_tile_zone - Given zone does not exist.");
       return FAILURE;
     }
 
   if (x >= map->width || y >= map->height)
     {
-      g_critical ("MAP - set_tile_zone - Tile out of bounds.");
+      error ("MAP - set_tile_zone - Tile out of bounds.");
       return FAILURE;
     }
 
@@ -334,7 +334,7 @@ get_map_width (map_t *map)
 
   if (map == NULL)
     {
-      g_critical ("MAP - get_map_width - Tried to get width of a NULL map.");
+      error ("MAP - get_map_width - Tried to get width of a NULL map.");
       return 0;
     }
 
@@ -354,7 +354,7 @@ get_map_height (map_t *map)
 
   if (map == NULL)
     {
-      g_critical ("MAP - get_map_height - Tried to get height of a NULL map.");
+      error ("MAP - get_map_height - Tried to get height of a NULL map.");
       return 0;
     }
 
@@ -379,7 +379,7 @@ get_max_tag (map_t *map)
 
   if (map == NULL)
     {
-      g_critical ("MAP - get_max_tag - Map is NULL.");
+      error ("MAP - get_max_tag - Map is NULL.");
       return NULL_TAG;
     }
 
@@ -407,7 +407,7 @@ get_max_layer (map_t *map)
 
   if (map == NULL)
     {
-      g_critical ("MAP - get_max_layer - Map is NULL.");
+      error ("MAP - get_max_layer - Map is NULL.");
       return 0;
     }
 
@@ -427,7 +427,7 @@ get_max_zone (map_t *map)
 
   if (map == NULL)
     {
-      g_critical ("MAP - get_max_zone - Map is NULL.");
+      error ("MAP - get_max_zone - Map is NULL.");
       return 0;
     }
 
