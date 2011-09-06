@@ -126,7 +126,7 @@ TESTS    := $(addprefix $(TESTDIR)/,$(TESTS))
 # The following object list represents the core of the engine 
 # and thus generally does not need altering by users.
 
-OBJ      := main.o hash.o graphics.o events.o
+OBJ      := main.o graphics.o events.o
 OBJ      += util.o module.o optionparser.o parser.o state.o
 OBJ      += field/field.o 
 OBJ      += field/map.o field/mapview.o field/mapload.o

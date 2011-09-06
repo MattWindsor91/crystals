@@ -49,7 +49,6 @@
 #include "glib.h" /* GHFunc */
 
 #include "../types.h"      /* Types.         */
-#include "../hash.h"       /* Hash stuff.    */
 #include "map.h"           /* layer_value_t  */
 #include "object-image.h"  /* object_image_t */
 #include "mapview.h"       /* mapview_t      */
@@ -97,11 +96,6 @@ typedef struct object
                                  image data. */
 } object_t;
 
-
-/* -- GLOBAL VARIABLES -- */
-
-extern struct hash_object *g_objects[HASH_VALS]; /**< The object hash
-                                                    table. */
 
 /* -- DECLARATIONS-- */
 
@@ -331,7 +325,7 @@ get_object (const char object_name[]);
  */
 
 void
-dirty_object_test (char *key, object_t *object, void *rect_pointer);
+dirty_object_test (void *key, void *object, void *rect_pointer);
 
 
 /** Apply the given function to all objects.

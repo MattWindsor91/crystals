@@ -1,8 +1,13 @@
 crystals
 autodoc
+#*#
+.#*
 *.exe
 *.o
 *.so
 *.d
 *.*~
 *.dll
+/html/
+/nbproject/private/
+/.settings/

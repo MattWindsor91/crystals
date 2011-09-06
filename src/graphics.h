@@ -49,7 +49,6 @@
 
 /* -- INCLUDES -- */
 
-#include "hash.h"  /* Hash stuff. */
 #include "types.h" /* Types */
 
 

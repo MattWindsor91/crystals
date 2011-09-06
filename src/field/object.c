@@ -473,21 +473,22 @@ get_object (const char object_name[])
  */
 
 void
-dirty_object_test (char *key, object_t *object, void *rect_pointer)
+dirty_object_test (void *key, void *object, void *rect_pointer)
 {
   mapview_t *mapview;
+  object_t *objectc = (object_t*) object;
   struct dirty_rectangle *rect;
-
-  key = key; /* Avoid unused warnings */
   
   int start_x;
   int start_y;
   int width;
   int height;
+  
+  key = key; /* Avoid unused warnings */
 
   /* Sanity-check the dirty rectangle data. */
 
-  if (object == NULL)
+  if (objectc == NULL)
     {
       error ("OBJECT - dirty_object_test - Object has no data.\n");
     }
@@ -501,7 +502,7 @@ dirty_object_test (char *key, object_t *object, void *rect_pointer)
 
  /* If an object is already dirty, don't bother checking. */
 
-  if (object->is_dirty == TRUE)
+  if (objectc->is_dirty == TRUE)
     {
       return;
     }
@@ -515,14 +516,14 @@ dirty_object_test (char *key, object_t *object, void *rect_pointer)
   /* Use separating axis theorem, sort of, to decide whether the
      object rect and the dirty rect intersect. */
 
-  if ((object->image->map_x <= (start_x + width - 1))
-      && (object->image->map_x
-          + object->image->width >= start_x)
-      && (object->image->map_y <= (start_y + height - 1))
-      && (object->image->map_y
-          + object->image->height >= start_y))
+  if ((objectc->image->map_x <= (start_x + width - 1))
+      && (objectc->image->map_x
+          + objectc->image->width >= start_x)
+      && (objectc->image->map_y <= (start_y + height - 1))
+      && (objectc->image->map_y
+          + objectc->image->height >= start_y))
     {
-      set_object_dirty (object, mapview);
+      set_object_dirty (objectc, mapview);
     }
 }
 
