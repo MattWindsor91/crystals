@@ -52,9 +52,6 @@
 /* -- INTERNAL DECLARATIONS -- */
 
 static void
-int_ptr_array_free (gpointer data, gpointer user_data);
-
-static void
 int_add_contents (dlg_t *dlg, xml_node_t *node, bool_t is_main);
 
 static void
@@ -144,13 +141,6 @@ dlg_free (dlg_t *dlg)
 
 
 /* -- INTERNAL DEFINITIONS -- */
-
-static void
-int_ptr_array_free (gpointer data, gpointer user_data)
-{
-  (void) user_data;
-  g_free (data);
-}
 
 static void
 int_add_contents (dlg_t *dlg, xml_node_t *node, gboolean is_main)
