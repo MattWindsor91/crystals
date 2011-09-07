@@ -415,13 +415,13 @@ set_object_dirty (object_t *object,
 
       object->is_dirty = TRUE;
 
-      /* Mark the nearby tiles. */
+      /* Mark the nearby tiles.
 
       mark_dirty_rect (mapview,
                        object->image->map_x, 
                        object->image->map_y, 
                        object->image->width, 
-                       object->image->height);
+                       object->image->height); */
 
     }
 

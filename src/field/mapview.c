@@ -47,6 +47,7 @@
 #include <string.h>
 #include <limits.h>
 #include <glib-2.0/glib/gstrfuncs.h>
+#include <glib-2.0/glib/gslist.h>
 
 #include "mapview.h"
 #include "map.h"
@@ -65,30 +66,16 @@ const uint16_t TILE_H = 32;
 
 /* -- STATIC DECLARATIONS -- */
 
-/** Add a new dirty rectangle to the mapview's dirty rectangle queue.
- *
- *  @param mapview  Pointer to the map view.
- *
- *  @param start_x  The X co-ordinate of the start of the rectangle,
- *                  as a tile offset from the left edge of the map.
- *
- *  @param start_y  The Y co-ordinate of the start of the rectangle, 
- *                  as a tile offset from the top edge of the map.
- *
- *  @param width    Width of the tile rectangle, in pixels.
- *
- *  @param height   Height of the tile rectangle, in pixels.
- *
- *  @return SUCCESS if there were no errors encountered; FAILURE
- *  otherwise.
+/**
+ * Handles a dirty map rectangle.
+ * 
+ * @param rectangle  A pointer to the dirty rectangle to handle.
+ * @param mapview    A pointer to the mapview to enqueue changes to.
  */
 
-static bool_t
-add_dirty_rect (mapview_t *mapview,
-                int32_t start_x,
-                int32_t start_y,
-                int32_t width,
-                int32_t height);
+static void
+handle_dirty_rectangle (gpointer rectangle,
+                        gpointer mapview);
 
 
 /* -- DEFINITIONS -- */
@@ -173,6 +160,7 @@ init_mapview (map_t *map)
   /* Set all tiles as dirty. */
 
   mark_dirty_rect (mapview, 0, 0, map->width * TILE_W, map->height * TILE_H);
+  render_map (mapview);
 
   return mapview;
 }
@@ -315,23 +303,37 @@ add_object_image (mapview_t *mapview,
 }
 
 
-
 void
 render_map (mapview_t *mapview)
 {
-  if (mapview)
+  unsigned char l;
+  
+  if (mapview == NULL)
     {
-      if (mapview->map)
-        {
-          unsigned char l;
+      error ("MAPVIEW - render_map - mapview is NULL");
+    }
+  
+  if (mapview->map == NULL)
+    {
+       error ("MAPVIEW - render_map - mapview->map is NULL");
+    }
+  
+  if (mapview->dirty_rectangles)
+    {
+      g_slist_foreach (mapview->dirty_rectangles,
+                       handle_dirty_rectangle,
+                       mapview);
+              
+      g_slist_free_full (mapview->dirty_rectangles,
+                         free);
+      mapview->dirty_rectangles = NULL;
+    }
 
-          /* Render a layer, then the objects tagged with that layer. */
-          for (l = 0; l <= get_max_layer (mapview->map); l++)
-            {
-              render_map_layer (mapview, l);
-              render_map_objects (mapview, l);
-            }
-        }
+  /* Render a layer, then the objects tagged with that layer. */
+  for (l = 0; l <= get_max_layer (mapview->map); l++)
+    {
+      render_map_layer (mapview, l);
+      render_map_objects (mapview, l);
     }
 }
 
@@ -581,10 +583,9 @@ mark_dirty_rect (mapview_t *mapview,
                  int32_t width,
                  int32_t height)
 {
-  int x;
-  int y;
-  dirty_rectangle_t *next;
+  dirty_rectangle_t *rect;
 
+  
   /* Sanity checking. */
 
   if (mapview == NULL)
@@ -599,143 +600,102 @@ mark_dirty_rect (mapview_t *mapview,
       return FAILURE;
     }
 
-  /* If this is the first rectangle to go onto the queue, then this
-     function call will take the responsibility of managing the
-     queue. Otherwise, just push this rectangle onto the queue for the
-     parent call to handle. */
-
-  if (mapview->dirty_rectangles != NULL)
-    return add_dirty_rect (mapview, start_x, start_y, width, height);
-
-  /* Otherwise, try adding and then process the queue. */
-
-  if (add_dirty_rect (mapview, start_x, start_y, width, height) 
-      == FAILURE)
-    return FAILURE;
-
-  while (mapview->dirty_rectangles != NULL)
-    {
-      /* Mark dirty tiles. */
-
-      int xmax, ymax;
-
-      /* Make sure maxima are rounded up. */
-
-      xmax = ((mapview->dirty_rectangles->start_x
-               + mapview->dirty_rectangles->width) / TILE_W);
-
-      if ((mapview->dirty_rectangles->start_x
-            + mapview->dirty_rectangles->width) % TILE_W > 0)
-        xmax++;
-
-      ymax = ((mapview->dirty_rectangles->start_y
-               + mapview->dirty_rectangles->height) / TILE_H);
-
-      if ((mapview->dirty_rectangles->start_y
-            + mapview->dirty_rectangles->height) % TILE_H > 0)
-        ymax++;
-
-      for (x = mapview->dirty_rectangles->start_x / TILE_W;
-           x < xmax; x++)
-        {
-          for (y = mapview->dirty_rectangles->start_y / TILE_H;
-               y < ymax; y++)
-            {
-              if (x >= 0
-                  && y >= 0
-                  && x < mapview->map->width
-                  && y < mapview->map->height)
-                mapview->dirty_tiles[x + (y * mapview->map->width)] = \
-                  get_max_layer (mapview->map) + 1;
-            }
-        }
-
-      /* Mark dirty objects. */
-
-      /* Transform the dirty rectangle so it extends to all tiles it
-         intersects. */
-
-      x = mapview->dirty_rectangles->start_x / TILE_W;
-      y = mapview->dirty_rectangles->start_y / TILE_H;
-
-      mapview->dirty_rectangles->start_x = x * TILE_W;
-      mapview->dirty_rectangles->start_y = y * TILE_H;
-
-      mapview->dirty_rectangles->width = (xmax - x + 1) * TILE_W;
-      mapview->dirty_rectangles->height = (ymax - y + 1) * TILE_H;
-
-      /* Check to see if each object in the hash table is going to be dirtied. */
-
-      apply_to_objects (dirty_object_test, 
-                        mapview->dirty_rectangles);
-
-      /* Now can the current dirty rectangle and move to the next, if
-         any. */
-
-      next = mapview->dirty_rectangles->next;
-
-      free (mapview->dirty_rectangles);
-
-      mapview->dirty_rectangles = next;
-    }
- 
-  return SUCCESS;
-}
-
-/* Add a new dirty rectangle to the mapview's dirty rectangle queue. */
-
-static bool_t
-add_dirty_rect (mapview_t *mapview,
-                int32_t start_x,
-                int32_t start_y,
-                int32_t width,
-                int32_t height)
-{
-  dirty_rectangle_t *rect;
-  dirty_rectangle_t *p;
-
-  /* Sanity checking shouldn't be needed - this should never be called
-     directly. */
-
-  /* First, try to allocate a rect structure. */
-
-  rect = malloc (sizeof (dirty_rectangle_t));
-
+  
+  rect = calloc (1, sizeof (dirty_rectangle_t));
+  
   if (rect == NULL)
     {
-      error ("MAPVIEW - add_dirty_rect - Cannot allocate a dirty rectangle.");
+      error ("MAPVIEW - mark_dirty_rect - Couldn't allocate rect.");
       return FAILURE;
     }
-
-  /* Now move the members in. */
-
+  
+  rect->parent = mapview;
   rect->start_x = start_x;
   rect->start_y = start_y;
   rect->width = width;
   rect->height = height;
-  rect->parent = mapview;
-  rect->next = NULL;
+  
+  mapview->dirty_rectangles
+    = g_slist_prepend (mapview->dirty_rectangles, rect);
+  
+  return SUCCESS;
+}
 
-  /* If the queue is empty, then replace the queue pointer with the
-     new rect pointer. */
 
-  if (mapview->dirty_rectangles == NULL)
+/* Handles a dirty map rectangle. */
+
+static void
+handle_dirty_rectangle (gpointer rectangle,
+                        gpointer mapview)
+{
+  int x;
+  int y;
+  int xmax;
+  int ymax;
+  dirty_rectangle_t *rectanglec = (dirty_rectangle_t *) rectangle;
+  mapview_t *mapviewc = (mapview_t *) mapview;
+  
+  /* Check to see if the rectangle is off-screen.  If so, don't
+   * bother rendering it! 
+   */
+  if ((rectanglec->start_x >= SCREEN_W + mapviewc->x_offset)
+      || (rectanglec->start_y >= SCREEN_H + mapviewc->y_offset)
+      || (rectanglec->start_x + rectanglec->width
+          <= mapviewc->x_offset)
+      || (rectanglec->start_y + rectanglec->height
+          <= mapviewc->y_offset))
     {
-      mapview->dirty_rectangles = rect;
-      return SUCCESS;
+      return;
+    }
+  
+  
+  /* Translate absolute co-ordinates into screen ones, and 
+   * propagate the dirty rectangle to the graphics subsystem.
+   */
+  add_update_rectangle (rectanglec->start_x - mapviewc->x_offset,
+                        rectanglec->start_y - mapviewc->y_offset,
+                        rectanglec->width,
+                        rectanglec->height);
+  
+  /* Mark dirty tiles. */
+
+  /* Make sure maxima are rounded up. */
+
+  xmax = ((rectanglec->start_x
+           + rectanglec->width) / TILE_W);
+  if ((rectanglec->start_x
+       + rectanglec->width) % TILE_W > 0)
+    {
+      xmax++;
     }
 
-  /* Otherwise, skip to the first item in the queue with a NULL next
-     pointer and add the new rect pointer there. */
+  ymax = ((rectanglec->start_y
+           + rectanglec->height) / TILE_H);
+  if ((rectanglec->start_y
+       + rectanglec->height) % TILE_H > 0)
+    {
+      ymax++;
+    }
 
-  for (p = mapview->dirty_rectangles; 
-       p->next != NULL; 
-       p = p->next)
-    ;
+  for (x = rectanglec->start_x / TILE_W;
+       x < xmax; x++)
+    {
+      for (y = rectanglec->start_y / TILE_H;
+           y < ymax; y++)
+        {
+          if (x >= 0
+              && y >= 0
+              && x < mapviewc->map->width
+              && y < mapviewc->map->height)
+            mapviewc->dirty_tiles[x + (y * mapviewc->map->width)] = \
+              get_max_layer (mapviewc->map) + 1;
+        }
+    }
 
-  p->next = rect;
+  /* Check to see if each object in the hash table is going to be dirtied. */
 
-  return SUCCESS;
+  apply_to_objects (dirty_object_test, 
+                    rectanglec);
 }
 
 
@@ -769,14 +729,8 @@ free_mapview (mapview_t *mapview)
 
       if (mapview->dirty_rectangles)
         {   
-          dirty_rectangle_t *next;
-
-          while (mapview->dirty_rectangles != NULL)
-            {
-              next = mapview->dirty_rectangles->next;
-              free (mapview->dirty_rectangles);
-              mapview->dirty_rectangles = next;
-            }
+          g_slist_free_full (mapview->dirty_rectangles, free);
+          mapview->dirty_rectangles = NULL;
         }
 
       free (mapview);
