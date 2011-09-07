@@ -63,14 +63,14 @@
 
 /* -- DECLARATIONS -- */
 
-/** Initialise the module. */
+/** Initialises the module. */
 
 EXPORT bool_t
 init (void);
 
 
 /**
- * Terminate the module, freeing any remaining data dynamically
+ * Terminates the module, freeing any remaining data dynamically
  * allocated by the module.
  */
 
@@ -79,7 +79,7 @@ term (void);
 
 
 /**
- * Initialise a screen of a given width, height and depth.
+ * Initialises a screen of a given width, height and depth.
  *
  * The screen's data will automatically be deleted, if not sooner,
  * when the module is unloaded (ie, via the module's term
@@ -100,7 +100,7 @@ init_screen_internal (uint16_t width, uint16_t height,
 
 
 /**
- * Draw a rectangle of colour on-screen.
+ * Draws a rectangle of colour on-screen.
  *
  * Depending on the graphics module, the colour displayed on screen
  * may not exactly match the desired colour.
@@ -132,19 +132,20 @@ draw_rect_internal (int16_t x,
                     uint8_t blue);
 
 
-/** Load an image and return its data in the module's native
- *  format.
+/** 
+ * Loads an image and return its data in the module's native
+ * format.
  *
- *  As the exact format returned varies from module to module, you
- *  will likely only want to use this function through the graphics
- *  subsystem's wrapper function, load_image, which also stores the
- *  data into a cache.
+ * As the exact format returned varies from module to module, you
+ * will likely only want to use this function through the graphics
+ * subsystem's wrapper function, load_image, which also stores the
+ * data into a cache.
  *
- *  @param filename  The path to the file to load.
+ * @param filename  The path to the file to load.
  *
- *  @return  a pointer to a memory location containing image data
- *  which can eventually be passed to the module's draw_image
- *  function.
+ * @return  a pointer to a memory location containing image data
+ *          which can eventually be passed to the module's draw_image
+ *          function.
  */
 
 EXPORT void *
@@ -152,7 +153,7 @@ load_image_data (const char filename[]);
 
 
 /**
- * Free image data retrieved by load_image_data.
+ * Frees image data retrieved by load_image_data.
  *
  * Since the nature of the image data in question varies from
  * module to module, simply freeing the data directly may not be
@@ -170,7 +171,7 @@ free_image_data (void *data);
 
 
 /**
- * Draw a rectangular portion of an image on-screen.
+ * Draws a rectangular portion of an image on-screen.
  *
  * This should not be called directly, but instead accessed through
  * the graphics subsystem's draw_image function (see graphics.h).
@@ -210,7 +211,25 @@ draw_image_internal (void *image,
 
 
 /**
- * Update the screen.
+ * Adds a rectangle to the next update run.
+ * 
+ * @param x       The X co-ordinate of the left side of the rectangle,
+ *                in pixels from the left side of the screen.
+ * @param y       The Y co-ordinate of the top side of the rectangle,
+ *                in pixels from the top side of the screen.
+ * @param width   The width of the rectangle, in pixels.
+ * @param height  The height of the rectangle, in pixels.
+ */
+
+EXPORT void
+add_update_rectangle_internal (uint16_t x,
+                               uint16_t y,
+                               int16_t width,
+                               int16_t height);
+
+
+/**
+ * Updates the screen.
  *
  * @return  SUCCESS for success; FAILURE otherwise.
  */
@@ -220,7 +239,7 @@ update_screen_internal (void);
 
 
 /**
- * Translate the screen by a co-ordinate pair, leaving damage.
+ * Translates the screen by a co-ordinate pair, leaving damage.
  *
  * @param x_offset  The X co-ordinate offset in which to scroll the
  *                  screen.

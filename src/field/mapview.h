@@ -52,6 +52,7 @@
 #ifndef _MAPVIEW_H
 #define _MAPVIEW_H
 
+#include <glib-2.0/glib/gslist.h>
 
 #include "map.h"
 #include "../types.h"
@@ -148,8 +149,7 @@ typedef struct mapview
                                          be num_object_queues heads in
                                          this block.*/
   
-  dirty_rectangle_t *dirty_rectangles; /**< Stack of dirty
-                                               rectangles. */
+  GSList *dirty_rectangles; /**< Stack of dirty rectangles. */
 } mapview_t;
 
 

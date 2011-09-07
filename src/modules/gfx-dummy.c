@@ -156,6 +156,21 @@ draw_image_internal (void *image,
 }
 
 
+/* Adds a rectangle to the next update run. */
+
+EXPORT void
+add_update_rectangle_internal (uint16_t x,
+                               uint16_t y,
+                               int16_t width,
+                               int16_t height)
+{
+  (void) x;
+  (void) y;
+  (void) width;
+  (void) height;
+}
+
+
 /* Update the screen. */
 
 EXPORT bool_t

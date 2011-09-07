@@ -257,6 +257,13 @@ load_module_gfx (const char* name, module_set* modules)
                            &modules->gfx.draw_image_internal)
       == FAILURE)
     return FAILURE;
+ 
+  if (get_module_function (modules->gfx.metadata,
+                           "add_update_rectangle_internal",
+                           (mod_function_ptr*)
+                           &modules->gfx.add_update_rectangle_internal) 
+      == FAILURE)
+    return FAILURE;
   
   if (get_module_function (modules->gfx.metadata,
                            "update_screen_internal",
