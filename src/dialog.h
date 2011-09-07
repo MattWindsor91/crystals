@@ -55,63 +55,65 @@
 /* dialog types */
 typedef enum dialog_type 
 {
-  TEXT,
-  CHOICES,
-  SET_EVENT, /**<< changes the status of a specific event */
+  TEXT,      /**<< for good old plain text */
+  CHOICES,   /**<< dialog decisions */
+  SET_EVENT, /**<< set an event */
+  SET_QUEST, /**<< changes the state of a quest */
   SET_ITEM,  /**<< player gets an item */
   SET_ATTR,  /**<< increases player attributes or skills */
-  SET_EXP    /**<< set experience points */
+  SET_EXP,   /**<< set experience points */
+  INTERNAL   /**<< internal type, please do not use */
 } dlg_type_t;
 
 typedef struct dialog_text
 {
-  char *actor_id;
-  char *text;
+  const char *actor_id;
+  const char *text;
 } dlg_text_t;
 
 typedef struct dialog_choices
 {
-  char      *actor_id;
-  GPtrArray *descrptions; /**<< */
-  GPtrArray *content_ids; /**<< */
+  const char *actor_id;
+  GPtrArray  *descrptions; /**<< */
+  GPtrArray  *content_ids; /**<< */
   /* Those two arrays have to have the same length */
 } dlg_choices_t;
 
 typedef struct dialog_quest
 {
-  char *name;
-  char *state;
+  const char *name;
+  const char *state;
 } dlg_quest_t;
 
 typedef struct dialog_item
 {
-  char    *name;
-  int32_t amount;
+  const char *name;
+  int32_t    amount;
 } dlg_item_t;
 
 typedef struct dialog_attribute
 {
-  char    *name;
-  int32_t *value; /**<< value to add to the chosen attribute */
+  const char *name;
+  int32_t    value; /**<< value to add to the chosen attribute */
 } dlg_attr_t;
 
 typedef union dialog_action 
 {
-  dlg_quest_t   *quest;
-  dlg_item_t    *item;
-  dlg_choices_t *choices;
-  dlg_text_t    *text;
-  dlg_attr_t    *attr;
-  int32_t       *exp;
-  char          *event;
-  char          *goto_id;
+  dlg_quest_t   quest;
+  dlg_item_t    item;
+  dlg_choices_t choices;
+  dlg_text_t    text;
+  dlg_attr_t    attr;
+  int32_t       exp;
+  const char    *event;
+  const char    *goto_id;
 } dlg_action_t;
 
 typedef struct dialog_contents
 {
-  char         *content_id;
+  const char   *content_id;
   dlg_type_t   type;
-  dlg_action_t *action;
+  dlg_action_t action;
 } dlg_content_t;  
 
 typedef struct dialog_root 
@@ -135,17 +137,17 @@ typedef enum requirement_type
 
 typedef union requirement_action
 {
-  dlg_quest_t *quest;
-  dlg_item_t  *item;
-  dlg_attr_t  *attr;
-  char        *evet
-  int32_t     *lvl;
+  dlg_quest_t quest;
+  dlg_item_t  item;
+  dlg_attr_t  attr;
+  const char  *event;
+  int32_t     lvl;
 } req_action_t;
 
 typedef struct requirement
 {
   req_type_t   type;
-  req_action_t *action;
+  req_action_t action;
 } req_t;
 
 /* -- DECLARATIONS -- */

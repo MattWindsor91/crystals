@@ -43,6 +43,9 @@
  * @todo    Test!
  */
 
+#include <ctype.h>
+#include <string.h>
+
 #include <glib.h>
 
 #include "dialog.h"
@@ -55,17 +58,22 @@ static void
 int_add_contents (dlg_t *dlg, xml_node_t *node, bool_t is_main);
 
 static void
-int_add_content_text (dlg_t *dlg, dlg_content_t *con, xml_node_t *node);
+int_add_content_text (dlg_content_t *con, xml_node_t *node);
 
 static void
-int_add_content_choices (dlg_t *dlg, dlg_content_t *con, xml_node_t *node);
+int_add_content_choices (dlg_content_t *con, xml_node_t *node);
 
 static void
-int_add_content_set (dlg_t *dlg, dlg_content_t *con, xml_node_t *node);
+int_add_content_set (dlg_content_t *con, xml_node_t *node);
 
 static void
-int_add_content_goto (dlg_t *dlg, dlg_content_t *con, xml_nodet *node);
+int_add_content_goto (dlg_content_t *con, xml_node_t *node);
 
+static void
+int_add_requirements (dlg_t *dlg, xml_node_t *node);
+
+static void
+int_free_content (gpointer data, gpointer user_data);
 
 /* -- DEFINITIONS -- */
 
@@ -82,7 +90,7 @@ dlg_parse_file (const char *p)
   if (xml_root == NULL)
     return NULL;
 
-  if (xml_verify_doc (xml_root, "dialog"))
+  if (!xml_verify_doc (xml_root, "dialog"))
     {
       error (
         "DIALOG - dlg_parse_file - File \"%s\" is not a crystals dialog file.",
@@ -96,31 +104,31 @@ dlg_parse_file (const char *p)
   dlg->requirements = g_ptr_array_new ();
   dlg->xml_root     = xml_root;
 
-  dlg->path_name    = g_new (char, g_strlen(p)+1);
-  g_strcpy (dlg->path_name, p);
+  dlg->path_name    = g_new (char, strlen(p)+1);
+  strcpy (dlg->path_name, p);
 
   xml_curr = xml_root->children;
-  
-  /* add main contents */
+
   while (xml_curr != xml_root->last)
     {
-      if (xml_curr->type == XML_ELEMENT_NODE &&
-          xml_curr->name == "content")
+      if (xml_curr->type == XML_ELEMENT_NODE)
         {
-          int_add_contents (dlg, xml_curr, TRUE);
-          break;
-        }
-      xml_curr = xml_curr->next;
-    }
+          if (!strcmp ((const char *) xml_curr->name, "requirements"))
+            int_add_requirements (dlg, xml_curr);
 
-  /* add sub contents */
-  xml_curr = xml_root->children;
-  while (xml_curr != xml_root->last)
-    {
-      if (xml_curr->type == XML_ELEMENT_NODE &&
-          xml_curr->name == "subcontent")
-        int_add_contents (dlg, xml_curr, FALSE);
-        
+          /* add main content */
+          else if (!strcmp ((const char *) xml_curr->name, "content"))
+            int_add_contents (dlg, xml_curr, TRUE);
+
+          /* add sub contents */
+          else if (!strcmp ((const char *) xml_curr->name, "subcontent"))
+            int_add_contents (dlg, xml_curr, FALSE);
+
+          else
+            error ("DIALOG - dlg_parse_file - Uknown node \"%s\" in %s\n",
+              xml_curr->name, p);
+        }
+
       xml_curr = xml_curr->next;
     }
 
@@ -131,11 +139,13 @@ void
 dlg_free (dlg_t *dlg)
 {
   g_free (dlg->path_name);
-  xml_free_doc (dlg->xml_root->doc);
+  xml_free_doc (dlg->xml_root);
 
-  g_ptr_array_free (dlg->contents, TRUE);
+  g_ptr_array_foreach (dlg->contents, int_free_content, NULL);
+  g_ptr_array_free (dlg->contents, FALSE);
   g_ptr_array_free (dlg->requirements, TRUE);
 
+  g_free (dlg->path_name);
   g_free (dlg);
 }
 
@@ -143,11 +153,11 @@ dlg_free (dlg_t *dlg)
 /* -- INTERNAL DEFINITIONS -- */
 
 static void
-int_add_contents (dlg_t *dlg, xml_node_t *node, gboolean is_main)
+int_add_contents (dlg_t *dlg, xml_node_t *node, bool_t is_main)
 {
-  char *content_id   = NULL;
-  dlg_content_t *con = NULL;
-  xml_node_t *curr   = NULL;
+  const char *node_name = NULL;
+  dlg_content_t *con    = NULL;
+  xml_node_t *curr      = NULL;
 
   curr = node->children;
 
@@ -158,63 +168,182 @@ int_add_contents (dlg_t *dlg, xml_node_t *node, gboolean is_main)
       if (is_main)
         con->content_id = NULL;
       else
-        con->content_id = xml_get_node_prop (node, "id");
- 
+        con->content_id = xml_node_get_prop (node, "id");
+
       if (curr->type == XML_ELEMENT_NODE)
         {
-          switch (curr->name)
+          node_name = (const char *) curr->name;
+
+          if (!strcmp (node_name, "say"))
+            int_add_content_text (con, curr);
+
+          else if (!strcmp (node_name, "set"))
+            int_add_content_set (con,  curr);
+
+          else if (!strcmp (node_name, "choices"))
+            int_add_content_choices (con, curr);
+
+          else if (!strcmp (node_name, "goto"))
+            int_add_content_goto (con, curr);
+
+          else
+            error ("DIALOG - dlg_parse_file - Uknown node \"%s\" in %s\n",
+              node_name, dlg->path_name);
+
+          g_ptr_array_add ((dlg->contents), (gpointer) con);
+        }
+      curr = curr->next;
+    }
+}
+
+/* the following needs more error checking */
+
+static void
+int_add_content_text (dlg_content_t *con, xml_node_t *node)
+{
+  con->type = TEXT;
+  con->action.text.actor_id = xml_node_get_prop (node, "who");
+  con->action.text.text = xml_node_get_content (node);
+}
+
+static void
+int_add_content_choices (dlg_content_t *con, xml_node_t *node)
+{
+  xml_node_t *curr = node->children;
+
+  con->type = CHOICES;
+  con->action.choices.actor_id = xml_node_get_prop (node, "who");
+  con->action.choices.content_ids = g_ptr_array_new ();
+  con->action.choices.descrptions = g_ptr_array_new ();
+
+  while (curr != node->last)
+    {
+      if (curr->type == XML_ELEMENT_NODE &&
+          !strcmp((const char *) curr->name, "choice"))
+        {
+          g_ptr_array_add (con->action.choices.content_ids,
+            (gpointer) xml_node_get_prop (curr, "id"));
+          g_ptr_array_add (con->action.choices.descrptions,
+            (gpointer) xml_node_get_content (curr));
+        }
+
+      curr = curr->next;
+    }
+}
+
+static void
+int_add_content_set (dlg_content_t *con, xml_node_t *node)
+{
+  const char *node_type = xml_node_get_prop (node, "type");
+
+  if (!strcmp (node_type, "event"))
+    {
+      con->type = SET_EVENT;
+      con->action.event = xml_node_get_content (node);
+    }
+  else if (!strcmp (node_type, "item"))
+    {
+      con->type = SET_ITEM;
+      con->action.item.name = xml_node_get_content (node);
+      con->action.item.amount = atoi (xml_node_get_prop (node, "amount"));
+    }
+  else if (!strcmp (node_type, "attr"))
+    {
+      con->type = SET_ATTR;
+      con->action.attr.name = xml_node_get_content (node);
+      con->action.attr.value = atoi (xml_node_get_prop (node, "value"));
+    }
+  else if (!strcmp (node_type, "quest"))
+    {
+      con->type = SET_QUEST;
+      con->action.quest.name = xml_node_get_content (node);
+      con->action.quest.state = xml_node_get_prop (node, "state");
+    }
+  else if (!strcmp (node_type, "exp"))
+    {
+      con->type = SET_EXP;
+      con->action.exp = atoi (xml_node_get_content (node));
+    }
+  else
+    error ("DIALOG - dlg_parse_file - Unknown set type: \"%s\"",
+      node_type);
+}
+
+static void
+int_add_content_goto (dlg_content_t *con, xml_node_t *node)
+{
+  con->type = INTERNAL;
+  con->action.goto_id = xml_node_get_content (node);
+}
+
+static void
+int_add_requirements (dlg_t *dlg, xml_node_t *node)
+{
+  xml_node_t *curr = node->children;
+  const char *node_name = NULL;
+  req_t *req;
+
+  while (curr != node->last)
+    {
+      if (curr->type == XML_ELEMENT_NODE)
+        {
+          req = g_new (req_t, 1);
+          node_name = (const char *) curr->name;
+
+          if (!strcmp (node_name, "event"))
             {
-              case "say":
-                int_add_content_text (dlg, con, curr);
-                break;
-
-              case "set":
-                int_add_content_set (dlg, con,  curr);
-                break;
-
-              case "choices":
-                int_add_content_choicest (dlg, con, curr);
-                break;
-
-              case "goto":
-                int_add_content_goto (dlg, con, curr);
-                break;
-
-              default:
-                error ("DIALOG - dlg_parse_file - Uknown node \"%s\" in %s\n",
-                  curr->name, dlg->path_name);
-                break;
+              req->type = EVENT;
+              req->action.event = xml_node_get_content (curr);
             }
+          else if (!strcmp (node_name, "quest"))
+            {
+              req->type = QUEST;
+              req->action.quest.name = xml_node_get_content (curr);
+              req->action.quest.state = xml_node_get_prop (curr, "state");
+            }
+          else if (!strcmp (node_name, "item"))
+            {
+              req->type = ITEM;
+              req->action.item.name = xml_node_get_content (curr);
+              req->action.item.amount =
+                atoi (xml_node_get_prop (curr, "amount"));
+            }
+          else if (!strcmp (node_name, "attr"))
+            {
+              req->type = ATTR;
+              req->action.attr.name = xml_node_get_content (curr);
+              req->action.attr.value =
+                atoi (xml_node_get_prop (curr, "value"));
+            }
+          else if (!strcmp (node_name, "level"))
+            {
+              req->type = LEVEL;
+              req->action.lvl = atoi (xml_node_get_content (curr));
+            }
+          else
+            error ("DIALOG - dlg_parse_file - Uknown node \"%s\"\n",
+              node_name);
 
-          g_ptr_array_add (dlg->contents, con);
+          g_ptr_array_add (dlg->requirements, (gpointer) req);
         }
       curr = curr->next;
     }
 }
 
 static void
-int_add_contents (dlg_t *dlg, xml_node_t *node, bool_t is_main)
+int_free_content (gpointer data, gpointer user_data)
 {
-}
+  dlg_content_t *con = (dlg_content_t *) data;
 
-static void
-int_add_content_text (dlg_t *dlg, dlg_content_t *con, xml_node_t *node)
-{
-}
+  (void) user_data;
 
-static void
-int_add_content_choices (dlg_t *dlg, dlg_content_t *con, xml_node_t *node)
-{
-}
+  if (con->type == CHOICES)
+    {
+      g_ptr_array_free (con->action.choices.content_ids, FALSE);
+      g_ptr_array_free (con->action.choices.descrptions, FALSE);
+    }
 
-static void
-int_add_content_set (dlg_t *dlg, dlg_content_t *con, xml_node_t *node)
-{
-}
-
-static void
-int_add_content_goto (dlg_t *dlg, dlg_content_t *con, xml_nodet *node)
-{
+  g_free (con);
 }
 
 /* vim: set ts=2 sw=2 softtabstop=2 cinoptions=>4,n-2,{2,^-2,:2,=2,g0,h2,p5,t0,+2,(0,u0,w1,m1: */

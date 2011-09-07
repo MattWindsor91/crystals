@@ -118,7 +118,7 @@ xml_verify_doc (xml_node_t *root, const char *root_name);
  */
 
 xml_type_t
-xml_get_node_type (xml_node_t *node);
+xml_node_get_type (xml_node_t *node);
 
 
 /**
@@ -131,7 +131,7 @@ xml_get_node_type (xml_node_t *node);
  */
 
 const char*
-xml_get_node_prop (xml_node_t *node, const char *prop);
+xml_node_get_prop (xml_node_t *node, const char *prop);
 
 
 /**
@@ -143,7 +143,7 @@ xml_get_node_prop (xml_node_t *node, const char *prop);
  */
 
 const char*
-xml_get_node_content (xml_node_t *node);
+xml_node_get_content (xml_node_t *node);
 
 
 /**
