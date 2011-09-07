@@ -43,103 +43,96 @@
  * @todo    Test!
  */
 
-#include "parser.h" /**<< @todo implement a generic tree */
+#include <glib.h>
+
 #include "dialog.h"
+#include "util.h"
+#include "xml.h"
 
-static dict_t match_names_sg = NULL; /**<< globals everywhere argh 
-                                           @todo find a better solution */
+static void
+int_add_contents (dlg_t *dlg, xml_node_t *node, bool_t is_main);
 
-struct dialog_root*
-parse_dialog_file (const char *p)
+dlg_t*
+dlg_parse_file (const char *p)
 {
   uint8_t counter = 0;
   
-  xmlNode *xml_root = NULL;
-  xmlNode *node     = NULL; 
+  xml_node_t *xml_root = NULL;
+  xml_node_t *xml_curr = NULL;
   
-  struct dialog_root *dlg_root = NULL;
+  dlg_t *dlg = NULL;
   
-  xml_root = parse_xml_file (p);
-  
+  xml_root = xml_parse_doc (p);
+ 
   if (xml_root == NULL)
     return NULL;
-  
-  dlg_root = malloc (sizeof (struct dialog_node))
-  dlg_root->xml_root = xml_root;
-  
-  if (xml_root->name == (xmlChar) "dialog")
-    node = xml_root->children;
-    
-  /* count amount of subcontents */
-  while (node != 0)
+
+  if (xml_verify_doc (xml_root, "dialog"))
     {
-      if (node->name == "subcontent")
-        ++counter;
-      
-      node = node->next;
+      error (
+        "DIALOG - dlg_parse_file - File \"%s\" is not a crystals dialog file.",
+        p);
+      xml_free_doc (xml_root);
+      return NULL;
     }
   
-  /* allocate enough memory for all subcontents */
-  dlg_root->sc_n = counter;
-  dlg_root->subcontents = calloc (counter, sizeof (struct dialog_node));
+  dlg               = malloc (sizeof(dlg_t));
+  dlg->contents     = g_ptr_array_new ();
+  dlg->requirements = g_ptr_array_new ();
+  dlg->xml_root     = xml_root;
+
+  xml_curr = xml_root->children;
   
-  for (counter = 0; counter < dlg_root->sc_n; ++counter)
-    dlg_root->subcontents[counter] = NULL; /* initialise all pointers */
-  
-  /* set node to the start again */
-  node = xml_root->children;
-  
-  while (node != 0) 
+  /* add main contents */
+  while (xml_curr != xml_root->last)
     {
-      xml_to_dlg (dlg_root, node, xml_root);
-      
-      node = node->next;
+      if (xml_curr->type == XML_ELEMENT_NODE && 
+          xml_curr->name == "content")
+        {
+          int_add_contents (dlg, xml_curr, TRUE);
+          break;
+        }
+      xml_curr = xml_curr->next;
     }
   
-  return dlg_root;
+  /* add sub contents */
+  xml_curr = xml_root->children;
+  while (xml_curr != xml_root->last)
+    {
+      if (xml_curr->type == XML_ELEMENT_NODE && 
+          xml_curr->name == "subcontent")
+        int_add_contents (dlg, xml_curr, FALSE);
+        
+      xml_curr = xml_curr->next;
+    }
 }
 
 void
-free_dialog (struct dialog_root *r)
+dlg_free (struct dialog_root *r)
 {
-}
- 
-static void 
-xml_to_dlg (struct dialog_root *dlg_root, xmlNode *node, xmlNode *xml_root)
-{
-  static dict_t *match_names = NULL;
-  
-  int i = 0;
-  struct dialog_node *tmp_sc = dlg_root->subcontents[i];
-  
-  switch (node->name) 
-    {
-      case "id":
-        cfg_add (xmlNodeGetContent(node), 
-                 xmlGetProp(node, "match"), &match_names);
-        break;
-      case "content":
-        add_dialog_content (&dlg_root->content, node);
-        break;
-      case "subcontent":
-        while (tmp_sc != NULL && i < dlg_root->sc_n)
-          {
-            ++i;
-            tmp_sc = dlg_root->subcontents[i];
-          }
-        if (i < dlg_root->sc_n)
-          add_dialog_content (dlg_root->subcontent[i], node)
-        else
-          fprintf (stderr, "DIALOG - xml_to_dlg - strange error that should not happen, occured\n");
-        break;
-      default:
-        fprintf (stderr, "DIALOG - add_dialog_node - uknown node %s\n", node->name);
-        break;
-    }
 }
 
 static void 
-add_dialog_content (struct dialog_node **dlg_node, xmlNode *xml_node)
+int_add_contents (dlg_t *dlg, xml_node_t *node, gboolean is_main)
 {
-  /** @todo finish ;-) */
+  char *content_id   = NULL;
+  dlg_content_t *con = NULL;
+
+  while ()
+    {
+     con = malloc (sizeof(dlg_content_t));
+
+      if (is_main)
+        con->content_id = NULL;
+      else 
+        {
+          content_id = xml_get_node_prop (node, "id");
+          con->content_id = malloc ((g_strlen (content_id) + 1)* sizeof(char));      
+          g_strcpy (con->content_id, content_id);
+        }
+      /* TODO: finish */ 
+    }
 }
+
+/* vim: set ts=2 sw=2 softtabstop=2 cinoptions=>4,n-2,{2,^-2,:2,=2,g0,h2,p5,t0,+2,(0,u0,w1,m1: */
+
