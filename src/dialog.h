@@ -119,6 +119,7 @@ typedef struct dialog_root
   GPtrArray  *requirements;
   GPtrArray  *contents;
   xml_node_t *xml_root;
+  char       *path_name;
 } dlg_t;
 
 
