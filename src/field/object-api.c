@@ -36,9 +36,10 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/** @file    src/field/object-api.c
- *  @author  Matt Windsor
- *  @brief   Externally exposed API for object manipulation.
+/** 
+ * @file    src/field/object-api.c
+ * @author  Matt Windsor
+ * @brief   Externally exposed API for object manipulation.
  */
 
 #include <stdlib.h>
@@ -57,6 +58,13 @@
 static object_t *sg_camera_focus = NULL; /** Current object with camera focus. */
 
 
+static void
+mark_object_field_location_dirty (object_t *object);
+
+static bool_t
+object_out_of_bounds (int x, int y, int width, int height);
+
+
 /* -- DEFINITIONS -- */
 
 /* Set an object as the camera focus point. */
@@ -64,26 +72,23 @@ static object_t *sg_camera_focus = NULL; /** Current object with camera focus. *
 bool_t
 focus_camera_on_object (const char object_name[])
 {
-  object_t *object;
-
-  /* Sanity checking. */
-
   if (object_name == NULL)
     {
       error ("OBJECT-API - focus_camera_on_object - Null object name.");
       return FAILURE;
     }
 
-  object = get_object (object_name);
+  {
+    object_t *object = get_object (object_name);
+    if (object == NULL)
+      {
+        error ("OBJECT-API - focus_camera_on_object - Couldn't get object %s.", 
+               object_name);
+        return FAILURE;
+      }
 
-  if (object == NULL)
-    {
-      error ("OBJECT-API - focus_camera_on_object - Couldn't get object %s.", 
-             object_name);
-      return FAILURE;
-    }
-
-  sg_camera_focus = object;
+    sg_camera_focus = object;
+  }
 
   return SUCCESS;
 }
@@ -94,19 +99,11 @@ focus_camera_on_object (const char object_name[])
 bool_t
 move_object (const char object_name[], int32_t dx, int32_t dy)
 {
-  object_t *object;
-  mapview_t *mapview;
-
-
-  /* These four ints are used for boundary checking later. */
-  
-  int32_t start_x;
-  int32_t start_y;
-  int32_t end_x;
-  int32_t end_y;
-
-
-  /* Sanity checking. */
+  /* No point moving by (0, 0). */
+  if (dx == 0 && dy == 0)
+    {
+      return SUCCESS;
+    }
 
   if (object_name == NULL)
     {
@@ -114,95 +111,66 @@ move_object (const char object_name[], int32_t dx, int32_t dy)
       return FAILURE;
     }
 
-  /* End sanity checking. */
+  {
+    object_t *object = get_object (object_name);
+    if (object == NULL)
+      {
+        error ("OBJECT-API - move_object - Couldn't get obj"${OUTPUT_PATH}"ect %s.", 
+               object_name);
+        return FAILURE;
+      }
 
+    if (object->image == NULL)
+      {
+        error ("OBJECT-API - move_object - Object %s has no image dataset.", 
+               object->name);
+        return FAILURE;
+      }
 
-  object = get_object (object_name);
+    if (object_out_of_bounds (object->image->map_x + dx,
+                              object->image->map_y + dy,
+                              object->image->map_x + dx + object->image->width, 
+                              object->image->map_y + dy + object->image->height))
+      {
+        error ("OBJECT-API - move_object - Object moving out of bounds.");
+        return FAILURE;
+      }
+    
 
-  if (object == NULL)
-    {
-      error ("OBJECT-API - move_object - Couldn't get object %s.", 
-             object_name);
+    /* Mark old location as dirty. */
+    mark_object_field_location_dirty (object);
+
+    /* Try to move object. */
+    if (set_object_coordinates (object, 
+                                object->image->map_x + dx,
+                                object->image->map_y + dy, TOP_LEFT) 
+        == FAILURE)
       return FAILURE;
-    }
 
-  if (object->image == NULL)
-    {
-      error ("OBJECT-API - move_object - Object %s has no image dataset.", 
-             object->name);
-      return FAILURE;
-    }
+    /* Mark new location as dirty. */
+    mark_object_field_location_dirty (object);
 
-  mapview = get_field_mapview ();
+    /* Finally, if the object is the camera focus, scroll the map (if
+       the new co-ordinates are near enough) or, when full map updates
+       are ready, centre the camera and redraw the map. */
 
-  if (mapview == NULL)
-    {
-      error ("OBJECT-API - move_object - No field map view.");
-      return FAILURE;
-    }
+    if (object == sg_camera_focus)
+      {
+        mapview_t *mapview = get_field_mapview ();
+        if (mapview == NULL)
+          {
+            error ("OBJECT-API - move_object - No field map view.");
+            return FAILURE;
+          }
 
-  /* No point moving by (0, 0). */
-
-  if (dx == 0 && dy == 0)
-    return SUCCESS;
-
-  /* Check we're not moving the object out of bounds. */
-
-  if (get_field_map_boundaries (&start_x, 
-                                &start_y,
-                                &end_x,
-                                &end_y) == FAILURE)
-    {
-      error ("OBJECT-API - move_object - Couldn't get map boundaries.");
-      return FAILURE;
-    }
-
-  if (object->image->map_x + dx < start_x
-      || object->image->map_y + dy < start_y
-      || object->image->map_x + object->image->width + dx >= end_x
-      || object->image->map_y + object->image->height + dy >= end_y)
-    {
-      error ("OBJECT-API - move_object - Tried to move out of bounds.");
-      return FAILURE;
-    }
-
-  /* Mark old location as dirty. */
-
-  mark_dirty_rect (mapview,
-                   object->image->map_x, 
-                   object->image->map_y, 
-                   object->image->width, 
-                   object->image->height);
-
-  /* Try to move object. */
-
-  if (set_object_coordinates (object, 
-                              object->image->map_x + dx,
-                              object->image->map_y + dy, TOP_LEFT) 
-      == FAILURE)
-    return FAILURE;
-
-  /* Set object as newly dirty. */
-  set_object_dirty (object, mapview);
-  mark_dirty_rect (mapview,
-                   object->image->map_x, 
-                   object->image->map_y, 
-                   object->image->width, 
-                   object->image->height);
-
-  /* Finally, if the object is the camera focus, scroll the map (if
-     the new co-ordinates are near enough) or, when full map updates
-     are ready, centre the camera and redraw the map. */
-
-  if (object == sg_camera_focus)
-    {
-      /* Assert SCREEN_W and SCREEN_H are always int16_t */
-      if (dx <= SCREEN_W 
-          || dy <= SCREEN_H
-          || dx >= -SCREEN_W
-          || dy >= -SCREEN_H)
-        scroll_map (mapview, (int16_t) dx, (int16_t) dy);
-    }
+        /* Assert SCREEN_W and SCREEN_H are always int16_t */
+        if (dx <= SCREEN_W 
+            || dy <= SCREEN_H
+            || dx >= -SCREEN_W
+            || dy >= -SCREEN_H)
+          scroll_map (mapview, (int16_t) dx, (int16_t) dy);
+      }
+  }
 
   return SUCCESS;
 }
@@ -211,103 +179,56 @@ move_object (const char object_name[], int32_t dx, int32_t dy)
 /* Move an object to a new absolute position. */
 
 bool_t
-position_object (const char object_name[], int32_t x, int32_t y,
+position_object (const char object_name[],
+                 int32_t x,
+                 int32_t y,
                  reference_t reference)
 {
-  object_t *object;
-  mapview_t *mapview;
-
-  /* These four ints are used for boundary checking later. */
-  
-  int start_x;
-  int start_y;
-  int end_x;
-  int end_y;
-
-
-  /* Sanity checking. */
-
   if (object_name == NULL)
     {
       error ("OBJECT-API - position_object - Null object name.");
       return FAILURE;
     }
 
-  /* End sanity checking. */
+  {
+    object_t *object = get_object (object_name);
+    if (object == NULL)
+      {
+        error ("OBJECT-API - position_object - Couldn't get object %s.", 
+               object_name);
+        return FAILURE;
+      }
 
+    if (object->image == NULL)
+      {
+        error ("OBJECT-API - position_object - Object %s has no image dataset.", 
+               object->name);
+        return FAILURE;
+      }
 
-  object = get_object (object_name);
+    if (object_out_of_bounds (x,
+                              y,
+                              x + object->image->width, 
+                              y + object->image->height))
+      {
+        error ("OBJECT-API - position_object - Object moving out of bounds.");
+        return FAILURE;
+      }
 
-  if (object == NULL)
-    {
-      error ("OBJECT-API - position_object - Couldn't get object %s.", 
-             object_name);
+    /* Mark old location as dirty. */
+    mark_object_field_location_dirty (object);
+
+    /* Try to move object. */
+    if (set_object_coordinates (object, 
+                                x,
+                                y, reference) 
+        == FAILURE)
       return FAILURE;
-    }
 
-  if (object->image == NULL)
-    {
-      error ("OBJECT-API - position_object - Object %s has no image dataset.", 
-             object->name);
-      return FAILURE;
-    }
+    /* Mark new location as dirty. */
+    mark_object_field_location_dirty (object);
+  }
 
-  mapview = get_field_mapview ();
-
-  if (mapview == NULL)
-    {
-      error ("OBJECT-API - position_object - No field map view.");
-      return FAILURE;
-    }
-
-
-  /* Check we're not moving the object out of bounds. */
-
-  if (get_field_map_boundaries (&start_x, 
-                                &start_y,
-                                &end_x,
-                                &end_y) == FAILURE)
-    {
-      error ("OBJECT-API - position_object - Couldn't get map boundaries.");
-      return FAILURE;
-    }
-
-  if (x < start_x
-      || y < start_y
-      || x + object->image->width >= end_x
-      || y + object->image->height >= end_y)
-    {
-      error ("OBJECT-API - position_object - Tried to move out of bounds.");
-      return FAILURE;
-    }
-
-
-  /* Mark old location as dirty. */
-
-  mark_dirty_rect (mapview,
-                   object->image->map_x, 
-                   object->image->map_y, 
-                   object->image->width, 
-                   object->image->height);
-
-
-  /* Try to move object. */
-
-  if (set_object_coordinates (object, 
-                              x,
-                              y, reference) 
-      == FAILURE)
-    return FAILURE;
-
-
-  /* Set object as newly dirty. */
-  set_object_dirty (object, mapview);
-  mark_dirty_rect (mapview,
-                   object->image->map_x, 
-                   object->image->map_y, 
-                   object->image->width, 
-                   object->image->height);
-  
   return SUCCESS;
 }
 
@@ -317,30 +238,26 @@ position_object (const char object_name[], int32_t x, int32_t y,
 bool_t
 tag_object (const char object_name[], layer_tag_t tag)
 {
-  object_t *object;
-
-
-  /* Sanity checking. */
-
   if (object_name == NULL)
     {
       error ("OBJECT-API - tag_object - Null object name.");
       return FAILURE;
     }
 
-  /* End sanity checking. */
+  {
+    object_t *object = get_object (object_name);
+    if (object == NULL)
+      {
+        error ("OBJECT-API - tag_object - Couldn't get object %s.", 
+               object_name);
+        return FAILURE;
+      }
+  
+    /* Mark location as dirty - object may have moved up or down. */
 
 
-  object = get_object (object_name);
-
-  if (object == NULL)
-    {
-      error ("OBJECT-API - tag_object - Couldn't get object %s.", 
-             object_name);
-      return FAILURE;
-    }
-
-  return set_object_tag (object, tag);
+    return set_object_tag (object, tag);
+  }
 }
 
 
@@ -354,17 +271,6 @@ change_object_image (const char object_name[],
                      uint16_t width,
                      uint16_t height)
 {
-  object_t *object;
-  mapview_t *mapview;
-
-  /* These four ints are used for boundary checking later. */
-  
-  int32_t start_x;
-  int32_t start_y;
-  int32_t end_x;
-  int32_t end_y;
-
-
   if (image_filename == NULL)
     {
       error ("OBJECT-API -change_object_image - Null filename.");
@@ -376,62 +282,110 @@ change_object_image (const char object_name[],
       error ("OBJECT-API - change_object_image - Null object name.");
       return FAILURE;
     }
+  
+  {
+    object_t *object = get_object (object_name);
+    if (object == NULL)
+      {
+        error ("OBJECT-API - change_object_image - Couldn't get object %s.", 
+               object_name);
+        return FAILURE;
+      }
+    if (object->image == NULL)
+      {
+        error ("OBJECT-API - change_object_image - Object %s has no image dataset.", 
+               object->name);
+        return FAILURE;
+      }
 
-  object = get_object (object_name);
-
-  if (object == NULL)
+    /* Check whether the new image size will push the object out of bounds. */
     {
-      error ("OBJECT-API - change_object_image - Couldn't get object %s.", 
-             object_name);
-      return FAILURE;
+      int32_t start_x;
+      int32_t start_y;
+      int32_t end_x;
+      int32_t end_y;
+
+      if (get_field_map_boundaries (&start_x, 
+                                    &start_y,
+                                    &end_x,
+                                    &end_y) == FAILURE)
+        {
+          error ("OBJECT-API - change_object_image - Couldn't get map boundaries.");
+          return FAILURE;
+        }
+      
+      if (object_out_of_bounds (object->image->map_x,
+                                object->image->map_y,
+                                object->image->map_x + width, 
+                                object->image->map_y + height))
+        {
+          error ("OBJECT-API - change_object_image - Object moving out of bounds.");
+          return FAILURE;
+        }
     }
 
-  if (object->image == NULL)
-    {
-      error ("OBJECT-API - change_object_image - Object %s has no image dataset.", 
-             object->name);
-      return FAILURE;
-    }
+    if (set_object_image (object, 
+                          image_filename,
+                          x_offset,
+                          y_offset,
+                          width,
+                          height) == FAILURE)
+      {
+        error ("OBJECT-API - change_object_image - Could not set image.");
+        return FAILURE;
+      }
+  
+    mark_object_field_location_dirty (object);
+  }
+      
+  return SUCCESS;
+}
 
-  mapview = get_field_mapview ();
 
+static void
+mark_object_field_location_dirty (object_t *object)
+{
+  mapview_t *mapview = get_field_mapview ();
   if (mapview == NULL)
     {
-      error ("OBJECT-API - change_object_image - No field map view.");
-      return FAILURE;
+      error ("OBJECT-API - position_object - No field map view.");
+      return;
     }
 
-  /* Check whether the new image size will push the object out of
-     bounds. */
+  mark_dirty_rect (mapview,
+                   object->image->map_x, 
+                   object->image->map_y, 
+                   object->image->width, 
+                   object->image->height);  
+}
+
+
+static bool_t
+object_out_of_bounds (int x, int y, int width, int height)
+{
+  int start_x;
+  int start_y;
+  int end_x;
+  int end_y;
 
   if (get_field_map_boundaries (&start_x, 
                                 &start_y,
                                 &end_x,
                                 &end_y) == FAILURE)
     {
-      error ("OBJECT-API - change_object_image - Couldn't get map boundaries.");
-      return FAILURE;
+      error ("OBJECT-API - position_object - Couldn't get map boundaries.");
+      return TRUE;
     }
 
-  if (object->image->map_x < start_x
-      || object->image->map_y < start_y
-      || object->image->map_x + width >= end_x
-      || object->image->map_y + height >= end_y)
+  if (x < start_x
+      || y < start_y
+      || x + width >= end_x
+      || y + height >= end_y)
     {
-      error ("OBJECT-API - change_object_image - Tried to move out of bounds.");
-      return FAILURE;
+      return TRUE;
     }
-
-  if (set_object_image (object, 
-                        image_filename,
-                        x_offset,
-                        y_offset,
-                        width,
-                        height) == FAILURE)
+  else
     {
-      error ("OBJECT-API - change_object_image - Could not set image.");
-      return FAILURE;
+      return FALSE;
     }
-
-  return set_object_dirty (object, mapview);
 }
