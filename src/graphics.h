@@ -321,6 +321,24 @@ find_image (const char filename[]);
 
 
 /**
+ * Adds a rectangle to the next update run.
+ * 
+ * @param x       The X co-ordinate of the left side of the rectangle,
+ *                in pixels from the left side of the screen.
+ * @param y       The Y co-ordinate of the top side of the rectangle,
+ *                in pixels from the top side of the screen.
+ * @param width   The width of the rectangle, in pixels.
+ * @param height  The height of the rectangle, in pixels.
+ */
+
+void
+add_update_rectangle (uint16_t x,
+                      uint16_t y,
+                      int16_t width,
+                      int16_t height);
+
+
+/**
  * Update the screen.
  *
  * @return  SUCCESS for success, FAILURE otherwise.

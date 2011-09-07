@@ -183,8 +183,12 @@ move_object (const char object_name[], int32_t dx, int32_t dy)
     return FAILURE;
 
   /* Set object as newly dirty. */
-
   set_object_dirty (object, mapview);
+  mark_dirty_rect (mapview,
+                   object->image->map_x, 
+                   object->image->map_y, 
+                   object->image->width, 
+                   object->image->height);
 
   /* Finally, if the object is the camera focus, scroll the map (if
      the new co-ordinates are near enough) or, when full map updates
@@ -297,9 +301,13 @@ position_object (const char object_name[], int32_t x, int32_t y,
 
 
   /* Set object as newly dirty. */
-
   set_object_dirty (object, mapview);
-
+  mark_dirty_rect (mapview,
+                   object->image->map_x, 
+                   object->image->map_y, 
+                   object->image->width, 
+                   object->image->height);
+  
   return SUCCESS;
 }
 

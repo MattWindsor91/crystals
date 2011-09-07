@@ -220,6 +220,7 @@ write_string (int16_t x, int16_t y,
 
   /* Instruct the current state to update the screen. */
 
+  add_update_rectangle (x, y, length, FONT_H);
   state_handle_dirty_rect (x, y, length, FONT_H);
 }
 
@@ -403,6 +404,21 @@ image_t *
 find_image (const char filename[])
 {
   return g_hash_table_lookup (sg_images, filename);
+}
+
+
+/* Adds a rectangle to the next update run. */
+
+void
+add_update_rectangle (uint16_t x,
+                      uint16_t y,
+                      int16_t width,
+                      int16_t height)
+{
+  (*g_modules.gfx.add_update_rectangle_internal) (x,
+                                                  y,
+                                                  width,
+                                                  height);
 }
 
 
