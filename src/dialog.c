@@ -136,8 +136,8 @@ dlg_free (dlg_t *dlg)
   g_free (dlg->path_name);
   xml_free_doc (dlg->xml_root->doc);
 
-  g_ptr_array_foreach (dlg->contents, int_ptr_array_free, NULL);
-  g_ptr_array_foreach (dlg->requirements, int_ptr_array_free, NULL);
+  g_ptr_array_free (dlg->contents, TRUE);
+  g_ptr_array_free (dlg->requirements, TRUE);
 
   g_free (dlg);
 }
