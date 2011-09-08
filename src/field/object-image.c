@@ -55,31 +55,12 @@
 object_image_t *
 init_object_image (void)
 {
-  object_image_t *image;
-
-
-  image = malloc (sizeof (object_image_t));
-
+  object_image_t *image = calloc (1, sizeof (object_image_t));
   if (image == NULL)
      {
        error ("OBJECT-IMAGE - init_object_image - Tried to init null object image.");
        return NULL;
      }
-
-
-  /* Initialise everything else. */
-
-  image->filename = NULL;
-  image->next = NULL;
-
-  image->image_x = 0;
-  image->image_y = 0;
-  image->map_x = 0;
-  image->map_y = 0;
-  image->width = 0;
-  image->height = 0;
-
-
   return image;
 }
 
