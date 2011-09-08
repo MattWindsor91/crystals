@@ -175,9 +175,7 @@ write_string (int16_t x, int16_t y,
   slength = strlen (string);
   length = ulong_to_uint16 (FONT_W * slength);
 
-  
   /* Use the given alignment to position text. */
-
   switch (alignment)
     {
     default:

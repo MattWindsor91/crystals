@@ -36,9 +36,10 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/** @file     src/field/field.c
- *  @author   Matt Windsor
- *  @brief    Field state.
+/** 
+ * @file     src/field/field.c
+ * @author   Matt Windsor
+ * @brief    Field state.
  */
 
 
