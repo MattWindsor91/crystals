@@ -101,9 +101,8 @@ typedef struct dirty_rectangle
 
   int width;   /**< Width of the rectangle (in pixels). */
   int height;  /**< Height of the rectangle (in pixels). */
-
-  struct mapview *parent;      /**< Parent map view. */
-  struct dirty_rectangle *next; /**< Next node in the queue. */
+  
+  struct mapview *parent;  /**< The parent map view of this rectangle. */
 } dirty_rectangle_t;
 
 
@@ -125,19 +124,6 @@ typedef struct mapview
                                  of the map. Can be negative.*/
 
   map_t *map;                 /**< Pointer to the map being viewed. */
-
-  layer_count_t *dirty_tiles; /**< Matrix of "dirty" tiles, or tiles
-                                 to be re-rendered on the next
-                                 rendering pass. 
-
-                                 @note  To set a tile as dirty, index
-                                 [tile x + (tile y * map width)
-                                 should be set to the number of
-                                 layers in the map.  This is because
-                                 of the way the render code works.
-                                 Eventually there will be a function
-                                 for setting tiles to dirty without
-                                 needing to pay attention to this. */
 
   unsigned int num_object_queues; /**< Number of object queues reserved
                                      (equal to the highest tag used
@@ -209,17 +195,6 @@ add_object_image (mapview_t *mapview,
 
 void
 render_map (mapview_t *mapview);
-
-
-/** Render a given layer on a map.
- *
- *  @param mapview  Pointer to the map view to render.
- *
- *  @param layer    The layer to render.
- */
-
-void
-render_map_layer (mapview_t *mapview, layer_index_t layer);
 
 
 /** Render any map objects to be placed on top of this layer.
