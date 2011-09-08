@@ -401,19 +401,19 @@ render_rect_layer (gpointer rectangle, gpointer data)
     /* Convert per-pixel dimensions into per-tile */
     int tile_start_x = rectanglec->start_x / TILE_W;
     int tile_start_y = rectanglec->start_y / TILE_H;
-    int tile_end_x = (rectanglec->start_x + rectanglec->width - 1) / TILE_W;
-    int tile_end_y = (rectanglec->start_y + rectanglec->height - 1) / TILE_H;
+    int tile_end_x = (rectanglec->start_x + rectanglec->width) / TILE_W;
+    int tile_end_y = (rectanglec->start_y + rectanglec->height) / TILE_H;
     
     /* Because the end X and Y round up to the nearest tile, add another tile
      * to them if they don't already line up perfectly with the tile grid.
      * Else we'll have an off-by-one error.
      */
-    if ((rectanglec->start_x + rectanglec->width - 1) % TILE_W > 0)
+    if ((rectanglec->start_x + rectanglec->width) % TILE_W > 0)
       {
         tile_end_x += 1;
       }
     
-    if ((rectanglec->start_y + rectanglec->height - 1) % TILE_H > 0)
+    if ((rectanglec->start_y + rectanglec->height) % TILE_H > 0)
       {
         tile_end_y += 1;
       }    
@@ -425,12 +425,12 @@ render_rect_layer (gpointer rectangle, gpointer data)
       int screen_y;
       int tileset_x;
       layer_value_t tile;
-      
-      for (x = tile_start_x; x <= tile_end_x; x += 1)
+
+      for (x = tile_start_x; x < tile_end_x; x += 1)
         {
           screen_x = (x * TILE_W) - datac->mapview->x_offset; 
           
-          for (y = tile_start_y; y <= tile_end_y; y += 1)
+          for (y = tile_start_y; y < tile_end_y; y += 1)
             {
               screen_y = (y * TILE_H) - datac->mapview->y_offset;
               
