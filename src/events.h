@@ -47,6 +47,8 @@
 #define _EVENTS_H
 
 
+#include <glib-2.0/glib/gslist.h> /* GSList */
+
 #include "types.h"  /* Integer types. */
 
 
@@ -103,7 +105,7 @@ typedef uint8_t event_key_t;     /**< Type for special key code.      */
 
 typedef struct event_base
 {
-  struct event_callback *callbacks; /**< Linked list of callbacks. */
+  GSList *callbacks; /**< Linked list of callbacks. */
 } event_base_t;
 
 
@@ -190,7 +192,7 @@ typedef union event
 typedef struct event_callback
 {
   void
-  (*callback) (event_t *event); /**< The callback function pointer. */
+  (*function) (event_t *event); /**< The callback function pointer. */
 
   event_type_t types;           /**<
                                  * Bitfield of types of event that will
