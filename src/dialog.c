@@ -103,6 +103,7 @@ dlg_parse_file (const char *p)
   dlg->contents     = g_ptr_array_new ();
   dlg->requirements = g_ptr_array_new ();
   dlg->xml_root     = xml_root;
+  dlg->next         = 0;
 
   dlg->path_name    = g_new (char, strlen(p)+1);
   strcpy (dlg->path_name, p);
@@ -133,6 +134,45 @@ dlg_parse_file (const char *p)
     }
 
   return dlg;
+}
+
+dlg_content_t*
+dlg_content_next (dlg_t *dlg, uint8_t choice)
+{
+  uint32_t i;
+  const char *choice_id = NULL;
+  dlg_content_t *con = NULL;
+  
+  if (dlg->next > 0)
+    {
+      con = (dlg_content_t *) g_ptr_array_index (dlg->contents,
+        dlg->next - 1);
+
+      if (con->type == CHOICES) 
+        {
+          choice_id = 
+            (const char *) g_ptr_array_index 
+            (con->action.choices.content_ids, choice);
+
+          for (i = 0; i < dlg->contents->len; ++i)
+            {
+              if (choice_id == (const char *) 
+                  g_ptr_array_index (dlg->contents, i)) 
+                break;
+            }
+          
+          dlg->next = i;
+        }
+    }
+
+
+  if (dlg->next < dlg->contents->len)  
+    con = (dlg_content_t *) g_ptr_array_index (dlg->contents, dlg->next);
+  else 
+    return NULL;
+    
+  dlg->next += 1;
+  return con;
 }
 
 void
