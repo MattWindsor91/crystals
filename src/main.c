@@ -50,6 +50,7 @@
 #include "main.h"
 #include "util.h"
 #include "state.h"
+#include "dialog.h"
 #include "parser.h"
 #include "module.h"
 #include "events.h"
@@ -90,6 +91,13 @@ main (int argc, char **argv)
   return 0;
 }
 
+void
+dialog_test (void)
+{
+  dlg_t *dlg = dlg_parse_file ("duster_event_test.dlg.xml");
+  dlg_content_t *con = dlg_content_next (dlg, 0);
+  dlg_free (dlg);
+}
 
 /* Initialise all engine subsystems. */
 
@@ -164,6 +172,7 @@ init (void)
       return FAILURE;
     }
 
+  dialog_test ();
 
   /* -- Finish -- */
 
@@ -197,6 +206,7 @@ cleanup (void)
   cleanup_graphics ();
   cleanup_bindings ();
   cleanup_modules ();
+  cleanup_xml ();
   cfg_free (g_config);
 }
 
