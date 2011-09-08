@@ -197,21 +197,6 @@ void
 render_map (mapview_t *mapview);
 
 
-/** Render any map objects to be placed on top of this layer.
- *
- *  This will, if this layer is the first defined with its tag, blit
- *  all dirty objects of the same tag on top of this map layer in
- *  z-order.
- *
- *  @param mapview  Pointer to the map view to render.
- *
- *  @param layer    The layer to render.
- */
-
-void
-render_map_objects (mapview_t *mapview, layer_index_t layer);
-
-
 /** Scroll the map on-screen, re-rendering it in its new position.
  *
  *  @param mapview   The map view to render.

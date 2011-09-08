@@ -66,6 +66,16 @@ const uint16_t TILE_H = 32;
 
 /* -- STATIC DECLARATIONS -- */
 
+/**
+ * Handles a dirty map rectangle.
+ * 
+ * @param rectangle  A pointer to the dirty rectangle to handle.
+ * @param mapview    A pointer to the mapview to enqueue changes to.
+ */
+static void
+handle_dirty_rectangle (gpointer rectangle,
+                        gpointer mapview);
+
 /** 
  * Renders a given layer on a map.
  *
@@ -87,15 +97,20 @@ static void
 render_rect_layer (gpointer rectangle,
                    gpointer data);
 
-/**
- * Handles a dirty map rectangle.
- * 
- * @param rectangle  A pointer to the dirty rectangle to handle.
- * @param mapview    A pointer to the mapview to enqueue changes to.
+/** 
+ * Render any map objects to be placed on top of this layer.
+ *
+ * This will, if this layer is the first defined with its tag, blit
+ * all dirty objects of the same tag on top of this map layer in
+ * z-order.
+ *
+ * @param mapview  Pointer to the map view to render.
+ *
+ * @param layer    The layer to render.
  */
+
 static void
-handle_dirty_rectangle (gpointer rectangle,
-                        gpointer mapview);
+render_map_objects (mapview_t *mapview, layer_index_t layer);
 
 
 /** Structure of data needed during a rectangle layer render pass. */
@@ -314,6 +329,42 @@ render_map (mapview_t *mapview)
 }
 
 
+/* Handles a dirty map rectangle. */
+
+static void
+handle_dirty_rectangle (gpointer rectangle,
+                        gpointer mapview)
+{
+  dirty_rectangle_t *rectanglec = (dirty_rectangle_t *) rectangle;
+  mapview_t *mapviewc = (mapview_t *) mapview;
+  
+  /* Check to see if the rectangle is off-screen.  If so, don't
+   * bother rendering it! 
+   */
+  if ((rectanglec->start_x >= SCREEN_W + mapviewc->x_offset)
+      || (rectanglec->start_y >= SCREEN_H + mapviewc->y_offset)
+      || (rectanglec->start_x + rectanglec->width
+          <= mapviewc->x_offset)
+      || (rectanglec->start_y + rectanglec->height
+          <= mapviewc->y_offset))
+    {
+      return;
+    }
+  
+  /* Translate absolute co-ordinates into screen ones, and 
+   * propagate the dirty rectangle to the graphics subsystem.
+   */
+  add_update_rectangle (rectanglec->start_x - mapviewc->x_offset,
+                        rectanglec->start_y - mapviewc->y_offset,
+                        rectanglec->width,
+                        rectanglec->height);
+
+  /* Check to see if each object in the hash table is going to be dirtied. */
+  apply_to_objects (dirty_object_test, 
+                    rectanglec);
+}
+
+
 /* Render a given layer on a map. */
 
 static void
@@ -403,7 +454,7 @@ render_rect_layer (gpointer rectangle, gpointer data)
 
 /* Render any map objects to be placed on top of this layer. */
 
-void
+static void
 render_map_objects (mapview_t *mapview, layer_index_t layer)
 {
   layer_value_t tag = get_layer_tag (mapview->map, layer);
@@ -560,42 +611,6 @@ mark_dirty_rect (mapview_t *mapview,
   }
 
   return SUCCESS;
-}
-
-
-/* Handles a dirty map rectangle. */
-
-static void
-handle_dirty_rectangle (gpointer rectangle,
-                        gpointer mapview)
-{
-  dirty_rectangle_t *rectanglec = (dirty_rectangle_t *) rectangle;
-  mapview_t *mapviewc = (mapview_t *) mapview;
-  
-  /* Check to see if the rectangle is off-screen.  If so, don't
-   * bother rendering it! 
-   */
-  if ((rectanglec->start_x >= SCREEN_W + mapviewc->x_offset)
-      || (rectanglec->start_y >= SCREEN_H + mapviewc->y_offset)
-      || (rectanglec->start_x + rectanglec->width
-          <= mapviewc->x_offset)
-      || (rectanglec->start_y + rectanglec->height
-          <= mapviewc->y_offset))
-    {
-      return;
-    }
-  
-  /* Translate absolute co-ordinates into screen ones, and 
-   * propagate the dirty rectangle to the graphics subsystem.
-   */
-  add_update_rectangle (rectanglec->start_x - mapviewc->x_offset,
-                        rectanglec->start_y - mapviewc->y_offset,
-                        rectanglec->width,
-                        rectanglec->height);
-
-  /* Check to see if each object in the hash table is going to be dirtied. */
-  apply_to_objects (dirty_object_test, 
-                    rectanglec);
 }
 
 
