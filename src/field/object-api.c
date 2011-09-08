@@ -115,7 +115,7 @@ move_object (const char object_name[], int32_t dx, int32_t dy)
     object_t *object = get_object (object_name);
     if (object == NULL)
       {
-        error ("OBJECT-API - move_object - Couldn't get obj"${OUTPUT_PATH}"ect %s.", 
+        error ("OBJECT-API - move_object - Couldn't get object %s.", 
                object_name);
         return FAILURE;
       }

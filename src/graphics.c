@@ -45,7 +45,6 @@
  *              instead of hard-coding it.
  */
 
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -169,15 +168,9 @@ write_string (int16_t x, int16_t y,
               uint16_t box_width, alignment_t alignment,
               const char string[])
 {
-  char chr;
-
   size_t slength;    /* Length of the string, in characters. */
-
   int16_t x1;
-  uint16_t i;
   uint16_t length;   /* Length of the string on-screen, in pixels. */
-  uint16_t midpoint;
-
 
   slength = strlen (string);
   length = ulong_to_uint16 (FONT_W * slength);
@@ -194,28 +187,33 @@ write_string (int16_t x, int16_t y,
     case ALIGN_RIGHT:
       x1 = ulong_to_int16 (box_width - slength);
       break;
-    case ALIGN_CENTRE:   
-      midpoint = long_to_uint16 (x + (box_width / 2));
-      x1 = long_to_int16 (midpoint - (length / 2));
+    case ALIGN_CENTRE:
+      {
+        uint16_t midpoint = long_to_uint16 (x + (box_width / 2));
+        x1 = long_to_int16 (midpoint - (length / 2));
+      }
       break;
     }
 
 
   /* Draw each character using the font image. */
+  {
+    char chr;
+    uint16_t i;
+    for (i = 0; i < slength; i++)
+      {
+        chr = string[i];
+        draw_image (FONT_FILENAME, 
+                    long_to_int16 ((chr % 16) * FONT_W),
+                    long_to_int16 (((chr - (chr % 16))/16) * FONT_H),
+                    long_to_int16 (x1),
+                    long_to_int16 (y),
+                    FONT_W,
+                    FONT_H);
 
-  for (i = 0; i < slength; i++)
-    {
-      chr = string[i];
-      draw_image (FONT_FILENAME, 
-                  long_to_int16 ((chr % 16) * FONT_W),
-                  long_to_int16 (((chr - (chr % 16))/16) * FONT_H),
-                  long_to_int16 (x1),
-                  long_to_int16 (y),
-                  FONT_W,
-                  FONT_H);
-
-      x1 = long_to_int16 (x1 + FONT_W);
-    }  
+        x1 = long_to_int16 (x1 + FONT_W);
+      }  
+  }
 
 
   /* Instruct the current state to update the screen. */
@@ -259,59 +257,48 @@ scroll_screen (int16_t x_offset, int16_t y_offset)
 void *
 load_image (const char filename[])
 {
-  void *get_try;
-  void *data;
-  char *path;
-
-
-  /* Sanity checking. */
-
   if (filename == NULL)
     {
       fatal ("GFX - load_image - Filename is NULL.");
       return NULL;
     }
 
-  /* End sanity checking. */
+  /* Try look image up in cache. */
+  {
+    void *get_try = g_hash_table_lookup (sg_images, filename);
+    if (get_try != NULL)
+      {
+        return get_try;
+      }
+  }
 
-
-  /* First, check to see if the image isn't already there. */
-
-  get_try = g_hash_table_lookup (sg_images, filename);
-
-  if (get_try != NULL)
+  /* Cache miss - load image from disk. */
+  {
+    image_t *data;
+    
     {
-      /* It is - return the existing image. */
-      return get_try;
+      char *path = get_absolute_path (filename);
+      if (path == NULL)
+        {
+          fatal ("GFX - load_image - Couldn't get absolute path for %s.", 
+                 filename);
+          return NULL;
+        }
+
+      data = (*g_modules.gfx.load_image_data) (path);
+      free (path);
     }
 
+    if (data == NULL)
+      {
+        fatal ("GFX - load_image - Couldn't load image data for %s.", 
+               filename);
+        return NULL;
+      }
 
-  /* At this point in execution, we have deduced that the image isn't
-     there, so try to load it and serve it as a new hash object. */
-
-  path = get_absolute_path (filename);
-
-  if (path == NULL)
-    {
-      fatal ("GFX - load_image - Couldn't get absolute path for %s.", 
-             filename);
-      return NULL;
-    }
-
-  data = (*g_modules.gfx.load_image_data) (path);
-
-  free (path);
-
-  if (data == NULL)
-    {
-      fatal ("GFX - load_image - Couldn't load image data for %s.", 
-             filename);
-      return NULL;
-    }
-
-
-  g_hash_table_insert(sg_images, g_strdup(filename), data);
-  return data;
+    g_hash_table_insert(sg_images, g_strdup(filename), data);
+    return data;
+  }
 }
 
 
@@ -337,18 +324,11 @@ draw_image (const char filename[], int16_t image_x, int16_t image_y,
             int16_t screen_x, int16_t screen_y, uint16_t width,
             uint16_t height)
 {
-  image_t *img;
-
-
-  /* Get image object from filename. */
-
-  img = load_image (filename);
-
+  image_t *img = load_image (filename);
   if (img == NULL)
     {
       error ("GFX - draw_image - Image load failure for %s.", 
              filename);
-
       return FAILURE;
     }
 

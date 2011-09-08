@@ -47,7 +47,7 @@
 #ifndef _MODULE_H
 #define _MODULE_H
 
-#include <gmodule.h> /* GModule */
+#include <glib-2.0/gmodule.h> /* GModule */
 
 #include "types.h"
 #include "events.h"

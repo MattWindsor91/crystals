@@ -88,10 +88,6 @@ object_t *
 add_object (const char object_name[],
             const char script_filename[])
 {
-  object_t *object;
-
-  /* Sanity-check passed strings. */
-
   if (object_name == NULL)
     {
       error ("OBJECT - add_object - Object name is NULL.");
@@ -105,64 +101,52 @@ add_object (const char object_name[],
     }
 
   /* Try to allocate an object. */
-
-  object = malloc (sizeof (object_t));
-
-  if (object == NULL)
-    {
-      error ("OBJECT - add_object - Allocation failed for %s.", 
-             object_name);
-      return NULL;
-    }
-
-  /* Try to allocate and initialise an object image. */
-
-  object->image = init_object_image ();
-
-  if (object->image == NULL)
-    {
-      error ("OBJECT - add_object - Initialisation failed for image of %s.",
-             object_name);
-      free_object (object);
-      return NULL;
-    }
-
-  /* Try to copy the object name over. */
-
-  object->name = g_strdup (object_name);
-  if (object->name == NULL)
-    {
-      error ("OBJECT - add_object - Allocation failed for name of %s.", 
-             object_name);
-      free_object (object);
-      return NULL;
-    }
-
-
-  /* Try to copy the filename over. */
-
-  object->script_filename = g_strdup (script_filename);
-  if (object->script_filename == NULL)
-    {
-      error ("OBJECT - add_object - Allocation failed for filename of %s.", 
+  {
+    object_t *object = malloc (sizeof (object_t));
+    if (object == NULL)
+      {
+        error ("OBJECT - add_object - Allocation failed for %s.", 
                object_name);
-      free_object (object);
-      return NULL;
-    }
+        return NULL;
+      }
 
-  /* Finally, nullify everything else. */
+    object->image = init_object_image ();
+    if (object->image == NULL)
+      {
+        error ("OBJECT - add_object - Initialisation failed for image of %s.",
+               object_name);
+        free_object (object);
+        return NULL;
+      }
 
-  object->tag = 0;
-  object->is_dirty = FALSE;
+    object->name = g_strdup (object_name);
+    if (object->name == NULL)
+      {
+        error ("OBJECT - add_object - Allocation failed for name of %s.", 
+               object_name);
+        free_object (object);
+        return NULL;
+      }
 
+    object->script_filename = g_strdup (script_filename);
+    if (object->script_filename == NULL)
+      {
+        error ("OBJECT - add_object - Allocation failed for filename of %s.", 
+                 object_name);
+        free_object (object);
+        return NULL;
+      }
 
-  /* Try to store the object. */
+    /* Finally, nullify everything else. */
+    object->tag = 0;
+    object->is_dirty = FALSE;
 
-  g_hash_table_insert (sg_objects,
-                       g_strdup(object_name),
-                       object);
+    g_hash_table_insert (sg_objects,
+                         g_strdup(object_name),
+                         object);
   
-  return object;
+    return object;
+  }
 }
 
 
@@ -171,16 +155,11 @@ add_object (const char object_name[],
 bool_t
 set_object_tag (object_t *object, layer_tag_t tag)
 {
-  /* Sanity checking. */
-
   if (object == NULL)
     {
       error ("OBJECT - set_object_tag - Tried to set tag of null object.");
       return FAILURE;
     }
-
-  /* End sanity checking. */
-
 
   object->tag = tag;
   
