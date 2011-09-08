@@ -452,58 +452,51 @@ get_object (const char object_name[])
  */
 
 void
-dirty_object_test (void *key, void *object, void *rect_pointer)
+dirty_object_test (void *key, void *object, void *rect)
 {
-  mapview_t *mapview;
-  object_t *objectc = (object_t*) object;
-  struct dirty_rectangle *rect;
-  
-  int start_x;
-  int start_y;
-  int width;
-  int height;
-  
   (void) key; /* Avoid unused warnings */
-
-  /* Sanity-check the dirty rectangle data. */
-
-  if (objectc == NULL)
+  
+  if (object == NULL)
     {
       error ("OBJECT - dirty_object_test - Object has no data.\n");
     }
-
-  if (rect_pointer == NULL)
+  else if (rect == NULL)
     {
       error ("OBJECT - dirty_object_test - Given dirty rect pointer is NULL.\n");
     }
-
-  rect = (struct dirty_rectangle *) rect_pointer;
-
- /* If an object is already dirty, don't bother checking. */
-
-  if (objectc->is_dirty == TRUE)
+  
+  {
+    object_t *objectc = (object_t *) object;
+    if (objectc->is_dirty == TRUE)
+      {
+        /* No need to dirty an object twice. */
+        return;
+      }
+    
     {
-      return;
+      dirty_rectangle_t *rectc = (dirty_rectangle_t *) rect;
+      mapview_t *mapview = rectc->parent;
+      
+      int rect_left = rectc->start_x;
+      int rect_top = rectc->start_y;
+      int rect_right = rectc->start_x + rectc->width - 1;
+      int rect_bottom = rectc->start_y + rectc->height - 1;
+      
+      int object_left = objectc->image->map_x;
+      int object_top = objectc->image->map_y;
+      int object_right = objectc->image->map_x + objectc->image->width - 1;
+      int object_bottom = objectc->image->map_y + objectc->image->height - 1;
+      
+      /* Use separating axis theorem, sort of, to decide whether the
+       * object rect and the dirty rect intersect.
+       */
+      if ((object_left <= rect_right && object_right > rect_left)
+          && (object_top <= rect_bottom && object_bottom > rect_top))
+        {
+          set_object_dirty (objectc, mapview);
+        }      
     }
-
-  mapview = rect->parent;
-  start_x = rect->start_x;
-  start_y = rect->start_y;
-  width   = rect->width;
-  height  = rect->height;
-
-  /* Use separating axis theorem, sort of, to decide whether the
-     object rect and the dirty rect intersect. */
-
-  if ((objectc->image->map_x <= (start_x + width - 1))
-      && (objectc->image->map_x
-          + objectc->image->width >= start_x)
-      && (objectc->image->map_y <= (start_y + height - 1))
-      && (objectc->image->map_y
-          + objectc->image->height >= start_y))
-    {
-      set_object_dirty (objectc, mapview);
-    }
+  }
 }
 
 
