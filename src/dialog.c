@@ -178,7 +178,6 @@ dlg_content_next (dlg_t *dlg, uint8_t choice)
 void
 dlg_free (dlg_t *dlg)
 {
-  g_free (dlg->path_name);
   xml_free_doc (dlg->xml_root);
 
   g_ptr_array_foreach (dlg->contents, int_free_content, NULL);
