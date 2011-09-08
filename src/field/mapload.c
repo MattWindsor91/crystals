@@ -36,9 +36,10 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/** @file    src/field/mapload.c
- *  @author  Matt Windsor
- *  @brief   Map loader (ported from Crystalsmap_tEditor).
+/** 
+ * @file    src/field/mapload.c
+ * @author  Matt Windsor
+ * @brief   Map loader (ported from CrystalsMapEditor).
  */
 
 #include <stdlib.h>
@@ -76,122 +77,94 @@ const char *MAGIC_PROPERTIES = "PROP";
 map_t *
 load_map (const char path[])
 {
-  FILE *file;
-  map_t *map;
-
-
-  map = NULL;
-  file = fopen (path, "rb");
-
+  FILE *file = fopen (path, "rb");
   if (file == NULL)
     {
       error ("MAPLOAD - read_map - Couldn't open file.");
       return NULL;
     }
 
-  map = read_map_header (file);
+  {
+    map_t *map = read_map_header (file);
+    if (map == NULL)
+      {
+        error ("MAPLOAD - load_map - Header read failed.");
+        return NULL;
+      }
 
-  if (map == NULL)
-    {
-      error ("MAPLOAD - load_map - Header read failed.");
-      return NULL;
-    }
+    if (read_layer_tags (file, map) == FAILURE)
+      {
+        error ("MAPLOAD - load_map - Layer tag read failed.");
+        free_map (map);
+        return NULL;
+      }
 
-  if (read_layer_tags (file, map) == FAILURE)
-    {
-      error ("MAPLOAD - load_map - Layer tag read failed.");
-      free_map (map);
-      return NULL;
-    }
+    if (read_map_value_planes (file, map) == FAILURE)
+      {
+        error ("MAPLOAD - load_map - Value planes failed.");
+        free_map (map);
+        return NULL;
+      }
 
-  if (read_map_value_planes (file, map) == FAILURE)
-    {
-      error ("MAPLOAD - load_map - Value planes failed.");
-      free_map (map);
-      return NULL;
-    }
+    if (read_map_zone_planes (file, map) == FAILURE)
+      {
+        error ("MAPLOAD - load_map - Zone planes read failed.");
+        free_map (map);
+        return NULL;
+      }
 
-  if (read_map_zone_planes (file, map) == FAILURE)
-    {
-      error ("MAPLOAD - load_map - Zone planes read failed.");
-      free_map (map);
-      return NULL;
-    }
+    if (read_map_zone_properties (file, map) == FAILURE)
+      {
+        error ("MAPLOAD - load_map - Zone properties read failed.");
+        free_map (map);
+        return NULL;
+      }
 
-  if (read_map_zone_properties (file, map) == FAILURE)
-    {
-      error ("MAPLOAD - load_map - Zone properties read failed.");
-      free_map (map);
-      return NULL;
-    }
-
-  return map;
+    return map;
+  }
 }
 
 
 /**
  * Read the map header from the file and allocate a new map from it.
  *
- * @param file  The FileOutputStream to read to.
+ * @param file  The file to read from.
  *
  * @return  the new map, or NULL if an error occurred.
- *
- * @throws  IOException
  */
 
 map_t *
 read_map_header (FILE *file)
 {
-  dimension_t width;
-  dimension_t height;
-  layer_index_t max_layer_index;
-  zone_index_t max_zone_index;
-
-
   if (file == NULL)
     return NULL;
-
-  /* Check magic string. */
 
   if (check_magic_sequence (file, MAGIC_HEADER) == FAILURE)
     {
       error ("MAPLOAD - read_header - Not a map file.");
       return NULL;
     }
-
-
-  /* Check map format version. */
-
-  if (read_uint16 (file) != MAP_VERSION)
+  else if (read_uint16 (file) != MAP_VERSION)
     {
       error ("MAPLOAD - read_header - Incorrect map format version.");
       return NULL;
     }
 
+  {
+    dimension_t map_width = read_uint16 (file); /* In tiles */
+    dimension_t map_height = read_uint16 (file); /* In tiles */
+    layer_index_t max_layer_index = read_uint16 (file);
+    zone_index_t max_zone_index = read_uint16 (file);
 
-  /* Read in map dimensions (width, height). */
+    /* Ignore unused bytes. */
+    fgetc (file);
+    fgetc (file);
 
-  width  = read_uint16 (file);
-  height = read_uint16 (file);
-
-
-  /* Read in highest layer index. */
-
-  max_layer_index = read_uint16 (file);
-
-
-  /* Read in highest zone index. */
-
-  max_zone_index = read_uint16 (file);
-
-
-  /* Ignore unused bytes. */
-
-  fgetc (file);
-  fgetc (file);
-
-
-  return init_map (width, height, max_layer_index, max_zone_index);
+    return init_map (map_width,
+                     map_height, 
+                     max_layer_index, 
+                     max_zone_index);
+  }
 }
 
 
@@ -207,13 +180,18 @@ read_map_header (FILE *file)
 bool_t
 read_layer_tags (FILE *file, map_t *map)
 {
-  layer_index_t l;
-
   if (check_magic_sequence (file, MAGIC_TAGS) == FAILURE)
-    return FAILURE;
+    {
+      return FAILURE;
+    }
 
-  for (l = 0; l <= get_max_layer (map); l++)
-    set_layer_tag (map, l, read_uint16 (file));
+  {
+    layer_index_t l;
+    for (l = 0; l <= get_max_layer (map); l++)
+      {
+        set_layer_tag (map, l, read_uint16 (file));
+      }
+  }
 
   return SUCCESS;
 }
@@ -224,19 +202,21 @@ read_layer_tags (FILE *file, map_t *map)
 bool_t
 read_map_value_planes (FILE *file, map_t *map)
 {
-  layer_index_t l;
-  bool_t result;
-
   if (check_magic_sequence (file, MAGIC_VALUES) == FAILURE)
-    return FAILURE;
+    {
+      return FAILURE;
+    }
 
+  {
+    layer_index_t l;
+    bool_t result = SUCCESS;
+    for (l = 0; l <= get_max_layer (map) && result == SUCCESS; l++)
+      {
+        result = read_layer_value_plane (file, map, l);
+      }
 
-  result = SUCCESS;
-
-  for (l = 0; l <= get_max_layer (map) && result == SUCCESS; l++)
-    result = read_layer_value_plane (file, map, l);
-
-  return result;
+    return result;
+  }
 }
 
 
@@ -255,10 +235,7 @@ read_layer_value_plane (FILE *file, map_t *map, layer_index_t layer)
 {
   dimension_t x;
   dimension_t y;
-  bool_t result;
-
-  result = SUCCESS;
-
+  bool_t result = SUCCESS;
   for (x = 0; x < get_map_width (map); x++)
     {
       for (y = 0; y < get_map_height (map) && result == SUCCESS; y++)
@@ -278,26 +255,26 @@ read_layer_value_plane (FILE *file, map_t *map, layer_index_t layer)
  * @param map     The map to populate with the read data.
  *
  * @return  SUCCESS for success, FAILURE otherwise.
- *
- * @throws  IOException
  */
 
 bool_t
 read_map_zone_planes (FILE *file, map_t *map)
 {
-  layer_index_t l;
-  bool_t result;
-
-
   if (check_magic_sequence (file, MAGIC_ZONES) == FAILURE)
-    return FAILURE;
+    {
+      return FAILURE;
+    }
 
-  result = SUCCESS;
+  {
+    layer_index_t l;
+    bool_t result = SUCCESS;
+    for (l = 0; l <= get_max_layer (map) && result == SUCCESS; l++)
+      {
+        result = read_layer_zone_plane (file, map, l);
+      }
 
-  for (l = 0; l <= get_max_layer (map) && result == SUCCESS; l++)
-    result = read_layer_zone_plane (file, map, l);
-
-  return result;
+    return result;
+  }
 }
 
 
@@ -309,8 +286,6 @@ read_map_zone_planes (FILE *file, map_t *map)
  * @param layer  The index of the layer being read.
  *
  * @return  SUCCESS for success, FAILURE otherwise.
- *
- * @throws  IOException
  */
 
 bool_t
@@ -318,7 +293,6 @@ read_layer_zone_plane (FILE *file, map_t *map, unsigned short layer)
 {
   dimension_t x;
   dimension_t y;
-
 
   for (x = 0; x < get_map_width (map); x++)
     {
@@ -344,18 +318,22 @@ read_layer_zone_plane (FILE *file, map_t *map, unsigned short layer)
 bool_t
 read_map_zone_properties (FILE *file, map_t *map)
 {
-  zone_index_t i;
-  bool_t result;
-
   if (check_magic_sequence (file, MAGIC_PROPERTIES) == FAILURE)
-    return FAILURE;
+    {
+      return FAILURE;
+    }
 
-  result = SUCCESS;
+  {
+    zone_index_t i;
+    bool_t result = SUCCESS;
 
-  for (i = 0; i <= get_max_zone (map) && result == SUCCESS; i++)
-    result = set_zone_properties (map, i, read_uint16 (file));
+    for (i = 0; i <= get_max_zone (map) && result == SUCCESS; i++)
+      {
+        result = set_zone_properties (map, i, read_uint16 (file));
+      }
 
-  return SUCCESS;
+    return SUCCESS;
+  }
 }
 
 
@@ -371,11 +349,7 @@ read_map_zone_properties (FILE *file, map_t *map)
 bool_t
 check_magic_sequence (FILE *file, const char sequence[])
 {
-  char *check;
-  size_t i;
-
-  check = malloc (strlen (sequence) + 1);
-
+  char *check = calloc (strlen (sequence) + 1, sizeof (char));
   if (check == NULL)
     {
       error ("MAPLOAD - check_magic_sequence - Could not allocate check string.");
@@ -384,15 +358,18 @@ check_magic_sequence (FILE *file, const char sequence[])
 
   fread (check, sizeof (char), strlen (sequence), file);
 
-  for (i = 0; i < strlen (sequence); i++)
-    {
-      if (check[i] != sequence[i])
-        {
-          free (check);
-          error ("MAPLOAD - check_magic_sequence - Magic sequence not present.");
-          return FAILURE;
-        }
-    }
+  {
+    size_t i;
+    for (i = 0; i < strlen (sequence); i++)
+      {
+        if (check[i] != sequence[i])
+          {
+            free (check);
+            error ("MAPLOAD - check_magic_sequence - Magic sequence not present.");
+            return FAILURE;
+          }
+      }
+  }
 
   free (check);
   return SUCCESS;
