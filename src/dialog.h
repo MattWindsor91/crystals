@@ -122,7 +122,8 @@ typedef struct dialog_root
   GPtrArray  *contents;
   xml_node_t *xml_root;
   char       *path_name;
-  uint32_t   next;
+  uint32_t   dlg_next;
+  uint32_t   req_next;
 } dlg_t;
 
 
@@ -158,6 +159,9 @@ dlg_parse_file (const char *p);
 
 dlg_content_t*
 dlg_content_next (dlg_t *dlg, uint8_t choice);
+
+req_t*
+dlg_requirement_next (dlg_t *dlg);
 
 void
 dlg_free (dlg_t *dlg);
