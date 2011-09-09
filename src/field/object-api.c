@@ -329,7 +329,8 @@ tag_object (const char object_name[], layer_tag_t tag)
   /* Mark location as dirty - object may have moved up or down. */
   mark_object_field_location_dirty (object);
 
-  return set_object_tag (object, tag);
+  set_object_tag (object, tag);
+  return SUCCESS;
 }
 
 
