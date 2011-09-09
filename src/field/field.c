@@ -131,19 +131,11 @@ init_field (struct state_functions *function_table)
       return FAILURE;
     }
 
-  if (init_objects () == FAILURE)
-    {
-      fatal ("FIELD - init_field - Objects initialisation failed.");
-      return FAILURE;
-    }
-  
+  init_objects ();
+
   sg_mapview = init_mapview (sg_map);
 
-  if (sg_mapview == NULL)
-    {
-      fatal ("FIELD - init_field - Map view initialisation failed.");
-      return FAILURE;
-    }
+  g_assert (sg_mapview != NULL);
 
   /* TEST DATA */
 
@@ -196,14 +188,10 @@ get_field_map_boundaries (int *x0_pointer,
 {
   /* Sanity-check pointers. */
 
-  if (x0_pointer == NULL
-      || x1_pointer == NULL
-      || y0_pointer == NULL
-      || y1_pointer == NULL)
-    {
-      error ("FIELD - get_field_map_boundaries - Passed NULL pointer.");
-      return FAILURE;
-    }
+  g_assert (x0_pointer != NULL
+            && x1_pointer != NULL
+            && y0_pointer != NULL
+            && y1_pointer != NULL);
 
   *x0_pointer = 0;
   *y0_pointer = 0;
@@ -247,16 +235,11 @@ field_init_callbacks (void)
   sg_field_skeydowncb = install_callback (field_on_special_key_down, SPECIAL_KEY_DOWN_EVENT);
   sg_field_quitcb = install_callback (field_on_quit, QUIT_EVENT);
 
-  if (sg_field_skeyupcb
-      && sg_field_skeydowncb
-      && sg_field_quitcb)
+  g_assert (sg_field_skeyupcb
+            && sg_field_skeydowncb
+            && sg_field_quitcb);
+
     return SUCCESS;
-  else
-    {
-      /* Clean up callbacks if any failed. */
-      field_cleanup_callbacks ();
-      return FAILURE;
-    }
 }
 
 

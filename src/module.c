@@ -63,29 +63,18 @@ module_set g_modules; /* The set of all modules in use */
 bool_t
 init_modules (const char *path)
 {
-  if (g_module_supported () == FALSE)
-    {
-      error ("MODULE - init_modules - Module loading not supported.");
-      return FAILURE;
-    }
+  g_assert (g_module_supported () == TRUE);
   
   g_modules.path = malloc (sizeof (char) * (strlen (path) + 1));
 
-  if (g_modules.path)
-    {
-      strncpy (g_modules.path, path, strlen (path) + 1);
+  g_assert (g_modules.path != NULL);
 
-      module_bare_init (&g_modules.gfx.metadata);
-      module_bare_init (&g_modules.event.metadata);
-
-      return SUCCESS;
-    }
-  else
-    {
-      error ("MODULE - init_modules - Couldn't allocate modules path.");
-    }
-
-  return FAILURE;
+  strncpy (g_modules.path, path, strlen (path) + 1);
+  
+  module_bare_init (&g_modules.gfx.metadata);
+  module_bare_init (&g_modules.event.metadata);
+  
+  return SUCCESS;
 }
 
 
@@ -110,16 +99,10 @@ get_module_path (const char* module, const char* modulespath, char** out)
   path = calloc (strlen (modulespath) + strlen (module)
                  + 1, sizeof (char));
 
-  if (path)
-    {
-      strncpy (path, modulespath, strlen (modulespath));
-      strncat (path, module, strlen (module));
-    }
-  else
-    {
-      error ("MODULE - get_module_path - couldn't allocate module path.");
-      return FAILURE;
-    }
+  g_assert (path != NULL);
+
+  strncpy (path, modulespath, strlen (modulespath));
+  strncat (path, module, strlen (module));
 
   *out = path;
   return SUCCESS;
@@ -134,23 +117,15 @@ get_module_by_name (const char* name, const char *modulespath, module_data *modu
   bool_t out;        /* Soon-to-be return value of get_module */
   char *modulepath;  /* Buffer in which to store path to the module. */
 
-  if (get_module_path (name, modulespath, &modulepath) == FAILURE)
-    return FAILURE;
+  get_module_path (name, modulespath, &modulepath);
 
+  g_assert (modulepath != NULL);
 
   /* And get the module */
 
-  if (modulepath)
-    {
-      out = get_module (modulepath, module);
-      free (modulepath);
-      return out;
-    }
-  else
-    {
-      error ("MODULE - get_module_by_name - couldn't find module path.");
-      return FAILURE;
-    }
+  out = get_module (modulepath, module);
+  free (modulepath);
+  return out;
 }
 
 
@@ -159,9 +134,7 @@ get_module_by_name (const char* name, const char *modulespath, module_data *modu
 bool_t
 get_module (const char* modulepath, module_data *module)
 {
-
-  if (module->lib_handle != NULL)
-    return FAILURE;
+  g_assert (module->lib_handle == NULL);
 
   module->lib_handle = g_module_open(modulepath, 0);
 
@@ -170,7 +143,6 @@ get_module (const char* modulepath, module_data *module)
       get_dll_error ("get_module");
       return FAILURE;
     }
-
 
   /* Get init and termination functions if present */
 

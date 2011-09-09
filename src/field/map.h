@@ -47,6 +47,7 @@
 #define _MAP_H
 
 
+#include <glib.h>
 #include "../types.h"
 
 

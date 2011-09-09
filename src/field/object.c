@@ -85,14 +85,9 @@ init_objects (void)
                                       g_free,
                                       free_object);
 
-  if (sg_objects)
-    {
-      return SUCCESS;
-    }
-  else
-    {
-      return FAILURE;
-    }
+  g_assert (sg_objects);
+  
+  return SUCCESS;
 }
 
 
@@ -102,54 +97,22 @@ object_t *
 add_object (const char object_name[],
             const char script_filename[])
 {
-  if (object_name == NULL)
-    {
-      error ("OBJECT - add_object - Object name is NULL.");
-      return NULL;
-    }
-
-  if (script_filename == NULL)
-    {
-      error ("OBJECT - add_object - Script filename is NULL.");
-      return NULL;
-    }
+  g_assert (object_name != NULL);
+  g_assert (script_filename != NULL);
 
   /* Try to allocate an object. */
   {
     object_t *object = malloc (sizeof (object_t));
-    if (object == NULL)
-      {
-        error ("OBJECT - add_object - Allocation failed for %s.", 
-               object_name);
-        return NULL;
-      }
+    g_assert (object != NULL);
 
     object->image = init_object_image ();
-    if (object->image == NULL)
-      {
-        error ("OBJECT - add_object - Initialisation failed for image of %s.",
-               object_name);
-        free_object (object);
-        return NULL;
-      }
+    g_assert (object->image != NULL);
 
     object->name = g_strdup (object_name);
-    if (object->name == NULL)
-      {
-        error ("OBJECT - add_object - Allocation failed for name of %s.", 
-               object_name);
-        free_object (object);
-        return NULL;
-      }
+    g_assert (object->name != NULL);
 
     object->script_filename = g_strdup (script_filename);
-    if (object->script_filename == NULL)
-      {
-        error ("OBJECT - add_object - Allocation failed for filename of %s.", 
-                 object_name);
-        free_object (object);
-        return NULL;
-      }
+    g_assert (object->script_filename != NULL);
 
     /* Finally, nullify everything else. */
     object->tag = 0;
@@ -201,12 +164,7 @@ set_object_image (object_t *object,
     }
 
   object->image->filename = g_strdup (filename);
-  if (object->image->filename == NULL)
-    {
-      error ("OBJECT - set_object_image - Couldn't alloc image FN for %s.",
-             object->name);
-      return FAILURE;
-    }
+  g_assert (object->image->filename != NULL);
 
   object->image->image_x = image_x;
   object->image->image_y = image_y;
@@ -259,12 +217,7 @@ set_object_coordinates (object_t *object,
     {
       /* Check to see if the offset will send the object off the map. */
 
-      if (object->image->map_y < object->image->height - 1)
-        {
-          fatal ("OBJECT - set_object_coordinates - Object %s has bad coords.", 
-                   object->name);
-          return FAILURE;
-        }
+      g_assert (object->image->map_y >= object->image->height - 1);
 
       object->image->map_y -= (object->image->height - 1);
     }
@@ -295,24 +248,14 @@ set_object_dirty (object_t *object,
   /* Ensure the object's co-ordinates don't go over the map
      width/height! */
 
-  if ((object->image->map_x + object->image->width
-       > mapview->map->width * TILE_W)
-      || (object->image->map_y + object->image->height 
-          > mapview->map->height * TILE_H))
-    {
-      error ("OBJECT - set_object_dirty - Object %s out of bounds.", 
-               object->name);
-      return FAILURE;
-    }
+  g_assert ((object->image->map_x + object->image->width <= mapview->map->width * TILE_W)
+            && (object->image->map_y + object->image->height <= mapview->map->height * TILE_H));
 
   /* And now, the business end. */
 
   if (object->tag != 0)
     {
-      if (add_object_image (mapview, object->tag, object)
-          == FAILURE)
-        return FAILURE;
-
+      add_object_image (mapview, object->tag, object);
       object->is_dirty = TRUE;
     }
 

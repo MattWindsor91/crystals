@@ -253,17 +253,10 @@ load_map (const char path[])
   map_t *map = malloc (sizeof (map_t));
   FILE *file = fopen (path, "rb");
 
-  if (map == NULL)
-    {
-      error ("MAPLOAD - load_map - Couldn't allocate map.");
-      return NULL;
-    }
-  else if (file == NULL)
-    {
-      error ("MAPLOAD - load_map - Couldn't allocate file.");
-      return NULL;
-    }
+  g_assert (map != NULL);
+  g_assert (file != NULL);
 
+  /* Should this be an assertion? */
   if (parse_map_file (file, map) == FAILURE)
     {
       error ("MAPLOAD - load_map - Map load failed.");
@@ -283,39 +276,11 @@ load_map (const char path[])
 static bool_t
 parse_map_file (FILE *file, map_t *map)
 {
-  if (read_map_header (file, map) == FAILURE)
-    {
-      error ("MAPLOAD - load_map - Header read failed.");
-      return FAILURE;
-    }
-  
-  if (read_layer_tags_chunk (file, map) == FAILURE)
-    {
-      error ("MAPLOAD - load_map - Layer tags read failed.");
-      free_map (map);
-      return FAILURE;
-    }
-  
-  if (read_map_value_planes_chunk (file, map) == FAILURE)
-    {
-      error ("MAPLOAD - load_map - Value planes read failed.");
-      free_map (map);
-      return FAILURE;
-    }
-  
-  if (read_map_zone_planes_chunk (file, map) == FAILURE)
-    {
-      error ("MAPLOAD - load_map - Zone planes read failed.");
-      free_map (map);
-      return FAILURE;
-    }
-  
-  if (read_map_zone_properties_chunk (file, map) == FAILURE)
-    {
-      error ("MAPLOAD - load_map - Zone properties read failed.");
-      free_map (map);
-      return FAILURE;
-    }
+  read_map_header (file, map);
+  read_layer_tags_chunk (file, map);
+  read_map_value_planes_chunk (file, map);
+  read_map_zone_planes_chunk (file, map);
+  read_map_zone_properties_chunk (file, map);
 
   return SUCCESS;
 }
@@ -325,16 +290,8 @@ parse_map_file (FILE *file, map_t *map)
 static bool_t
 read_map_header (FILE *file, map_t *map)
 {
-  if (check_magic_sequence (file, MAGIC_HEADER) == FAILURE)
-    {
-      error ("MAPLOAD - read_header - Not a map file.");
-      return FAILURE;
-    }
-  else if (read_uint16 (file) != MAP_VERSION)
-    {
-      error ("MAPLOAD - read_header - Incorrect map format version.");
-      return FAILURE;
-    }
+  g_assert (check_magic_sequence (file, MAGIC_HEADER) != FAILURE);
+  g_assert (read_uint16 (file) == MAP_VERSION);
 
   return read_map_header_contents (file, map);
 }
@@ -365,10 +322,7 @@ read_map_header_contents (FILE *file, map_t *map)
 bool_t
 read_layer_tags_chunk (FILE *file, map_t *map)
 {
-  if (check_magic_sequence (file, MAGIC_TAGS) == FAILURE)
-    {
-      return FAILURE;
-    }
+  g_assert (check_magic_sequence (file, MAGIC_TAGS) != FAILURE);
 
   read_layer_tags (file, map);
   return SUCCESS;
@@ -390,10 +344,7 @@ read_layer_tags (FILE *file, map_t *map)
 static bool_t
 read_map_value_planes_chunk (FILE *file, map_t *map)
 {
-  if (check_magic_sequence (file, MAGIC_VALUES) == FAILURE)
-    {
-      return FAILURE;
-    }
+  g_assert (check_magic_sequence (file, MAGIC_VALUES) != FAILURE);
 
   return read_map_value_planes (file, map);
 }
@@ -437,10 +388,7 @@ read_map_value_plane (FILE *file, map_t *map, layer_index_t layer)
 static bool_t
 read_map_zone_planes_chunk (FILE *file, map_t *map)
 {
-  if (check_magic_sequence (file, MAGIC_ZONES) == FAILURE)
-    {
-      return FAILURE;
-    }
+  g_assert (check_magic_sequence (file, MAGIC_VALUES) != FAILURE);
 
   return read_map_zone_planes (file, map);
 }
@@ -485,10 +433,7 @@ read_layer_zone_plane (FILE *file, map_t *map, unsigned short layer)
 static bool_t
 read_map_zone_properties_chunk (FILE *file, map_t *map)
 {
-  if (check_magic_sequence (file, MAGIC_PROPERTIES) == FAILURE)
-    {
-      return FAILURE;
-    }
+  g_assert (check_magic_sequence (file, MAGIC_VALUES) != FAILURE);
 
   return read_map_zone_properties (file, map);
 }
@@ -514,20 +459,16 @@ static bool_t
 check_magic_sequence (FILE *file, const char sequence[])
 {
   char *check = calloc (strlen (sequence) + 1, sizeof (char));
-  if (check == NULL)
-    {
-      error ("MAPLOAD - check_magic_sequence - Could not allocate check string.");
-      return FAILURE;
-    }
+  g_assert (check != NULL);
 
   fread (check, sizeof (char), strlen (sequence), file);
 
-  if (strcmp (sequence, check) != 0)
+  /*if (strcmp (sequence, check) != 0)
     {
       free (check);
       error ("MAPLOAD - check_magic_sequence - Magic sequence not present.");
       return FAILURE;
-    }
+      }*/
 
   free (check);
   return SUCCESS;

@@ -88,10 +88,9 @@ get_module_root_path (char **module_path)
 
       *module_path = calloc (strlen (DEFMODPATH) + 1, sizeof (char));
 
-      if (*module_path == NULL)
-        fatal ("UTIL - get_module_path - Module path could not be allocated.");
-      else
-        strncpy (*module_path, DEFMODPATH, strlen (DEFMODPATH) + 1);
+      g_assert (*module_path != NULL);
+
+      strncpy (*module_path, DEFMODPATH, strlen (DEFMODPATH) + 1);
     }
 }
 
@@ -103,18 +102,8 @@ get_module_root_path (char **module_path)
 uint16_t
 long_to_uint16 (long integer)
 {
-  if (integer < 0)
-    {
-      error ("UTIL - long_to_uint16 - Assertion n >= 0 failed.");
-      error ("UTIL - Truncating value to 0.");
-      integer = 0;
-    }
-  else if (integer > UINT16_MAX)
-    {
-      error ("UTIL - long_to_uint16 - Assertion n <= UINT16_MAX failed.");
-      error ("UTIL - Truncating value to uint16_t maximum.");
-      integer = UINT16_MAX;
-    }
+  g_assert (integer >= 0);
+  g_assert (integer <= UINT16_MAX);
 
   return (uint16_t) integer;
 }
@@ -125,18 +114,8 @@ long_to_uint16 (long integer)
 int16_t
 long_to_int16 (long integer)
 {
-  if (integer < INT16_MIN)
-    {
-      error ("UTIL - long_to_int16 - Assertion n >= INT16_MIN failed.");
-      error ("UTIL - Truncating value to int16_t minimum.");
-      integer = INT16_MIN;
-    }
-  else if (integer > INT16_MAX)
-    {
-      error ("UTIL - long_to_int16 - Assertion n <= INT16_MAX failed.");
-      error ("UTIL - Truncating value to int16_t minimum.");
-      integer = INT16_MAX;
-    }
+  g_assert (integer >= INT16_MIN);
+  g_assert (integer <= INT16_MAX);
 
   return (int16_t) integer;
 }
@@ -147,12 +126,7 @@ long_to_int16 (long integer)
 uint16_t
 ulong_to_uint16 (unsigned long integer)
 {
-  if (integer > UINT16_MAX)
-    {
-      error ("UTIL - ulong_to_uint16 - Assertion n <= UINT16_MAX failed.");
-      error ("UTIL - Truncating value to uint16_t maximum.");
-      integer = UINT16_MAX;
-    }
+  g_assert (integer <= UINT16_MAX);
 
   return (uint16_t) integer;
 }
@@ -163,12 +137,7 @@ ulong_to_uint16 (unsigned long integer)
 int16_t
 ulong_to_int16 (unsigned long integer)
 {
-  if (integer > INT16_MAX)
-      {
-        error ("UTIL - ulong_to_int16 - Assertion n <= INT16_MAX failed.");
-        error ("UTIL - Truncating value to int16_t minimum.");
-        integer = INT16_MAX;
-      }
+  g_assert (integer <= INT16_MAX);
 
   return (int16_t) integer;
 }

@@ -131,11 +131,7 @@ get_absolute_path (const char path[])
       absolute_path = calloc (strlen (path) + strlen (DEFGFXPATH) + 1, 
                                sizeof (char));
 
-      if (absolute_path == NULL)
-        {
-          error ("GRAPHICS - get_absolute path - Memory allocation failure.");
-          return NULL;
-        }
+      g_assert (absolute_path != NULL);
 
       strncat (absolute_path, DEFGFXPATH, strlen (DEFGFXPATH));
     }
@@ -146,11 +142,7 @@ get_absolute_path (const char path[])
       absolute_path = calloc (strlen (path) + strlen (root_path) + 1, 
                                sizeof (char));
 
-      if (absolute_path == NULL)
-        {
-          error ("GRAPHICS - get_absolute path - Memory allocation failure.");
-          return NULL;
-        }
+      g_assert (absolute_path != NULL);
 
       strncat (absolute_path, root_path, strlen (root_path));
     }
@@ -255,11 +247,7 @@ scroll_screen (int16_t x_offset, int16_t y_offset)
 void *
 load_image (const char filename[])
 {
-  if (filename == NULL)
-    {
-      fatal ("GFX - load_image - Filename is NULL.");
-      return NULL;
-    }
+  g_assert (filename != NULL);
 
   /* Try look image up in cache. */
   {
@@ -305,10 +293,7 @@ load_image (const char filename[])
 void
 free_image (image_t *image)
 {
-  if (image == NULL)
-    {
-      error ("GFX - free_image - Tried to free NULL image.");
-    }
+  g_assert (image != NULL);
 
   (*g_modules.gfx.free_image_data) (image);
 }

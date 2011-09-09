@@ -57,7 +57,7 @@ init_config (const char *config_path)
 
   if (err != NULL)
     {
-      fatal ("PARSER - init_config - Unable to read conifg file: %s\n", err->message);
+      fatal ("PARSER - init_config - Unable to read config file: %s\n", err->message);
       g_error_free (err);
       return NULL;
     }

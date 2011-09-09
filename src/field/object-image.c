@@ -48,6 +48,7 @@
 #include "object-image.h"
 #include "../types.h"
 #include "../util.h"
+#include "../main.h"
 
 
 /* Set all the parameters of an object image node to default values. */
@@ -56,11 +57,8 @@ object_image_t *
 init_object_image (void)
 {
   object_image_t *image = calloc (1, sizeof (object_image_t));
-  if (image == NULL)
-     {
-       error ("OBJECT-IMAGE - init_object_image - Tried to init null object image.");
-       return NULL;
-     }
+  g_assert (image != NULL);
+
   return image;
 }
 

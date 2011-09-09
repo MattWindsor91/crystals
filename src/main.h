@@ -47,6 +47,8 @@
 #define _MAIN_H
 
 
+#include <glib.h>
+
 #include "types.h"
 #include "parser.h" /**<< for configuration*/
 

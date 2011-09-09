@@ -162,12 +162,7 @@ bool_t
 focus_camera_on_object (const char object_name[])
 {
   object_t *object = get_object (object_name);
-  if (object == NULL)
-    {
-      error ("OBJECT-API - focus_camera_on_object - Couldn't get object %s.", 
-             object_name);
-      return FAILURE;
-    }
+  g_assert (object != NULL);
 
   sg_camera_focus = object;
 
@@ -196,38 +191,24 @@ static bool_t
 move_object_post_check (const char object_name[], int32_t dx, int32_t dy)
 {
   object_t *object = get_object (object_name);
-  if (object == NULL)
-    {
-      error ("OBJECT-API - move_object - Couldn't get object %s.", 
-             object_name);
-      return FAILURE;
-    }
-  else if (object->image == NULL)
-    {
-      error ("OBJECT-API - move_object - Object %s has no image dataset.", 
-             object->name);
-      return FAILURE;
-    }
-  else if (rectangle_out_of_bounds (object->image->map_x + dx,
-                                    object->image->map_y + dy,
-                                    (object->image->map_x + dx
-                                     + object->image->width), 
-                                    (object->image->map_y + dy
-                                     + object->image->height)))
-    {
-      error ("OBJECT-API - move_object - Object moving out of bounds.");
-      return FAILURE;
-    }
+
+  g_assert (object != NULL);
+  g_assert (object->image != NULL);
+
+  g_assert (!rectangle_out_of_bounds (object->image->map_x + dx,
+                                      object->image->map_y + dy,
+                                      (object->image->map_x + dx
+                                       + object->image->width), 
+                                      (object->image->map_y + dy
+                                       + object->image->height)));
     
   /* Mark old location as dirty. */
   mark_object_field_location_dirty (object);
 
   /* Try to move object. */
-  if (set_object_coordinates (object, 
-                              object->image->map_x + dx,
-                              object->image->map_y + dy, TOP_LEFT) 
-      == FAILURE)
-    return FAILURE;
+  set_object_coordinates (object, 
+                          object->image->map_x + dx,
+                          object->image->map_y + dy, TOP_LEFT) ;
 
   /* Mark new location as dirty. */
   mark_object_field_location_dirty (object);
@@ -248,11 +229,7 @@ static bool_t
 move_field_camera (int32_t dx, int32_t dy)
 {
   mapview_t *mapview = get_field_mapview ();
-  if (mapview == NULL)
-    {
-      error ("OBJECT-API - move_object - No field map view.");
-      return FAILURE;
-    }
+  g_assert (mapview != NULL);
 
   /* Assert SCREEN_W and SCREEN_H are always int16_t */
   if (dx <= SCREEN_W 
@@ -276,36 +253,21 @@ position_object (const char object_name[],
                  reference_t reference)
 {
   object_t *object = get_object (object_name);
-  if (object == NULL)
-    {
-      error ("OBJECT-API - position_object - Couldn't get object %s.", 
-             object_name);
-      return FAILURE;
-    }
-  else if (object->image == NULL)
-    {
-      error ("OBJECT-API - position_object - Object %s has no image dataset.", 
-             object->name);
-      return FAILURE;
-    }
-  else if (rectangle_out_of_bounds (x,
-                                    y,
-                                    x + object->image->width, 
-                                    y + object->image->height))
-    {
-      error ("OBJECT-API - position_object - Object moving out of bounds.");
-      return FAILURE;
-    }
+
+  g_assert (object != NULL);
+  g_assert (object->image != NULL);
+  g_assert (!rectangle_out_of_bounds (x,
+                                      y,
+                                      x + object->image->width, 
+                                      y + object->image->height));
 
   /* Mark old location as dirty. */
   mark_object_field_location_dirty (object);
   
   /* Try to move object. */
-  if (set_object_coordinates (object, 
-                              x,
-                              y, reference) 
-      == FAILURE)
-    return FAILURE;
+  set_object_coordinates (object, 
+                          x,
+                          y, reference) ;
 
   /* Mark new location as dirty. */
   mark_object_field_location_dirty (object);
@@ -319,12 +281,7 @@ bool_t
 tag_object (const char object_name[], layer_tag_t tag)
 {
   object_t *object = get_object (object_name);
-  if (object == NULL)
-    {
-      error ("OBJECT-API - tag_object - Couldn't get object %s.", 
-             object_name);
-      return FAILURE;
-    }
+  g_assert (object != NULL);
   
   /* Mark location as dirty - object may have moved up or down. */
   mark_object_field_location_dirty (object);
@@ -343,11 +300,7 @@ change_object_image (const char object_name[],
                      uint16_t width,
                      uint16_t height)
 {
-  if (image_filename == NULL)
-    {
-      error ("OBJECT-API -change_object_image - Null filename.");
-      return FAILURE;
-    }
+  g_assert (image_filename != NULL);
 
   return change_object_image_post_check (object_name,
                                          image_filename,
@@ -369,37 +322,20 @@ change_object_image_post_check (const char object_name[],
                                 uint16_t height)
 {
   object_t *object = get_object (object_name);
-  if (object == NULL)
-    {
-      error ("OBJECT-API - change_object_image - Couldn't get object %s.", 
-             object_name);
-      return FAILURE;
-    }
-  else if (object->image == NULL)
-    {
-      error ("OBJECT-API - change_object_image - Object %s has no image dataset.", 
-             object->name);
-      return FAILURE;
-    }
-  else if (rectangle_out_of_bounds (object->image->map_x,
-                                    object->image->map_y,
-                                    object->image->map_x + width, 
-                                    object->image->map_y + height))
-    {
-      error ("OBJECT-API - change_object_image - Object moving out of bounds.");
-      return FAILURE;
-    }
 
-  if (set_object_image (object, 
-                        image_filename,
-                        x_offset,
-                        y_offset,
-                        width,
-                        height) == FAILURE)
-    {
-      error ("OBJECT-API - change_object_image - Could not set image.");
-      return FAILURE;
-    }
+  g_assert (object != NULL);
+  g_assert (object->image != NULL);
+  g_assert (!rectangle_out_of_bounds (object->image->map_x,
+                                      object->image->map_y,
+                                      object->image->map_x + width, 
+                                      object->image->map_y + height));
+
+  set_object_image (object, 
+                    image_filename,
+                    x_offset,
+                    y_offset,
+                    width,
+                    height);
   
   mark_object_field_location_dirty (object);
       
@@ -412,11 +348,7 @@ static void
 mark_object_field_location_dirty (object_t *object)
 {
   mapview_t *mapview = get_field_mapview ();
-  if (mapview == NULL)
-    {
-      error ("OBJECT-API - position_object - No field map view.");
-      return;
-    }
+  g_assert (mapview != NULL);
 
   /* No point marking a dirty rectangle if the object is currently
    * invisible.
@@ -444,14 +376,10 @@ rectangle_out_of_bounds (int x, int y, int width, int height)
   int end_x;
   int end_y;
 
-  if (get_field_map_boundaries (&start_x, 
-                                &start_y,
-                                &end_x,
-                                &end_y) == FAILURE)
-    {
-      error ("OBJECT-API - position_object - Couldn't get map boundaries.");
-      return TRUE;
-    }
+  get_field_map_boundaries (&start_x, 
+                            &start_y,
+                            &end_x,
+                            &end_y);
 
   if (x < start_x
       || y < start_y

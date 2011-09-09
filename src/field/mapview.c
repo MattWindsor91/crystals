@@ -127,16 +127,8 @@ typedef struct render_rect_layer_data
 mapview_t *
 init_mapview (map_t *map)
 {
-  if (map == NULL)
-    {
-      error ("MAPVIEW - init_mapview - Passed map pointer is null.");
-      return NULL;
-    }
-  else if (map->width <= 0 || map->height <= 0)
-    {
-      error ("MAPVIEW - init_mapview - Map W/H are non-positive.");
-      return NULL;
-    }
+  g_assert (map != NULL);
+  g_assert (map->width > 0 && map->height > 0);
   
   {
     mapview_t *mapview = calloc (1, sizeof (mapview_t));
@@ -150,23 +142,15 @@ init_mapview (map_t *map)
 
     /* Get the number of object queues to reserve, by finding the
        highest tag number in the map. */
-    mapview->num_object_queues = get_max_tag (mapview->map);  
+    mapview->num_object_queues = get_max_tag (mapview->map);
+
     /* There should be at least one tag! */
-    if (mapview->num_object_queues == 0)
-      {
-        error ("MAPVIEW - init_mapview - No tags in map; please fix map.");
-        free_mapview (mapview);
-        return NULL;
-      }
+    g_assert (mapview->num_object_queues != 0);
 
     mapview->object_queue = calloc (mapview->num_object_queues,
                                     sizeof (object_image_t*));
-    if (mapview->object_queue == NULL)
-      {
-        error ("MAPVIEW - init_mapview - Couldn't allocate object queues.");
-        free_mapview (mapview);
-        return NULL;
-      }
+
+    g_assert (mapview->object_queue != NULL);
 
     /* Set all tiles as dirty. */
     mark_dirty_rect (mapview, 0, 0, map->width * TILE_W, map->height * TILE_H);
@@ -184,36 +168,10 @@ add_object_image (mapview_t *mapview,
                   layer_value_t tag,
                   object_t *object)
 {
-  if (mapview == NULL)
-    {
-      error ("MAPVIEW - add_object_image - Tried to render to NULL mapview.");
-      return FAILURE;
-    }
-  else if (tag == NULL_TAG)
-    {
-      /* Can't render to the null tag - it's the standard "don't render" tag
-       * index.
-       */
-      error ("MAPVIEW - add_object_image - Tried to render to null tag.");
-      return FAILURE;
-    }
-  else if (tag > mapview->num_object_queues)
-    {
-      /* Equally, can't render to a tag that's above the highest tag
-       * number in the map viewpoint. 
-       *
-       * NOTE: We don't check to ensure that our tag is actually being
-       * provided, just that it's a sane number. Possible FIXME in the
-       * future?
-       */
-      error ("MAPVIEW - add_object_image - Tag specified too high.");
-      return FAILURE;
-    }
-  else if (object == NULL)
-    {
-      error ("MAPVIEW - add_object_image - Tried to render a NULL object.");
-      return FAILURE;
-    }
+  g_assert (mapview != NULL);
+  g_assert (tag != NULL_TAG);
+  g_assert (tag <= mapview->num_object_queues);
+  g_assert (object != NULL);
 
   /* Assert that a non-NULL mapview must have a non-NULL render queue
    * array, due to the nature of the mapview init.
@@ -221,30 +179,15 @@ add_object_image (mapview_t *mapview,
   
   {
     object_image_t *image = get_object_image (object);
-    if (image == NULL)
-      {
-        error ("MAPVIEW - add_object_image - Tried to render a NULL image.");
-        return FAILURE;
-      }
-    else if (image->filename == NULL)
-      {
-        error ("MAPVIEW - add_object_image - Filename is NULL.");
-        return FAILURE;
-      }
-    else if (image->width == 0 || image->height == 0)
-      {
-        error ("MAPVIEW - add_object_image - Zero object render width/height.");
-        return FAILURE;
-      }
+
+    g_assert (image != NULL);
+    g_assert (image->filename != NULL);
+    g_assert (image->width != 0 && image->height != 0);
 
     /* Now copy the image, if possible. */
     {
       render_node_t *new_rnode = malloc (sizeof (render_node_t));
-      if (new_rnode == NULL)
-        {
-          error ("MAPVIEW - add_object_image - Allocation failed for rnode.");
-          return FAILURE;
-        }
+      g_assert (new_rnode != NULL);
 
       new_rnode->object = object;
       new_rnode->image = image;
@@ -296,15 +239,10 @@ add_object_image (mapview_t *mapview,
 void
 render_map (mapview_t *mapview)
 {
-  if (mapview == NULL)
-    {
-      error ("MAPVIEW - render_map - mapview is NULL");
-    }
-  else if (mapview->map == NULL)
-    {
-       error ("MAPVIEW - render_map - mapview->map is NULL");
-    }
-  else if (mapview->dirty_rectangles == NULL)
+  g_assert (mapview != NULL);
+  g_assert (mapview->map != NULL);
+
+  if (mapview->dirty_rectangles == NULL)
     {
       /* Nothing to render! */
       return;
@@ -470,11 +408,7 @@ render_map_objects (mapview_t *mapview, layer_index_t layer)
 
           image = mapview->object_queue[tag - 1]->image;
 
-          if (image == NULL)
-            {
-              error ("MAPVIEW - render_map_objects - Failed to get object image.");
-              return;
-            }
+          g_assert (image != NULL);
 
           draw_image (image->filename,
                       image->image_x,
@@ -503,21 +437,8 @@ scroll_map (mapview_t *mapview,
             int16_t x_offset,
             int16_t y_offset)
 {
-  if (mapview == NULL)
-    {
-      error ("MAPVIEW - scroll_map - Map view is NULL.");
-      return;
-    }
-
-  /* This particular number will pose problems later 
-     when flipping to negative, so don't allow it. */
-
-  if (x_offset == SHRT_MIN
-      || y_offset == SHRT_MIN)
-    {
-      error ("MAPVIEW - scroll_map - Offset too big.");
-      return;
-    }
+  g_assert (mapview != NULL);
+  g_assert (x_offset != SHRT_MIN && y_offset != SHRT_MIN);
 
   /* Work out the dirty rectangles to mark. */
 
@@ -581,24 +502,12 @@ mark_dirty_rect (mapview_t *mapview,
                  int32_t width,
                  int32_t height)
 {
-  if (mapview == NULL)
-    {
-      error ("MAPVIEW - mark_dirty_rect - Rect dirtying passed NULL mapview.");
-      return FAILURE;
-    }
-  else if (width <= 0 || height <= 0)
-    {
-      error ("MAPVIEW - mark_dirty_rect - Rect dirtying passed invalid width/height.");
-      return FAILURE;
-    }
+  g_assert (mapview != NULL);
+  g_assert (width > 0 && height > 0);
 
   {
     dirty_rectangle_t *rect = malloc (sizeof (dirty_rectangle_t));
-    if (rect == NULL)
-      {
-        error ("MAPVIEW - mark_dirty_rect - Couldn't allocate rect.");
-        return FAILURE;
-      }
+    g_assert (rect != NULL);
   
     rect->parent = mapview;
     rect->start_x = start_x;

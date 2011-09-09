@@ -93,11 +93,8 @@ init_events (void)
   (*g_modules.event.register_release_handle) (event_release);
 
   sg_event_base = calloc (1, sizeof (struct event_base));
-  if (sg_event_base == NULL)
-    {
-      error ("EVENTS - init_events - Could not allocate events base.");
-      return FAILURE;
-    }
+
+  g_assert (sg_event_base != NULL);
 
   return SUCCESS;
 }
@@ -118,11 +115,8 @@ event_callback_t *
 install_callback (void (*function) (event_t *event), event_type_t types)
 {   
   event_callback_t *callback = malloc (sizeof (event_callback_t));
-  if (callback == NULL)
-    {
-      error ("EVENTS - install_callback - Could not allocate callback node.");
-      return NULL;
-    }
+
+  g_assert (callback != NULL);
 
   callback->function = function;
   callback->types = types;
@@ -141,11 +135,7 @@ install_callback (void (*function) (event_t *event), event_type_t types)
 bool_t
 unload_callback (event_callback_t *callback)
 {
-  if (callback == NULL)
-    {
-      error ("EVENTS - unload_callback - Given a NULL callback to delete.");
-      return FAILURE;
-    }
+  g_assert (callback != NULL);
 
   sg_event_base->callbacks = g_slist_remove (sg_event_base->callbacks,
                                              callback);

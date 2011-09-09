@@ -78,21 +78,9 @@ set_state (state_t new_state)
      to NULL,  and if we're trying to change to the current state then
      there must be a logic error about. */
 
-  if (sg_state == STATE_QUIT)
-    {
-      error ("STATE - set_state - Tried to change state while quitting.");
-      return FAILURE;
-    }
-  else if (new_state == STATE_NULL)
-    {
-      error ("STATE - set_state - Tried to change to null state.");
-      return FAILURE;
-    }
-  else if (sg_state == new_state)
-    {
-      error ("STATE - set_state - Tried to change to current state.");
-      return FAILURE;
-    }
+  g_assert (sg_state  != STATE_QUIT);
+  g_assert (new_state != STATE_NULL);
+  g_assert (sg_state  != new_state);
 
   sg_enqueued_state = new_state;
 
@@ -106,21 +94,12 @@ state_t
 update_state (void)
 {
   /* Check to see if there is an enqueued (non-null) state. */
-
   if (sg_enqueued_state == STATE_NULL)
     return sg_state;
 
-  if (cleanup_state () == FAILURE)
-    {
-      error ("STATE - update_state - Cleanup of old state failed.");
-      return STATE_NULL;
-    }
+  cleanup_state ();
 
-  if (init_state (sg_enqueued_state) == FAILURE)
-    {
-      error ("STATE - update_state - Init of new state failed.");
-      return STATE_NULL;
-    }
+  init_state (sg_enqueued_state);
 
   sg_state = sg_enqueued_state;
   sg_enqueued_state = STATE_NULL;
@@ -134,21 +113,18 @@ update_state (void)
 bool_t
 init_state (state_t state)
 {
+  g_assert (state == STATE_FIELD || state == STATE_QUIT);
+
   switch (state)
     {
     case STATE_FIELD:
       return init_field (&sg_functions);
       break;
     case STATE_QUIT:
-      return SUCCESS;
-      break;
-    default:
-      /* Invalid state. */
-      error ("STATE - init_state - Invalid state ID %u.", 
-             state);
-      return FAILURE;
       break;
     }
+
+  return SUCCESS;
 }
 
 
@@ -183,18 +159,18 @@ state_handle_dirty_rect (short x, short y,
 bool_t
 cleanup_state (void)
 {
+  bool_t ret;
+
   if (sg_functions.cleanup != NULL)
     {
-      if (sg_functions.cleanup () == FAILURE)
-        {
-          fatal ("STATE - cleanup_state - Cleanup failure.");
-          return FAILURE;
-        }
+      ret = sg_functions.cleanup ();
+
+      g_assert (ret != FAILURE);
 
       /* Clean up the function pointers. */
 
-      sg_functions.cleanup = NULL;
-      sg_functions.update = NULL;
+      sg_functions.cleanup    = NULL;
+      sg_functions.update     = NULL;
       sg_functions.dirty_rect = NULL;
     }
 

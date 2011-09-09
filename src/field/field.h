@@ -47,6 +47,8 @@
 #ifndef _FIELD_H
 #define _FIELD_H
 
+#include <glib.h>
+
 #include "mapview.h"   /* mapview_t */
 #include "../events.h" /* event_t */
 #include "../state.h"  /* state_functions */
