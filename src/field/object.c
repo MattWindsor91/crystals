@@ -59,6 +59,20 @@
 static GHashTable *sg_objects;
 
 
+/* -- STATIC DECLARATIONS -- */
+
+/**
+ * Check to see whether the given object falls within the given dirty
+ * rectangle and, if so, mark the object as dirty.
+ *
+ * @param object        The object to test.
+ * @param rect_pointer  Pointer to the dirty rectangle to test.
+ */
+static void
+dirty_object_test_post_check (object_t *object,
+                              dirty_rectangle_t *rect);
+
+
 /* -- DEFINITIONS -- */
 
 /* Initialise the object base. */
@@ -151,19 +165,11 @@ add_object (const char object_name[],
 
 
 /* Change the tag associated with an object. */
-
-bool_t
+void
 set_object_tag (object_t *object, layer_tag_t tag)
 {
-  if (object == NULL)
-    {
-      error ("OBJECT - set_object_tag - Tried to set tag of null object.");
-      return FAILURE;
-    }
-
+  g_assert (object != NULL);
   object->tag = tag;
-  
-  return SUCCESS;
 }
 
 
@@ -172,17 +178,7 @@ set_object_tag (object_t *object, layer_tag_t tag)
 object_image_t *
 get_object_image (object_t *object)
 {
-  /* Sanity checking. */
-
-  if (object == NULL)
-    {
-      error ("OBJECT - get_object_image - Tried to get image of null object.");
-      return NULL;
-    }
-
-  /* End sanity checking. */
-
-
+  g_assert (object != NULL);
   return object->image;
 }
 
@@ -197,44 +193,20 @@ set_object_image (object_t *object,
                   uint16_t width,
                   uint16_t height)
 {
-  /* Sanity checking. */
-
-  if (object == NULL)
-    {
-      error ("OBJECT - set_object_image - Tried to set image of null object.");
-      return FAILURE;
-    }
-
-  if (object->image == NULL)
-    {
-      error ("OBJECT - set_object_image - Object %s has no image dataset.", 
-             object->name);
-      return FAILURE;
-    }
-
-  if (filename == NULL)
-    {
-      error ("OBJECT - set_object_image - Tried to set image FN to null.");
-      return FAILURE;
-    }
-
-  /* Set up the filename. */
+  g_assert (object && object->image && filename);
 
   if (object->image->filename != NULL)
-    free (object->image->filename);
+    {
+      free (object->image->filename);
+    }
 
-  object->image->filename = malloc (sizeof (char) * (strlen (filename) + 1));
-
+  object->image->filename = g_strdup (filename);
   if (object->image->filename == NULL)
     {
       error ("OBJECT - set_object_image - Couldn't alloc image FN for %s.",
              object->name);
       return FAILURE;
     }
-
-  strncpy (object->image->filename, filename, (strlen (filename) + 1));
-
-  /* Copy everything else. */
 
   object->image->image_x = image_x;
   object->image->image_y = image_y;
@@ -253,23 +225,7 @@ get_object_coordinates (object_t *object,
                         int32_t *y_pointer,
                         reference_t reference)
 {
-  /* Sanity checking. */
-
-  if (object == NULL)
-    {
-      error ("OBJECT - get_object_coordinates - Tried to get coords of NULL object.");
-      return FAILURE;
-    }
-
-  if (object->image == NULL)
-    {
-      error ("OBJECT - get_object_coordinates - Object %s has no image dataset.", 
-             object->name);
-      return FAILURE;
-    }
-
-  /* End sanity checking. */
-
+  g_assert (object && object->image);
 
   *x_pointer = object->image->map_x;
   *y_pointer = object->image->map_y;
@@ -282,38 +238,19 @@ get_object_coordinates (object_t *object,
 
 
 /* Set the object's co-ordinates on map. */
-
 bool_t
 set_object_coordinates (object_t *object,
                         int32_t x,
                         int32_t y,
                         reference_t reference)
 {
-  /* Sanity checking. */
-
-  if (object == NULL)
-    {
-      error ("OBJECT - set_object_coordinates - Tried to get coords of NULL object.");
-      return FAILURE;
-    }
-
-  if (object->image == NULL)
-    {
-      error ("OBJECT - set_object_coordinates - Object %s has no image dataset.", 
-             object->name);
-      return FAILURE;
-    }
-
-  /* End sanity checking. */
-
+  g_assert (object && object->image);
 
   /* No point setting coordinates if they're the same. */
 
   if (object->image->map_x == x
       && object->image->map_y == y)
     return SUCCESS;
-
-  /* Set the coordinates. */
 
   object->image->map_x = x;
   object->image->map_y = y;
@@ -337,27 +274,11 @@ set_object_coordinates (object_t *object,
 
 
 /* Mark an object as being dirty on the given map view. */
-
 bool_t
 set_object_dirty (object_t *object,
                   mapview_t *mapview)
 {
-  /* Sanity checking. */
-
-  if (object == NULL)
-    {
-      error ("OBJECT - set_object_dirty - Tried to set a NULL object dirty.");
-      return FAILURE;
-    }
-
-  if (mapview == NULL)
-    {
-      error ("OBJECT - set_object_dirty - Tried dirtying on a NULL mapview.");
-      return FAILURE;
-    }
-
-  /* End sanity checking. */
-
+  g_assert (object && mapview);
 
   /* If we're already dirty, no need to run this again. */
 
@@ -393,15 +314,6 @@ set_object_dirty (object_t *object,
         return FAILURE;
 
       object->is_dirty = TRUE;
-
-      /* Mark the nearby tiles.
-
-      mark_dirty_rect (mapview,
-                       object->image->map_x, 
-                       object->image->map_y, 
-                       object->image->width, 
-                       object->image->height); */
-
     }
 
   return SUCCESS;
@@ -429,7 +341,6 @@ free_object (void *object)
 
 
 /* Remove an object from the object table. */
-
 bool_t
 delete_object (const char object_name[])
 {
@@ -438,65 +349,66 @@ delete_object (const char object_name[])
 
 
 /* Retrieve an object. */
-
 object_t *
 get_object (const char object_name[])
 {
-  return g_hash_table_lookup(sg_objects, object_name);
+  return g_hash_table_lookup (sg_objects, object_name);
 } 
 
+
+/* Check to see whether the given object falls within the given dirty
+ * rectangle and, if so, mark the object as dirty (if it has not been
+ * marked before).
+ */
+void
+dirty_object_test (gpointer key_ptr,
+                   gpointer object_ptr,
+                   gpointer rect_ptr)
+{
+  object_t *object = (object_t *) object_ptr;
+  dirty_rectangle_t *rect = (dirty_rectangle_t *) rect_ptr;
+
+  (void) key_ptr; /* Avoid unused warnings */
+
+  g_assert (object && rect);
+
+  if (object->is_dirty)
+    {
+      /* No need to dirty an object twice. */
+      return;
+    }
+    
+  dirty_object_test_post_check (object, rect);
+}
 
 
 /* Check to see whether the given object falls within the given dirty
  * rectangle and, if so, mark the object as dirty.
  */
-
-void
-dirty_object_test (void *key, void *object, void *rect)
+static void
+dirty_object_test_post_check (object_t *object,
+                              dirty_rectangle_t *rect)
 {
-  (void) key; /* Avoid unused warnings */
-  
-  if (object == NULL)
-    {
-      error ("OBJECT - dirty_object_test - Object has no data.\n");
-    }
-  else if (rect == NULL)
-    {
-      error ("OBJECT - dirty_object_test - Given dirty rect pointer is NULL.\n");
-    }
-  
-  {
-    object_t *objectc = (object_t *) object;
-    if (objectc->is_dirty == TRUE)
-      {
-        /* No need to dirty an object twice. */
-        return;
-      }
-    
-    {
-      dirty_rectangle_t *rectc = (dirty_rectangle_t *) rect;
-      mapview_t *mapview = rectc->parent;
+  mapview_t *mapview = rect->parent;
       
-      int rect_left = rectc->start_x;
-      int rect_top = rectc->start_y;
-      int rect_right = rectc->start_x + rectc->width - 1;
-      int rect_bottom = rectc->start_y + rectc->height - 1;
+  int rect_left = rect->start_x;
+  int rect_top = rect->start_y;
+  int rect_right = rect->start_x + rect->width - 1;
+  int rect_bottom = rect->start_y + rect->height - 1;
       
-      int object_left = objectc->image->map_x;
-      int object_top = objectc->image->map_y;
-      int object_right = objectc->image->map_x + objectc->image->width - 1;
-      int object_bottom = objectc->image->map_y + objectc->image->height - 1;
+  int object_left = object->image->map_x;
+  int object_top = object->image->map_y;
+  int object_right = object->image->map_x + object->image->width - 1;
+  int object_bottom = object->image->map_y + object->image->height - 1;
       
-      /* Use separating axis theorem, sort of, to decide whether the
-       * object rect and the dirty rect intersect.
-       */
-      if ((object_left <= rect_right && object_right > rect_left)
-          && (object_top <= rect_bottom && object_bottom > rect_top))
-        {
-          set_object_dirty (objectc, mapview);
-        }      
-    }
-  }
+  /* Use separating axis theorem, sort of, to decide whether the
+   * object rect and the dirty rect intersect.
+   */
+  if ((object_left <= rect_right && object_right > rect_left)
+      && (object_top <= rect_bottom && object_bottom > rect_top))
+    {
+      set_object_dirty (object, mapview);
+    }      
 }
 
 
