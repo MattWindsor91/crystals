@@ -417,6 +417,15 @@ mark_object_field_location_dirty (object_t *object)
       return;
     }
 
+  /* No point marking a dirty rectangle if the object is currently
+   * invisible.
+   */
+  if (object->image->width == 0
+      || object->image->height == 0)
+    {
+      return;
+    }
+
   mark_dirty_rect (mapview,
                    object->image->map_x, 
                    object->image->map_y, 
