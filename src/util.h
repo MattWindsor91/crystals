@@ -51,6 +51,7 @@
 #define _UTIL_H
 
 #include <stdarg.h>
+#include <string.h>
 
 #include "types.h"  /* Standard types as used in crystals. */
 
@@ -216,6 +217,29 @@ ulong_to_uint16 (unsigned long integer);
 short
 ulong_to_int16 (unsigned long integer);
 
+
+/* ~~ Safe memory allocation */
+
+/**
+ * Malloc some memory and assert that it has been allocated.
+ *
+ * @param size The size, in bytes, of the memory to allocate.
+ *
+ * @return Pointer to the allocated memory
+ */
+void*
+xmalloc (size_t size);
+
+/**
+ * Calloc some memory and assert that it has been allocated.
+ *
+ * @param nmemb The number of elements to allocate
+ * @param size  The amount of memory, in bytes, for each element.
+ *
+ * @return Pointer to the allocated memory
+ */
+void*
+xcalloc (size_t nmemb, size_t size);
 
 /* ~~ Error reporting */
 

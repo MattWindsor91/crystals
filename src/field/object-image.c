@@ -56,8 +56,7 @@
 object_image_t *
 init_object_image (void)
 {
-  object_image_t *image = calloc (1, sizeof (object_image_t));
-  g_assert (image != NULL);
+  object_image_t *image = xcalloc (1, sizeof (object_image_t));
 
   return image;
 }

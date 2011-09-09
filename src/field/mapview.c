@@ -131,12 +131,7 @@ init_mapview (map_t *map)
   g_assert (map->width > 0 && map->height > 0);
   
   {
-    mapview_t *mapview = calloc (1, sizeof (mapview_t));
-    if (mapview == NULL)
-      {
-        error ("MAPVIEW - init_mapview - Couldn't allocate map view.");
-        return NULL;
-      }
+    mapview_t *mapview = xcalloc (1, sizeof (mapview_t));
 
     mapview->map = map;
 
@@ -147,10 +142,8 @@ init_mapview (map_t *map)
     /* There should be at least one tag! */
     g_assert (mapview->num_object_queues != 0);
 
-    mapview->object_queue = calloc (mapview->num_object_queues,
+    mapview->object_queue = xcalloc (mapview->num_object_queues,
                                     sizeof (object_image_t*));
-
-    g_assert (mapview->object_queue != NULL);
 
     /* Set all tiles as dirty. */
     mark_dirty_rect (mapview, 0, 0, map->width * TILE_W, map->height * TILE_H);
@@ -186,8 +179,7 @@ add_object_image (mapview_t *mapview,
 
     /* Now copy the image, if possible. */
     {
-      render_node_t *new_rnode = malloc (sizeof (render_node_t));
-      g_assert (new_rnode != NULL);
+      render_node_t *new_rnode = xmalloc (sizeof (render_node_t));
 
       new_rnode->object = object;
       new_rnode->image = image;
@@ -506,8 +498,7 @@ mark_dirty_rect (mapview_t *mapview,
   g_assert (width > 0 && height > 0);
 
   {
-    dirty_rectangle_t *rect = malloc (sizeof (dirty_rectangle_t));
-    g_assert (rect != NULL);
+    dirty_rectangle_t *rect = xmalloc (sizeof (dirty_rectangle_t));
   
     rect->parent = mapview;
     rect->start_x = start_x;

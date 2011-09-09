@@ -102,8 +102,7 @@ add_object (const char object_name[],
 
   /* Try to allocate an object. */
   {
-    object_t *object = malloc (sizeof (object_t));
-    g_assert (object != NULL);
+    object_t *object = xmalloc (sizeof (object_t));
 
     object->image = init_object_image ();
     g_assert (object->image != NULL);

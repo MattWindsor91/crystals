@@ -99,15 +99,11 @@ init_map (map_t *map,
 
   /* Allocate tag array. */
 
-  map->layer_tags = calloc ((size_t) max_layer_index + 1, sizeof (layer_tag_t));
-  g_assert (map->layer_tags != NULL);
-
+  map->layer_tags = xcalloc ((size_t) max_layer_index + 1, sizeof (layer_tag_t));
 
   /* Allocate properties array. */
 
-  map->zone_properties = calloc ((size_t) max_zone_index + 1, sizeof (zone_prop_t));
-  g_assert (map->zone_properties != NULL);
-
+  map->zone_properties = xcalloc ((size_t) max_zone_index + 1, sizeof (zone_prop_t));
 
   allocate_plane_arrays (map);
   allocate_planes (map);
@@ -122,16 +118,11 @@ init_map (map_t *map,
 static void
 allocate_plane_arrays (map_t *map)
 {
-  map->value_planes = calloc ((size_t) map->max_layer_index + 1,
+  map->value_planes = xcalloc ((size_t) map->max_layer_index + 1,
                               sizeof (layer_value_t *));
 
-  g_assert (map->value_planes != NULL);
-
-
-  map->zone_planes = calloc ((size_t) map->max_layer_index + 1,
+  map->zone_planes = xcalloc ((size_t) map->max_layer_index + 1,
                              sizeof (layer_zone_t *));
-
-  g_assert (map->zone_planes != NULL);
 }
 
 
@@ -142,15 +133,11 @@ allocate_planes (map_t *map)
   int i;
   for (i = 0; i <= map->max_layer_index; i++)
     {
-      map->value_planes[i] = calloc ((size_t) map->width * map->height,
+      map->value_planes[i] = xcalloc ((size_t) map->width * map->height,
                                      sizeof (layer_value_t));
 
-      g_assert (map->value_planes[i] != NULL);
-
-      map->zone_planes[i] = calloc ((size_t) map->width * map->height,
+      map->zone_planes[i] = xcalloc ((size_t) map->width * map->height,
                                     sizeof (layer_zone_t));
-
-      g_assert (map->zone_planes[i] != NULL);
     }
 }
 

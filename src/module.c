@@ -65,9 +65,7 @@ init_modules (const char *path)
 {
   g_assert (g_module_supported () == TRUE);
   
-  g_modules.path = malloc (sizeof (char) * (strlen (path) + 1));
-
-  g_assert (g_modules.path != NULL);
+  g_modules.path = xmalloc (sizeof (char) * (strlen (path) + 1));
 
   strncpy (g_modules.path, path, strlen (path) + 1);
   
@@ -96,10 +94,8 @@ get_module_path (const char* module, const char* modulespath, char** out)
 {
   char *path;
 
-  path = calloc (strlen (modulespath) + strlen (module)
+  path = xcalloc (strlen (modulespath) + strlen (module)
                  + 1, sizeof (char));
-
-  g_assert (path != NULL);
 
   strncpy (path, modulespath, strlen (modulespath));
   strncat (path, module, strlen (module));

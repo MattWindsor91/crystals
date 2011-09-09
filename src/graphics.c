@@ -128,10 +128,8 @@ get_absolute_path (const char path[])
       error ("GRAPHICS - get_absolute_path - No graphics_path in config.");
       error ("Using default path instead.");
 
-      absolute_path = calloc (strlen (path) + strlen (DEFGFXPATH) + 1, 
+      absolute_path = xcalloc (strlen (path) + strlen (DEFGFXPATH) + 1, 
                                sizeof (char));
-
-      g_assert (absolute_path != NULL);
 
       strncat (absolute_path, DEFGFXPATH, strlen (DEFGFXPATH));
     }
@@ -139,10 +137,8 @@ get_absolute_path (const char path[])
     {
       /* Using configuration path. */
 
-      absolute_path = calloc (strlen (path) + strlen (root_path) + 1, 
+      absolute_path = xcalloc (strlen (path) + strlen (root_path) + 1, 
                                sizeof (char));
-
-      g_assert (absolute_path != NULL);
 
       strncat (absolute_path, root_path, strlen (root_path));
     }

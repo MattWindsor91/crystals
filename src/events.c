@@ -92,9 +92,7 @@ init_events (void)
 
   (*g_modules.event.register_release_handle) (event_release);
 
-  sg_event_base = calloc (1, sizeof (struct event_base));
-
-  g_assert (sg_event_base != NULL);
+  sg_event_base = xcalloc (1, sizeof (struct event_base));
 
   return SUCCESS;
 }
@@ -114,9 +112,7 @@ process_events (void)
 event_callback_t *
 install_callback (void (*function) (event_t *event), event_type_t types)
 {   
-  event_callback_t *callback = malloc (sizeof (event_callback_t));
-
-  g_assert (callback != NULL);
+  event_callback_t *callback = xmalloc (sizeof (event_callback_t));
 
   callback->function = function;
   callback->types = types;

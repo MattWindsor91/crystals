@@ -250,10 +250,9 @@ read_uint16 (FILE *file);
 map_t *
 load_map (const char path[])
 {
-  map_t *map = malloc (sizeof (map_t));
+  map_t *map = xmalloc (sizeof (map_t));
   FILE *file = fopen (path, "rb");
 
-  g_assert (map != NULL);
   g_assert (file != NULL);
 
   /* Should this be an assertion? */
@@ -458,8 +457,7 @@ read_map_zone_properties (FILE *file, map_t *map)
 static bool_t
 check_magic_sequence (FILE *file, const char sequence[])
 {
-  char *check = calloc (strlen (sequence) + 1, sizeof (char));
-  g_assert (check != NULL);
+  char *check = xcalloc (strlen (sequence) + 1, sizeof (char));
 
   fread (check, sizeof (char), strlen (sequence), file);
 

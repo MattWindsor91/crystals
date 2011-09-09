@@ -86,9 +86,7 @@ get_module_root_path (char **module_path)
 
       /* Copy the default path to the pointer. */
 
-      *module_path = calloc (strlen (DEFMODPATH) + 1, sizeof (char));
-
-      g_assert (*module_path != NULL);
+      *module_path = xcalloc (strlen (DEFMODPATH) + 1, sizeof (char));
 
       strncpy (*module_path, DEFMODPATH, strlen (DEFMODPATH) + 1);
     }
@@ -99,7 +97,7 @@ get_module_root_path (char **module_path)
 
 /* Safely convert a long integer to a 16-bit unsigned integer. */
 
-uint16_t
+inline uint16_t
 long_to_uint16 (long integer)
 {
   g_assert (integer >= 0);
@@ -111,7 +109,7 @@ long_to_uint16 (long integer)
 
 /* Safely convert a long integer to a signed 16_bit integer. */
 
-int16_t
+inline int16_t
 long_to_int16 (long integer)
 {
   g_assert (integer >= INT16_MIN);
@@ -123,7 +121,7 @@ long_to_int16 (long integer)
 
 /* Safely convert an unsigned long integer to an unsigned 16-bit integer. */
 
-uint16_t
+inline uint16_t
 ulong_to_uint16 (unsigned long integer)
 {
   g_assert (integer <= UINT16_MAX);
@@ -134,7 +132,7 @@ ulong_to_uint16 (unsigned long integer)
 
 /* Safely convert an unsigned long integer to a signed 16-bit integer. */
 
-int16_t
+inline int16_t
 ulong_to_int16 (unsigned long integer)
 {
   g_assert (integer <= INT16_MAX);
@@ -142,6 +140,30 @@ ulong_to_int16 (unsigned long integer)
   return (int16_t) integer;
 }
 
+
+/* ~~ Memory management */
+
+/* Malloc and check */
+inline void*
+xmalloc (size_t size)
+{
+  void *memory = malloc (size);
+  
+  g_assert (memory);
+
+  return memory;
+}
+
+/* Calloc and check */
+inline void*
+xcalloc (size_t nmemb, size_t size)
+{
+  void *memory = calloc (nmemb, size);
+
+  g_assert (memory);
+
+  return memory;
+}
 
 /* ~~ Error reporting */
 
