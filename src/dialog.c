@@ -179,8 +179,9 @@ dlg_content_next (dlg_t *dlg, uint8_t choice)
 req_t*
 dlg_requirement_next (dlg_t *dlg)
 {
+  req_t *req = NULL;
   if (dlg->req_next < dlg->requirements->len)
-    req_t *req = g_ptr_array_index (dlg->requirements, dlg->req_next);
+    req = g_ptr_array_index (dlg->requirements, dlg->req_next);
   else 
     return NULL;
 
