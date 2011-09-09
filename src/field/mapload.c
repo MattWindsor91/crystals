@@ -61,177 +61,362 @@ const char *MAGIC_ZONES      = "ZONE";
 const char *MAGIC_PROPERTIES = "PROP";
 
 
-/* -- DEFINITIONS -- */
+/* -- STATIC DECLARATIONS -- */
 
 /**
- * Read a map from a file using the Crystals map format.
+ * Parses the given file as a map file and attempts to return a map
+ * created from its contents.
  *
- * The Crystals map format is detailed in the design document,
- * "The Crystals Map Format", available with the Crystals source.
+ * @param file  The file to read from.
+ * @param map   The map to populate with the read data.
  *
- * @param path  The path to the file to open.
- *
- * @return  the new map, or NULL if an error occurred.
+ * @return      the new map, or NULL if an error occurred.
  */
-
-map_t *
-load_map (const char path[])
-{
-  FILE *file = fopen (path, "rb");
-  if (file == NULL)
-    {
-      error ("MAPLOAD - read_map - Couldn't open file.");
-      return NULL;
-    }
-
-  {
-    map_t *map = read_map_header (file);
-    if (map == NULL)
-      {
-        error ("MAPLOAD - load_map - Header read failed.");
-        return NULL;
-      }
-
-    if (read_layer_tags (file, map) == FAILURE)
-      {
-        error ("MAPLOAD - load_map - Layer tag read failed.");
-        free_map (map);
-        return NULL;
-      }
-
-    if (read_map_value_planes (file, map) == FAILURE)
-      {
-        error ("MAPLOAD - load_map - Value planes failed.");
-        free_map (map);
-        return NULL;
-      }
-
-    if (read_map_zone_planes (file, map) == FAILURE)
-      {
-        error ("MAPLOAD - load_map - Zone planes read failed.");
-        free_map (map);
-        return NULL;
-      }
-
-    if (read_map_zone_properties (file, map) == FAILURE)
-      {
-        error ("MAPLOAD - load_map - Zone properties read failed.");
-        free_map (map);
-        return NULL;
-      }
-
-    return map;
-  }
-}
+static bool_t
+parse_map_file (FILE *file, map_t *map); 
 
 
 /**
- * Read the map header from the file and allocate a new map from it.
+ * Reads the map header from the file and allocate a new map from it.
  *
  * @param file  The file to read from.
  *
- * @return  the new map, or NULL if an error occurred.
+ * @return      TRUE for success, FALSE otherwise.
  */
-
-map_t *
-read_map_header (FILE *file)
-{
-  if (file == NULL)
-    return NULL;
-
-  if (check_magic_sequence (file, MAGIC_HEADER) == FAILURE)
-    {
-      error ("MAPLOAD - read_header - Not a map file.");
-      return NULL;
-    }
-  else if (read_uint16 (file) != MAP_VERSION)
-    {
-      error ("MAPLOAD - read_header - Incorrect map format version.");
-      return NULL;
-    }
-
-  {
-    dimension_t map_width = read_uint16 (file); /* In tiles */
-    dimension_t map_height = read_uint16 (file); /* In tiles */
-    layer_index_t max_layer_index = read_uint16 (file);
-    zone_index_t max_zone_index = read_uint16 (file);
-
-    /* Ignore unused bytes. */
-    fgetc (file);
-    fgetc (file);
-
-    return init_map (map_width,
-                     map_height, 
-                     max_layer_index, 
-                     max_zone_index);
-  }
-}
+static bool_t
+read_map_header (FILE *file, map_t *map);
 
 
 /**
- * Read the map layer tags from a file.
+ * Reads the map header contents from the file.
+ *
+ * @param file  The file pointer to read from.
+ * @param map   The map to populate with the read data.
+ */
+static bool_t
+read_map_header_contents (FILE *file, map_t *map);
+
+
+/**
+ * Reads the map layer tags chunk from a file.
  *
  * @param file  The file pointer to read from.
  * @param map   The map to populate with the read data.
  *
- * @return  SUCCESS for success, FAILURE otherwise.
+ * @return      TRUE for success, FALSE otherwise.
  */
+static bool_t
+read_layer_tags_chunk (FILE *file, map_t *map);
 
+
+/**
+ * Reads the map layer tags from a file.
+ *
+ * @param file  The file pointer to read from.
+ * @param map   The map to populate with the read data.
+ *
+ * @return      TRUE for success, FALSE otherwise.
+ */
+static void
+read_layer_tags (FILE *file, map_t *map);
+
+
+/**
+ * Reads the map value planes chunk from a file.
+ *
+ * @param file  The file pointer to read from.
+ * @param map   The map to populate with the read data.
+ *
+ * @return      TRUE for success, FALSE otherwise.
+ */
+static bool_t
+read_map_value_planes_chunk (FILE *file, map_t *map);
+
+
+/**
+ * Reads the map value planes from a file.
+ *
+ * @param file  The file pointer to read from.
+ * @param map   The map to populate with the read data.
+ *
+ * @return      TRUE for success, FALSE otherwise.
+ */
+static bool_t
+read_map_value_planes (FILE *file, map_t *map);
+
+
+/**
+ * Reads a map value plane from a file.
+ *
+ * Each plane corresponds to one layer of the map.
+ *
+ * @param file   The file pointer to read from.
+ * @param map    The map to populate with the read data.
+ * @param layer  The index of the layer being read.
+ *
+ * @return  TRUE for success, FALSE otherwise.
+ */
+static bool_t
+read_map_value_plane (FILE *file, map_t *map, layer_index_t layer);
+
+
+/**
+ * Reads the map zone planes chunk from a file.
+ *
+ * @param file  The file pointer to read from.
+ * @param map   The map to populate with the read data.
+ *
+ * @return  TRUE for success, FALSE otherwise.
+ */
+static bool_t
+read_map_zone_planes_chunk (FILE *file, map_t *map);
+
+
+/**
+ * Reads the map zone planes from a file.
+ *
+ * @param file  The file pointer to read from.
+ * @param map   The map to populate with the read data.
+ *
+ * @return  TRUE for success, FALSE otherwise.
+ */
+static bool_t
+read_map_zone_planes (FILE *file, map_t *map);
+
+
+/**
+ * Read layer zone data from a file.
+ *
+ * @param file   The file pointer to read from.
+ * @param map    The map to populate with the read data.
+ * @param layer  The index of the layer being read.
+ *
+ * @return  TRUE for success, FALSE otherwise.
+ */
+static bool_t
+read_layer_zone_plane (FILE *file, map_t *map, layer_index_t layer);
+
+
+/**
+ * Read the zone properties chunk from a file.
+ *
+ * @param file  The file pointer to read from.
+ * @param map   The map to populate with the read data.
+ *
+ * @return  TRUE for success, FALSE otherwise.
+ */
+static bool_t
+read_map_zone_properties_chunk (FILE *file, map_t *map);
+
+
+/**
+ * Read the properties of each zone in the map from a file.
+ *
+ * @param file  The file pointer to read from.
+ * @param map   The map to populate with the read data.
+ *
+ * @return  TRUE for success, FALSE otherwise.
+ */
+static bool_t
+read_map_zone_properties (FILE *file, map_t *map);
+
+
+/**
+ * Check that a magic sequence is present.
+ *
+ * @param file      The file pointer to read from.
+ * @param sequence  The byte sequence (one of the constant sequences from Map).
+ *
+ * @return          TRUE if it is present, FALSE otherwise.
+ */
+static bool_t
+check_magic_sequence (FILE *file, const char sequence[]);
+
+
+/**
+ * Read an unsigned 16-bit integer (0-65535) from two bytes in big-endian format.
+ *
+ * @param  file  The file to read from.
+ *
+ * @return       the unsigned 16-bit integer.
+ */
+static uint16_t
+read_uint16 (FILE *file);
+
+
+/* -- DEFINITIONS -- */
+
+/* Reads a map from a file using the Crystals map format. */
+map_t *
+load_map (const char path[])
+{
+  map_t *map = malloc (sizeof (map_t));
+  FILE *file = fopen (path, "rb");
+
+  if (map == NULL)
+    {
+      error ("MAPLOAD - load_map - Couldn't allocate map.");
+      return NULL;
+    }
+  else if (file == NULL)
+    {
+      error ("MAPLOAD - load_map - Couldn't allocate file.");
+      return NULL;
+    }
+
+  if (parse_map_file (file, map) == FAILURE)
+    {
+      error ("MAPLOAD - load_map - Map load failed.");
+      free_map (map);
+      map = NULL;
+    }
+  
+  fclose (file);
+
+  return map;
+}
+
+
+/* Parses the given file as a map file and attempts to return a map
+ * created from its contents.
+ */
+static bool_t
+parse_map_file (FILE *file, map_t *map)
+{
+  if (read_map_header (file, map) == FAILURE)
+    {
+      error ("MAPLOAD - load_map - Header read failed.");
+      return FAILURE;
+    }
+  
+  if (read_layer_tags_chunk (file, map) == FAILURE)
+    {
+      error ("MAPLOAD - load_map - Layer tags read failed.");
+      free_map (map);
+      return FAILURE;
+    }
+  
+  if (read_map_value_planes_chunk (file, map) == FAILURE)
+    {
+      error ("MAPLOAD - load_map - Value planes read failed.");
+      free_map (map);
+      return FAILURE;
+    }
+  
+  if (read_map_zone_planes_chunk (file, map) == FAILURE)
+    {
+      error ("MAPLOAD - load_map - Zone planes read failed.");
+      free_map (map);
+      return FAILURE;
+    }
+  
+  if (read_map_zone_properties_chunk (file, map) == FAILURE)
+    {
+      error ("MAPLOAD - load_map - Zone properties read failed.");
+      free_map (map);
+      return FAILURE;
+    }
+
+  return SUCCESS;
+}
+
+
+/* Reads the map header from the file. */
+static bool_t
+read_map_header (FILE *file, map_t *map)
+{
+  if (check_magic_sequence (file, MAGIC_HEADER) == FAILURE)
+    {
+      error ("MAPLOAD - read_header - Not a map file.");
+      return FAILURE;
+    }
+  else if (read_uint16 (file) != MAP_VERSION)
+    {
+      error ("MAPLOAD - read_header - Incorrect map format version.");
+      return FAILURE;
+    }
+
+  return read_map_header_contents (file, map);
+}
+
+
+/* Reads the map header contents from the file. */
+static bool_t
+read_map_header_contents (FILE *file, map_t *map)
+{
+  dimension_t map_width = read_uint16 (file); /* In tiles */
+  dimension_t map_height = read_uint16 (file); /* In tiles */
+  layer_index_t max_layer_index = read_uint16 (file);
+  zone_index_t max_zone_index = read_uint16 (file);
+  
+  /* Ignore unused bytes. */
+  fgetc (file);
+  fgetc (file);
+
+  return init_map (map,
+                   map_width,
+                   map_height, 
+                   max_layer_index, 
+                   max_zone_index);
+}
+
+
+/* Read the map layer tags chunk from a file.  */
 bool_t
-read_layer_tags (FILE *file, map_t *map)
+read_layer_tags_chunk (FILE *file, map_t *map)
 {
   if (check_magic_sequence (file, MAGIC_TAGS) == FAILURE)
     {
       return FAILURE;
     }
 
-  {
-    layer_index_t l;
-    for (l = 0; l <= get_max_layer (map); l++)
-      {
-        set_layer_tag (map, l, read_uint16 (file));
-      }
-  }
-
+  read_layer_tags (file, map);
   return SUCCESS;
 }
 
 
-/* Read the map value data from a file. */
+static void
+read_layer_tags (FILE *file, map_t *map)
+{
+  layer_index_t l;
+  for (l = 0; l <= get_max_layer (map); l++)
+    {
+      set_layer_tag (map, l, read_uint16 (file));
+    }
+}
 
-bool_t
-read_map_value_planes (FILE *file, map_t *map)
+
+/* Reads the map value planes chunk from a file. */
+static bool_t
+read_map_value_planes_chunk (FILE *file, map_t *map)
 {
   if (check_magic_sequence (file, MAGIC_VALUES) == FAILURE)
     {
       return FAILURE;
     }
 
-  {
-    layer_index_t l;
-    bool_t result = SUCCESS;
-    for (l = 0; l <= get_max_layer (map) && result == SUCCESS; l++)
-      {
-        result = read_layer_value_plane (file, map, l);
-      }
+  return read_map_value_planes (file, map);
+}
 
-    return result;
-  }
+/* Reads the map value planes from a file. */
+static bool_t
+read_map_value_planes (FILE *file, map_t *map)
+{
+  layer_index_t l;
+  bool_t result = SUCCESS;
+
+  for (l = 0; l <= get_max_layer (map) && result == SUCCESS; l++)
+    {
+      result = read_map_value_plane (file, map, l);
+    }
+
+  return result;
 }
 
 
-/**
- * Read layer value data from a file.
- *
- * @param file   The file pointer to read from.
- * @param map    The map to populate with the read data.
- * @param layer  The index of the layer being read.
- *
- * @return       SUCCESS for success, FAILURE otherwise.
- */
-
-bool_t
-read_layer_value_plane (FILE *file, map_t *map, layer_index_t layer)
+/* Reads a map value plane from a file. */
+static bool_t
+read_map_value_plane (FILE *file, map_t *map, layer_index_t layer)
 {
   dimension_t x;
   dimension_t y;
@@ -248,47 +433,37 @@ read_layer_value_plane (FILE *file, map_t *map, layer_index_t layer)
 }
 
 
-/**
- * Read the map zone data from a file.
- *
- * @param file  The file pointer to read from.
- * @param map     The map to populate with the read data.
- *
- * @return  SUCCESS for success, FAILURE otherwise.
- */
-
-bool_t
-read_map_zone_planes (FILE *file, map_t *map)
+/* Reads the map zone plane chunk from a file. */
+static bool_t
+read_map_zone_planes_chunk (FILE *file, map_t *map)
 {
   if (check_magic_sequence (file, MAGIC_ZONES) == FAILURE)
     {
       return FAILURE;
     }
 
-  {
-    layer_index_t l;
-    bool_t result = SUCCESS;
-    for (l = 0; l <= get_max_layer (map) && result == SUCCESS; l++)
-      {
-        result = read_layer_zone_plane (file, map, l);
-      }
-
-    return result;
-  }
+  return read_map_zone_planes (file, map);
 }
 
 
-/**
- * Read layer zone data from a file.
- *
- * @param file   The file pointer to read from.
- * @param map    The map to populate with the read data.
- * @param layer  The index of the layer being read.
- *
- * @return  SUCCESS for success, FAILURE otherwise.
- */
+/* Reads the map zone data from a file. */
+static bool_t
+read_map_zone_planes (FILE *file, map_t *map)
+{
+  layer_index_t l;
+  bool_t result = SUCCESS;
 
-bool_t
+  for (l = 0; l <= get_max_layer (map) && result == SUCCESS; l++)
+    {
+      result = read_layer_zone_plane (file, map, l);
+    }
+
+  return result;
+}
+
+
+/* Reads layer zone data from a file. */
+static bool_t
 read_layer_zone_plane (FILE *file, map_t *map, unsigned short layer)
 {
   dimension_t x;
@@ -306,47 +481,36 @@ read_layer_zone_plane (FILE *file, map_t *map, unsigned short layer)
 }
 
 
-/**
- * Read the properties of each zone in the map from a file.
- *
- * @param file    The file pointer to read from.
- * @param map     The map to populate with the read data.
- *
- * @return  SUCCESS for success, FAILURE otherwise.
- */
-
-bool_t
-read_map_zone_properties (FILE *file, map_t *map)
+/* Reads the zone properties chunk from a file. */
+static bool_t
+read_map_zone_properties_chunk (FILE *file, map_t *map)
 {
   if (check_magic_sequence (file, MAGIC_PROPERTIES) == FAILURE)
     {
       return FAILURE;
     }
 
-  {
-    zone_index_t i;
-    bool_t result = SUCCESS;
-
-    for (i = 0; i <= get_max_zone (map) && result == SUCCESS; i++)
-      {
-        result = set_zone_properties (map, i, read_uint16 (file));
-      }
-
-    return SUCCESS;
-  }
+  return read_map_zone_properties (file, map);
 }
 
 
-/**
- * Check that a magic sequence is present.
- *
- * @param file      The file pointer to read from.
- * @param sequence  The byte sequence (one of the constant sequences in mapload).
- *
- * @return          SUCCESS if it is present, FAILURE otherwise.
- */
+/* Reads the zone properties from a file. */
+static bool_t
+read_map_zone_properties (FILE *file, map_t *map)
+{
+  zone_index_t i;
+  bool_t result = SUCCESS;
+  for (i = 0; i <= get_max_zone (map) && result == SUCCESS; i++)
+    {
+      result = set_zone_properties (map, i, read_uint16 (file));
+    }
+  
+  return SUCCESS;
+}
 
-bool_t
+
+/* Checks that a magic sequence is present. */
+static bool_t
 check_magic_sequence (FILE *file, const char sequence[])
 {
   char *check = calloc (strlen (sequence) + 1, sizeof (char));
@@ -358,33 +522,22 @@ check_magic_sequence (FILE *file, const char sequence[])
 
   fread (check, sizeof (char), strlen (sequence), file);
 
-  {
-    size_t i;
-    for (i = 0; i < strlen (sequence); i++)
-      {
-        if (check[i] != sequence[i])
-          {
-            free (check);
-            error ("MAPLOAD - check_magic_sequence - Magic sequence not present.");
-            return FAILURE;
-          }
-      }
-  }
+  if (strcmp (sequence, check) != 0)
+    {
+      free (check);
+      error ("MAPLOAD - check_magic_sequence - Magic sequence not present.");
+      return FAILURE;
+    }
 
   free (check);
   return SUCCESS;
 }
 
 
-/**
- * Read an unsigned 16-bit integer (0-65535) from two bytes in big-endian format.
- *
- * @param   file  The file to read from.
- *
- * @return  the unsigned 16-bit integer.
+/* Reads an unsigned 16-bit integer (0-65535) from two bytes in 
+ * big-endian format.
  */
-
-uint16_t
+static uint16_t
 read_uint16 (FILE *file)
 {
   uint16_t ushort = 0;

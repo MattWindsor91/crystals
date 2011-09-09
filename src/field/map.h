@@ -112,10 +112,14 @@ extern struct map *g_map; /**< The map currently in use. (FIXME: is
 /**
  * Initialise a map.
  *
- * This allocates enough space for a map with the specified width,
- * height and number of layers, returning a blank map that can then
- * be populated with tile information
+ * In addition to populating the map with the given quantities, this
+ * allocates enough internal space in the map structure for a map with
+ * the specified width, height and number of layers, returning a blank
+ * map that can then be populated with tile information.
  *
+ * @param map              The map to initialise.  The map should not
+ *                         have been previously initialised, but must
+ *                         have been malloc'd.
  * @param width            The width of the map, in tiles.
  * @param height           The height of the map, in tiles.
  * @param max_layer_index  The maximum layer index in the map
@@ -123,12 +127,12 @@ extern struct map *g_map; /**< The map currently in use. (FIXME: is
  * @param max_zone_index   The maximum zone index in the map
  *                         (number of zones to reserve, minus one).
  *
- * @return  a pointer to the map structure, or NULL if an error occurred
- *          during initialisation.
+ * @return  SUCCESS if the map initialised successfully, FAILURE
+ *          otherwise.  You should call free_map in the latter case.
  */
-
-map_t *
-init_map (dimension_t width,
+bool_t
+init_map (map_t *map,
+          dimension_t width,
           dimension_t height,
           layer_index_t max_layer_index,
           zone_index_t max_zone_index);
@@ -143,7 +147,6 @@ init_map (dimension_t width,
  *
  * @return       SUCCESS if the operation succeeded, FAILURE otherwise.
  */
-
 bool_t
 set_layer_tag (map_t *map, layer_index_t layer, layer_tag_t tag);
 

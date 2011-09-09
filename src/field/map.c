@@ -52,38 +52,41 @@
 
 const char FN_TILESET[] = "tiles.png";
 
+/* -- STATIC DEFINITIONS -- */
 
-/* Allocate and initialise a map. */
+/**
+ * Allocate arrays to contain layer planes in the map.
+ *
+ * @param map  The map to populate.
+ */
+static void
+allocate_plane_arrays (map_t *map);
 
-map_t *
-init_map (dimension_t width,
+
+/**
+ * Allocate arrays to contain layer planes in the map.
+ *
+ * @param map  The map to populate.
+ */
+static void
+allocate_planes (map_t *map);
+
+
+/* -- DECLARATIONS -- */
+
+/* Initialise a map. */
+bool_t
+init_map (map_t *map,
+          dimension_t width,
           dimension_t height,
           layer_index_t max_layer_index,
           zone_index_t max_zone_index)
 {
-  map_t *map;
-  unsigned int i;
-
-
-  /* Sanity checking. */
-
   if (width == 0 || height == 0)
     {
       error ("MAP - init_map - Given a zero width or height", width, height);
-      return NULL;
+      return FAILURE;
     }
-
-  /* End sanity checking. */
-
-
-  map = malloc (sizeof (map_t));
-
-  if (map == NULL)
-    {
-      error ("MAP - init_map - Map allocation failed.");
-      return NULL;
-    }
-
 
   /* Set parameters and nullify pointers. */
 
@@ -101,70 +104,75 @@ init_map (dimension_t width,
   /* Allocate tag array. */
 
   map->layer_tags = calloc ((size_t) max_layer_index + 1, sizeof (layer_tag_t));
-
   if (map->layer_tags == NULL)
     {
       error ("MAP - init_map - Map tag array allocation failed.");
-      free_map (map);
-      return NULL;
+      return FAILURE;
     }
 
 
   /* Allocate properties array. */
 
   map->zone_properties = calloc ((size_t) max_zone_index + 1, sizeof (zone_prop_t));
-
   if (map->zone_properties == NULL)
     {
       error ("MAP - init_map - Map zone property array allocation failed.");
-      free_map (map);
-      return NULL;
+      return FAILURE;
     }
 
 
-  /* Allocate layer slots in planes. */
+  allocate_plane_arrays (map);
+  allocate_planes (map);
 
-  map->value_planes = calloc ((size_t) max_layer_index + 1, sizeof (layer_value_t*));
+  return SUCCESS;
+}
+
+
+/* -- STATIC DEFINITIONS -- */
+
+/* Allocate arrays to contain layer planes in the map. */
+static void
+allocate_plane_arrays (map_t *map)
+{
+  map->value_planes = calloc ((size_t) map->max_layer_index + 1,
+                              sizeof (layer_value_t *));
 
   if (map->value_planes == NULL)
     {
-      error ("MAP - init_map - Map value plane array allocation failed.");
-      free_map (map);
-      return NULL;
+      fatal ("MAP - init_map - Map value plane array allocation failed.");
     }
 
 
-  map->zone_planes = calloc ((size_t) max_layer_index + 1, sizeof (layer_zone_t*));
-
+  map->zone_planes = calloc ((size_t) map->max_layer_index + 1,
+                             sizeof (layer_zone_t *));
   if (map->zone_planes == NULL)
     {
-      error ("MAP - init_map - Map zone plane array allocation failed.");
-      free_map (map);
-      return NULL;
+      fatal ("MAP - init_map - Map zone plane array allocation failed.");
     }
+}
 
 
-  /* Allocate individual planes for the layers. */
-
-  for (i = 0; i <= max_layer_index; i++)
+/* Allocate planes for each layer in the map. */
+static void
+allocate_planes (map_t *map)
+{
+  int i;
+  for (i = 0; i <= map->max_layer_index; i++)
     {
-      map->value_planes[i] = calloc ((size_t) width * height, sizeof (layer_value_t));
+      map->value_planes[i] = calloc ((size_t) map->width * map->height,
+                                     sizeof (layer_value_t));
       if (map->value_planes[i] == NULL)
         {
-          error ("MAP - init_map - Map value plane allocation failed for layer %d.", i);
-          free_map (map);
+          fatal ("MAP - allocate_planes - Map value plane allocation failed for layer %d.", i);
         }
 
-      map->zone_planes[i] = calloc ((size_t) width * height, sizeof (layer_zone_t));
+      map->zone_planes[i] = calloc ((size_t) map->width * map->height,
+                                    sizeof (layer_zone_t));
       if (map->zone_planes[i] == NULL)
         {
-          error ("MAP - init_map - Map zone plane allocation failed for layer %d.", i);
-          free_map (map);
+          fatal ("MAP - allocate_planes - Map zone plane allocation failed for layer %d.", i);
         }
-
     }
-
-  return map;
 }
 
 
