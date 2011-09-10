@@ -41,12 +41,7 @@
  *  @brief    Game state machine.
  */
 
-#include <stdlib.h>
-
-#include "util.h"
-#include "state.h"
-
-#include "field/field.h"
+#include "crystals.h"
 
 
 /* -- STATIC GLOBAL VARIABLES -- */

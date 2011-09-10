@@ -43,20 +43,7 @@
  */
 
 
-#include <stdlib.h>
-#include <string.h>
-
-#include "../util.h"
-#include "../events.h"
-#include "../state.h"
-#include "../graphics.h" /* Temporary */
-
-#include "field.h"
-#include "map.h"
-#include "mapload.h"
-#include "mapview.h"
-#include "object.h"
-#include "object-api.h"
+#include "../crystals.h"
 
 
 /* -- STATIC GLOBAL VARIABLES -- */

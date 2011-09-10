@@ -42,19 +42,7 @@
  * @brief    Main functions.
  */
 
-
-#include <stdlib.h>
-#include <string.h>
-#include <stdio.h>
-
-#include "main.h"
-#include "util.h"
-#include "state.h"
-#include "parser.h"
-#include "module.h"
-#include "events.h"
-#include "graphics.h"
-#include "bindings/bindings.h"
+#include "crystals.h"
 
 
 /* -- CONSTANTS -- */

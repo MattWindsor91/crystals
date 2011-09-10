@@ -45,7 +45,7 @@
 #ifndef _BINDINGS_H
 #define _BINDINGS_H
 
-#include "../util.h"
+#include "../crystals.h"
 
 /* -- PROTOTYPES -- */
 

@@ -42,20 +42,7 @@
  */
 
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <limits.h>
-#include <glib-2.0/glib/gstrfuncs.h>
-#include <glib-2.0/glib/gslist.h>
-
-#include "mapview.h"
-#include "map.h"
-#include "object.h"
-#include "object-image.h"
-#include "../util.h"
-#include "../module.h"
-#include "../graphics.h"
+#include "../crystals.h"
 
 
 /* -- CONSTANTS -- */

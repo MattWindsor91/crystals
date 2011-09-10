@@ -42,8 +42,7 @@
  * @brief   Configuration parser.
  */
 
-#include "util.h"
-#include "parser.h"
+#include "crystals.h"
 
 /* Initialise the config system. */
 

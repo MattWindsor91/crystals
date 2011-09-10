@@ -47,10 +47,6 @@
 #define _MAP_H
 
 
-#include <glib.h>
-#include "../types.h"
-
-
 /* -- TYPEDEFS -- */
 
 typedef uint16_t dimension_t;    /**< Type for tile-based map dimensions. */

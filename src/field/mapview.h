@@ -52,11 +52,6 @@
 #ifndef _MAPVIEW_H
 #define _MAPVIEW_H
 
-#include <glib-2.0/glib/gslist.h>
-
-#include "map.h"
-#include "../types.h"
-
 /* -- CONSTANTS -- */
 
 /** Width of one tile, in pixels.
@@ -137,10 +132,6 @@ typedef struct mapview
   
   GSList *dirty_rectangles; /**< Stack of dirty rectangles. */
 } mapview_t;
-
-
-#include "object.h" /* object_t; cannot be included before
-                       structures. */
 
 
 /* -- GLOBAL VARIABLES -- */

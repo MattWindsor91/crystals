@@ -43,12 +43,7 @@
  */
 
 
-#include <stdlib.h>
-
-#include "object-image.h"
-#include "../types.h"
-#include "../util.h"
-#include "../main.h"
+#include "../crystals.h"
 
 
 /* Set all the parameters of an object image node to default values. */

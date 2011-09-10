@@ -43,15 +43,7 @@
  */
 
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <stdarg.h>
-#include <string.h>
-#include <limits.h>
-
-#include "util.h"
-#include "parser.h"
-#include "main.h"
+#include "crystals.h"
 
 
 /* - DEFINITIONS - */

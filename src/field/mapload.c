@@ -42,15 +42,7 @@
  * @brief   Map loader (ported from CrystalsMapEditor).
  */
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-
-#include "mapload.h"
-#include "map.h"
-#include "../util.h"
-#include "../types.h"
-
+#include "../crystals.h"
 
 /* -- CONSTANTS -- */
 

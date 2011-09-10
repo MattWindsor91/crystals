@@ -50,12 +50,6 @@
 #ifndef _UTIL_H
 #define _UTIL_H
 
-#include <stdarg.h>
-#include <string.h>
-
-#include "types.h"  /* Standard types as used in crystals. */
-
-
 /* -- CONSTANTS -- */
 
 /* Windows likes to define these already, so undefine them if present. */

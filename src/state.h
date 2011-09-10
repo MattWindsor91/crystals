@@ -52,9 +52,6 @@
 #ifndef _STATE_H
 #define _STATE_H
 
-#include "util.h"
-
-
 /* -- TYPE DEFINITIONS -- */
 
 typedef unsigned char state_t;  /**< State identifier type. */

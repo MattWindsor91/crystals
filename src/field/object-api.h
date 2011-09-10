@@ -51,10 +51,6 @@
 #ifndef _OBJECT_API_H
 #define _OBJECT_API_H
 
-#include "object.h"
-#include "map.h"
-
-
 /* -- PROTOTYPES -- */
 
 /**

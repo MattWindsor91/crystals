@@ -47,11 +47,6 @@
 #define _GRAPHICS_H
 
 
-/* -- INCLUDES -- */
-
-#include "types.h" /* Types */
-
-
 /* -- TYPEDEFS -- */
 
 typedef void image_t;         /**< Generic image data type. */

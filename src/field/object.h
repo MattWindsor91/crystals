@@ -46,14 +46,6 @@
 #ifndef _OBJECT_H
 #define _OBJECT_H
 
-#include <glib.h> /* GHFunc */
-
-#include "../types.h"      /* Types.         */
-#include "map.h"           /* layer_value_t  */
-#include "object-image.h"  /* object_image_t */
-#include "mapview.h"       /* mapview_t      */
-
-
 /* -- TYPEDEFS -- */
 
 typedef uint8_t reference_t; /**< Reference constant type. */

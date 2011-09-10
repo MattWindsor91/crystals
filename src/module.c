@@ -42,19 +42,11 @@
  *           that make up the engine.
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-#include <gmodule.h> /* Module loading support */
+#include "crystals.h"
 
 #ifdef TESTSUITE
 #include "tests/module.h"
 #endif /* TESTSUITE */
-
-#include "util.h"
-#include "module.h"
-#include "main.h"
 
 module_set g_modules; /* The set of all modules in use */
 

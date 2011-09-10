@@ -43,15 +43,7 @@
  */
 
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-
-#include <glib.h>
-
-#include "object.h"
-#include "object-api.h"
-#include "../util.h"
+#include "../crystals.h"
 
 
 /* -- STATIC GLOBAL VARIABLES -- */

@@ -45,18 +45,7 @@
  *              instead of hard-coding it.
  */
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <limits.h>
-
-#include "types.h"     /* Integer types */
-#include "main.h"      /* g_config */
-#include "parser.h"    /* Configuration */
-#include "state.h"     /* State dirty rectangles handling */
-#include "graphics.h"
-#include "module.h"
-#include "util.h"
+#include "crystals.h"
 
 
 /* -- CONSTANTS -- */

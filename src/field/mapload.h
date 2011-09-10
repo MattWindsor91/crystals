@@ -44,12 +44,6 @@
 #ifndef _MAPLOAD_H
 #define _MAPLOAD_H
 
-#include <stdlib.h>
-#include <stdio.h>
-
-#include "map.h"
-
-
 /* -- CONSTANTS -- */
 
 extern const char *MAGIC_HEADER;      /**< Sequence denoting the map header and also the map filetype. */

@@ -42,12 +42,7 @@
  */
 
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-
-#include "map.h"
-#include "../util.h"
+#include "../crystals.h"
 
 
 const char FN_TILESET[] = "tiles.png";

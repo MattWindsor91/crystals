@@ -47,9 +47,6 @@
 #define _GFX_MODULE_H
 
 
-#include "../types.h"  /* Integer types. */
-
-
 /* All outward-facing functions MUST be preceded with
  * EXPORT so that they are exposed correctly in the Windows DLL.
  */

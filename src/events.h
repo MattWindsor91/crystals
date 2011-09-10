@@ -46,12 +46,6 @@
 #ifndef _EVENTS_H
 #define _EVENTS_H
 
-
-#include <glib-2.0/glib/gslist.h> /* GSList */
-
-#include "types.h"  /* Integer types. */
-
-
 /* -- CONSTANTS -- */
 
 enum

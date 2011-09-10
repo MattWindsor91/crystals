@@ -42,8 +42,7 @@
  * @brief   Dummy event module.
  */
 
-#include "../util.h"
-#include "../events.h"
+#include "module.h"
 
 /* -- STATIC GLOBAL VARIABLES -- */
 

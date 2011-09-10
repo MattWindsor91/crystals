@@ -42,15 +42,7 @@
  * @brief   Externally exposed API for object manipulation.
  */
 
-#include <stdlib.h>
-
-#include "../util.h"
-#include "../graphics.h"
-
-#include "field.h"
-#include "object.h"
-#include "mapview.h"
-#include "object-api.h"
+#include "../crystals.h"
 
 
 /* -- STATIC GLOBAL VARIABLES -- */

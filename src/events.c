@@ -48,16 +48,7 @@
  */
 
 
-#include <stdlib.h>
-#include <string.h>
-#include <stdio.h>
-
-#include "main.h"   /* g_config */
-#include "types.h"  /* Integer types */
-#include "parser.h"
-#include "events.h"
-#include "module.h"
-#include "util.h"
+#include "crystals.h"
 
 
 /* -- STATIC GLOBAL VARIABLES -- */

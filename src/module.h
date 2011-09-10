@@ -47,12 +47,6 @@
 #ifndef _MODULE_H
 #define _MODULE_H
 
-#include <glib-2.0/gmodule.h> /* GModule */
-
-#include "types.h"
-#include "events.h"
-
-
 typedef void* mod_function_ptr; /**< Function pointer type used for SOs. */
 
 
