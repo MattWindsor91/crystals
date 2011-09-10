@@ -325,7 +325,7 @@ render_rect_layer (gpointer rectangle, gpointer data)
     {
       tile_end_y += 1;
     }    
-    
+
   for (x = tile_start_x; x < tile_end_x; x += 1)
     {
       if (x > map->width || x < 0)

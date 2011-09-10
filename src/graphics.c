@@ -201,13 +201,20 @@ update_screen (void)
 }
 
 
+/* Draw a rectangle */
+bool_t
+draw_rect_direct (int16_t x, int16_t y, uint16_t width, uint16_t height, uint8_t red, uint8_t green, uint8_t blue)
+{
+  return (*g_modules.gfx.draw_rect_internal)
+    (x, y, width, height, red, green, blue);  
+}
+
 /* Fill the screen with the given colour. */
 
 bool_t
 fill_screen (uint8_t red, uint8_t green, uint8_t blue)
 {
-  return (*g_modules.gfx.draw_rect_internal)
-    (0, 0, SCREEN_W, SCREEN_H, red, green, blue);
+  return draw_rect_direct (0, 0, SCREEN_W, SCREEN_H, red, green, blue);
 }
 
 

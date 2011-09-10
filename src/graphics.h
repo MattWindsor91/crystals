@@ -138,6 +138,32 @@ write_string (int16_t x, int16_t y, uint16_t box_width, alignment_t alignment,
 
 
 /**
+ * Draw a rect on the screen of the given colour
+ *
+ * Depending on the graphics module, the colour displayed on screen
+ * may not exactly match the desired colour.
+
+ * @param x      X position of the rect
+ *
+ * @param y      Y position of the rect
+ *
+ * @param width  Width of the rect
+ * 
+ * @param height Height of the rect
+ *
+ * @param red    The red component of the fill colour (0-255).
+ *
+ * @param green  The green component of the fill colour (0-255).
+ *
+ * @param blue   The blue component of the fill colour (0-255).
+ *
+ * @return       SUCCESS for success; FAILURE otherwise.
+ */
+
+bool_t
+draw_rect_direct (int16_t x, int16_t y, uint16_t width, uint16_t height, uint8_t red, uint8_t green, uint8_t blue);
+
+/**
  * Fill the screen with the given colour.
  *
  * Depending on the graphics module, the colour displayed on screen
