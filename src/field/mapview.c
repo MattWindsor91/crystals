@@ -127,30 +127,27 @@ typedef struct render_rect_layer_data
 mapview_t *
 init_mapview (map_t *map)
 {
+  mapview_t *mapview = xcalloc (1, sizeof (mapview_t));
   g_assert (map != NULL);
   g_assert (map->width > 0 && map->height > 0);
   
-  {
-    mapview_t *mapview = xcalloc (1, sizeof (mapview_t));
+  mapview->map = map;
 
-    mapview->map = map;
-
-    /* Get the number of object queues to reserve, by finding the
-       highest tag number in the map. */
-    mapview->num_object_queues = get_max_tag (mapview->map);
-
-    /* There should be at least one tag! */
-    g_assert (mapview->num_object_queues != 0);
-
-    mapview->object_queue = xcalloc (mapview->num_object_queues,
-                                    sizeof (object_image_t*));
-
-    /* Set all tiles as dirty. */
-    mark_dirty_rect (mapview, 0, 0, map->width * TILE_W, map->height * TILE_H);
-    render_map (mapview);
-    
-    return mapview;
-  }
+  /* Get the number of object queues to reserve, by finding the
+     highest tag number in the map. */
+  mapview->num_object_queues = get_max_tag (mapview->map);
+  
+  /* There should be at least one tag! */
+  g_assert (mapview->num_object_queues != 0);
+  
+  mapview->object_queue = xcalloc (mapview->num_object_queues,
+                                   sizeof (object_image_t*));
+  
+  /* Set all tiles as dirty. */
+  mark_dirty_rect (mapview, 0, 0, map->width * TILE_W, map->height * TILE_H);
+  render_map (mapview);
+  
+  return mapview;
 }
 
 
