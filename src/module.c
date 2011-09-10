@@ -66,7 +66,7 @@ init_modules (const char *path)
 {
   g_assert (g_module_supported () == TRUE);
   
-  g_modules.path = xmalloc (sizeof (char) * (strlen (path) + 1));
+  g_modules.path = xcalloc (strlen (path) + 1, sizeof (char));
 
   strncpy (g_modules.path, path, strlen (path) + 1);
   

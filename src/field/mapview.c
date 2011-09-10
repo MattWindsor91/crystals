@@ -159,7 +159,7 @@ add_object_image (mapview_t *mapview,
                   object_t *object)
 {
   object_image_t *image;
-  render_node_t *new_rnode = xmalloc (sizeof (render_node_t));
+  render_node_t *new_rnode = xcalloc (1, sizeof (render_node_t));
   render_node_t *ptr;
  
   g_assert (mapview != NULL);
@@ -474,7 +474,7 @@ mark_dirty_rect (mapview_t *mapview,
                  int32_t width,
                  int32_t height)
 {
-  dirty_rectangle_t *rect = xmalloc (sizeof (dirty_rectangle_t));
+  dirty_rectangle_t *rect = xcalloc (1, sizeof (dirty_rectangle_t));
 
   g_assert (mapview != NULL);
   g_assert (width > 0 && height > 0);

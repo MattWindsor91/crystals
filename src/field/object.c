@@ -95,7 +95,7 @@ object_t *
 add_object (const char object_name[],
             const char script_filename[])
 {
-  object_t *object = xmalloc (sizeof (object_t));
+  object_t *object = xcalloc (1, sizeof (object_t));
 
   g_assert (object_name != NULL);
   g_assert (script_filename != NULL);

@@ -109,7 +109,7 @@ process_events (void)
 event_callback_t *
 install_callback (void (*function) (event_t *event), event_type_t types)
 {   
-  event_callback_t *callback = xmalloc (sizeof (event_callback_t));
+  event_callback_t *callback = xcalloc (1, sizeof (event_callback_t));
 
   callback->function = function;
   callback->types = types;

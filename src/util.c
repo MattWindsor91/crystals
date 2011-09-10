@@ -106,17 +106,6 @@ ulong_to_int16 (unsigned long integer)
 
 /* ~~ Memory management */
 
-/* Malloc and check */
-inline void*
-xmalloc (size_t size)
-{
-  void *memory = malloc (size);
-  
-  g_assert (memory);
-
-  return memory;
-}
-
 /* Calloc and check */
 inline void*
 xcalloc (size_t nmemb, size_t size)

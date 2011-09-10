@@ -226,7 +226,7 @@ read_uint16 (FILE *file);
 map_t *
 load_map (const char path[])
 {
-  map_t *map = xmalloc (sizeof (map_t));
+  map_t *map = xcalloc (1, sizeof (map_t));
   FILE *file = fopen (path, "rb");
 
   g_assert (file != NULL);
