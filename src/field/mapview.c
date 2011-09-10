@@ -328,10 +328,16 @@ render_rect_layer (gpointer rectangle, gpointer data)
     
   for (x = tile_start_x; x < tile_end_x; x += 1)
     {
+      if (x > map->width || x < 0)
+        continue;
+
       screen_x = (x * TILE_W) - datac->mapview->x_offset; 
       
       for (y = tile_start_y; y < tile_end_y; y += 1)
         {
+          if (y > map->height || y < 0)
+            continue;
+
           screen_y = (y * TILE_H) - datac->mapview->y_offset;
           
           tile = map->value_planes[datac->layer][x + (y * map->height)];
