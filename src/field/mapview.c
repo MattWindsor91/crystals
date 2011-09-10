@@ -156,11 +156,15 @@ init_mapview (map_t *map)
 
 /* Add an object sprite to the rendering queue. */
 
-bool_t
+void
 add_object_image (mapview_t *mapview,
                   layer_value_t tag,
                   object_t *object)
 {
+  object_image_t *image;
+  render_node_t *new_rnode = xmalloc (sizeof (render_node_t));
+  render_node_t *ptr;
+ 
   g_assert (mapview != NULL);
   g_assert (tag != NULL_TAG);
   g_assert (tag <= mapview->num_object_queues);
@@ -169,68 +173,57 @@ add_object_image (mapview_t *mapview,
   /* Assert that a non-NULL mapview must have a non-NULL render queue
    * array, due to the nature of the mapview init.
    */
+  image = get_object_image (object);
   
-  {
-    object_image_t *image = get_object_image (object);
+  g_assert (image != NULL);
+  g_assert (image->filename != NULL);
+  g_assert (image->width != 0 && image->height != 0);
 
-    g_assert (image != NULL);
-    g_assert (image->filename != NULL);
-    g_assert (image->width != 0 && image->height != 0);
+  /* Now copy the image, if possible. */
+  new_rnode->object = object;
+  new_rnode->image = image;
+  new_rnode->next = NULL;
 
-    /* Now copy the image, if possible. */
+  /* Finally, add to the proper tag queue.
+   *
+   *  If the queue is empty or the first queue item is in front, then
+   *  just add it to the queue head.
+   *  Otherwise, find a space in the queue before the first item with a
+   *  screen_y higher (further down the screen) than this object, to
+   *  preserve z-order.
+   */  
+  if (mapview->object_queue[tag - 1] == NULL
+      || ((mapview->object_queue[tag - 1]->image->map_y
+           + mapview->object_queue[tag - 1]->image->height)
+          > (image->map_y + image->height)))
     {
-      render_node_t *new_rnode = xmalloc (sizeof (render_node_t));
-
-      new_rnode->object = object;
-      new_rnode->image = image;
-      new_rnode->next = NULL;
-
-      /* Finally, add to the proper tag queue.
-       *
-       *  If the queue is empty or the first queue item is in front, then
-       *  just add it to the queue head.
-       *  Otherwise, find a space in the queue before the first item with a
-       *  screen_y higher (further down the screen) than this object, to
-       *  preserve z-order.
-       */  
-      if (mapview->object_queue[tag - 1] == NULL
-          || ((mapview->object_queue[tag - 1]->image->map_y
-               + mapview->object_queue[tag - 1]->image->height)
-              > (image->map_y + image->height)))
-        {
-          new_rnode->next = mapview->object_queue[tag - 1];
-          mapview->object_queue[tag - 1] = new_rnode;
-
-          return SUCCESS;
-        }
-      else
-        {
-          render_node_t *ptr;
- 
-          /* Skip to the first item that either has a null neighbour 
-           * or a neighbour whose screen_y + width is bigger.
-           */
-          for (ptr = mapview->object_queue[tag - 1]; 
-               ptr->next != NULL
-                 && ((ptr->next->image->map_y + ptr->next->image->height)
-                     <= (image->map_y + image->height)); 
-               ptr = ptr->next)
-            ;
-
-          /* Insert the new image here. */
-          new_rnode->next = ptr->next;
-          ptr->next = new_rnode;
-
-          return SUCCESS;
-      }
+      new_rnode->next = mapview->object_queue[tag - 1];
+      mapview->object_queue[tag - 1] = new_rnode;
     }
-  }
+  else
+    {
+      /* Skip to the first item that either has a null neighbour 
+       * or a neighbour whose screen_y + width is bigger.
+       */
+      for (ptr = mapview->object_queue[tag - 1]; 
+           ptr->next != NULL
+             && ((ptr->next->image->map_y + ptr->next->image->height)
+                 <= (image->map_y + image->height)); 
+           ptr = ptr->next)
+        ;
+      
+      /* Insert the new image here. */
+      new_rnode->next = ptr->next;
+      ptr->next = new_rnode;
+    }
 }
 
 
 void
 render_map (mapview_t *mapview)
 {
+  unsigned char l;
+
   g_assert (mapview != NULL);
   g_assert (mapview->map != NULL);
 
@@ -244,15 +237,12 @@ render_map (mapview_t *mapview)
                    handle_dirty_rectangle,
                    mapview);
 
-  {
-    /* Render a layer, then the objects tagged with that layer. */
-    unsigned char l;
-    for (l = 0; l <= get_max_layer (mapview->map); l++)
-      {
-        render_map_layer (mapview, l);
-        render_map_objects (mapview, l);
-      }
-  }
+  /* Render a layer, then the objects tagged with that layer. */
+  for (l = 0; l <= get_max_layer (mapview->map); l++)
+    {
+      render_map_layer (mapview, l);
+      render_map_objects (mapview, l);
+    }
     
   g_slist_free_full (mapview->dirty_rectangles, free);
   mapview->dirty_rectangles = NULL;
@@ -300,22 +290,20 @@ handle_dirty_rectangle (gpointer rectangle,
 static void
 render_map_layer (mapview_t *mapview, layer_index_t layer)
 {
+  render_rect_layer_data_t data;
   image_t *tileset = load_image (FN_TILESET);
+
   if (tileset == NULL)
     {
       fatal ("MAPVIEW - render_map_layer - Couldn't load tileset.");
-      return;
     }
 
-  {
-    render_rect_layer_data_t data;
-    data.mapview = mapview;
-    data.tileset = tileset;
-    data.layer = layer;
-    g_slist_foreach (mapview->dirty_rectangles,
-                     render_rect_layer,
-                     &data);
-  }
+  data.mapview = mapview;
+  data.tileset = tileset;
+  data.layer = layer;
+  g_slist_foreach (mapview->dirty_rectangles,
+                   render_rect_layer,
+                   &data);
 }
 
 /* Render a given rectangular "slice" of a layer on a map. */
@@ -326,59 +314,55 @@ render_rect_layer (gpointer rectangle, gpointer data)
   render_rect_layer_data_t *datac = data;
   map_t *map = datac->mapview->map;
   image_t *tileset = datac->tileset;
-  
-  {
-    /* Convert per-pixel dimensions into per-tile */
-    int tile_start_x = rectanglec->start_x / TILE_W;
-    int tile_start_y = rectanglec->start_y / TILE_H;
-    int tile_end_x = (rectanglec->start_x + rectanglec->width) / TILE_W;
-    int tile_end_y = (rectanglec->start_y + rectanglec->height) / TILE_H;
-    
-    /* Because the end X and Y round up to the nearest tile, add another tile
-     * to them if they don't already line up perfectly with the tile grid.
-     * Else we'll have an off-by-one error.
-     */
-    if ((rectanglec->start_x + rectanglec->width) % TILE_W > 0)
-      {
-        tile_end_x += 1;
-      }
-    
-    if ((rectanglec->start_y + rectanglec->height) % TILE_H > 0)
-      {
-        tile_end_y += 1;
-      }    
-    
-    {
-      int x;
-      int y;
-      int screen_x;
-      int screen_y;
-      int tileset_x;
-      layer_value_t tile;
 
-      for (x = tile_start_x; x < tile_end_x; x += 1)
+  /* Convert per-pixel dimensions into per-tile */
+  int tile_start_x = rectanglec->start_x / TILE_W;
+  int tile_start_y = rectanglec->start_y / TILE_H;
+  int tile_end_x = (rectanglec->start_x + rectanglec->width) / TILE_W;
+  int tile_end_y = (rectanglec->start_y + rectanglec->height) / TILE_H;
+
+  int x;
+  int y;
+  int screen_x;
+  int screen_y;
+  int tileset_x;
+  layer_value_t tile;
+  
+  /* Because the end X and Y round up to the nearest tile, add another tile
+   * to them if they don't already line up perfectly with the tile grid.
+   * Else we'll have an off-by-one error.
+   */
+  if ((rectanglec->start_x + rectanglec->width) % TILE_W > 0)
+    {
+      tile_end_x += 1;
+    }
+  
+  if ((rectanglec->start_y + rectanglec->height) % TILE_H > 0)
+    {
+      tile_end_y += 1;
+    }    
+    
+  for (x = tile_start_x; x < tile_end_x; x += 1)
+    {
+      screen_x = (x * TILE_W) - datac->mapview->x_offset; 
+      
+      for (y = tile_start_y; y < tile_end_y; y += 1)
         {
-          screen_x = (x * TILE_W) - datac->mapview->x_offset; 
+          screen_y = (y * TILE_H) - datac->mapview->y_offset;
           
-          for (y = tile_start_y; y < tile_end_y; y += 1)
+          tile = map->value_planes[datac->layer][x + (y * map->height)];
+          /* 0 = transparency */
+          if (tile > 0)
             {
-              screen_y = (y * TILE_H) - datac->mapview->y_offset;
-              
-              tile = map->value_planes[datac->layer][x + (y * map->height)];
-              /* 0 = transparency */
-              if (tile > 0)
-                {
-                  tileset_x = TILE_W * tile;
-                  draw_image_direct (tileset,
-                                     (int16_t) tileset_x, 0,
-                                     (int16_t) screen_x,
-                                     (int16_t) screen_y,
-                                     TILE_W, TILE_H);
-                }
+              tileset_x = TILE_W * tile;
+              draw_image_direct (tileset,
+                                 (int16_t) tileset_x, 0,
+                                 (int16_t) screen_x,
+                                 (int16_t) screen_y,
+                                 TILE_W, TILE_H);
             }
         }
     }
-  }
 }
 
 
@@ -388,12 +372,11 @@ static void
 render_map_objects (mapview_t *mapview, layer_index_t layer)
 {
   layer_value_t tag = get_layer_tag (mapview->map, layer);
+  render_node_t *next;
+  object_image_t *image;
 
   if (tag > NULL_TAG)
     {
-      render_node_t *next;
-      object_image_t *image;
-
       while (mapview->object_queue[tag - 1] != NULL)
         {
           next = mapview->object_queue[tag - 1]->next;
@@ -487,30 +470,25 @@ scroll_map (mapview_t *mapview,
 
 /** Mark a rectangle of tiles as being dirty. */
 
-bool_t
+void
 mark_dirty_rect (mapview_t *mapview,
                  int32_t start_x,
                  int32_t start_y,
                  int32_t width,
                  int32_t height)
 {
+  dirty_rectangle_t *rect = xmalloc (sizeof (dirty_rectangle_t));
+
   g_assert (mapview != NULL);
   g_assert (width > 0 && height > 0);
 
-  {
-    dirty_rectangle_t *rect = xmalloc (sizeof (dirty_rectangle_t));
+  rect->parent = mapview;
+  rect->start_x = start_x;
+  rect->start_y = start_y;
+  rect->width = width;
+  rect->height = height;
   
-    rect->parent = mapview;
-    rect->start_x = start_x;
-    rect->start_y = start_y;
-    rect->width = width;
-    rect->height = height;
-  
-    mapview->dirty_rectangles
-      = g_slist_prepend (mapview->dirty_rectangles, rect);
-  }
-
-  return SUCCESS;
+  mapview->dirty_rectangles = g_slist_prepend (mapview->dirty_rectangles, rect);
 }
 
 
@@ -519,13 +497,13 @@ mark_dirty_rect (mapview_t *mapview,
 void
 free_mapview (mapview_t *mapview)
 {
+  unsigned int i;
+  render_node_t *next;
+
   if (mapview)
     {
       if (mapview->object_queue)
         {
-          unsigned int i;
-          render_node_t *next;
-
           for (i = 0; i < mapview->num_object_queues; i++)
             {
               while (mapview->object_queue[i] != NULL)

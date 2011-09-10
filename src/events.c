@@ -81,20 +81,17 @@ event_release_callback (gpointer callback, gpointer event);
 
 /* -- DEFINITIONS -- */
 
-bool_t
+void
 init_events (void)
 {
   if (load_module_event (cfg_get_str ("modules", "event_module", g_config), &g_modules) == FAILURE)
     {
-      error ("EVENTS - init_events - Could not load events module.");
-      return FAILURE;
+      fatal ("EVENTS - init_events - Could not load events module.");
     }
 
   (*g_modules.event.register_release_handle) (event_release);
 
   sg_event_base = xcalloc (1, sizeof (struct event_base));
-
-  return SUCCESS;
 }
 
 
@@ -128,15 +125,13 @@ install_callback (void (*function) (event_t *event), event_type_t types)
 
 /* Unload a callback. */
 
-bool_t
+void
 unload_callback (event_callback_t *callback)
 {
   g_assert (callback != NULL);
 
   sg_event_base->callbacks = g_slist_remove (sg_event_base->callbacks,
                                              callback);
-
-  return SUCCESS;
 }
 
 

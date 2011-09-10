@@ -79,12 +79,9 @@ main (int argc, char **argv);
 
 /**
  * Initialise all engine subsystems.
- *
- * @return  SUCCESS if all subsystems were successfully loaded,
- *          FAILURE otherwise.
  */
 
-bool_t
+void
 init (void);
 
 

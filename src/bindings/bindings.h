@@ -51,11 +51,9 @@
 
 /** 
  * Init language bindings
- *
- * @return Return SUCCESS for success, otherwise FAILURE
  */
 
-bool_t
+void
 init_bindings (void);
 
 

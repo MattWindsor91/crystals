@@ -108,11 +108,8 @@ mark_object_field_location_dirty (object_t *object);
  * @param height          Height of the rectangular area of the image
  *                        file to use as the object image, in
  *                        pixels.
- *
- * @return  SUCCESS for success; FAILURE otherwise (eg if the object
- *          doesn't exist, or the co-ordinates are out of bounds).
  */
-static bool_t
+static void
 change_object_image_post_check (const char object_name[],
                                 const char image_filename[], 
                                 int16_t x_offset,
@@ -158,15 +155,13 @@ move_field_camera (int32_t dx, int32_t dy);
 /* -- DEFINITIONS -- */
 
 /* Set an object as the camera focus point. */
-bool_t
+void
 focus_camera_on_object (const char object_name[])
 {
   object_t *object = get_object (object_name);
   g_assert (object != NULL);
 
   sg_camera_focus = object;
-
-  return SUCCESS;
 }
 
 
@@ -231,7 +226,11 @@ move_field_camera (int32_t dx, int32_t dy)
   mapview_t *mapview = get_field_mapview ();
   g_assert (mapview != NULL);
 
-  /* Assert SCREEN_W and SCREEN_H are always int16_t */
+  /*
+   * Should this function be a void, and just have a g_assert here?
+   * It looks to me that this case not arising would be a logic error,
+   * rather than a user error.
+   */
   if (dx <= SCREEN_W 
       || dy <= SCREEN_H
       || dx >= -SCREEN_W
@@ -246,7 +245,7 @@ move_field_camera (int32_t dx, int32_t dy)
 
 
 /* Move an object to a new absolute position. */
-bool_t
+void
 position_object (const char object_name[],
                  int32_t x,
                  int32_t y,
@@ -271,13 +270,11 @@ position_object (const char object_name[],
 
   /* Mark new location as dirty. */
   mark_object_field_location_dirty (object);
-
-  return SUCCESS;
 }
 
 
 /* Change the tag associated with an object. */
-bool_t
+void
 tag_object (const char object_name[], layer_tag_t tag)
 {
   object_t *object = get_object (object_name);
@@ -287,12 +284,11 @@ tag_object (const char object_name[], layer_tag_t tag)
   mark_object_field_location_dirty (object);
 
   set_object_tag (object, tag);
-  return SUCCESS;
 }
 
 
 /* Changes the image associated with an object. */
-bool_t
+void
 change_object_image (const char object_name[],
                      const char image_filename[], 
                      int16_t x_offset,
@@ -302,18 +298,18 @@ change_object_image (const char object_name[],
 {
   g_assert (image_filename != NULL);
 
-  return change_object_image_post_check (object_name,
-                                         image_filename,
-                                         x_offset,
-                                         y_offset,
-                                         width,
-                                         height);
+  change_object_image_post_check (object_name,
+                                  image_filename,
+                                  x_offset,
+                                  y_offset,
+                                  width,
+                                  height);
 }
 
 /* Given a valid image filename, changes the image associated with an
  * object.
  */
-static bool_t
+static void
 change_object_image_post_check (const char object_name[],
                                 const char image_filename[], 
                                 int16_t x_offset,
@@ -338,8 +334,6 @@ change_object_image_post_check (const char object_name[],
                     height);
   
   mark_object_field_location_dirty (object);
-      
-  return SUCCESS;
 }
 
 

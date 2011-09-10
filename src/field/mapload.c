@@ -69,10 +69,8 @@ const char *MAGIC_PROPERTIES = "PROP";
  *
  * @param file  The file to read from.
  * @param map   The map to populate with the read data.
- *
- * @return      the new map, or NULL if an error occurred.
  */
-static bool_t
+static void
 parse_map_file (FILE *file, map_t *map); 
 
 
@@ -80,10 +78,8 @@ parse_map_file (FILE *file, map_t *map);
  * Reads the map header from the file and allocate a new map from it.
  *
  * @param file  The file to read from.
- *
- * @return      TRUE for success, FALSE otherwise.
  */
-static bool_t
+static void
 read_map_header (FILE *file, map_t *map);
 
 
@@ -93,7 +89,7 @@ read_map_header (FILE *file, map_t *map);
  * @param file  The file pointer to read from.
  * @param map   The map to populate with the read data.
  */
-static bool_t
+static void
 read_map_header_contents (FILE *file, map_t *map);
 
 
@@ -102,10 +98,8 @@ read_map_header_contents (FILE *file, map_t *map);
  *
  * @param file  The file pointer to read from.
  * @param map   The map to populate with the read data.
- *
- * @return      TRUE for success, FALSE otherwise.
  */
-static bool_t
+static void
 read_layer_tags_chunk (FILE *file, map_t *map);
 
 
@@ -114,8 +108,6 @@ read_layer_tags_chunk (FILE *file, map_t *map);
  *
  * @param file  The file pointer to read from.
  * @param map   The map to populate with the read data.
- *
- * @return      TRUE for success, FALSE otherwise.
  */
 static void
 read_layer_tags (FILE *file, map_t *map);
@@ -126,10 +118,8 @@ read_layer_tags (FILE *file, map_t *map);
  *
  * @param file  The file pointer to read from.
  * @param map   The map to populate with the read data.
- *
- * @return      TRUE for success, FALSE otherwise.
  */
-static bool_t
+static void
 read_map_value_planes_chunk (FILE *file, map_t *map);
 
 
@@ -138,10 +128,8 @@ read_map_value_planes_chunk (FILE *file, map_t *map);
  *
  * @param file  The file pointer to read from.
  * @param map   The map to populate with the read data.
- *
- * @return      TRUE for success, FALSE otherwise.
  */
-static bool_t
+static void
 read_map_value_planes (FILE *file, map_t *map);
 
 
@@ -153,10 +141,8 @@ read_map_value_planes (FILE *file, map_t *map);
  * @param file   The file pointer to read from.
  * @param map    The map to populate with the read data.
  * @param layer  The index of the layer being read.
- *
- * @return  TRUE for success, FALSE otherwise.
  */
-static bool_t
+static void
 read_map_value_plane (FILE *file, map_t *map, layer_index_t layer);
 
 
@@ -165,10 +151,8 @@ read_map_value_plane (FILE *file, map_t *map, layer_index_t layer);
  *
  * @param file  The file pointer to read from.
  * @param map   The map to populate with the read data.
- *
- * @return  TRUE for success, FALSE otherwise.
  */
-static bool_t
+static void
 read_map_zone_planes_chunk (FILE *file, map_t *map);
 
 
@@ -177,10 +161,8 @@ read_map_zone_planes_chunk (FILE *file, map_t *map);
  *
  * @param file  The file pointer to read from.
  * @param map   The map to populate with the read data.
- *
- * @return  TRUE for success, FALSE otherwise.
  */
-static bool_t
+static void
 read_map_zone_planes (FILE *file, map_t *map);
 
 
@@ -190,10 +172,8 @@ read_map_zone_planes (FILE *file, map_t *map);
  * @param file   The file pointer to read from.
  * @param map    The map to populate with the read data.
  * @param layer  The index of the layer being read.
- *
- * @return  TRUE for success, FALSE otherwise.
  */
-static bool_t
+static void
 read_layer_zone_plane (FILE *file, map_t *map, layer_index_t layer);
 
 
@@ -202,10 +182,8 @@ read_layer_zone_plane (FILE *file, map_t *map, layer_index_t layer);
  *
  * @param file  The file pointer to read from.
  * @param map   The map to populate with the read data.
- *
- * @return  TRUE for success, FALSE otherwise.
  */
-static bool_t
+static void
 read_map_zone_properties_chunk (FILE *file, map_t *map);
 
 
@@ -214,10 +192,8 @@ read_map_zone_properties_chunk (FILE *file, map_t *map);
  *
  * @param file  The file pointer to read from.
  * @param map   The map to populate with the read data.
- *
- * @return  TRUE for success, FALSE otherwise.
  */
-static bool_t
+static void
 read_map_zone_properties (FILE *file, map_t *map);
 
 
@@ -255,13 +231,7 @@ load_map (const char path[])
 
   g_assert (file != NULL);
 
-  /* Should this be an assertion? */
-  if (parse_map_file (file, map) == FAILURE)
-    {
-      error ("MAPLOAD - load_map - Map load failed.");
-      free_map (map);
-      map = NULL;
-    }
+  parse_map_file (file, map);
   
   fclose (file);
 
@@ -272,7 +242,7 @@ load_map (const char path[])
 /* Parses the given file as a map file and attempts to return a map
  * created from its contents.
  */
-static bool_t
+static void
 parse_map_file (FILE *file, map_t *map)
 {
   read_map_header (file, map);
@@ -280,24 +250,22 @@ parse_map_file (FILE *file, map_t *map)
   read_map_value_planes_chunk (file, map);
   read_map_zone_planes_chunk (file, map);
   read_map_zone_properties_chunk (file, map);
-
-  return SUCCESS;
 }
 
 
 /* Reads the map header from the file. */
-static bool_t
+static void
 read_map_header (FILE *file, map_t *map)
 {
   g_assert (check_magic_sequence (file, MAGIC_HEADER) != FAILURE);
   g_assert (read_uint16 (file) == MAP_VERSION);
 
-  return read_map_header_contents (file, map);
+  read_map_header_contents (file, map);
 }
 
 
 /* Reads the map header contents from the file. */
-static bool_t
+static void
 read_map_header_contents (FILE *file, map_t *map)
 {
   dimension_t map_width = read_uint16 (file); /* In tiles */
@@ -309,22 +277,21 @@ read_map_header_contents (FILE *file, map_t *map)
   fgetc (file);
   fgetc (file);
 
-  return init_map (map,
-                   map_width,
-                   map_height, 
-                   max_layer_index, 
-                   max_zone_index);
+  init_map (map,
+            map_width,
+            map_height, 
+            max_layer_index, 
+            max_zone_index);
 }
 
 
 /* Read the map layer tags chunk from a file.  */
-bool_t
+void
 read_layer_tags_chunk (FILE *file, map_t *map)
 {
   g_assert (check_magic_sequence (file, MAGIC_TAGS) != FAILURE);
 
   read_layer_tags (file, map);
-  return SUCCESS;
 }
 
 
@@ -340,16 +307,16 @@ read_layer_tags (FILE *file, map_t *map)
 
 
 /* Reads the map value planes chunk from a file. */
-static bool_t
+static void
 read_map_value_planes_chunk (FILE *file, map_t *map)
 {
   g_assert (check_magic_sequence (file, MAGIC_VALUES) != FAILURE);
 
-  return read_map_value_planes (file, map);
+  read_map_value_planes (file, map);
 }
 
 /* Reads the map value planes from a file. */
-static bool_t
+static void
 read_map_value_planes (FILE *file, map_t *map)
 {
   layer_index_t l;
@@ -357,15 +324,13 @@ read_map_value_planes (FILE *file, map_t *map)
 
   for (l = 0; l <= get_max_layer (map) && result == SUCCESS; l++)
     {
-      result = read_map_value_plane (file, map, l);
+      read_map_value_plane (file, map, l);
     }
-
-  return result;
 }
 
 
 /* Reads a map value plane from a file. */
-static bool_t
+static void
 read_map_value_plane (FILE *file, map_t *map, layer_index_t layer)
 {
   dimension_t x;
@@ -375,26 +340,24 @@ read_map_value_plane (FILE *file, map_t *map, layer_index_t layer)
     {
       for (y = 0; y < get_map_height (map) && result == SUCCESS; y++)
         {
-          result = set_tile_value (map, layer, x, y, read_uint16 (file));
+          set_tile_value (map, layer, x, y, read_uint16 (file));
         }
     }
-
-  return result;
 }
 
 
 /* Reads the map zone plane chunk from a file. */
-static bool_t
+static void
 read_map_zone_planes_chunk (FILE *file, map_t *map)
 {
   g_assert (check_magic_sequence (file, MAGIC_VALUES) != FAILURE);
 
-  return read_map_zone_planes (file, map);
+  read_map_zone_planes (file, map);
 }
 
 
 /* Reads the map zone data from a file. */
-static bool_t
+static void
 read_map_zone_planes (FILE *file, map_t *map)
 {
   layer_index_t l;
@@ -402,15 +365,13 @@ read_map_zone_planes (FILE *file, map_t *map)
 
   for (l = 0; l <= get_max_layer (map) && result == SUCCESS; l++)
     {
-      result = read_layer_zone_plane (file, map, l);
+      read_layer_zone_plane (file, map, l);
     }
-
-  return result;
 }
 
 
 /* Reads layer zone data from a file. */
-static bool_t
+static void
 read_layer_zone_plane (FILE *file, map_t *map, unsigned short layer)
 {
   dimension_t x;
@@ -423,33 +384,29 @@ read_layer_zone_plane (FILE *file, map_t *map, unsigned short layer)
           set_tile_zone (map, layer, x, y, read_uint16 (file));
         }
     }
-
-  return SUCCESS;
 }
 
 
 /* Reads the zone properties chunk from a file. */
-static bool_t
+static void
 read_map_zone_properties_chunk (FILE *file, map_t *map)
 {
   g_assert (check_magic_sequence (file, MAGIC_VALUES) != FAILURE);
 
-  return read_map_zone_properties (file, map);
+  read_map_zone_properties (file, map);
 }
 
 
 /* Reads the zone properties from a file. */
-static bool_t
+static void
 read_map_zone_properties (FILE *file, map_t *map)
 {
   zone_index_t i;
   bool_t result = SUCCESS;
   for (i = 0; i <= get_max_zone (map) && result == SUCCESS; i++)
     {
-      result = set_zone_properties (map, i, read_uint16 (file));
+      set_zone_properties (map, i, read_uint16 (file));
     }
-  
-  return SUCCESS;
 }
 
 
@@ -461,12 +418,21 @@ check_magic_sequence (FILE *file, const char sequence[])
 
   fread (check, sizeof (char), strlen (sequence), file);
 
-  /*if (strcmp (sequence, check) != 0)
+  /*
+   *This causes assertions to fail. Therefore, the magic sequence in the test map is wrong, or
+   * the method of getting the magic sequence is wrong.
+   * Thus, I'm using the hack of just assuming the magic sequence is OK for now, until Matt (or
+   * someone who knows anything about the map format) can comment.
+   */
+
+  /*
+  if (strcmp (sequence, check) != 0)
     {
       free (check);
       error ("MAPLOAD - check_magic_sequence - Magic sequence not present.");
       return FAILURE;
-      }*/
+    }
+  */
 
   free (check);
   return SUCCESS;

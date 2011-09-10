@@ -81,11 +81,10 @@ crystals_mod = {
 
 /* -- INTERNAL DEFINITIONS -- */
 
-bool_t
+void
 init_bindings (void)
 {
-  Py_Initialize(); 
-  return Py_IsInitialized();
+  Py_Initialize();
 }
 
 void

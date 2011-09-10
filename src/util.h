@@ -146,20 +146,6 @@ enum
 
 /* -- DECLARATIONS -- */
 
-/* ~~ Path retrieval */
-
-/**
- * Get the path to the directory in which all modules are stored.
- *
- * @param module_path  Pointer in which to store the path string.  If
- *                     this has already been allocated, the function
- *                     will free it.
- */
-
-void
-get_module_root_path (char **module_path);
-
-
 /* ~~ Safe type conversions */
 
 /** Safely convert a long integer to an unsigned short. 

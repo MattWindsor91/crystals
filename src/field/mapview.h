@@ -177,12 +177,9 @@ init_mapview (map_t *map);
  *
  *  @param object    Pointer to the object whose image should be
  *                   rendered.
- *
- *  @return SUCCESS if there were no errors encountered; FAILURE
- *  otherwise.
  */
 
-bool_t
+void
 add_object_image (mapview_t *mapview,
                   layer_value_t tag,
                   struct object *object);
@@ -232,12 +229,9 @@ scroll_map (mapview_t *mapview,
  *  @param width    Width of the tile rectangle, in pixels.
  *
  *  @param height   Height of the tile rectangle, in pixels.
- *
- *  @return SUCCESS if there were no errors encountered; FAILURE
- *  otherwise.
  */
 
-bool_t
+void
 mark_dirty_rect (mapview_t *mapview,
                  int32_t start_x,
                  int32_t start_y,

@@ -100,12 +100,9 @@ extern const uint16_t FONT_H;        /**< Font character height, in pixels. */
 
 /**
  * Initialise the graphics subsystem.
- *
- * @return  SUCCESS if the graphics subsystem was initialised
- *          successfully; FAILURE otherwise.
  */
 
-bool_t
+void
 init_graphics (void);
 
 

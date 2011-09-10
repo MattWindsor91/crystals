@@ -211,7 +211,7 @@ typedef struct event_callback
  * @return SUCCESS for success; FAILURE otherwise.
  */
 
-bool_t
+void
 init_events (void);
 
 
@@ -247,12 +247,9 @@ install_callback (void (*callback) (event_t *event),
  * @see             install_callback()
  *
  * @param callback  A pointer to the callback to unload.
- *
- * @return          SUCCESS if the callback was found and deleted,
- *                  FAILURE otherwise.
  */
 
-bool_t
+void
 unload_callback (event_callback_t *callback);
 
 

@@ -66,7 +66,7 @@
  * @return  SUCCESS for success; FAILURE otherwise (eg if the object
  *          doesn't exist).
  */
-bool_t
+void
 focus_camera_on_object (const char object_name[]);
 
 
@@ -93,11 +93,8 @@ focus_camera_on_object (const char object_name[]);
  *                     BOTTOM_LEFT). In most cases, BOTTOM_LEFT is
  *                     preferred, as the bottom of the image is the
  *                     reference point for Z-order calculation.
- *
- * @return  SUCCESS for success; FAILURE otherwise (eg if the map
- *          pointer is NULL).
  */ 
-bool_t
+void
 position_object (const char object_name[], int32_t x, int32_t y,
                  reference_t reference);
 
@@ -129,11 +126,8 @@ move_object (const char object_name[],
  *
  * @param object_name  Name of the object to change the tag of.
  * @param tag          The new tag.
- *
- * @return  SUCCESS for success; FAILURE otherwise (eg if the object
- *          doesn't exist).
  */
-bool_t
+void
 tag_object (const char object_name[],
             layer_tag_t tag);
 
@@ -156,11 +150,8 @@ tag_object (const char object_name[],
  * @param height          Height of the rectangular area of the image
  *                        file to use as the object image, in
  *                        pixels.
- *
- * @return  SUCCESS for success; FAILURE otherwise (eg if the object
- *          doesn't exist, or the co-ordinates are out of bounds).
  */
-bool_t
+void
 change_object_image (const char object_name[],
                      const char image_filename[], 
                      int16_t x_offset,

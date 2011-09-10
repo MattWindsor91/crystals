@@ -77,13 +77,12 @@ static GHashTable *sg_images = NULL;
 
 /* Initialise the graphics subsystem. */
 
-bool_t
+void
 init_graphics (void)
 {
   if (load_module_gfx (cfg_get_str ("modules", "graphics_module", g_config), &g_modules) == FAILURE)
     {
-      error ("GRAPHICS - init_graphics - Could not load graphics module.");
-      return FAILURE;
+      fatal ("GRAPHICS - init_graphics - Could not load graphics module.");
     }
 
 
@@ -92,8 +91,7 @@ init_graphics (void)
   if ((*g_modules.gfx.init_screen_internal)
       (SCREEN_W, SCREEN_H, SCREEN_D) == FAILURE)
     {
-      error ("GRAPHICS - init_graphics - Could not init screen.");
-      return FAILURE;
+      fatal ("GRAPHICS - init_graphics - Could not init screen.");
     }
 
 
@@ -103,8 +101,6 @@ init_graphics (void)
                                     g_str_equal,
                                     free,
                                     free_image);
-
-  return SUCCESS;
 }
 
 
@@ -159,6 +155,8 @@ write_string (int16_t x, int16_t y,
   size_t slength;    /* Length of the string, in characters. */
   int16_t x1;
   uint16_t length;   /* Length of the string on-screen, in pixels. */
+  char chr;
+  uint16_t i;
 
   slength = strlen (string);
   length = ulong_to_uint16 (FONT_W * slength);
@@ -183,23 +181,19 @@ write_string (int16_t x, int16_t y,
 
 
   /* Draw each character using the font image. */
-  {
-    char chr;
-    uint16_t i;
-    for (i = 0; i < slength; i++)
-      {
-        chr = string[i];
-        draw_image (FONT_FILENAME, 
-                    long_to_int16 ((chr % 16) * FONT_W),
-                    long_to_int16 (((chr - (chr % 16))/16) * FONT_H),
-                    long_to_int16 (x1),
-                    long_to_int16 (y),
-                    FONT_W,
-                    FONT_H);
-
-        x1 = long_to_int16 (x1 + FONT_W);
-      }  
-  }
+  for (i = 0; i < slength; i++)
+    {
+      chr = string[i];
+      draw_image (FONT_FILENAME, 
+                  long_to_int16 ((chr % 16) * FONT_W),
+                  long_to_int16 (((chr - (chr % 16))/16) * FONT_H),
+                  long_to_int16 (x1),
+                  long_to_int16 (y),
+                  FONT_W,
+                  FONT_H);
+      
+      x1 = long_to_int16 (x1 + FONT_W);
+    }  
 
 
   /* Instruct the current state to update the screen. */
@@ -243,44 +237,34 @@ scroll_screen (int16_t x_offset, int16_t y_offset)
 void *
 load_image (const char filename[])
 {
+  void *get_try;
+  image_t *data;
+  char *path;
+
   g_assert (filename != NULL);
 
   /* Try look image up in cache. */
-  {
-    void *get_try = g_hash_table_lookup (sg_images, filename);
-    if (get_try != NULL)
-      {
-        return get_try;
-      }
-  }
-
-  /* Cache miss - load image from disk. */
-  {
-    image_t *data;
-    
+  get_try = g_hash_table_lookup (sg_images, filename);
+  if (get_try != NULL)
     {
-      char *path = get_absolute_path (filename);
-      if (path == NULL)
-        {
-          fatal ("GFX - load_image - Couldn't get absolute path for %s.", 
-                 filename);
-          return NULL;
-        }
-
-      data = (*g_modules.gfx.load_image_data) (path);
-      free (path);
+      return get_try;
     }
 
-    if (data == NULL)
-      {
-        fatal ("GFX - load_image - Couldn't load image data for %s.", 
-               filename);
-        return NULL;
-      }
+  /* Cache miss - load image from disk. */
+  path = get_absolute_path (filename);
 
-    g_hash_table_insert(sg_images, g_strdup(filename), data);
-    return data;
-  }
+  data = (*g_modules.gfx.load_image_data) (path);
+  free (path);
+
+  if (data == NULL)
+    {
+      fatal ("GFX - load_image - Couldn't load image data for %s.", 
+             filename);
+      return NULL;
+    }
+
+  g_hash_table_insert(sg_images, g_strdup(filename), data);
+  return data;
 }
 
 
@@ -304,6 +288,7 @@ draw_image (const char filename[], int16_t image_x, int16_t image_y,
             uint16_t height)
 {
   image_t *img = load_image (filename);
+
   if (img == NULL)
     {
       error ("GFX - draw_image - Image load failure for %s.", 

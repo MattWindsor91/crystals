@@ -46,11 +46,9 @@
 
 /* -- INTERNAL DEFINITIONS -- */
 
-bool_t
+void
 init_bindings (void)
-{
-  return SUCCESS;
-}
+{}
 
 void
 cleanup_bindings (void)

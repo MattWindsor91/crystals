@@ -112,24 +112,14 @@ field_on_special_key_down (event_t *event)
 
 /* Initialise the field state. */
 
-bool_t
+void
 init_field (struct state_functions *function_table)
 {
   memset (sg_field_held_special_keys, 0, sizeof (unsigned char) * 256);
 
-  if (field_init_callbacks () == FAILURE)
-    {
-      fatal ("FIELD - init_field - Could not install event callbacks.");
-      return FAILURE;
-    }
+  field_init_callbacks ();
 
   sg_map = load_map ("maps/test.map");
-
-  if (sg_map == NULL)
-    {
-      fatal ("FIELD - init_field - Map initialisation failed.");
-      return FAILURE;
-    }
 
   init_objects ();
 
@@ -138,34 +128,29 @@ init_field (struct state_functions *function_table)
   g_assert (sg_mapview != NULL);
 
   /* TEST DATA */
-
-  {
-    add_object ("Player", "null");
-    add_object ("Test1", "null");
-    add_object ("Test2", "null");
-    
-    tag_object ("Player", 1);
-    tag_object ("Test1", 2);
-    tag_object ("Test2", 1);
-
-    change_object_image ("Player", "testobj.png", 32, 0, 48, 48);
-    change_object_image ("Test1", "testobj.png", 0, 0, 16, 48);
-    change_object_image ("Test2", "testobj.png", 16, 0, 16, 48);
-
-    focus_camera_on_object ("Player");
-
-    position_object ("Player",  200, 200, BOTTOM_LEFT);
-    position_object ("Test1", 100, 100, BOTTOM_LEFT);
-    position_object ("Test2", 90, 90, BOTTOM_LEFT);
-  }
+  add_object ("Player", "null");
+  add_object ("Test1", "null");
+  add_object ("Test2", "null");
+  
+  tag_object ("Player", 1);
+  tag_object ("Test1", 2);
+  tag_object ("Test2", 1);
+  
+  change_object_image ("Player", "testobj.png", 32, 0, 48, 48);
+  change_object_image ("Test1", "testobj.png", 0, 0, 16, 48);
+  change_object_image ("Test2", "testobj.png", 16, 0, 16, 48);
+  
+  focus_camera_on_object ("Player");
+  
+  position_object ("Player",  200, 200, BOTTOM_LEFT);
+  position_object ("Test1", 100, 100, BOTTOM_LEFT);
+  position_object ("Test2", 90, 90, BOTTOM_LEFT);
 
   /* Populate function pointers. */
 
   function_table->update = update_field;
   function_table->cleanup = cleanup_field;
   function_table->dirty_rect = field_handle_dirty_rect;
-
-  return SUCCESS;
 }
 
 
@@ -180,7 +165,7 @@ get_field_mapview (void)
 
 /* Retrieve the boundaries of the map currently in use. */
 
-bool_t
+void
 get_field_map_boundaries (int *x0_pointer,
                           int *y0_pointer,
                           int *x1_pointer,
@@ -197,8 +182,6 @@ get_field_map_boundaries (int *x0_pointer,
   *y0_pointer = 0;
   *x1_pointer = (sg_map->width * TILE_W) - 1;
   *y1_pointer = (sg_map->height * TILE_H) - 1;
-
-  return SUCCESS;
 }
 
 
@@ -228,7 +211,7 @@ field_handle_held_keys (void)
 
 /* Initialise input callbacks. */
 
-bool_t
+void
 field_init_callbacks (void)
 {
   sg_field_skeyupcb = install_callback (field_on_special_key_up, SPECIAL_KEY_UP_EVENT);
@@ -238,8 +221,6 @@ field_init_callbacks (void)
   g_assert (sg_field_skeyupcb
             && sg_field_skeydowncb
             && sg_field_quitcb);
-
-    return SUCCESS;
 }
 
 
@@ -263,34 +244,32 @@ field_cleanup_callbacks (void)
 
 /* Perform per-frame updates for field. */
 
-bool_t
+void
 update_field (void)
 {
   field_handle_held_keys ();
   render_map (sg_mapview);
   write_string (5, 5, 0, ALIGN_LEFT, "Test");
-
-  return SUCCESS;
 }
 
 
 /* Handle a dirty rectangle passed from the user interface overlay for
    field. */
 
-bool_t
+void
 field_handle_dirty_rect (short x, short y,
                          unsigned short width, unsigned short height)
 {
-  return mark_dirty_rect (sg_mapview,
-                          x + sg_mapview->x_offset, 
-                          y + sg_mapview->y_offset,
-                          width, height);
+  mark_dirty_rect (sg_mapview,
+                   x + sg_mapview->x_offset, 
+                   y + sg_mapview->y_offset,
+                   width, height);
 }
 
 
 /* De-initialise the field state. */
 
-bool_t
+void
 cleanup_field (void)
 {
   free_mapview (sg_mapview);
@@ -298,6 +277,4 @@ cleanup_field (void)
   cleanup_objects ();
 
   field_cleanup_callbacks ();
-
-  return SUCCESS;
 }

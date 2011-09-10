@@ -77,7 +77,7 @@ dirty_object_test_post_check (object_t *object,
 
 /* Initialise the object base. */
 
-bool_t
+void
 init_objects (void)
 {
   sg_objects = g_hash_table_new_full (g_str_hash,
@@ -86,8 +86,6 @@ init_objects (void)
                                       free_object);
 
   g_assert (sg_objects);
-  
-  return SUCCESS;
 }
 
 
@@ -97,32 +95,30 @@ object_t *
 add_object (const char object_name[],
             const char script_filename[])
 {
+  object_t *object = xmalloc (sizeof (object_t));
+
   g_assert (object_name != NULL);
   g_assert (script_filename != NULL);
 
   /* Try to allocate an object. */
-  {
-    object_t *object = xmalloc (sizeof (object_t));
-
-    object->image = init_object_image ();
-    g_assert (object->image != NULL);
-
-    object->name = g_strdup (object_name);
-    g_assert (object->name != NULL);
-
-    object->script_filename = g_strdup (script_filename);
-    g_assert (object->script_filename != NULL);
-
-    /* Finally, nullify everything else. */
-    object->tag = 0;
-    object->is_dirty = FALSE;
-
-    g_hash_table_insert (sg_objects,
-                         g_strdup(object_name),
-                         object);
+  object->image = init_object_image ();
+  g_assert (object->image != NULL);
   
-    return object;
-  }
+  object->name = g_strdup (object_name);
+  g_assert (object->name != NULL);
+  
+  object->script_filename = g_strdup (script_filename);
+  g_assert (object->script_filename != NULL);
+
+  /* Finally, nullify everything else. */
+  object->tag = 0;
+  object->is_dirty = FALSE;
+
+  g_hash_table_insert (sg_objects,
+                       g_strdup(object_name),
+                       object);
+  
+  return object;
 }
 
 
@@ -147,7 +143,7 @@ get_object_image (object_t *object)
 
 /* Change the graphic associated with an object. */
 
-bool_t
+void
 set_object_image (object_t *object,
                   const char filename[],
                   int16_t image_x,
@@ -169,14 +165,12 @@ set_object_image (object_t *object,
   object->image->image_y = image_y;
   object->image->width = width;
   object->image->height = height;
-
-  return SUCCESS;
 }
 
 
 /* Retrieve the object's co-ordinates on-map. */
 
-bool_t
+void
 get_object_coordinates (object_t *object,
                         int32_t *x_pointer,
                         int32_t *y_pointer,
@@ -189,13 +183,11 @@ get_object_coordinates (object_t *object,
 
   if (reference == BOTTOM_LEFT)
     *y_pointer += (object->image->height - 1);
-
-  return SUCCESS;
 }
 
 
 /* Set the object's co-ordinates on map. */
-bool_t
+void
 set_object_coordinates (object_t *object,
                         int32_t x,
                         int32_t y,
@@ -207,7 +199,7 @@ set_object_coordinates (object_t *object,
 
   if (object->image->map_x == x
       && object->image->map_y == y)
-    return SUCCESS;
+    return;
 
   object->image->map_x = x;
   object->image->map_y = y;
@@ -220,13 +212,11 @@ set_object_coordinates (object_t *object,
 
       object->image->map_y -= (object->image->height - 1);
     }
-
-  return SUCCESS;
 }
 
 
 /* Mark an object as being dirty on the given map view. */
-bool_t
+void
 set_object_dirty (object_t *object,
                   mapview_t *mapview)
 {
@@ -235,14 +225,12 @@ set_object_dirty (object_t *object,
   /* If we're already dirty, no need to run this again. */
 
   if (object->is_dirty == TRUE)
-    return SUCCESS;
+    return;
 
   /* If the object has no image (the filename is NULL) then ignore the
      dirty request. */
   if (object->image->filename == NULL)
-    {
-      return SUCCESS;
-    }
+    return;
 
   /* Ensure the object's co-ordinates don't go over the map
      width/height! */
@@ -257,8 +245,6 @@ set_object_dirty (object_t *object,
       add_object_image (mapview, object->tag, object);
       object->is_dirty = TRUE;
     }
-
-  return SUCCESS;
 }
 
 
@@ -315,10 +301,7 @@ dirty_object_test (gpointer key_ptr,
   g_assert (object && rect);
 
   if (object->is_dirty)
-    {
-      /* No need to dirty an object twice. */
-      return;
-    }
+    return;
     
   dirty_object_test_post_check (object, rect);
 }

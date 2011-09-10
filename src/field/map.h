@@ -127,11 +127,8 @@ extern struct map *g_map; /**< The map currently in use. (FIXME: is
  *                         (number of layers to reserve, minus one).
  * @param max_zone_index   The maximum zone index in the map
  *                         (number of zones to reserve, minus one).
- *
- * @return  SUCCESS if the map initialised successfully, FAILURE
- *          otherwise.  You should call free_map in the latter case.
  */
-bool_t
+void
 init_map (map_t *map,
           dimension_t width,
           dimension_t height,
@@ -145,10 +142,8 @@ init_map (map_t *map,
  * @param map    Pointer to the map to modify.
  * @param layer  Index of the layer on the map to modify.
  * @param tag    The new layer tag.
- *
- * @return       SUCCESS if the operation succeeded, FAILURE otherwise.
  */
-bool_t
+void
 set_layer_tag (map_t *map, layer_index_t layer, layer_tag_t tag);
 
 
@@ -158,11 +153,8 @@ set_layer_tag (map_t *map, layer_index_t layer, layer_tag_t tag);
  * @param map         Pointer to the map to modify.
  * @param zone        Index of the zone on the map to modify.
  * @param properties  The new properties bitfield.
- *
- * @return            SUCCESS if the operation succeeded, FAILURE otherwise.
  */
-
-bool_t
+void
 set_zone_properties (map_t *map, zone_index_t zone, zone_prop_t properties);
 
 
@@ -174,11 +166,8 @@ set_zone_properties (map_t *map, zone_index_t zone, zone_prop_t properties);
  * @param x      X co-ordinate, in tiles, of the tile to modify.
  * @param y      Y co-ordinate, in tiles, of the tile to modify.
  * @param value  The new value of the tile.
- *
- * @return       SUCCESS if the operation succeeded, FAILURE otherwise.
  */
-
-bool_t
+void
 set_tile_value (map_t *map, layer_index_t layer, dimension_t x, dimension_t y,
                 layer_value_t value);
 
@@ -191,11 +180,8 @@ set_tile_value (map_t *map, layer_index_t layer, dimension_t x, dimension_t y,
  * @param x      X co-ordinate, in tiles, of the tile to modify.
  * @param y      Y co-ordinate, in tiles, of the tile to modify.
  * @param zone   The new zone of the tile.
- *
- * @return  SUCCESS if the operation succeeded, FAILURE otherwise.
  */
-
-bool_t
+void
 set_tile_zone (map_t *map, layer_index_t layer, dimension_t x, dimension_t y,
                layer_zone_t zone);
 

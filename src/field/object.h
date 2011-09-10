@@ -100,10 +100,8 @@ typedef struct object
 
 /**
  * Initialise the object base.
- *
- * @return SUCCESS for success, FAILURE otherwise.
  */
-bool_t
+void
 init_objects (void);
 
 
@@ -169,11 +167,8 @@ get_object_image (object_t *object);
  *
  * @param height    Height of the image rectangle to render, in
  *                  pixels.
- *
- * @return SUCCESS if there were no errors encountered;
- *         FAILURE otherwise.
  */
-bool_t
+void
 set_object_image (object_t *object,
                   const char filename[],
                   int16_t image_x,
@@ -205,11 +200,8 @@ set_object_image (object_t *object,
  *                   BOTTOM_LEFT). In most cases, BOTTOM_LEFT is
  *                   preferred, as the bottom of the image is the
  *                   reference point for Z-order calculation.
- *
- * @return  SUCCESS for success; FAILURE otherwise (eg if the map
- *          pointer is NULL).
  */ 
-bool_t
+void
 get_object_coordinates (object_t *object,
                         int32_t *x_pointer,
                         int32_t *y_pointer,
@@ -241,11 +233,8 @@ get_object_coordinates (object_t *object,
  *                   BOTTOM_LEFT). In most cases, BOTTOM_LEFT is
  *                   preferred, as the bottom of the image is the
  *                   reference point for Z-order calculation.
- *
- * @return  SUCCESS for success; FAILURE otherwise (eg if the map
- *          pointer is NULL).
  */ 
-bool_t
+void
 set_object_coordinates (object_t *object,
                         int32_t x,
                         int32_t y,
@@ -258,11 +247,8 @@ set_object_coordinates (object_t *object,
  * @param object   Pointer to the object to render.
  * @param mapview  Pointer to the map view on which to render the
  *                 object.
- *
- * @return  SUCCESS for success; FAILURE otherwise (eg if either
- *          pointer is NULL).
  */
-bool_t
+void
 set_object_dirty (object_t *object,
                   struct mapview *mapview);
 

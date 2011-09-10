@@ -71,7 +71,7 @@ get_state (void)
 
 /* Change the current state. */
 
-bool_t
+void
 set_state (state_t new_state)
 {
   /* Can't change state if we're already quitting, can't change state
@@ -83,8 +83,6 @@ set_state (state_t new_state)
   g_assert (sg_state  != new_state);
 
   sg_enqueued_state = new_state;
-
-  return SUCCESS;
 }
 
 
@@ -110,7 +108,7 @@ update_state (void)
 
 /* Initialise a state. */
 
-bool_t
+void
 init_state (state_t state)
 {
   g_assert (state == STATE_FIELD || state == STATE_QUIT);
@@ -118,61 +116,55 @@ init_state (state_t state)
   switch (state)
     {
     case STATE_FIELD:
-      return init_field (&sg_functions);
+      init_field (&sg_functions);
       break;
     case STATE_QUIT:
       break;
     }
-
-  return SUCCESS;
 }
 
 
 /* Perform frame updates for the current state. */
 
-bool_t
+void
 state_frame_updates (void)
 {
-  if (sg_functions.update != NULL)
-    return sg_functions.update ();
-  else
-    return FAILURE;
+  g_assert (sg_functions.update != NULL);
+
+  sg_functions.update ();
 }
 
 
 
 /* Instruct the current state to handle a dirty rectangle. */
 
-bool_t
+void
 state_handle_dirty_rect (short x, short y,
                          unsigned short width, unsigned short height)
 {
-  if (sg_functions.dirty_rect != NULL)
-    return sg_functions.dirty_rect (x, y, width, height);
-  else
-    return FAILURE;
+  g_assert (sg_functions.dirty_rect != NULL);
+
+  sg_functions.dirty_rect (x, y, width, height);
 }
 
 
 /* Clean up a state. */
 
-bool_t
+void
 cleanup_state (void)
 {
-  bool_t ret;
-
+  /*
+   * This is not an assertion as it can be called before sg_functions has
+   * been initialised, though, is that a bug?
+   */
   if (sg_functions.cleanup != NULL)
     {
-      ret = sg_functions.cleanup ();
-
-      g_assert (ret != FAILURE);
-
+      sg_functions.cleanup ();
+      
       /* Clean up the function pointers. */
-
+      
       sg_functions.cleanup    = NULL;
       sg_functions.update     = NULL;
       sg_functions.dirty_rect = NULL;
     }
-
-  return SUCCESS;
 }

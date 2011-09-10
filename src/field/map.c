@@ -75,7 +75,7 @@ allocate_planes (map_t *map);
 /* -- DECLARATIONS -- */
 
 /* Initialise a map. */
-bool_t
+void
 init_map (map_t *map,
           dimension_t width,
           dimension_t height,
@@ -107,8 +107,6 @@ init_map (map_t *map,
 
   allocate_plane_arrays (map);
   allocate_planes (map);
-
-  return SUCCESS;
 }
 
 
@@ -157,36 +155,30 @@ get_layer_tag (map_t *map, layer_index_t layer)
 
 /* Set the tag value of a layer. */
 
-bool_t
+void
 set_layer_tag (map_t *map, layer_index_t layer, layer_tag_t tag)
 {
   g_assert (map != NULL);
   g_assert (layer <= map->max_layer_index);
 
-
   map->layer_tags[layer] = tag;
-
-  return SUCCESS;
 }
 
 
 /* Set the property bitfield of a zone. */
 
-bool_t
+void
 set_zone_properties (map_t *map, zone_index_t zone, zone_prop_t properties)
 {
   g_assert (map != NULL);
   g_assert (zone <= map->max_zone_index);
 
-
   map->zone_properties[zone] = properties;
-
-  return SUCCESS;
 }
 
 /* Set the value of a tile. */
 
-bool_t
+void
 set_tile_value (map_t *map, layer_index_t layer,
                 dimension_t x, dimension_t y, layer_value_t value)
 {
@@ -194,16 +186,13 @@ set_tile_value (map_t *map, layer_index_t layer,
   g_assert (layer <= map->max_layer_index);
   g_assert (x < map->width && y < map->height);
 
-
   map->value_planes[layer][(y * map->width) + x] = value;
-
-  return SUCCESS;
 }
 
 
 /* Set the zone of a tile. */
 
-bool_t
+void
 set_tile_zone (map_t *map, layer_index_t layer,
                dimension_t x, dimension_t y, layer_zone_t zone)
 {
@@ -212,10 +201,7 @@ set_tile_zone (map_t *map, layer_index_t layer,
   g_assert (zone <= map->max_zone_index);
   g_assert (x < map->width && y < map->height);
 
-
   map->zone_planes[layer][(y * map->width) + x] = zone;
-
-  return SUCCESS;
 }
 
 
@@ -292,6 +278,8 @@ get_max_zone (map_t *map)
 void
 free_map (map_t *map)
 {
+  unsigned int i;
+  
   if (map)
     {
       if (map->layer_tags)
@@ -304,8 +292,6 @@ free_map (map_t *map)
 
       if (map->value_planes)
         {
-          unsigned int i;
-
           for (i = 0; i <= map->max_layer_index; i++)
             {
               if (map->value_planes[i])
@@ -317,8 +303,6 @@ free_map (map_t *map)
 
       if (map->zone_planes)
         {
-          unsigned int i;
-
           for (i = 0; i <= map->max_layer_index; i++)
             {
               if (map->zone_planes[i])

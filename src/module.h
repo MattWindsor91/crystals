@@ -336,11 +336,9 @@ extern module_set g_modules;
  * Initialise the g_modules structure.
  *
  * @param path  The path to the modules.
- *
- *  @return  SUCCESS if no errors occurred, FAILURE otherwise.
  */
 
-bool_t
+void
 init_modules (const char *path);
 
 
@@ -355,6 +353,16 @@ init_modules (const char *path);
 void
 module_bare_init (module_data *module);
 
+/**
+ * Get the path to the directory in which all modules are stored.
+ *
+ * @param module_path  Pointer in which to store the path string.  If
+ *                     this has already been allocated, the function
+ *                     will free it.
+ */
+
+void
+get_module_root_path (char **module_path);
 
 /**
  * Get the path to a module, given its name.
@@ -362,11 +370,9 @@ module_bare_init (module_data *module);
  * @param module       The name of the module
  * @param modulespath  The path where modules are stored
  * @param out          A string to store the path in
- *
- * @return  SUCCESS if no errors occurred, FAILURE otherwise.
  */
 
-bool_t
+void
 get_module_path (const char *module, const char *modulespath, char **out);
 
 

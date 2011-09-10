@@ -54,13 +54,14 @@
 
 #include "util.h"
 #include "module.h"
+#include "main.h"
 
 module_set g_modules; /* The set of all modules in use */
 
 
 /* This initialises the struct of modules to NULL and sets the load path */
 
-bool_t
+void
 init_modules (const char *path)
 {
   g_assert (g_module_supported () == TRUE);
@@ -71,8 +72,6 @@ init_modules (const char *path)
   
   module_bare_init (&g_modules.gfx.metadata);
   module_bare_init (&g_modules.event.metadata);
-  
-  return SUCCESS;
 }
 
 
@@ -87,9 +86,43 @@ module_bare_init (module_data *module)
 }
 
 
+/* Get the path to the directory in which all modules are stored. */
+
+void
+get_module_root_path (char **module_path)
+{
+  /* If a string exists here, free it. */
+
+  if (*module_path != NULL)
+    {
+      free (module_path);
+      *module_path = NULL;
+    }
+
+
+  /* If configuration loading succeeded, try to grab the module path
+     from the config file.  If this doesn't work, use the default
+     path. */
+
+  if (g_config)
+    *module_path = cfg_get_str ("modules", "module_path", g_config);
+
+
+  if (*module_path == NULL)
+    {
+      error ("UTIL - get_module_path - Cannot read module path from config.");
+
+      /* Copy the default path to the pointer. */
+
+      *module_path = xcalloc (strlen (DEFMODPATH) + 1, sizeof (char));
+
+      strncpy (*module_path, DEFMODPATH, strlen (DEFMODPATH) + 1);
+    }
+}
+
 /* This gets the path of a module, storing it in out */
 
-bool_t
+void
 get_module_path (const char* module, const char* modulespath, char** out)
 {
   char *path;
@@ -101,7 +134,6 @@ get_module_path (const char* module, const char* modulespath, char** out)
   strncat (path, module, strlen (module));
 
   *out = path;
-  return SUCCESS;
 }
 
 
