@@ -75,7 +75,10 @@ int_add_requirements (dlg_t *dlg, xml_node_t *node);
 static void
 int_free_content (gpointer data, gpointer user_data);
 
+
 /* -- DEFINITIONS -- */
+
+/* Parses the XML dialog file */
 
 dlg_t*
 dlg_parse_file (const char *p)
@@ -137,57 +140,69 @@ dlg_parse_file (const char *p)
   return dlg;
 }
 
+
+/* Iterates trough all contents */
+
 dlg_content_t*
 dlg_content_next (dlg_t *dlg, uint8_t choice)
 {
-  uint32_t i;
+  uint32_t i = 0;
   const char *choice_id = NULL;
+  dlg_content_t *prev = NULL;
   dlg_content_t *con = NULL;
-  
+
   if (dlg->dlg_next > 0)
     {
-      con = (dlg_content_t *) g_ptr_array_index (dlg->contents,
+      prev = (dlg_content_t *) g_ptr_array_index (dlg->contents,
         dlg->dlg_next - 1);
 
-      if (con->type == CHOICES) 
+      if (prev->type == CHOICES)
         {
-          choice_id = 
-            (const char *) g_ptr_array_index 
-            (con->action.choices.content_ids, choice);
+          choice_id =
+            (const char *) g_ptr_array_index
+            (prev->action.choices.content_ids, choice);
 
-          for (i = 0; i < dlg->contents->len; ++i)
-            {
-              if (choice_id == (const char *) 
-                  g_ptr_array_index (dlg->contents, i)) 
-                break;
-            }
-          
+          while (i < dlg->contents->len &&
+              strcmp (choice_id, ((dlg_content_t *)
+              g_ptr_array_index (dlg->contents, i))->content_id))
+            i++;
+
           dlg->dlg_next = i;
         }
     }
 
-
-  if (dlg->dlg_next < dlg->contents->len)  
+  if (dlg->dlg_next < dlg->contents->len)
     con = (dlg_content_t *) g_ptr_array_index (dlg->contents, dlg->dlg_next);
-  else 
-    return NULL;
-    
+
+  if (prev != NULL &&
+      prev->type != CHOICES &&
+      strcmp (con->content_id, prev->content_id))
+    {
+      con = NULL;
+      dlg->dlg_next = dlg->contents->len;
+    }
+
   dlg->dlg_next += 1;
   return con;
 }
+
+
+/* Iterates trough all requirements*/
 
 req_t*
 dlg_requirement_next (dlg_t *dlg)
 {
   req_t *req = NULL;
+
   if (dlg->req_next < dlg->requirements->len)
     req = g_ptr_array_index (dlg->requirements, dlg->req_next);
-  else 
-    return NULL;
 
   dlg->req_next += 1;
   return req;
 }
+
+
+/* Free all allocated memory */
 
 void
 dlg_free (dlg_t *dlg)
@@ -204,6 +219,8 @@ dlg_free (dlg_t *dlg)
 
 
 /* -- INTERNAL DEFINITIONS -- */
+
+/* Add content from the XML tree */
 
 static void
 int_add_contents (dlg_t *dlg, xml_node_t *node, bool_t is_main)
@@ -249,7 +266,8 @@ int_add_contents (dlg_t *dlg, xml_node_t *node, bool_t is_main)
     }
 }
 
-/* the following needs more error checking */
+
+/* Add plain text */
 
 static void
 int_add_content_text (dlg_content_t *con, xml_node_t *node)
@@ -258,6 +276,9 @@ int_add_content_text (dlg_content_t *con, xml_node_t *node)
   con->action.text.actor_id = xml_node_get_prop (node, "who");
   con->action.text.text = xml_node_get_content (node);
 }
+
+
+/* Add multiple choices as content */
 
 static void
 int_add_content_choices (dlg_content_t *con, xml_node_t *node)
@@ -269,10 +290,12 @@ int_add_content_choices (dlg_content_t *con, xml_node_t *node)
   con->action.choices.content_ids = g_ptr_array_new ();
   con->action.choices.descrptions = g_ptr_array_new ();
 
+  g_assert (con->action.choices.actor_id != NULL);
+
   while (curr != node->last)
     {
       if (curr->type == XML_ELEMENT_NODE &&
-          !strcmp((const char *) curr->name, "choice"))
+          !strcmp ((const char *) curr->name, "choice"))
         {
           g_ptr_array_add (con->action.choices.content_ids,
             (gpointer) xml_node_get_prop (curr, "id"));
@@ -293,32 +316,59 @@ int_add_content_set (dlg_content_t *con, xml_node_t *node)
     {
       con->type = SET_EVENT;
       con->action.event = xml_node_get_content (node);
+      g_assert (con->action.event != NULL);
     }
   else if (!strcmp (node_type, "item"))
     {
       con->type = SET_ITEM;
       con->action.item.name = xml_node_get_content (node);
-      con->action.item.amount = atoi (xml_node_get_prop (node, "amount"));
+
+      if (xml_node_get_prop (node, "amount") != NULL)
+        con->action.item.amount = atoi (xml_node_get_prop (node, "amount"));
+      else
+        {
+          error ("DIALOG - dlg_parse_file - Property is not an integer: \"amount\"; using 0\n");
+          con->action.item.amount = 0;
+        }
+
+      g_assert (con->action.item.name != NULL);
     }
   else if (!strcmp (node_type, "attr"))
     {
       con->type = SET_ATTR;
       con->action.attr.name = xml_node_get_content (node);
-      con->action.attr.value = atoi (xml_node_get_prop (node, "value"));
+
+      if (xml_node_get_prop (node, "value") != NULL)
+        con->action.attr.value = atoi (xml_node_get_prop (node, "value"));
+      else
+        {
+          error ("DIALOG - dlg_parse_file - Property is not an integer: \"value\"; using 0\n");
+          con->action.attr.value = 0;
+        }
+
+      g_assert (con->action.attr.name != NULL);
     }
   else if (!strcmp (node_type, "quest"))
     {
       con->type = SET_QUEST;
       con->action.quest.name = xml_node_get_content (node);
       con->action.quest.state = xml_node_get_prop (node, "state");
+      g_assert (con->action.quest.name != NULL);
+      g_assert (con->action.quest.state != NULL);
     }
   else if (!strcmp (node_type, "exp"))
     {
       con->type = SET_EXP;
-      con->action.exp = atoi (xml_node_get_content (node));
+      if (xml_node_get_content (node) != NULL)
+        con->action.exp = atoi (xml_node_get_content (node));
+      else
+        {
+          error ("DIALOG - dlg_parse_file - Content is not an integer; using 0\n");
+          con->action.exp = 0;
+         }
     }
   else
-    error ("DIALOG - dlg_parse_file - Unknown set type: \"%s\"",
+    error ("DIALOG - dlg_parse_file - Unknown set type: \"%s\"\n",
       node_type);
 }
 
@@ -327,6 +377,7 @@ int_add_content_goto (dlg_content_t *con, xml_node_t *node)
 {
   con->type = INTERNAL;
   con->action.goto_id = xml_node_get_content (node);
+  g_assert (con->action.goto_id != NULL);
 }
 
 static void
@@ -347,31 +398,56 @@ int_add_requirements (dlg_t *dlg, xml_node_t *node)
             {
               req->type = EVENT;
               req->action.event = xml_node_get_content (curr);
+              g_assert (req->action.event != NULL);
             }
           else if (!strcmp (node_name, "quest"))
             {
               req->type = QUEST;
               req->action.quest.name = xml_node_get_content (curr);
               req->action.quest.state = xml_node_get_prop (curr, "state");
+              g_assert (req->action.quest.name != NULL);
+              g_assert (req->action.quest.state != NULL);
             }
           else if (!strcmp (node_name, "item"))
             {
               req->type = ITEM;
               req->action.item.name = xml_node_get_content (curr);
-              req->action.item.amount =
-                atoi (xml_node_get_prop (curr, "amount"));
+              if (xml_node_get_prop (curr, "amount") != NULL)
+                req->action.item.amount =
+                  atoi (xml_node_get_prop (curr, "amount"));
+              else
+                {
+                  error ("DIALOG - dlg_parse_file - Property is not an integer: \"amount\"; using 0\n");
+                  req->action.item.amount = 0;
+                }
+
+              g_assert (req->action.item.name != NULL);
             }
           else if (!strcmp (node_name, "attr"))
             {
               req->type = ATTR;
               req->action.attr.name = xml_node_get_content (curr);
-              req->action.attr.value =
-                atoi (xml_node_get_prop (curr, "value"));
+              if (xml_node_get_prop (curr, "value") != NULL)
+                req->action.attr.value =
+                  atoi (xml_node_get_prop (curr, "value"));
+              else
+                {
+                  error ("DIALOG - dlg_parse_file - Property is not an integer: \"value\"; using 0\n");
+                  req->action.attr.value = 0;
+                }
+
+              g_assert (req->action.attr.name != NULL);
             }
           else if (!strcmp (node_name, "level"))
             {
               req->type = LEVEL;
-              req->action.lvl = atoi (xml_node_get_content (curr));
+              if (xml_node_get_content (curr) != NULL)
+                req->action.lvl = atoi (xml_node_get_content (curr));
+              else
+                {
+                  error ("DIALOG - dlg_parse_file - Requirement is not an integer; using 0\n");
+                  req->action.lvl = 0;
+                }
             }
           else
             error ("DIALOG - dlg_parse_file - Uknown node \"%s\"\n",
