@@ -47,9 +47,6 @@
 #define _OBJECT_IMAGE_H
 
 
-#include "../types.h"
-
-
 /* -- TYPEDEFS -- */
 
 /** An object image. */

@@ -2,7 +2,7 @@
  * Crystals (working title)
  *
  * Copyright (c) 2010 Matt Windsor, Michael Walker and Alexander
- *                    Preisinger.
+ * Preisinger.
  *
  * All rights reserved.
  *
@@ -10,17 +10,17 @@
  * modification, are permitted provided that the following conditions
  * are met:
  *
- *   * Redistributions of source code must retain the above copyright
- *     notice, this list of conditions and the following disclaimer.
+ * * Redistributions of source code must retain the above copyright
+ * notice, this list of conditions and the following disclaimer.
  *
- *   * Redistributions in binary form must reproduce the above
- *     copyright notice, this list of conditions and the following
- *     disclaimer in the documentation and/or other materials provided
- *     with the distribution.
+ * * Redistributions in binary form must reproduce the above
+ * copyright notice, this list of conditions and the following
+ * disclaimer in the documentation and/or other materials provided
+ * with the distribution.
  *
- *   * The names of contributors may not be used to endorse or promote
- *     products derived from this software without specific prior
- *     written permission.
+ * * The names of contributors may not be used to endorse or promote
+ * products derived from this software without specific prior
+ * written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -36,29 +36,27 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/** 
- * @file    src/bindings/dummy.c
- * @author  Alexander Preisinger
- * @brief   Dummy bindings for checking internal code.
+/**
+ * @file   src/modules/module.h
+ * @author Michael Walker
+ * @brief  Header to include all other required headers for modules.
  */
 
-#include "bindings.h"
+#ifndef _MODULE_H
+#define _MODULE_H
 
-/* -- INTERNAL DEFINITIONS -- */
+/* External headers */
+#include <stdlib.h>
+#include <stdarg.h>
+#include <limits.h>
 
-void
-init_bindings (void)
-{}
+#include <glib.h>
+#include <glib-2.0/glib/gslist.h>
 
-void
-cleanup_bindings (void)
-{}
+/* Crystals headers */
+#include "../types.h"
+#include "../util.h"
+#include "../events.h"
+#include "../graphics.h"
 
-bool_t
-run_script (const char *path)
-{
-  (void) path;
-  return SUCCESS;
-}
-
-/* vim: set et ts=2 sw=2 softtabstop=2: */
+#endif /* not _MODULE_H */

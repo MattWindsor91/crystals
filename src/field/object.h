@@ -46,14 +46,6 @@
 #ifndef _OBJECT_H
 #define _OBJECT_H
 
-#include <glib.h> /* GHFunc */
-
-#include "../types.h"      /* Types.         */
-#include "map.h"           /* layer_value_t  */
-#include "object-image.h"  /* object_image_t */
-#include "mapview.h"       /* mapview_t      */
-
-
 /* -- TYPEDEFS -- */
 
 typedef uint8_t reference_t; /**< Reference constant type. */
@@ -73,9 +65,8 @@ enum
 /**
  * An object node in the object hash table.
  *
- * sshis will inevitably have to be changed!
+ * This will inevitably have to be changed!
  */
-
 typedef struct object
 {
   char *name;                 /**< Descriptive name of the object
@@ -99,88 +90,77 @@ typedef struct object
 
 /* -- DECLARATIONS-- */
 
-/** Initialise the object base.
- *
- *  @return SUCCESS for success, FAILURE otherwise.
+/**
+ * Initialise the object base.
  */
-
-bool_t
+void
 init_objects (void);
 
 
-/** Create a new object and add it to the object table.
+/**
+ * Create a new object and add it to the object table.
  *
- *  @param object_name      The name of the object, used to look it up
- *                          in the object table.
+ * @param object_name      The name of the object, used to look it up
+ *                         in the object table.
+ * @param script_filename  The filename of the script to associate
+ *                         with the object. This script's
+ *                         initialisation code will be called once
+ *                         the object is installed.
  *
- *  @param script_filename  The filename of the script to associate
- *                          with the object. This script's
- *                          initialisation code will be called once
- *                          the object is installed.
- *
- *  @return  a pointer to the new object, or NULL if there was an
- *           error while creating it.
+ * @return  a pointer to the new object, or NULL if there was an
+ *          error while creating it.
  */
-
 object_t *
 add_object (const char object_name[],
             const char script_filename[]);
 
 
-/** Change the layer tag associated with an object.
+/**
+ * Change the layer tag associated with an object.
  *
- *  @param object  Pointer to the object whose tag is to be changed.
- *
- *  @param tag     The tag to associate with the object.
- *
- *  @return  SUCCESS if no errors occurred; FAILURE otherwise.
+ * @param object  Pointer to the object whose tag is to be changed.
+ * @param tag     The tag to associate with the object.
  */
-
-bool_t
+void
 set_object_tag (object_t *object, layer_tag_t tag);
 
 
-/** Get the graphic associated with an object.
+/**
+ * Get the graphic associated with an object.
  *
- *  @param object  Pointer to the object to query.
+ * @param object  Pointer to the object to query.
  *
- *  @return  The object image, or NULL if an error occurred.
+ * @return  The object image, or NULL if an error occurred.
  */
-
 struct object_image *
 get_object_image (object_t *object);
 
 
-/** Change the graphic associated with an object.
+/** 
+ * Change the graphic associated with an object.
  *
- *  This will instantly update the object image.
+ * This will instantly update the object image.
  *
- *  @note  In order to make an object have no physical presence on the
- *         map, change its tag to 0.
+ * @note  In order to make an object have no physical presence on the
+ *        map, change its tag to 0.
  *
- *  @param object    Pointer to the object to change.
+ * @param object    Pointer to the object to change.
+ * @param filename  Filename of the image.
+ * @param image_x   X co-ordinate of the left edge of the on-image
+ *                  rectangle from which to source the rendered
+ *                  image, in pixels.
  *
- *  @param filename  Filename of the image.
+ * @param image_y   Y co-ordinate of the top edge of the on-image
+ *                  rectangle from which to source the rendered
+ *                  image, in pixels.
  *
- *  @param image_x   X co-ordinate of the left edge of the on-image
- *                   rectangle from which to source the rendered
- *                   image, in pixels.
+ * @param width     Width of the image rectangle to render, in
+ *                  pixels.
  *
- *  @param image_y   Y co-ordinate of the top edge of the on-image
- *                   rectangle from which to source the rendered
- *                   image, in pixels.
- *
- *  @param width     Width of the image rectangle to render, in
- *                   pixels.
- *
- *  @param height    Height of the image rectangle to render, in
- *                   pixels.
- *
- *  @return SUCCESS if there were no errors encountered; FAILURE
- *  otherwise.
+ * @param height    Height of the image rectangle to render, in
+ *                  pixels.
  */
-
-bool_t
+void
 set_object_image (object_t *object,
                   const char filename[],
                   int16_t image_x,
@@ -189,162 +169,155 @@ set_object_image (object_t *object,
                   uint16_t height);
 
 
-/** Retrieve the object's co-ordinates on-map.
+/**
+ * Retrieve the object's co-ordinates on-map.
  *
- *  The reference parameter determines the reference point from which
- *  the object's co-ordinates should be determined.
+ * The reference parameter determines the reference point from which
+ * the object's co-ordinates should be determined.
  *
- *  TOP_LEFT sets the co-ordinates to refer to the top-left of the
- *  image.  BOTTOM_LEFT sets the co-ordinates to refer to the
- *  bottom-left of the image, which in most cases will represent the
- *  actual physical "base" of the object.
+ * TOP_LEFT sets the co-ordinates to refer to the top-left of the
+ * image.  BOTTOM_LEFT sets the co-ordinates to refer to the
+ * bottom-left of the image, which in most cases will represent the
+ * actual physical "base" of the object.
  *
- *  @param object  Pointer to the object to query.
+ * @param object     Pointer to the object to query.
  *
- *  @param x_pointer  Pointer to a variable in which to store the X
- *                    co-ordinate.
+ * @param x_pointer  Pointer to a variable in which to store the X
+ *                   co-ordinate.
  *
- *  @param y_pointer  Pointer to a variable in which to store the Y
- *                    co-ordinate.
+ * @param y_pointer  Pointer to a variable in which to store the Y
+ *                   co-ordinate.
  *
- *  @param reference  The reference point to use (TOP_LEFT or
- *                    BOTTOM_LEFT). In most cases, BOTTOM_LEFT is
- *                    preferred, as the bottom of the image is the
- *                    reference point for Z-order calculation.
- *
- *  @return  SUCCESS for success; FAILURE otherwise (eg if the map
- *  pointer is NULL).
+ * @param reference  The reference point to use (TOP_LEFT or
+ *                   BOTTOM_LEFT). In most cases, BOTTOM_LEFT is
+ *                   preferred, as the bottom of the image is the
+ *                   reference point for Z-order calculation.
  */ 
-
-bool_t
+void
 get_object_coordinates (object_t *object,
                         int32_t *x_pointer,
                         int32_t *y_pointer,
                         reference_t reference);
 
 
-/** Set the object's co-ordinates on-map.
+/**
+ * Sets the object's co-ordinates on-map.
  *
- *  The reference parameter determines the reference point from which
- *  the object's co-ordinates should be determined.
+ * The reference parameter determines the reference point from which
+ * the object's co-ordinates should be determined.
  *
- *  TOP_LEFT sets the co-ordinates to refer to the top-left of the
- *  image.  BOTTOM_LEFT sets the co-ordinates to refer to the
- *  bottom-left of the image, which in most cases will represent the
- *  actual physical "base" of the object.
+ * TOP_LEFT sets the co-ordinates to refer to the top-left of the
+ * image.  BOTTOM_LEFT sets the co-ordinates to refer to the
+ * bottom-left of the image, which in most cases will represent the
+ * actual physical "base" of the object.
  *
- *  @param object  Pointer to the object to modify.
+ * @param object     Pointer to the object to modify.
  *
- *  @param x          The x co-ordinate, representing the left edge of
- *                    the object, in pixels from the left edge of the
- *                    map. 
+ * @param x          The x co-ordinate, representing the left edge of
+ *                   the object, in pixels from the left edge of the
+ *                   map. 
  *
- *  @param y          The y co-ordinate, representing the top or
- *                    bottom edge of the object, in pixels from the
- *                    top edge of the map.
+ * @param y          The y co-ordinate, representing the top or
+ *                   bottom edge of the object, in pixels from the
+ *                   top edge of the map.
  *
- *  @param reference  The reference point to use (TOP_LEFT or
- *                    BOTTOM_LEFT). In most cases, BOTTOM_LEFT is
- *                    preferred, as the bottom of the image is the
- *                    reference point for Z-order calculation.
- *
- *  @return  SUCCESS for success; FAILURE otherwise (eg if the map
- *  pointer is NULL).
+ * @param reference  The reference point to use (TOP_LEFT or
+ *                   BOTTOM_LEFT). In most cases, BOTTOM_LEFT is
+ *                   preferred, as the bottom of the image is the
+ *                   reference point for Z-order calculation.
  */ 
-
-bool_t
+void
 set_object_coordinates (object_t *object,
                         int32_t x,
                         int32_t y,
                         reference_t reference);
 
 
-/** Mark an object as being dirty on the given map view.
+/**
+ * Marks an object as being dirty on the given map view.
  *
- *  @param object   Pointer to the object to render.
- *  @param mapview  Pointer to the map view on which to render the
- *                  object.
- *
- *  @return  SUCCESS for success; FAILURE otherwise (eg if either
- *  pointer is NULL).
+ * @param object   Pointer to the object to render.
+ * @param mapview  Pointer to the map view on which to render the
+ *                 object.
  */
-
-bool_t
+void
 set_object_dirty (object_t *object,
                   struct mapview *mapview);
 
 
-/** Delete an object and all associated data.
+/**
+ * Deletes an object and all associated data.
  *
- *  @param object  Pointer to the object to delete.
+ * @param object  Pointer to the object to delete.
  */
-
 void
 free_object (void *object);
 
 
-/** Remove an object from the object table.
+/**
+ * Remove an object from the object table.
  *
- *  @param object_name  The name of the object to remove from the
- *  table.
+ * @param object_name  The name of the object to remove from the
+ *                     table.
  *
- *  @return  SUCCESS for success; FAILURE otherwise (eg if no object
- *  was deleted).
+ * @return  SUCCESS for success; FAILURE otherwise (eg if no object
+ *          was deleted).
  */ 
-
 bool_t
 delete_object (const char object_name[]);
 
 
-/** Deletes all objects in the object table. */
-
+/**
+ * Deletes all objects in the object table.
+ */
 void
 clear_objects (void);
 
 
-/** Retrieve an object.
+/**
+ * Retrieve an object.
  *
- *  @param object_name  The name of the object concerned. 
+ * @param object_name  The name of the object concerned. 
  *
- *  @return  A pointer to the object with the given name if found, or 
- *           NULL otherwise.
+ * @return  A pointer to the object with the given name if found, or 
+ *          NULL otherwise.
  */
-
 object_t *
 get_object (const char object_name[]);
 
 
-/** Check to see whether the given object falls within the given dirty
- *  rectangle and, if so, mark the object as dirty.
+/**
+ * Check to see whether the given object falls within the given dirty
+ * rectangle and, if so, mark the object as dirty (if it has not been
+ * marked before).
  *
- *  @param key           The name of the object (ignored).
- * 
- *  @param object        The object to test.
- *
- *  @param rect_pointer  Void pointer to the dirty rectangle to test.
+ * @param key_ptr     Pointer to the (unused) object name.
+ * @param object_ptr  Pointer to the object to test.
+ * @param rect_ptr    Pointer to the dirty rectangle to test.
  */
-
 void
-dirty_object_test (void *key, void *object, void *rect_pointer);
+dirty_object_test (gpointer key_ptr,
+                   gpointer object_ptr,
+                   gpointer rect_ptr);
 
 
-/** Apply the given function to all objects.
+/**
+ * Apply the given function to all objects.
  *
- *  @param function  Pointer to the function to apply to the
- *                   object.  The function must take the object
- *                   as first parameter followed by a void pointer for
- *                   data.
- *
- *  @param data      Void pointer to the data to pass to the function.
+ * @param function  Pointer to the function to apply to the
+ *                  object.  The function must take the object
+ *                  as first parameter followed by a void pointer for
+ *                  data.
+ * @param data      Void pointer to the data to pass to the function.
  */
-
 void
 apply_to_objects (GHFunc function,
                   void *data);
 
 
-/** Clean up the objects subsystem. */
-
+/**
+ * Clean up the objects subsystem.
+ */
 void
 cleanup_objects (void);
 

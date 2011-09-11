@@ -65,7 +65,7 @@ crystals_test (lua_State *L);
 
 /* -- INTERNAL DEFINITIONS -- */
 
-bool_t
+void
 init_bindings (void)
 {
   g_lua = lua_open ();
@@ -75,8 +75,6 @@ init_bindings (void)
   lua_setglobal (g_lua, "crystals_test"); /* make the c function visible for lua */
   
   lua_register (g_lua, "power_test", power_test); /* optional way */
-  
-  return SUCCESS;
 }
 
 void

@@ -11,3 +11,5 @@ autodoc
 /html/
 /nbproject/private/
 /.settings/
+modules
+tests

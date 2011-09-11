@@ -52,11 +52,6 @@
 #ifndef _MAPVIEW_H
 #define _MAPVIEW_H
 
-#include <glib-2.0/glib/gslist.h>
-
-#include "map.h"
-#include "../types.h"
-
 /* -- CONSTANTS -- */
 
 /** Width of one tile, in pixels.
@@ -101,9 +96,8 @@ typedef struct dirty_rectangle
 
   int width;   /**< Width of the rectangle (in pixels). */
   int height;  /**< Height of the rectangle (in pixels). */
-
-  struct mapview *parent;      /**< Parent map view. */
-  struct dirty_rectangle *next; /**< Next node in the queue. */
+  
+  struct mapview *parent;  /**< The parent map view of this rectangle. */
 } dirty_rectangle_t;
 
 
@@ -126,19 +120,6 @@ typedef struct mapview
 
   map_t *map;                 /**< Pointer to the map being viewed. */
 
-  layer_count_t *dirty_tiles; /**< Matrix of "dirty" tiles, or tiles
-                                 to be re-rendered on the next
-                                 rendering pass. 
-
-                                 @note  To set a tile as dirty, index
-                                 [tile x + (tile y * map width)
-                                 should be set to the number of
-                                 layers in the map.  This is because
-                                 of the way the render code works.
-                                 Eventually there will be a function
-                                 for setting tiles to dirty without
-                                 needing to pay attention to this. */
-
   unsigned int num_object_queues; /**< Number of object queues reserved
                                      (equal to the highest tag used
                                      by the map). */
@@ -151,10 +132,6 @@ typedef struct mapview
   
   GSList *dirty_rectangles; /**< Stack of dirty rectangles. */
 } mapview_t;
-
-
-#include "object.h" /* object_t; cannot be included before
-                       structures. */
 
 
 /* -- GLOBAL VARIABLES -- */
@@ -191,12 +168,9 @@ init_mapview (map_t *map);
  *
  *  @param object    Pointer to the object whose image should be
  *                   rendered.
- *
- *  @return SUCCESS if there were no errors encountered; FAILURE
- *  otherwise.
  */
 
-bool_t
+void
 add_object_image (mapview_t *mapview,
                   layer_value_t tag,
                   struct object *object);
@@ -209,32 +183,6 @@ add_object_image (mapview_t *mapview,
 
 void
 render_map (mapview_t *mapview);
-
-
-/** Render a given layer on a map.
- *
- *  @param mapview  Pointer to the map view to render.
- *
- *  @param layer    The layer to render.
- */
-
-void
-render_map_layer (mapview_t *mapview, layer_index_t layer);
-
-
-/** Render any map objects to be placed on top of this layer.
- *
- *  This will, if this layer is the first defined with its tag, blit
- *  all dirty objects of the same tag on top of this map layer in
- *  z-order.
- *
- *  @param mapview  Pointer to the map view to render.
- *
- *  @param layer    The layer to render.
- */
-
-void
-render_map_objects (mapview_t *mapview, layer_index_t layer);
 
 
 /** Scroll the map on-screen, re-rendering it in its new position.
@@ -272,12 +220,9 @@ scroll_map (mapview_t *mapview,
  *  @param width    Width of the tile rectangle, in pixels.
  *
  *  @param height   Height of the tile rectangle, in pixels.
- *
- *  @return SUCCESS if there were no errors encountered; FAILURE
- *  otherwise.
  */
 
-bool_t
+void
 mark_dirty_rect (mapview_t *mapview,
                  int32_t start_x,
                  int32_t start_y,

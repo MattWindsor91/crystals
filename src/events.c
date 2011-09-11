@@ -48,16 +48,7 @@
  */
 
 
-#include <stdlib.h>
-#include <string.h>
-#include <stdio.h>
-
-#include "main.h"   /* g_config */
-#include "types.h"  /* Integer types */
-#include "parser.h"
-#include "events.h"
-#include "module.h"
-#include "util.h"
+#include "crystals.h"
 
 
 /* -- STATIC GLOBAL VARIABLES -- */
@@ -65,30 +56,33 @@
 static struct event_base *sg_event_base; /**< Event base. */
 
 
+/* -- STATIC DECLARATIONS -- */
+
+/**
+ * Release an event package to one callback, providing it is of the
+ * correct type.
+ *
+ * @param callback  Pointer to the callback.
+ * @param event     Pointer to the event package.
+ */
+
+static void
+event_release_callback (gpointer callback, gpointer event);
+
+
 /* -- DEFINITIONS -- */
 
-bool_t
+void
 init_events (void)
 {
   if (load_module_event (cfg_get_str ("modules", "event_module", g_config), &g_modules) == FAILURE)
     {
-      error ("EVENTS - init_events - Could not load events module.");
-      return FAILURE;
+      fatal ("EVENTS - init_events - Could not load events module.");
     }
 
   (*g_modules.event.register_release_handle) (event_release);
 
-  sg_event_base = malloc (sizeof (struct event_base));
-
-  if (sg_event_base == NULL)
-    {
-      error ("EVENTS - init_events - Could not allocate events base.");
-      return FAILURE;
-    }
-
-  sg_event_base->callbacks = NULL;
-
-  return SUCCESS;
+  sg_event_base = xcalloc (1, sizeof (struct event_base));
 }
 
 
@@ -104,72 +98,31 @@ process_events (void)
 /* Install a callback. */
 
 event_callback_t *
-install_callback (void (*callback) (event_t *event), event_type_t types)
+install_callback (void (*function) (event_t *event), event_type_t types)
 {   
-  event_callback_t *pnew;
-  event_callback_t **p;
-  
-  pnew = malloc (sizeof (event_callback_t));
+  event_callback_t *callback = xcalloc (1, sizeof (event_callback_t));
 
-  if (pnew == NULL)
-    {
-      error ("EVENTS - install_callback - Could not allocate callback node.");
-      return NULL;
-    }
-
-
-  pnew->callback = callback;
-  pnew->types = types;
-  pnew->next = NULL;
+  callback->function = function;
+  callback->types = types;
+  callback->next = NULL;
 
   /* Link to list */
+  sg_event_base->callbacks = g_slist_prepend (sg_event_base->callbacks,
+                                              callback);
 
-  for (p = &(sg_event_base->callbacks); *p != NULL; p = &(*p)->next)
-    ; /* Do nothing until *p is NULL. */
-
-  pnew->next = *p;
-  *p = pnew;
-
-  return pnew;
+  return callback;
 }
 
 
 /* Unload a callback. */
 
-bool_t
+void
 unload_callback (event_callback_t *callback)
 {
-  event_callback_t **p;
+  g_assert (callback != NULL);
 
-
-  /* Sanity checking. */
-
-  if (callback == NULL)
-    {
-      error ("EVENTS - unload_callback - Given a NULL callback to delete.");
-      return FAILURE;
-    }
-
-  /* End sanity checking. */
-
-
-  for (p = &(sg_event_base->callbacks); *p != NULL; p = &(*p)->next)
-    {
-      if (*p == callback)
-        {
-          /* Replace callback with the next entry then delete it. */
-
-          *p = (*p)->next;
-          free (callback);
-
-          return SUCCESS;
-        }
-    }
-
-
-  /* No matches found. */
-
-  return FAILURE;
+  sg_event_base->callbacks = g_slist_remove (sg_event_base->callbacks,
+                                             callback);
 }
 
 
@@ -178,14 +131,25 @@ unload_callback (event_callback_t *callback)
 void
 event_release (event_t *event)
 {
-  event_callback_t *p;
+  g_slist_foreach (sg_event_base->callbacks,
+                   event_release_callback,
+                   event);
+}
 
-  for (p = sg_event_base->callbacks; p != NULL; p = p->next)
+
+/* Release an event package to one callback, providing it is of the
+ * correct type.
+ */
+
+static void
+event_release_callback (gpointer callback, gpointer event)
+{
+  event_callback_t *callbackc = (event_callback_t *) callback;
+  event_t *eventc = (event_t *) event;
+
+  if (callbackc->types & eventc->type)
     {
-      /* Trigger all callbacks with the relevant type. */
-
-      if (p->types & event->type)
-        p->callback (event);
+        callbackc->function (eventc);
     }
 }
 
@@ -197,6 +161,7 @@ cleanup_events (void)
 {
   if (sg_event_base)
     {
+      g_slist_free_full (sg_event_base->callbacks, free);
       free (sg_event_base);
       sg_event_base = NULL;
     }

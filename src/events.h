@@ -46,10 +46,6 @@
 #ifndef _EVENTS_H
 #define _EVENTS_H
 
-
-#include "types.h"  /* Integer types. */
-
-
 /* -- CONSTANTS -- */
 
 enum
@@ -103,7 +99,7 @@ typedef uint8_t event_key_t;     /**< Type for special key code.      */
 
 typedef struct event_base
 {
-  struct event_callback *callbacks; /**< Linked list of callbacks. */
+  GSList *callbacks; /**< Linked list of callbacks. */
 } event_base_t;
 
 
@@ -190,7 +186,7 @@ typedef union event
 typedef struct event_callback
 {
   void
-  (*callback) (event_t *event); /**< The callback function pointer. */
+  (*function) (event_t *event); /**< The callback function pointer. */
 
   event_type_t types;           /**<
                                  * Bitfield of types of event that will
@@ -209,7 +205,7 @@ typedef struct event_callback
  * @return SUCCESS for success; FAILURE otherwise.
  */
 
-bool_t
+void
 init_events (void);
 
 
@@ -245,12 +241,9 @@ install_callback (void (*callback) (event_t *event),
  * @see             install_callback()
  *
  * @param callback  A pointer to the callback to unload.
- *
- * @return          SUCCESS if the callback was found and deleted,
- *                  FAILURE otherwise.
  */
 
-bool_t
+void
 unload_callback (event_callback_t *callback);
 
 

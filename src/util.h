@@ -50,11 +50,6 @@
 #ifndef _UTIL_H
 #define _UTIL_H
 
-#include <stdarg.h>
-
-#include "types.h"  /* Standard types as used in crystals. */
-
-
 /* -- CONSTANTS -- */
 
 /* Windows likes to define these already, so undefine them if present. */
@@ -145,20 +140,6 @@ enum
 
 /* -- DECLARATIONS -- */
 
-/* ~~ Path retrieval */
-
-/**
- * Get the path to the directory in which all modules are stored.
- *
- * @param module_path  Pointer in which to store the path string.  If
- *                     this has already been allocated, the function
- *                     will free it.
- */
-
-void
-get_module_root_path (char **module_path);
-
-
 /* ~~ Safe type conversions */
 
 /** Safely convert a long integer to an unsigned short. 
@@ -216,6 +197,19 @@ ulong_to_uint16 (unsigned long integer);
 short
 ulong_to_int16 (unsigned long integer);
 
+
+/* ~~ Safe memory allocation */
+
+/**
+ * Calloc some memory and assert that it has been allocated.
+ *
+ * @param nmemb The number of elements to allocate
+ * @param size  The amount of memory, in bytes, for each element.
+ *
+ * @return Pointer to the allocated memory
+ */
+void*
+xcalloc (size_t nmemb, size_t size);
 
 /* ~~ Error reporting */
 
