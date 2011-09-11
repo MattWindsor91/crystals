@@ -62,6 +62,36 @@ const uint16_t FONT_H = 10;
 static GHashTable *sg_images = NULL;
 
 
+/* -- STATIC DECLARATIONS -- */
+
+/**
+ * Attempts to load an image from the image cache.
+ * 
+ * @param filename  The filename of the image to load, relative from
+ *                  the graphics path.
+ * 
+ * @return A pointer to the raw data of the image if
+ *         successfully loaded and stored in the image cache;
+ *         NULL otherwise.
+ */
+static image_t *
+load_image_from_cache (const char filename[]);
+
+
+/**
+ * Loads an image from its resource file. 
+ * 
+ * @param filename  The filename of the image to load, relative from
+ *                  the graphics path.
+ * 
+ * @return A pointer to the raw data of the image if
+ *         successfully loaded and stored in the image cache;
+ *         NULL otherwise.
+ */
+static image_t *
+load_image_from_file (const char filename[]);
+
+
 /* -- DEFINITIONS -- */
 
 /* Initialise the graphics subsystem. */
@@ -69,7 +99,10 @@ static GHashTable *sg_images = NULL;
 void
 init_graphics (void)
 {
-  if (load_module_gfx (cfg_get_str ("modules", "graphics_module", g_config), &g_modules) == FAILURE)
+  if (load_module_gfx (cfg_get_str ("modules",
+                                    "graphics_module",
+                                    g_config),
+                       &g_modules) == FAILURE)
     {
       fatal ("GRAPHICS - init_graphics - Could not load graphics module.");
     }
@@ -93,9 +126,8 @@ init_graphics (void)
 }
 
 
-/* Given a relative path to an image file, append the graphics root
-   path to it and store it in the given pointer. */
-
+/* Given a relative path to an image file, appends the graphics root
+   path to it and returns a pointer to the created string. */
 char *
 get_absolute_path (const char path[])
 {
@@ -109,7 +141,6 @@ get_absolute_path (const char path[])
   if (root_path == NULL)
     {
       /* Using default path (this is a fallback). */
-
       error ("GRAPHICS - get_absolute_path - No graphics_path in config.");
       error ("Using default path instead.");
 
@@ -121,7 +152,6 @@ get_absolute_path (const char path[])
   else
     {
       /* Using configuration path. */
-
       absolute_path = xcalloc (strlen (path) + strlen (root_path) + 1, 
                                sizeof (char));
 
@@ -134,11 +164,12 @@ get_absolute_path (const char path[])
 }
 
 
-/* Write a string on the screen, using the standard font. */
-
+/* Writes a string on the screen, using the standard font. */
 void
-write_string (int16_t x, int16_t y,
-              uint16_t box_width, alignment_t alignment,
+write_string (int16_t x,
+              int16_t y,
+              uint16_t box_width,
+              alignment_t alignment,
               const char string[])
 {
   size_t slength;    /* Length of the string, in characters. */
@@ -186,14 +217,12 @@ write_string (int16_t x, int16_t y,
 
 
   /* Instruct the current state to update the screen. */
-
   add_update_rectangle (x, y, length, FONT_H);
   state_handle_dirty_rect (x, y, length, FONT_H);
 }
 
 
-/* Update the screen. */
-
+/* Updates the screen. */
 bool_t
 update_screen (void)
 {
@@ -201,25 +230,30 @@ update_screen (void)
 }
 
 
-/* Draw a rectangle */
+/* Draws a rectangle on the screen of the given colour. */
 bool_t
-draw_rect_direct (int16_t x, int16_t y, uint16_t width, uint16_t height, uint8_t red, uint8_t green, uint8_t blue)
+draw_rectangle (int16_t x,
+                int16_t y,
+                uint16_t width,
+                uint16_t height,
+                uint8_t red,
+                uint8_t green,
+                uint8_t blue)
 {
   return (*g_modules.gfx.draw_rect_internal)
     (x, y, width, height, red, green, blue);  
 }
 
-/* Fill the screen with the given colour. */
 
+/* Fills the screen with the given colour. */
 bool_t
 fill_screen (uint8_t red, uint8_t green, uint8_t blue)
 {
-  return draw_rect_direct (0, 0, SCREEN_W, SCREEN_H, red, green, blue);
+  return draw_rectangle (0, 0, SCREEN_W, SCREEN_H, red, green, blue);
 }
 
 
-/* Translate the screen by a co-ordinate pair, leaving damage. */
-
+/* Translates the screen by a co-ordinate pair, leaving damage. */
 bool_t
 scroll_screen (int16_t x_offset, int16_t y_offset)
 {
@@ -228,25 +262,52 @@ scroll_screen (int16_t x_offset, int16_t y_offset)
 }
 
 
-/* Load an image. */
-
+/* Loads an image. */
 void *
 load_image (const char filename[])
 {
-  void *get_try;
-  image_t *data;
-  char *path;
+  image_t *cache_data;
+  image_t *file_data;
 
   g_assert (filename != NULL);
 
-  /* Try look image up in cache. */
-  get_try = g_hash_table_lookup (sg_images, filename);
-  if (get_try != NULL)
+  cache_data = load_image_from_cache (filename);
+  if (cache_data != NULL)
     {
-      return get_try;
+      return cache_data;
     }
+  
+  /* Cache miss */
+  file_data = load_image_from_file (filename);
+  if (file_data != NULL)
+    {
+      return file_data;
+    }
+  
+  fatal ("GFX - load_image - Couldn't load image data for %s.", 
+         filename);
+  return NULL;
+}
 
-  /* Cache miss - load image from disk. */
+
+/* Attempts to load an image from the image cache. */
+static image_t *
+load_image_from_cache (const char filename[])
+{
+  g_assert (filename != NULL);
+  return g_hash_table_lookup (sg_images, filename);
+}
+
+
+/* Loads an image from its resource file. */
+static image_t *
+load_image_from_file (const char filename[])
+{
+  char *path;
+  image_t *data;
+  
+  g_assert (filename != NULL);
+  
   path = get_absolute_path (filename);
 
   data = (*g_modules.gfx.load_image_data) (path);
@@ -264,27 +325,26 @@ load_image (const char filename[])
 }
 
 
-/* Free image data. */
-
+/* Frees image data. */
 void
 free_image (image_t *image)
 {
   g_assert (image != NULL);
-
   (*g_modules.gfx.free_image_data) (image);
 }
 
 
-
-/* Draw a rectangular portion of an image on-screen. */
-
+/* Draws a rectangular portion of an image on-screen. */
 bool_t
-draw_image (const char filename[], int16_t image_x, int16_t image_y,
-            int16_t screen_x, int16_t screen_y, uint16_t width,
+draw_image (const char filename[],
+            int16_t image_x,
+            int16_t image_y,
+            int16_t screen_x,
+            int16_t screen_y,
+            uint16_t width,
             uint16_t height)
 {
   image_t *img = load_image (filename);
-
   if (img == NULL)
     {
       error ("GFX - draw_image - Image load failure for %s.", 
@@ -302,9 +362,8 @@ draw_image (const char filename[], int16_t image_x, int16_t image_y,
 }
 
 
-/* Draw a rectangular portion of an image on-screen, using a direct
+/* Draws a rectangular portion of an image on-screen, using a direct
    pointer to the driver-specific image data. */
-
 bool_t
 draw_image_direct (void *data, int16_t image_x, int16_t image_y,
                    int16_t screen_x, int16_t screen_y, uint16_t width,
@@ -320,8 +379,7 @@ draw_image_direct (void *data, int16_t image_x, int16_t image_y,
 }
 
 
-/* Delete an image previously loaded into the image cache. */
-
+/* Deletes an image previously loaded into the image cache. */
 bool_t
 delete_image (const char filename[])
 {
@@ -329,8 +387,7 @@ delete_image (const char filename[])
 }
 
 
-/* Delete all images in the image cache. */
-
+/* Deletes all images in the image cache. */
 void
 clear_images (void)
 {
@@ -338,8 +395,7 @@ clear_images (void)
 }
 
 
-/* Retrieve an image from the image cache. */
-
+/* Retrieves an image from the image cache. */
 image_t *
 find_image (const char filename[])
 {
@@ -348,7 +404,6 @@ find_image (const char filename[])
 
 
 /* Adds a rectangle to the next update run. */
-
 void
 add_update_rectangle (uint16_t x,
                       uint16_t y,
@@ -362,8 +417,7 @@ add_update_rectangle (uint16_t x,
 }
 
 
-/* Clean up the graphics subsystem. */
-
+/* Cleans up the graphics subsystem. */
 void
 cleanup_graphics (void)
 {
