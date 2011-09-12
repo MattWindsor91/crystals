@@ -52,9 +52,6 @@
 #ifndef _STATE_H
 #define _STATE_H
 
-#include "util.h"
-
-
 /* -- TYPE DEFINITIONS -- */
 
 typedef unsigned char state_t;  /**< State identifier type. */
@@ -85,7 +82,7 @@ struct state_functions
    *  @return  SUCCESS if no errors occurred, FAILURE otherwise.
    */
 
-  bool_t
+  void
   (*cleanup) (void);
 
 
@@ -94,7 +91,7 @@ struct state_functions
    *  @return  SUCCESS if no errors occurred, FAILURE otherwise.
    */
 
-  bool_t
+  void
   (*update) (void);
 
 
@@ -108,7 +105,7 @@ struct state_functions
    *  @return  SUCCESS if no errors occurred, FAILURE otherwise.
    */
 
-  bool_t
+  void
   (*dirty_rect) (short x, short y, 
                  unsigned short width, unsigned short height);
 };
@@ -137,12 +134,9 @@ get_state (void);
  * frame.
  *
  * @param new_state  The state to attempt to change to.
- *
- * @return  SUCCESS if no errors occurred, FAILURE otherwise (for
- * example, trying to enqueue a state change during a quit state).
  */
 
-bool_t
+void
 set_state (state_t new_state);
 
 
@@ -163,21 +157,17 @@ update_state (void);
  * Call the initialising function for a given state.
  *
  * @param state  The state to attempt to initialise.
- *
- * @return  SUCCESS if no errors occurred, FAILURE otherwise.
  */
 
-bool_t
+void
 init_state (state_t state);
 
 
 /**
  * Perform per-frame updates for the current state.
- *   
- * @return  SUCCESS if no errors occurred, FAILURE otherwise.
  */
 
-bool_t
+void
 state_frame_updates (void);
 
 
@@ -187,22 +177,18 @@ state_frame_updates (void);
  *  @param y       Y co-ordinate of the right edge of the rectangle.
  *  @param width   Width of the rectangle, in pixels.
  *  @param height  Height of the rectangle, in pixels.
- *
- *  @return  SUCCESS if no errors occurred, FAILURE otherwise.
  */
 
-bool_t
+void
 state_handle_dirty_rect (short x, short y,
                          unsigned short width, unsigned short height);
 
 
 /**
  * Call the cleanup function for the current state.
- *
- * @return  SUCCESS if no errors occurred, FAILURE otherwise.
  */
 
-bool_t
+void
 cleanup_state (void);
 
 

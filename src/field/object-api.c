@@ -36,20 +36,13 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/** @file    src/field/object-api.c
- *  @author  Matt Windsor
- *  @brief   Externally exposed API for object manipulation.
+/** 
+ * @file    src/field/object-api.c
+ * @author  Matt Windsor
+ * @brief   Externally exposed API for object manipulation.
  */
 
-#include <stdlib.h>
-
-#include "../util.h"
-#include "../graphics.h"
-
-#include "field.h"
-#include "object.h"
-#include "mapview.h"
-#include "object-api.h"
+#include "../crystals.h"
 
 
 /* -- STATIC GLOBAL VARIABLES -- */
@@ -57,296 +50,237 @@
 static object_t *sg_camera_focus = NULL; /** Current object with camera focus. */
 
 
+/* -- STATIC DECLARATIONS -- */
+
+/**
+ * Moves an object by that offset from its current co-ordinates.
+ *
+ * Either or both of the two offset parameters may be negative, which
+ * has the effect of moving the object in the opposite direction.
+ *
+ * @param object_name   Name of the object to move.
+ * @param dx            Change in x co-ordinate, in pixels towards the
+ *                      rightmost edge of the map.
+ * @param dy            Change in y co-ordinate, in pixels towards the
+ *                      bottom of the map.
+ *
+ * @return  SUCCESS for success; FAILURE otherwise (eg if the object
+ *          doesn't exist, or the co-ordinates are out of bounds).
+ */
+static bool_t
+move_object_post_check (const char object_name[], 
+                        int32_t dx,
+                        int32_t dy);
+
+/**
+ * Marks an object's drawing rectangle on the field as dirty.
+ *
+ * @param object  The object whose rectangle is to be marked dirty.
+ */
+static void
+mark_object_field_location_dirty (object_t *object);
+
+
+/**
+ * Given a valid image filename, changes the image associated with an
+ * object.
+ *
+ * @param object_name     Name of the object to change the image of.
+ * @param image_filename  Name of the file to use for the image.
+ * @param x_offset        X offset of the rectangular area of the
+ *                        image file to use as the object image, in
+ *                        pixels from the left edge of the image
+ *                        in the file provided.
+ * @param y_offset        Y offset of the rectangular area of the
+ *                        image file to use as the object image, in
+ *                        pixels from the top edge of the image in
+ *                        the file provided.
+ * @param width           Width of the rectangular area of the image
+ *                        file to use as the object image, in pixels.
+ * @param height          Height of the rectangular area of the image
+ *                        file to use as the object image, in
+ *                        pixels.
+ */
+static void
+change_object_image_post_check (const char object_name[],
+                                const char image_filename[], 
+                                int16_t x_offset,
+                                int16_t y_offset,
+                                uint16_t width,
+                                uint16_t height);
+
+
+/**
+ * Checks whether the given rectangle is outside the map bounds.
+ *
+ * @param x       The X co-ordinate of the left side of the rectangle,
+ *                in pixels from the left edge of the map.
+ * @param y       The Y co-ordinate of the top side of the rectangle,
+ *                in pixels from the top edge of the map.
+ * @param width   The width of the rectangle, in pixels.
+ * @param height  The height of the rectangle, in pixels.
+ *
+ * @return TRUE if the rectangle is out of bounds, FALSE if not.
+ */
+static bool_t
+rectangle_out_of_bounds (int x, int y, int width, int height);
+
+
+/**
+ * Moves the field camera by an offset.
+ *
+ * Either or both of the two offset parameters may be negative, which
+ * has the effect of moving the object in the opposite direction.
+ *
+ * @param dx            Change in x co-ordinate, in pixels towards the
+ *                      rightmost edge of the map.
+ * @param dy            Change in y co-ordinate, in pixels towards the
+ *                      bottom of the map.
+ *
+ * @return  SUCCESS if the camera was moved successfully;
+ *          FAILURE otherwise.
+ */
+static bool_t
+move_field_camera (int32_t dx, int32_t dy);
+
+
 /* -- DEFINITIONS -- */
 
 /* Set an object as the camera focus point. */
-
-bool_t
+void
 focus_camera_on_object (const char object_name[])
 {
-  object_t *object;
-
-  /* Sanity checking. */
-
-  if (object_name == NULL)
-    {
-      error ("OBJECT-API - focus_camera_on_object - Null object name.");
-      return FAILURE;
-    }
-
-  object = get_object (object_name);
-
-  if (object == NULL)
-    {
-      error ("OBJECT-API - focus_camera_on_object - Couldn't get object %s.", 
-             object_name);
-      return FAILURE;
-    }
+  object_t *object = get_object (object_name);
+  g_assert (object != NULL);
 
   sg_camera_focus = object;
+}
 
-  return SUCCESS;
+
+/* Given a non-zero offset, moves an object by that offset from its 
+ * current co-ordinates.
+ */
+bool_t
+move_object (const char object_name[], int32_t dx, int32_t dy)
+{
+  /* No point moving by (0, 0). */
+  if (dx == 0 && dy == 0)
+    {
+      return SUCCESS;
+    }
+
+  return move_object_post_check (object_name, dx, dy);
 }
 
 
 /* Move an object by an offset from its current co-ordinates. */
-
-bool_t
-move_object (const char object_name[], int32_t dx, int32_t dy)
+static bool_t
+move_object_post_check (const char object_name[], int32_t dx, int32_t dy)
 {
-  object_t *object;
-  mapview_t *mapview;
+  object_t *object = get_object (object_name);
 
+  g_assert (object != NULL);
+  g_assert (object->image != NULL);
 
-  /* These four ints are used for boundary checking later. */
-  
-  int32_t start_x;
-  int32_t start_y;
-  int32_t end_x;
-  int32_t end_y;
-
-
-  /* Sanity checking. */
-
-  if (object_name == NULL)
-    {
-      error ("OBJECT-API - move_object - Null object name.");
-      return FAILURE;
-    }
-
-  /* End sanity checking. */
-
-
-  object = get_object (object_name);
-
-  if (object == NULL)
-    {
-      error ("OBJECT-API - move_object - Couldn't get object %s.", 
-             object_name);
-      return FAILURE;
-    }
-
-  if (object->image == NULL)
-    {
-      error ("OBJECT-API - move_object - Object %s has no image dataset.", 
-             object->name);
-      return FAILURE;
-    }
-
-  mapview = get_field_mapview ();
-
-  if (mapview == NULL)
-    {
-      error ("OBJECT-API - move_object - No field map view.");
-      return FAILURE;
-    }
-
-  /* No point moving by (0, 0). */
-
-  if (dx == 0 && dy == 0)
-    return SUCCESS;
-
-  /* Check we're not moving the object out of bounds. */
-
-  if (get_field_map_boundaries (&start_x, 
-                                &start_y,
-                                &end_x,
-                                &end_y) == FAILURE)
-    {
-      error ("OBJECT-API - move_object - Couldn't get map boundaries.");
-      return FAILURE;
-    }
-
-  if (object->image->map_x + dx < start_x
-      || object->image->map_y + dy < start_y
-      || object->image->map_x + object->image->width + dx >= end_x
-      || object->image->map_y + object->image->height + dy >= end_y)
-    {
-      error ("OBJECT-API - move_object - Tried to move out of bounds.");
-      return FAILURE;
-    }
-
+  g_assert (!rectangle_out_of_bounds (object->image->map_x + dx,
+                                      object->image->map_y + dy,
+                                      (object->image->map_x + dx
+                                       + object->image->width), 
+                                      (object->image->map_y + dy
+                                       + object->image->height)));
+    
   /* Mark old location as dirty. */
-
-  mark_dirty_rect (mapview,
-                   object->image->map_x, 
-                   object->image->map_y, 
-                   object->image->width, 
-                   object->image->height);
+  mark_object_field_location_dirty (object);
 
   /* Try to move object. */
+  set_object_coordinates (object, 
+                          object->image->map_x + dx,
+                          object->image->map_y + dy, TOP_LEFT) ;
 
-  if (set_object_coordinates (object, 
-                              object->image->map_x + dx,
-                              object->image->map_y + dy, TOP_LEFT) 
-      == FAILURE)
-    return FAILURE;
-
-  /* Set object as newly dirty. */
-  set_object_dirty (object, mapview);
-  mark_dirty_rect (mapview,
-                   object->image->map_x, 
-                   object->image->map_y, 
-                   object->image->width, 
-                   object->image->height);
-
-  /* Finally, if the object is the camera focus, scroll the map (if
-     the new co-ordinates are near enough) or, when full map updates
-     are ready, centre the camera and redraw the map. */
+  /* Mark new location as dirty. */
+  mark_object_field_location_dirty (object);
 
   if (object == sg_camera_focus)
     {
-      /* Assert SCREEN_W and SCREEN_H are always int16_t */
-      if (dx <= SCREEN_W 
-          || dy <= SCREEN_H
-          || dx >= -SCREEN_W
-          || dy >= -SCREEN_H)
-        scroll_map (mapview, (int16_t) dx, (int16_t) dy);
+      return move_field_camera (dx, dy);
+    }
+  else
+    {
+      return SUCCESS;
+    }
+}
+
+
+/* Moves the camera by the given offset. */
+static bool_t
+move_field_camera (int32_t dx, int32_t dy)
+{
+  mapview_t *mapview = get_field_mapview ();
+  g_assert (mapview != NULL);
+
+  /*
+   * Should this function be a void, and just have a g_assert here?
+   * It looks to me that this case not arising would be a logic error,
+   * rather than a user error.
+   */
+  if (dx <= SCREEN_W 
+      || dy <= SCREEN_H
+      || dx >= -SCREEN_W
+      || dy >= -SCREEN_H)
+    {
+      scroll_map (mapview, (int16_t) dx, (int16_t) dy);
+      return SUCCESS;
     }
 
-  return SUCCESS;
+  return FAILURE;
 }
 
 
 /* Move an object to a new absolute position. */
-
-bool_t
-position_object (const char object_name[], int32_t x, int32_t y,
+void
+position_object (const char object_name[],
+                 int32_t x,
+                 int32_t y,
                  reference_t reference)
 {
-  object_t *object;
-  mapview_t *mapview;
+  object_t *object = get_object (object_name);
 
-  /* These four ints are used for boundary checking later. */
-  
-  int start_x;
-  int start_y;
-  int end_x;
-  int end_y;
-
-
-  /* Sanity checking. */
-
-  if (object_name == NULL)
-    {
-      error ("OBJECT-API - position_object - Null object name.");
-      return FAILURE;
-    }
-
-  /* End sanity checking. */
-
-
-  object = get_object (object_name);
-
-  if (object == NULL)
-    {
-      error ("OBJECT-API - position_object - Couldn't get object %s.", 
-             object_name);
-      return FAILURE;
-    }
-
-  if (object->image == NULL)
-    {
-      error ("OBJECT-API - position_object - Object %s has no image dataset.", 
-             object->name);
-      return FAILURE;
-    }
-
-  mapview = get_field_mapview ();
-
-  if (mapview == NULL)
-    {
-      error ("OBJECT-API - position_object - No field map view.");
-      return FAILURE;
-    }
-
-
-  /* Check we're not moving the object out of bounds. */
-
-  if (get_field_map_boundaries (&start_x, 
-                                &start_y,
-                                &end_x,
-                                &end_y) == FAILURE)
-    {
-      error ("OBJECT-API - position_object - Couldn't get map boundaries.");
-      return FAILURE;
-    }
-
-  if (x < start_x
-      || y < start_y
-      || x + object->image->width >= end_x
-      || y + object->image->height >= end_y)
-    {
-      error ("OBJECT-API - position_object - Tried to move out of bounds.");
-      return FAILURE;
-    }
-
+  g_assert (object != NULL);
+  g_assert (object->image != NULL);
+  g_assert (!rectangle_out_of_bounds (x,
+                                      y,
+                                      x + object->image->width, 
+                                      y + object->image->height));
 
   /* Mark old location as dirty. */
-
-  mark_dirty_rect (mapview,
-                   object->image->map_x, 
-                   object->image->map_y, 
-                   object->image->width, 
-                   object->image->height);
-
-
-  /* Try to move object. */
-
-  if (set_object_coordinates (object, 
-                              x,
-                              y, reference) 
-      == FAILURE)
-    return FAILURE;
-
-
-  /* Set object as newly dirty. */
-  set_object_dirty (object, mapview);
-  mark_dirty_rect (mapview,
-                   object->image->map_x, 
-                   object->image->map_y, 
-                   object->image->width, 
-                   object->image->height);
+  mark_object_field_location_dirty (object);
   
-  return SUCCESS;
+  /* Try to move object. */
+  set_object_coordinates (object, 
+                          x,
+                          y, reference) ;
+
+  /* Mark new location as dirty. */
+  mark_object_field_location_dirty (object);
 }
 
 
 /* Change the tag associated with an object. */
-
-bool_t
+void
 tag_object (const char object_name[], layer_tag_t tag)
 {
-  object_t *object;
+  object_t *object = get_object (object_name);
+  g_assert (object != NULL);
+  
+  /* Mark location as dirty - object may have moved up or down. */
+  mark_object_field_location_dirty (object);
 
-
-  /* Sanity checking. */
-
-  if (object_name == NULL)
-    {
-      error ("OBJECT-API - tag_object - Null object name.");
-      return FAILURE;
-    }
-
-  /* End sanity checking. */
-
-
-  object = get_object (object_name);
-
-  if (object == NULL)
-    {
-      error ("OBJECT-API - tag_object - Couldn't get object %s.", 
-             object_name);
-      return FAILURE;
-    }
-
-  return set_object_tag (object, tag);
+  set_object_tag (object, tag);
 }
 
 
-/* Change the image associated with an object. */
-
-bool_t
+/* Changes the image associated with an object. */
+void
 change_object_image (const char object_name[],
                      const char image_filename[], 
                      int16_t x_offset,
@@ -354,84 +288,94 @@ change_object_image (const char object_name[],
                      uint16_t width,
                      uint16_t height)
 {
-  object_t *object;
-  mapview_t *mapview;
+  g_assert (image_filename != NULL);
 
-  /* These four ints are used for boundary checking later. */
+  change_object_image_post_check (object_name,
+                                  image_filename,
+                                  x_offset,
+                                  y_offset,
+                                  width,
+                                  height);
+}
+
+/* Given a valid image filename, changes the image associated with an
+ * object.
+ */
+static void
+change_object_image_post_check (const char object_name[],
+                                const char image_filename[], 
+                                int16_t x_offset,
+                                int16_t y_offset,
+                                uint16_t width,
+                                uint16_t height)
+{
+  object_t *object = get_object (object_name);
+
+  g_assert (object != NULL);
+  g_assert (object->image != NULL);
+  g_assert (!rectangle_out_of_bounds (object->image->map_x,
+                                      object->image->map_y,
+                                      object->image->map_x + width, 
+                                      object->image->map_y + height));
+
+  set_object_image (object, 
+                    image_filename,
+                    x_offset,
+                    y_offset,
+                    width,
+                    height);
   
-  int32_t start_x;
-  int32_t start_y;
-  int32_t end_x;
-  int32_t end_y;
+  mark_object_field_location_dirty (object);
+}
 
 
-  if (image_filename == NULL)
+/* Marks an object's drawing rectangle on the field as dirty. */
+static void
+mark_object_field_location_dirty (object_t *object)
+{
+  mapview_t *mapview = get_field_mapview ();
+  g_assert (mapview != NULL);
+
+  /* No point marking a dirty rectangle if the object is currently
+   * invisible.
+   */
+  if (object->image->width == 0
+      || object->image->height == 0)
     {
-      error ("OBJECT-API -change_object_image - Null filename.");
-      return FAILURE;
+      return;
     }
 
-  if (object_name == NULL)
+  mark_dirty_rect (mapview,
+                   object->image->map_x, 
+                   object->image->map_y, 
+                   object->image->width, 
+                   object->image->height);  
+}
+
+
+/* Checks whether the given rectangle is outside the map bounds. */
+static bool_t
+rectangle_out_of_bounds (int x, int y, int width, int height)
+{
+  int start_x;
+  int start_y;
+  int end_x;
+  int end_y;
+
+  get_field_map_boundaries (&start_x, 
+                            &start_y,
+                            &end_x,
+                            &end_y);
+
+  if (x < start_x
+      || y < start_y
+      || x + width >= end_x
+      || y + height >= end_y)
     {
-      error ("OBJECT-API - change_object_image - Null object name.");
-      return FAILURE;
+      return TRUE;
     }
-
-  object = get_object (object_name);
-
-  if (object == NULL)
+  else
     {
-      error ("OBJECT-API - change_object_image - Couldn't get object %s.", 
-             object_name);
-      return FAILURE;
+      return FALSE;
     }
-
-  if (object->image == NULL)
-    {
-      error ("OBJECT-API - change_object_image - Object %s has no image dataset.", 
-             object->name);
-      return FAILURE;
-    }
-
-  mapview = get_field_mapview ();
-
-  if (mapview == NULL)
-    {
-      error ("OBJECT-API - change_object_image - No field map view.");
-      return FAILURE;
-    }
-
-  /* Check whether the new image size will push the object out of
-     bounds. */
-
-  if (get_field_map_boundaries (&start_x, 
-                                &start_y,
-                                &end_x,
-                                &end_y) == FAILURE)
-    {
-      error ("OBJECT-API - change_object_image - Couldn't get map boundaries.");
-      return FAILURE;
-    }
-
-  if (object->image->map_x < start_x
-      || object->image->map_y < start_y
-      || object->image->map_x + width >= end_x
-      || object->image->map_y + height >= end_y)
-    {
-      error ("OBJECT-API - change_object_image - Tried to move out of bounds.");
-      return FAILURE;
-    }
-
-  if (set_object_image (object, 
-                        image_filename,
-                        x_offset,
-                        y_offset,
-                        width,
-                        height) == FAILURE)
-    {
-      error ("OBJECT-API - change_object_image - Could not set image.");
-      return FAILURE;
-    }
-
-  return set_object_dirty (object, mapview);
 }

@@ -43,78 +43,20 @@
  */
 
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <stdarg.h>
-#include <string.h>
-#include <limits.h>
-
-#include "util.h"
-#include "parser.h"
-#include "main.h"
+#include "crystals.h"
 
 
 /* - DEFINITIONS - */
-
-/* -- Path retrieval -- */
-
-/* Get the path to the directory in which all modules are stored. */
-
-void
-get_module_root_path (char **module_path)
-{
-  /* If a string exists here, free it. */
-
-  if (*module_path != NULL)
-    {
-      free (module_path);
-      *module_path = NULL;
-    }
-
-
-  /* If configuration loading succeeded, try to grab the module path
-     from the config file.  If this doesn't work, use the default
-     path. */
-
-  if (g_config)
-    *module_path = cfg_get_str ("modules", "module_path", g_config);
-
-
-  if (*module_path == NULL)
-    {
-      error ("UTIL - get_module_path - Cannot read module path from config.");
-
-      /* Copy the default path to the pointer. */
-
-      *module_path = calloc (strlen (DEFMODPATH) + 1, sizeof (char));
-
-      if (*module_path == NULL)
-        fatal ("UTIL - get_module_path - Module path could not be allocated.");
-      else
-        strncpy (*module_path, DEFMODPATH, strlen (DEFMODPATH) + 1);
-    }
-}
-
 
 /* ~~ Safe type conversions */
 
 /* Safely convert a long integer to a 16-bit unsigned integer. */
 
-uint16_t
+inline uint16_t
 long_to_uint16 (long integer)
 {
-  if (integer < 0)
-    {
-      error ("UTIL - long_to_uint16 - Assertion n >= 0 failed.");
-      error ("UTIL - Truncating value to 0.");
-      integer = 0;
-    }
-  else if (integer > UINT16_MAX)
-    {
-      error ("UTIL - long_to_uint16 - Assertion n <= UINT16_MAX failed.");
-      error ("UTIL - Truncating value to uint16_t maximum.");
-      integer = UINT16_MAX;
-    }
+  g_assert (integer >= 0);
+  g_assert (integer <= UINT16_MAX);
 
   return (uint16_t) integer;
 }
@@ -122,21 +64,11 @@ long_to_uint16 (long integer)
 
 /* Safely convert a long integer to a signed 16_bit integer. */
 
-int16_t
+inline int16_t
 long_to_int16 (long integer)
 {
-  if (integer < INT16_MIN)
-    {
-      error ("UTIL - long_to_int16 - Assertion n >= INT16_MIN failed.");
-      error ("UTIL - Truncating value to int16_t minimum.");
-      integer = INT16_MIN;
-    }
-  else if (integer > INT16_MAX)
-    {
-      error ("UTIL - long_to_int16 - Assertion n <= INT16_MAX failed.");
-      error ("UTIL - Truncating value to int16_t minimum.");
-      integer = INT16_MAX;
-    }
+  g_assert (integer >= INT16_MIN);
+  g_assert (integer <= INT16_MAX);
 
   return (int16_t) integer;
 }
@@ -144,15 +76,10 @@ long_to_int16 (long integer)
 
 /* Safely convert an unsigned long integer to an unsigned 16-bit integer. */
 
-uint16_t
+inline uint16_t
 ulong_to_uint16 (unsigned long integer)
 {
-  if (integer > UINT16_MAX)
-    {
-      error ("UTIL - ulong_to_uint16 - Assertion n <= UINT16_MAX failed.");
-      error ("UTIL - Truncating value to uint16_t maximum.");
-      integer = UINT16_MAX;
-    }
+  g_assert (integer <= UINT16_MAX);
 
   return (uint16_t) integer;
 }
@@ -160,19 +87,27 @@ ulong_to_uint16 (unsigned long integer)
 
 /* Safely convert an unsigned long integer to a signed 16-bit integer. */
 
-int16_t
+inline int16_t
 ulong_to_int16 (unsigned long integer)
 {
-  if (integer > INT16_MAX)
-      {
-        error ("UTIL - ulong_to_int16 - Assertion n <= INT16_MAX failed.");
-        error ("UTIL - Truncating value to int16_t minimum.");
-        integer = INT16_MAX;
-      }
+  g_assert (integer <= INT16_MAX);
 
   return (int16_t) integer;
 }
 
+
+/* ~~ Memory management */
+
+/* Calloc and check */
+inline void*
+xcalloc (size_t nmemb, size_t size)
+{
+  void *memory = calloc (nmemb, size);
+
+  g_assert (memory);
+
+  return memory;
+}
 
 /* ~~ Error reporting */
 

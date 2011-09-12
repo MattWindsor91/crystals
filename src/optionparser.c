@@ -41,12 +41,7 @@
  *  @brief   Functions to parse a set of options (such as argc)
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-#include "util.h"
-#include "optionparser.h"
+#include "crystals.h"
 
 /* This returns whether the option is null or not */
 int

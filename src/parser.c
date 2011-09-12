@@ -42,8 +42,7 @@
  * @brief   Configuration parser.
  */
 
-#include "util.h"
-#include "parser.h"
+#include "crystals.h"
 
 /* Initialise the config system. */
 
@@ -57,12 +56,10 @@ init_config (const char *config_path)
 
   if (err != NULL)
     {
-      fatal ("PARSER - init_config - Unable to read conifg file: %s\n", err->message);
-      g_error_free (err);
-      return NULL;
+      fatal ("PARSER - init_config - Unable to read config file: %s\n", err->message);
     }
-  else 
-    return config;
+
+  return config;
 }
 
 
@@ -71,10 +68,8 @@ init_config (const char *config_path)
 void
 cfg_free (dict_t *cfg)
 {
-  if (cfg != NULL)
-    {
-      g_key_file_free(cfg);
-    }
+  g_assert (cfg != NULL);
+  g_key_file_free(cfg);
 }
 
 
