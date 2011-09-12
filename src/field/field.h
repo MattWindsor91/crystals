@@ -47,12 +47,6 @@
 #ifndef _FIELD_H
 #define _FIELD_H
 
-#include "mapview.h"   /* mapview_t */
-#include "../events.h" /* event_t */
-#include "../state.h"  /* state_functions */
-#include "../types.h"  /* bool_t */
-
-
 /* -- PROTOTYPES -- */
 
 /* - Callbacks - */
@@ -89,12 +83,11 @@ field_on_special_key_down (event_t *event);
 /* Regular functions */
 
 
-/** Initialise input callbacks.
- *
- *  @return SUCCESS for success, FAILURE otherwise.
+/**
+ * Initialise input callbacks.
  */
 
-bool_t
+void
 field_init_callbacks (void);
 
 
@@ -107,11 +100,8 @@ field_cleanup_callbacks (void);
 /** Initialise the field state.
  *
  *  @param function_table  Pointer to the function pointer to populate.
- *
- *  @return  SUCCESS if no errors were encountered; FAILURE otherwise. 
  */
-
-bool_t
+void
 init_field (struct state_functions *function_table);
 
 
@@ -138,12 +128,9 @@ get_field_mapview (void);
  *
  *  @param  y1_pointer  Pointer to the variable in which to store the
  *                      Y co-ordinate of the bottom edge of the map.
- *
- *  @return  SUCCESS if no errors were encountered; FAILURE
- *           otherwise. 
  */
 
-bool_t
+void
 get_field_map_boundaries (int *x0_pointer,
                           int *y0_pointer,
                           int *x1_pointer,
@@ -156,12 +143,11 @@ void
 field_handle_held_keys (void);
 
 
-/** Perform per-frame updates for field.
- *
- *  @return  SUCCESS if no errors occurred, FAILURE otherwise.
+/**
+ * Perform per-frame updates for field.
  */
 
-bool_t
+void
 update_field (void);
 
 
@@ -172,21 +158,18 @@ update_field (void);
  *  @param y       Y co-ordinate of the right edge of the rectangle.
  *  @param width   Width of the rectangle, in pixels.
  *  @param height  Height of the rectangle, in pixels.
- *
- *  @return  SUCCESS if no errors occurred, FAILURE otherwise.
  */
 
-bool_t
+void
 field_handle_dirty_rect (short x, short y,
                          unsigned short width, unsigned short height);
 
 
-/** De-initialise the field state.
- *
- *  @return  SUCCESS if no errors were encountered; FAILURE otherwise. 
+/**
+ * De-initialise the field state.
  */
 
-bool_t
+void
 cleanup_field (void);
 
 #endif /* not _FIELD_H */

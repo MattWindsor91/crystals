@@ -42,20 +42,7 @@
  * @brief    Main functions.
  */
 
-
-#include <stdlib.h>
-#include <string.h>
-#include <stdio.h>
-
-#include "main.h"
-#include "util.h"
-#include "state.h"
-#include "dialog.h"
-#include "parser.h"
-#include "module.h"
-#include "events.h"
-#include "graphics.h"
-#include "bindings/bindings.h"
+#include "crystals.h"
 
 
 /* -- CONSTANTS -- */
@@ -82,10 +69,8 @@ main (int argc, char **argv)
   (void) argc;
   (void) argv;
 
-
-  if (init () == SUCCESS)
-    main_loop ();
-
+  init ();
+  main_loop ();
 
   cleanup ();
   return 0;
@@ -101,7 +86,7 @@ dialog_test (void)
 
 /* Initialise all engine subsystems. */
 
-bool_t
+void
 init (void)
 {
   char *module_path = NULL;
@@ -111,72 +96,19 @@ init (void)
 
   g_config = init_config (DEFAULT_CONFIG_PATH);
 
-  if (g_config == NULL)
-    {
-      fatal ("MAIN - init - Config parser initialisation failed.");
-      return FAILURE;
-    }
-
-
   /* -- Module loader ("kernel") -- */
 
   get_module_root_path (&module_path);
 
-  if (module_path == NULL)
-    {
-      fatal ("MAIN - init - Failed to retrieve module path.");
-      return FAILURE;
-    }
+  init_modules (module_path);
+  init_graphics ();
+  init_bindings ();
+  init_events ();
 
-  if (init_modules (module_path) == FAILURE)
-    {
-      fatal ("MAIN - init - Module initialisation failed.");
-      return FAILURE;
-    }
-
-
-  /* -- Graphics subsystem -- */
-
-  if (init_graphics () == FAILURE)
-    {
-      fatal ("MAIN - init - Graphics initialisation failed.");
-      return FAILURE;
-    }
-
-
-  /* -- Bindings subsystem -- */
-
-  if (init_bindings () == FAILURE)
-    {
-      fatal ("MAIN - init - Bindings initialisation failed.");
-      return FAILURE;
-    }
+  set_state (STATE_FIELD);
 
   run_script ("tests/lua.lua");
-
-
-  /* -- Events subsystem -- */
-
-  if (init_events () == FAILURE)
-    {
-      fatal ("MAIN - init - Events initialisation failed.");
-      return FAILURE;
-    }
-
-
-  /* -- State machine -- */
-
-  if (set_state (STATE_FIELD) == FAILURE)
-    {
-      fatal ("MAIN - init - Couldn't enqueue state.");
-      return FAILURE;
-    }
-
-  dialog_test ();
-
-  /* -- Finish -- */
-
-  return SUCCESS;
+  dialog_test();
 }
 
 

@@ -43,9 +43,8 @@
  */
 
 
+#include "module.h"
 #include "gfx-module.h"  /* Module header file. */
-#include "../util.h"     /* Constants. */
-#include "../types.h"    /* Type definitions. */
 
 
 /* -- DEFINITIONS -- */

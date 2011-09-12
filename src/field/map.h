@@ -47,9 +47,6 @@
 #define _MAP_H
 
 
-#include "../types.h"
-
-
 /* -- TYPEDEFS -- */
 
 typedef uint16_t dimension_t;    /**< Type for tile-based map dimensions. */
@@ -112,23 +109,24 @@ extern struct map *g_map; /**< The map currently in use. (FIXME: is
 /**
  * Initialise a map.
  *
- * This allocates enough space for a map with the specified width,
- * height and number of layers, returning a blank map that can then
- * be populated with tile information
+ * In addition to populating the map with the given quantities, this
+ * allocates enough internal space in the map structure for a map with
+ * the specified width, height and number of layers, returning a blank
+ * map that can then be populated with tile information.
  *
+ * @param map              The map to initialise.  The map should not
+ *                         have been previously initialised, but must
+ *                         have been malloc'd.
  * @param width            The width of the map, in tiles.
  * @param height           The height of the map, in tiles.
  * @param max_layer_index  The maximum layer index in the map
  *                         (number of layers to reserve, minus one).
  * @param max_zone_index   The maximum zone index in the map
  *                         (number of zones to reserve, minus one).
- *
- * @return  a pointer to the map structure, or NULL if an error occurred
- *          during initialisation.
  */
-
-map_t *
-init_map (dimension_t width,
+void
+init_map (map_t *map,
+          dimension_t width,
           dimension_t height,
           layer_index_t max_layer_index,
           zone_index_t max_zone_index);
@@ -140,11 +138,8 @@ init_map (dimension_t width,
  * @param map    Pointer to the map to modify.
  * @param layer  Index of the layer on the map to modify.
  * @param tag    The new layer tag.
- *
- * @return       SUCCESS if the operation succeeded, FAILURE otherwise.
  */
-
-bool_t
+void
 set_layer_tag (map_t *map, layer_index_t layer, layer_tag_t tag);
 
 
@@ -154,11 +149,8 @@ set_layer_tag (map_t *map, layer_index_t layer, layer_tag_t tag);
  * @param map         Pointer to the map to modify.
  * @param zone        Index of the zone on the map to modify.
  * @param properties  The new properties bitfield.
- *
- * @return            SUCCESS if the operation succeeded, FAILURE otherwise.
  */
-
-bool_t
+void
 set_zone_properties (map_t *map, zone_index_t zone, zone_prop_t properties);
 
 
@@ -170,11 +162,8 @@ set_zone_properties (map_t *map, zone_index_t zone, zone_prop_t properties);
  * @param x      X co-ordinate, in tiles, of the tile to modify.
  * @param y      Y co-ordinate, in tiles, of the tile to modify.
  * @param value  The new value of the tile.
- *
- * @return       SUCCESS if the operation succeeded, FAILURE otherwise.
  */
-
-bool_t
+void
 set_tile_value (map_t *map, layer_index_t layer, dimension_t x, dimension_t y,
                 layer_value_t value);
 
@@ -187,11 +176,8 @@ set_tile_value (map_t *map, layer_index_t layer, dimension_t x, dimension_t y,
  * @param x      X co-ordinate, in tiles, of the tile to modify.
  * @param y      Y co-ordinate, in tiles, of the tile to modify.
  * @param zone   The new zone of the tile.
- *
- * @return  SUCCESS if the operation succeeded, FAILURE otherwise.
  */
-
-bool_t
+void
 set_tile_zone (map_t *map, layer_index_t layer, dimension_t x, dimension_t y,
                layer_zone_t zone);
 

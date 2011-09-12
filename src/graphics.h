@@ -47,11 +47,6 @@
 #define _GRAPHICS_H
 
 
-/* -- INCLUDES -- */
-
-#include "types.h" /* Types */
-
-
 /* -- TYPEDEFS -- */
 
 typedef void image_t;         /**< Generic image data type. */
@@ -100,18 +95,14 @@ extern const uint16_t FONT_H;        /**< Font character height, in pixels. */
 
 /**
  * Initialise the graphics subsystem.
- *
- * @return  SUCCESS if the graphics subsystem was initialised
- *          successfully; FAILURE otherwise.
  */
-
-bool_t
+void
 init_graphics (void);
 
 
 /**
- * Given a relative path to an image file, append the graphics root
- * path to it and store it in the given pointer.
+ * Given a relative path to an image file, appends the graphics root
+ * path to it and returns a pointer to the created string.
  *
  * @param path  The relative path to the image file, for example
  *              "bob.png".
@@ -119,53 +110,82 @@ init_graphics (void);
  * @return      The absolute path to the image file, for example
  *              "/usr/share/crystals/gfx/bob.png".
  */
-
 char *
 get_absolute_path (const char path[]);
 
 
 /**
- * Write a string on the screen, using the standard font.
+ * Writes a string on the screen, using the standard font.
  *
  * A wrapper to the image drawing functions that allows text to be
  * left, centre, or right-aligned on a line of length box_width
  * starting at (x, y).
  *
- * @param x          X position of text.
- * @param y          Y position of text.
- * @param box_width  Width of line to align text on. This need only be given
- *                   for centre or right-aligned text.
+ * @param x          X position of the left edge of the text box,
+ *                   in pixels from the left edge of the screen.
+ * @param y          Y position of the top edge of the text box,
+ *                   in pixels from the top edge of the screen.
+ * @param box_width  Width of the box in which the text is rendered.
+ *                   This is only used for centre or right-aligned
+ *                   text, and is ignored for left-aligned text.
  * @param alignment  Desired alignment (ALIGN_LEFT, ALIGN_CENTRE or
  *                   ALIGN_RIGHT).
  * @param string     The string to write.
  */
-
 void
-write_string (int16_t x, int16_t y, uint16_t box_width, alignment_t alignment,
+write_string (int16_t x,
+              int16_t y,
+              uint16_t box_width,
+              alignment_t alignment,
               const char string[]);
 
 
 /**
- * Fill the screen with the given colour.
+ * Draws a rectangle on the screen of the given colour.
+ *
+ * Depending on the graphics module, the colour displayed on screen
+ * may not exactly match the desired colour.
+ * 
+ * @param x      X position of the left edge of the rectangle,
+ *               in pixels from the left edge of the screen.
+ * @param y      Y position of the top edge of the rectangle,
+ *               in pixels from the top edge of the screen.
+ * @param width  Width of the rectangle, in pixels.
+ * @param height Height of the rectangle, in pixels.
+ * @param red    The red component of the fill colour (0-255).
+ * @param green  The green component of the fill colour (0-255).
+ * @param blue   The blue component of the fill colour (0-255).
+ *
+ * @return       SUCCESS for success; FAILURE otherwise.
+ */
+bool_t
+draw_rectangle (int16_t x,
+                int16_t y,
+                uint16_t width,
+                uint16_t height,
+                uint8_t red,
+                uint8_t green,
+                uint8_t blue);
+
+
+/**
+ * Fills the screen with the given colour.
  *
  * Depending on the graphics module, the colour displayed on screen
  * may not exactly match the desired colour.
  *
  * @param red    The red component of the fill colour (0-255).
- *
  * @param green  The green component of the fill colour (0-255).
- *
  * @param blue   The blue component of the fill colour (0-255).
  *
  * @return       SUCCESS for success; FAILURE otherwise.
  */
-
 bool_t
 fill_screen (uint8_t red, uint8_t green, uint8_t blue);
 
 
 /**
- * Translate the screen by a co-ordinate pair, leaving damage.
+ * Translates the screen by a co-ordinate pair, leaving damage.
  *
  * @param x_offset  The X co-ordinate offset in which to scroll the
  *                  screen, in pixels towards the right.
@@ -175,13 +195,12 @@ fill_screen (uint8_t red, uint8_t green, uint8_t blue);
  *
  * @return          SUCCESS for success; FAILURE otherwise.
  */
-
 bool_t
 scroll_screen (int16_t x_offset, int16_t y_offset);
 
 
 /**
- * Load an image.
+ * Loads an image.
  *
  * This does not need to be called directly in normal circumstances,
  * as draw_image automatically loads its requested image if it is not
@@ -190,132 +209,131 @@ scroll_screen (int16_t x_offset, int16_t y_offset);
  * noticeably slow disk access.
  *
  * @note            It is safe to directly use the pointer returned,
- *                  for example to pass its data member to
- *                  draw_image_direct, so long as the image is
- *                  known to still be loaded.  This can be used to
- *                  speed up successive drawing calls after an image
- *                  load check.
+ *                  for example as an argument to draw_image_direct,
+ *                  so long as the image is known to still be loaded.
+ *                  This can be used to speed up successive drawing 
+ *                  calls after an image load check.
  *
- * @param filename  The filename of the image to load. relative from
+ * @param filename  The filename of the image to load, relative from
  *                  the graphics path.
  *
- * @return          a hash_object encapsulating the image data if
- *                  successfully loaded and stored in the image cache;
- *                  NULL otherwise.
+ * @return  A pointer to the raw data of the image if
+ *          successfully loaded and stored in the image cache;
+ *          NULL otherwise.
  */
-
 image_t *
 load_image (const char filename[]);
 
 
 /**
- * Free image data.
+ * Frees image data.
  *
  * This is, at time of writing, merely a wrapper for the driver
  * free_image_data function.
  *
  * @param image  Pointer to the image data to free.
  */
-
 void
 free_image (image_t *image);
 
 
 /**
- * Draw a rectangular portion of an image on-screen.
+ * Draws a rectangular portion of an image on-screen.
  *
  * This will pre-load the image into the cache, if it does not
  * already exist there.
  *
  * @param filename  The filename of the image.
- *
  * @param image_x   The X-coordinate of the left edge of the
- *                  on-image rectangle to display.
- *
+ *                  on-image rectangle to display, in pixels from the
+ *                  left edge of the entire image.
  * @param image_y   The Y-coordinate of the top edge of the
- *                  on-image rectangle to display.
- *
+ *                  on-image rectangle to display. in pixels from the
+ *                  top edge of the entire image.
  * @param screen_x  The X-coordinate of the left edge of the
- *                  on-screen rectangle to place the image in.
- *
+ *                  on-screen rectangle to place the image in, in
+ *                  pixels from the left edge of the screen.
  * @param screen_y  The Y-coordinate of the top edge of the
- *                  on-screen rectangle to place the image in.
- *
- * @param width     The width of the rectangle.
- *
- * @param height    The height of the rectangle.
+ *                  on-screen rectangle to place the image in, in
+ *                  pixels from the top edge of the string.
+ * @param width     The width of the rectangle, in pixels.
+ * @param height    The height of the rectangle, in pixels.
  *
  * @return          SUCCESS for success, FAILURE otherwise.  In most
- *                  cases, a failure will simply cause the image to not
- *                  appear.
+ *                  cases, a failure will simply cause the image to
+ *                  not appear.
  */
-
 bool_t
-draw_image (const char filename[], int16_t image_x, int16_t image_y,
-            int16_t screen_x, int16_t screen_y, uint16_t width,
+draw_image (const char filename[],
+            int16_t image_x,
+            int16_t image_y,
+            int16_t screen_x,
+            int16_t screen_y,
+            uint16_t width,
             uint16_t height);
 
 
 /**
- * Draw a rectangular portion of an image on-screen, using a direct
+ * Draws a rectangular portion of an image on-screen, using a direct
  * pointer to the driver-specific image data.
  *
- * @param data      The void pointer to the image data.
- *
+ * @param data      A pointer to the raw image data.
  * @param image_x   The X-coordinate of the left edge of the
- *                  on-image rectangle to display.
- *
+ *                  on-image rectangle to display, in pixels from the
+ *                  left edge of the entire image.
  * @param image_y   The Y-coordinate of the top edge of the
- *                  on-image rectangle to display.
- *
+ *                  on-image rectangle to display. in pixels from the
+ *                  top edge of the entire image.
  * @param screen_x  The X-coordinate of the left edge of the
- *                  on-screen rectangle to place the image in.
- *
+ *                  on-screen rectangle to place the image in, in
+ *                  pixels from the left edge of the screen.
  * @param screen_y  The Y-coordinate of the top edge of the
- *                  on-screen rectangle to place the image in.
- *
- * @param width     The width of the rectangle.
- *
- * @param height    The height of the rectangle.
+ *                  on-screen rectangle to place the image in, in
+ *                  pixels from the top edge of the string.
+ * @param width     The width of the rectangle, in pixels.
+ * @param height    The height of the rectangle, in pixels. *
  *
  * @return          SUCCESS for success, FAILURE otherwise. In most
- *                  cases, a failure will simply cause the image to not
- *                  appear.
+ *                  cases, a failure will simply cause the image to
+ *                  not appear.
  */
-
 bool_t
-draw_image_direct (void *data, int16_t image_x, int16_t image_y,
-                   int16_t screen_x, int16_t screen_y, uint16_t width,
+draw_image_direct (image_t *data,
+                   int16_t image_x,
+                   int16_t image_y,
+                   int16_t screen_x,
+                   int16_t screen_y,
+                   uint16_t width,
                    uint16_t height);
 
 
 /**
- * Delete an image previously loaded into the image cache.
+ * Deletes an image previously loaded into the image cache.
  *
  * @param filename  Filename of the image.
  *
- * @return          SUCCESS if the deletion succeeded; FAILURE otherwise.
+ * @return          SUCCESS if the deletion succeeded; 
+ *                  FAILURE otherwise.
  */
-
 bool_t
 delete_image (const char filename[]);
 
 
-/** Delete all images in the image cache. */
-
+/**
+ * Deletes all images in the image cache.
+ */
 void
 clear_images (void);
 
 
 /**
- * Retrieve an image from the image cache.
+ * Retrieves an image from the image cache.
  *
  * @param filename  The filename of the image to retrieve.
  *
  * @return          A pointer to the image if found, 
  *                  or NULL otherwise.
  */
-
 image_t *
 find_image (const char filename[]);
 
@@ -330,7 +348,6 @@ find_image (const char filename[]);
  * @param width   The width of the rectangle, in pixels.
  * @param height  The height of the rectangle, in pixels.
  */
-
 void
 add_update_rectangle (uint16_t x,
                       uint16_t y,
@@ -339,17 +356,17 @@ add_update_rectangle (uint16_t x,
 
 
 /**
- * Update the screen.
+ * Updates the screen.
  *
  * @return  SUCCESS for success, FAILURE otherwise.
  */
-
 bool_t
 update_screen (void);
 
 
-/** Clean up the graphics subsystem. */
-
+/**
+ * Cleans up the graphics subsystem.
+ */
 void
 cleanup_graphics (void);
 

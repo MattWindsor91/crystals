@@ -37,58 +37,43 @@
  */
 
 /**
- * @file   src/main.h
- * @author Matt Windsor
- * @brief  Prototypes and declarations for main functions.
+ * @file   src/crystals.h
+ * @author Michael Walker
+ * @brief  Header to include all other required headers.
  */
 
+#ifndef _CRYSTALS_H
+#define _CRYSTALS_H
 
-#ifndef _MAIN_H
-#define _MAIN_H
+/* External headers */
+#include <stdlib.h>
+#include <stdarg.h>
+#include <string.h>
+#include <stdio.h>
 
-/* -- CONSTANTS -- */
+#include <glib.h>
+#include <glib-2.0/glib/gslist.h>
+#include <glib-2.0/gmodule.h>
 
-extern const char *DEFAULT_CONFIG_PATH;  /**< Default config file path. */
+/* Crystals headers */
+#include "types.h"
+#include "events.h"
+#include "graphics.h"
+#include "parser.h"
+#include "main.h"
+#include "module.h"
+#include "optionparser.h"
+#include "state.h"
+#include "util.h"
 
+#include "bindings/bindings.h"
 
-/* -- GLOBAL VARIABLES -- */
+#include "field/map.h"
+#include "field/mapview.h"
+#include "field/field.h"
+#include "field/mapload.h"
+#include "field/object-image.h"
+#include "field/object.h"
+#include "field/object-api.h"
 
-extern dict_t *g_config;    /**< Configuration dictionary. */
-
-
-/* -- DECLARATIONS -- */
-
-/**
- * The main function.
- *
- * @param argc  Argument count.
- * @param argv  Argument vector.
- *
- * @return      the exit status of the program.
- */
-
-int
-main (int argc, char **argv);
-
-
-/**
- * Initialise all engine subsystems.
- */
-
-void
-init (void);
-
-
-/** Execute the main loop of the program. */
-
-void
-main_loop (void);
-
-
-/** Clean up all initialised subsystems. */
-
-void
-cleanup (void);
-
-
-#endif /* not _MAIN_H */
+#endif /* not _CRYSTALS_H */
