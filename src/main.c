@@ -51,6 +51,7 @@
 #include "util.h"
 #include "state.h"
 #include "parser.h"
+#include "dialog.h"
 #include "module.h"
 #include "events.h"
 #include "graphics.h"
@@ -90,7 +91,31 @@ main (int argc, char **argv)
   return 0;
 }
 
+void
+test_dialog (void)
+{
+  req_t *req = NULL;
+  dlg_t *dlg = NULL;
+  dlg_content_t *con = NULL;
 
+  dlg = dlg_parse_file ("duster_event_test.dlg.xml");
+
+  printf("Requirements\n");
+  while ((req = dlg_requirement_next (dlg)) != NULL)
+    {
+      printf("%d\n", req->type);
+    }
+
+  while ((con = dlg_content_next (dlg, 1)) != NULL)
+    {
+      if (con->type == TEXT)
+        printf("%s: %s\n", con->action.text.actor_id, con->action.text.text);
+    }
+
+  dlg_free (dlg);
+
+  cleanup_xml ();
+}
 /* Initialise all engine subsystems. */
 
 bool_t
@@ -98,7 +123,7 @@ init (void)
 {
   char *module_path = NULL;
 
-
+  test_dialog ();
   /* -- Configuration -- */
 
   g_config = init_config (DEFAULT_CONFIG_PATH);

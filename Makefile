@@ -126,7 +126,7 @@ TESTS    := $(addprefix $(TESTDIR)/,$(TESTS))
 # The following object list represents the core of the engine 
 # and thus generally does not need altering by users.
 
-OBJ      := main.o graphics.o events.o
+OBJ      := main.o graphics.o events.o xml.o dialog.o
 OBJ      += util.o module.o optionparser.o parser.o state.o
 OBJ      += field/field.o 
 OBJ      += field/map.o field/mapview.o field/mapload.o
@@ -286,8 +286,8 @@ endif
 
 
 # FIXME
-CFLAGS   += `pkg-config glib-2.0 gmodule-2.0 --cflags`
-LIBS     += `pkg-config glib-2.0 gmodule-2.0 --libs`
+CFLAGS   += `pkg-config glib-2.0 gmodule-2.0 libxml-2.0 --cflags`
+LIBS     += `pkg-config glib-2.0 gmodule-2.0 libxml-2.0 --libs`
 
 
 # Add bindings object file to the other object files and add the proper CFLAGS and LIBS.
