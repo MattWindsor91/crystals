@@ -45,9 +45,6 @@
 #ifndef _PARSER_H
 #define _PARSER_H
 
-#include <glib.h>
-#include "types.h"
-
 /* -- TYPEDEFS -- */
 
 typedef GKeyFile dict_t; /**< Node type for the key-value tree. */

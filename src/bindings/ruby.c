@@ -51,13 +51,12 @@
 
 /* -- INTERNAL DEFINITIONS -- */
 
-bool_t
+void
 init_bindings (void)
 {
   ruby_init ();
   ruby_init_loadpath ();
   ruby_script ("crystals");
-  return SUCCESS;
 }
 
 void

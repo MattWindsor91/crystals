@@ -41,12 +41,9 @@
  *  @brief   SDL implementation of event system backend.
  */
 
-#include <stdio.h>
 #include <SDL.h>
 
-#include "../util.h"
-#include "../events.h"
-#include "../graphics.h"
+#include "module.h"
 
 /* Workaround for Windows DLL symbol load failures.
  *

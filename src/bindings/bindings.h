@@ -45,17 +45,15 @@
 #ifndef _BINDINGS_H
 #define _BINDINGS_H
 
-#include "../util.h"
+#include "../crystals.h"
 
 /* -- PROTOTYPES -- */
 
 /** 
  * Init language bindings
- *
- * @return Return SUCCESS for success, otherwise FAILURE
  */
 
-bool_t
+void
 init_bindings (void);
 
 
