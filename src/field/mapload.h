@@ -44,18 +44,6 @@
 #ifndef _MAPLOAD_H
 #define _MAPLOAD_H
 
-/* -- CONSTANTS -- */
-
-extern const char *MAGIC_HEADER;      /**< Sequence denoting the map header and also the map filetype. */
-extern const char *MAGIC_TAGS;        /**< Sequence denoting the layer tag block.                      */
-extern const char *MAGIC_VALUES;      /**< Sequence denoting the value plane block.                    */
-extern const char *MAGIC_ZONES;       /**< Sequence denoting the zone plane block.                     */
-extern const char *MAGIC_PROPERTIES;  /**< Sequence denoting the zone properties block.                */
-
-enum
-  {
-    MAP_VERSION = 1                   /**< The file format version expected. */
-  };
 
 /* -- DEFINITIONS -- */
 

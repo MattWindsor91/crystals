@@ -46,14 +46,38 @@
 
 /* -- CONSTANTS -- */
 
-const char *MAGIC_HEADER     = "CMFT";
-const char *MAGIC_TAGS       = "TAGS";
-const char *MAGIC_VALUES     = "VALS";
-const char *MAGIC_ZONES      = "ZONE";
-const char *MAGIC_PROPERTIES = "PROP";
+const uint16_t MAP_VERSION = 1;  /**< Expected map version. */
+const long CHUNK_NOT_FOUND = -1; /**< Sentinel chunk position. */
 
+enum chunk_ids
+  {
+    ID_FORM,
+    ID_HEADER,
+    ID_VERSION,
+    ID_DIMENSIONS,
+    ID_TAGS,
+    ID_VALUES,
+    ID_ZONES,
+    ID_PROPERTIES,
+    NUM_CHUNKS
+  };
+
+const size_t ID_LENGTH = 4; /**< Length in bytes of each chunk ID. */
+
+const char CHUNK_IDS[NUM_CHUNKS][5] = 
+  {
+    "FORM\0", /* ID_FORM */
+    "CMFT\0", /* ID_HEADER */
+    "VER \0", /* ID_VERSION */
+    "DIMS\0", /* ID_DIMENSIONS */
+    "TAGS\0", /* ID_TAGS */
+    "VALS\0", /* ID_VALUES */
+    "ZONE\0", /* ID_ZONES */
+    "PROP\0", /* ID_PROPERTIES */
+  };
 
 /* -- STATIC DECLARATIONS -- */
+
 
 /**
  * Parses the given file as a map file and attempts to return a map
@@ -67,32 +91,133 @@ parse_map_file (FILE *file, map_t *map);
 
 
 /**
- * Reads the map header from the file and allocate a new map from it.
+ * Finds the locations of the chunks in the map file that the loader 
+ * is interested in.
  *
- * @param file  The file to read from.
+ * @param file  The file to read from.  This should be seeked to the
+ *              start of the file.
+ *
+ * @return  An array of long integers, parallel to the CHUNK_IDS
+ *          array, containing the positions of chunks.  A -1 in any
+ *          index denotes an error in finding the chunk.
  */
-static void
-read_map_header (FILE *file, map_t *map);
+static long *
+find_chunks (FILE *file);
 
 
 /**
- * Reads the map header contents from the file.
+ * Initialises an array to hold the chunk position set.
+ *
+ * @return  an array suitable for holding the chunk positions, or 
+ *          NULL if allocation failed.
+ */
+static long *
+init_chunk_positions_array (void);
+
+
+/**
+ * Scans the main body of the file for chunk positions.
+ *
+ * @param file             The file to read from.  This should be
+ *                         seeked to the start of the body (that is,
+ *                         after the FORM header).
+ * @param file_length      The length of the body of the file, in
+ *                         bytes.  This is used for consistency
+ *                         checking.
+ * @param chunk_positions  The array to populate with the chunk
+ *                         positions.
+ */
+static void
+scan_body_for_chunks (FILE *file,
+                      uint32_t file_length,
+                      long *chunk_positions);
+
+
+/**
+ * Checks the required chunks to see if any are missing.
+ *
+ * @param chunk_positions  The array of chunk positions, as returned
+ *                         by find_chunks.
+ *
+ * @return TRUE if one or more chunks is missing; FALSE otherwise.
+ */
+static bool_t
+chunks_missing (long *chunk_locations);
+
+
+/**
+ * Skips to the given chunk position in a file.
+ *
+ * @param file            The file to seek within.
+ * @param chunk_position  The position within the file, in bytes from
+ *                        the file start, of the chunk.
+ */
+static void
+skip_to_chunk (FILE *file,
+               long chunk_position);
+
+
+/**
+ * Reads the version number chunk from the file.
+ * @param file            The file to read from.
+ * @param chunk_position  The position within the file, in bytes from
+ *                        the file start, of the chunk.
+ *
+ * @return  the version number.
+ */
+static uint16_t
+read_map_version_chunk (FILE *file,
+                        long chunk_position);
+
+
+/**
+ * Reads the version number from the file.
+ *
+ * @param file  The file to read from.
+ *
+ * @return  the version number.
+ */
+static uint16_t
+read_map_version (FILE *file);
+
+/**
+ * Reads the map dimensions chunk from the file, initialising the map
+ * using the results.
+ *
+ * @param file            The file to read from.
+ * @param map             The map to populate with the read data.
+ * @param chunk_position  The position within the file, in bytes from
+ *                        the file start, of the chunk.
+ */
+static void
+read_map_dimensions_chunk (FILE *file,
+                           map_t *map,
+                           long chunk_positions);
+
+
+/**
+ * Reads the map dimensions from the file, initialising the map using
+ * the results.
  *
  * @param file  The file pointer to read from.
  * @param map   The map to populate with the read data.
  */
 static void
-read_map_header_contents (FILE *file, map_t *map);
+read_map_dimensions (FILE *file, map_t *map);
 
 
 /**
  * Reads the map layer tags chunk from a file.
  *
- * @param file  The file pointer to read from.
- * @param map   The map to populate with the read data.
+ * @param file            The file to read from.
+ * @param map             The map to populate with the read data.
+ * @param chunk_position  The position within the file, in bytes from
+ *                        the file start, of the chunk.
  */
 static void
-read_layer_tags_chunk (FILE *file, map_t *map);
+read_map_tags_chunk (FILE *file,
+                       map_t *map,
+                       long chunk_position);
 
 
 /**
@@ -102,17 +227,21 @@ read_layer_tags_chunk (FILE *file, map_t *map);
  * @param map   The map to populate with the read data.
  */
 static void
-read_layer_tags (FILE *file, map_t *map);
+read_map_tags (FILE *file, map_t *map);
 
 
 /**
  * Reads the map value planes chunk from a file.
  *
- * @param file  The file pointer to read from.
- * @param map   The map to populate with the read data.
+ * @param file            The file to read from.
+ * @param map             The map to populate with the read data.
+ * @param chunk_position  The position within the file, in bytes from
+ *                        the file start, of the chunk.
  */
 static void
-read_map_value_planes_chunk (FILE *file, map_t *map);
+read_map_value_planes_chunk (FILE *file,
+                             map_t *map,
+                             long chunk_position);
 
 
 /**
@@ -141,11 +270,15 @@ read_map_value_plane (FILE *file, map_t *map, layer_index_t layer);
 /**
  * Reads the map zone planes chunk from a file.
  *
- * @param file  The file pointer to read from.
- * @param map   The map to populate with the read data.
+ * @param file            The file pointer to read from.
+ * @param map             The map to populate with the read data.
+ * @param chunk_position  The position within the file, in bytes from
+ *                        the file start, of the chunk.
  */
 static void
-read_map_zone_planes_chunk (FILE *file, map_t *map);
+read_map_zone_planes_chunk (FILE *file,
+                            map_t *map, 
+                            long chunk_position);
 
 
 /**
@@ -172,11 +305,15 @@ read_layer_zone_plane (FILE *file, map_t *map, layer_index_t layer);
 /**
  * Read the zone properties chunk from a file.
  *
- * @param file  The file pointer to read from.
- * @param map   The map to populate with the read data.
+ * @param file            The file pointer to read from.
+ * @param map             The map to populate with the read data.
+ * @param chunk_position  The position within the file, in bytes from
+ *                        the file start, of the chunk.
  */
 static void
-read_map_zone_properties_chunk (FILE *file, map_t *map);
+read_map_zone_properties_chunk (FILE *file,
+                                map_t *map,
+                                long chunk_position);
 
 
 /**
@@ -212,6 +349,17 @@ static uint16_t
 read_uint16 (FILE *file);
 
 
+/**
+ * Read an unsigned 32-bit integer from four bytes in big-endian format.
+ *
+ * @param  file  The file to read from.
+ *
+ * @return       the unsigned 32-bit integer.
+ */
+static uint32_t
+read_uint32 (FILE *file);
+
+
 /* -- DEFINITIONS -- */
 
 /* Reads a map from a file using the Crystals map format. */
@@ -237,38 +385,199 @@ load_map (const char path[])
 static void
 parse_map_file (FILE *file, map_t *map)
 {
-  read_map_header (file, map);
-  read_layer_tags_chunk (file, map);
-  read_map_value_planes_chunk (file, map);
-  read_map_zone_planes_chunk (file, map);
-  read_map_zone_properties_chunk (file, map);
+  long *chunks = find_chunks (file);
+
+  if (chunks_missing (chunks))
+    {
+      fatal ("MAPLOAD - parse_map_file - Missing required chunks.");
+    }
+  else if (read_map_version_chunk (file, chunks[ID_VERSION])
+           != MAP_VERSION)
+    {
+      fatal ("MAPLOAD - parse_map_file - Incorrect version.");
+    }
+
+  read_map_dimensions_chunk (file, map, chunks[ID_DIMENSIONS]);
+  read_map_tags_chunk (file, map, chunks[ID_TAGS]);
+  read_map_value_planes_chunk (file, map, chunks[ID_VALUES]);
+  read_map_zone_planes_chunk (file, map, chunks[ID_ZONES]);
+  read_map_zone_properties_chunk (file, map, chunks[ID_PROPERTIES]);
+
+  free (chunks);
 }
 
 
-/* Reads the map header from the file. */
-static void
-read_map_header (FILE *file, map_t *map)
+/* Finds the locations of the chunks in the map file that the loader 
+ * is interested in.
+ */
+static long *
+find_chunks (FILE *file)
 {
-  g_assert (check_magic_sequence (file, MAGIC_HEADER) != FAILURE);
-  g_assert (read_uint16 (file) == MAP_VERSION);
+  uint32_t file_length;
+  long *chunk_positions;
 
-  read_map_header_contents (file, map);
+  g_assert (file);
+  
+  chunk_positions = init_chunk_positions_array ();
+  if (chunk_positions == NULL)
+    {
+      fatal ("MAPLOAD - find_chunks - Could not allocate memory.");
+    }
+
+  fseek (file, 0, SEEK_SET);
+
+  /* We expect the file to start with "FORM", as it should be an
+   * IFF containing only one CMFT file.
+   */
+  if (!(check_magic_sequence (file, CHUNK_IDS[ID_FORM])))
+    {
+      fatal ("MAPLOAD - find_chunks - Missing form header.");
+    }
+  file_length = read_uint32 (file);
+
+  /* The type of file, which is expected here, should be CMFT. */
+  if (!(check_magic_sequence (file, CHUNK_IDS[ID_HEADER])))
+    {
+      fatal ("MAPLOAD - find_chunks - Incorrect file type.");
+    }
+
+  scan_body_for_chunks (file, file_length, chunk_positions);
+  return chunk_positions;
 }
 
 
-/* Reads the map header contents from the file. */
+/* Initialises an array to hold the chunk position set. */
+static long *
+init_chunk_positions_array (void)
+{
+  long *result = xcalloc (NUM_CHUNKS, sizeof (long));
+  if (result)
+    {
+      int i;
+      for (i = ID_VERSION; i < NUM_CHUNKS; i += 1)
+        {
+          result[i] = CHUNK_NOT_FOUND;
+        }
+
+      /* These two are in the same place in all well-formed maps. */
+      result[ID_FORM] = 0;
+      result[ID_HEADER] = 4;
+    }
+  return result;
+}
+
+
+/* Scans the main body of the file for chunk positions. */
 static void
-read_map_header_contents (FILE *file, map_t *map)
+scan_body_for_chunks (FILE *file,
+                      uint32_t file_length,
+                      long *chunk_positions)
+{ 
+  int i;
+  uint32_t chunk_length;
+  unsigned int num_bytes;
+  char *chunk_name = xcalloc (ID_LENGTH + 1, sizeof (char));
+
+  while (!feof (file))
+    {
+      num_bytes = fread (chunk_name, sizeof (char), ID_LENGTH, file);
+      if (num_bytes != ID_LENGTH)
+        {
+          break;
+        }
+
+      chunk_length = read_uint32 (file);
+
+      for (i = 0; i < NUM_CHUNKS; i++)
+        {
+          if (strcmp (chunk_name, CHUNK_IDS[i]) == 0)
+            {
+              g_debug ("Found %s chunk in map at position %lx",
+                       chunk_name, ftell (file));
+              chunk_positions[i] = ftell (file);
+            }
+        }
+      fseek (file, chunk_length, SEEK_CUR);
+    }
+
+  /* Length of file body + FORM chunk ID + size mark */
+  if (ftell (file) != (long) (file_length
+                              + ID_LENGTH
+                              + sizeof (uint32_t)))
+    {
+      error ("MAPLOAD - find_chunks - Size mismatch. %lx %lx",
+             file_length + ID_LENGTH + sizeof (uint32_t), ftell (file));
+    }
+
+  free (chunk_name);
+}
+
+
+/* Checks the required chunks to see if any are missing. */
+static bool_t
+chunks_missing (long *chunk_positions)
+{
+  int i;
+  for (i = 0; i < NUM_CHUNKS; i += 1)
+    {
+      if (chunk_positions[i] == CHUNK_NOT_FOUND)
+        {
+          return TRUE;
+        }
+    }
+  return FALSE;
+}
+
+
+/* Skips to the given chunk position in a file. */
+static void
+skip_to_chunk (FILE *file, long chunk_position)
+{
+  g_assert (chunk_position >= 0);
+
+  g_debug ("Skipping to chunk at %lx...", chunk_position);
+  fseek (file, chunk_position, SEEK_SET);
+}
+
+
+/* Reads the version number chunk from the file. */
+static uint16_t
+read_map_version_chunk (FILE *file,
+                        long chunk_position)
+{
+  skip_to_chunk (file, chunk_position);
+  return read_map_version (file);
+}
+
+
+/* Reads the version number from the file. */
+static uint16_t
+read_map_version (FILE *file)
+{
+  return read_uint16 (file);
+}
+
+
+/* Reads the map dimensions chunk from the file. */
+static void
+read_map_dimensions_chunk (FILE *file,
+                           map_t *map,
+                           long chunk_position)
+{
+  skip_to_chunk (file, chunk_position);
+  read_map_dimensions (file, map);
+}
+
+
+/* Reads the map dimensions from the file. */
+static void
+read_map_dimensions (FILE *file, map_t *map)
 {
   dimension_t map_width = read_uint16 (file); /* In tiles */
   dimension_t map_height = read_uint16 (file); /* In tiles */
   layer_index_t max_layer_index = read_uint16 (file);
   zone_index_t max_zone_index = read_uint16 (file);
   
-  /* Ignore unused bytes. */
-  fgetc (file);
-  fgetc (file);
-
   init_map (map,
             map_width,
             map_height, 
@@ -277,18 +586,20 @@ read_map_header_contents (FILE *file, map_t *map)
 }
 
 
-/* Read the map layer tags chunk from a file.  */
+/* Reads the map layer tags chunk from a file. */
 void
-read_layer_tags_chunk (FILE *file, map_t *map)
+read_map_tags_chunk (FILE *file,
+                     map_t *map,
+                     long chunk_position)
 {
-  g_assert (check_magic_sequence (file, MAGIC_TAGS) != FAILURE);
-
-  read_layer_tags (file, map);
+  skip_to_chunk (file, chunk_position);
+  read_map_tags (file, map);
 }
 
 
+/* Reads the map layer tags from a file. */
 static void
-read_layer_tags (FILE *file, map_t *map)
+read_map_tags (FILE *file, map_t *map)
 {
   layer_index_t l;
   for (l = 0; l <= get_max_layer (map); l++)
@@ -300,12 +611,14 @@ read_layer_tags (FILE *file, map_t *map)
 
 /* Reads the map value planes chunk from a file. */
 static void
-read_map_value_planes_chunk (FILE *file, map_t *map)
+read_map_value_planes_chunk (FILE *file,
+                             map_t *map,
+                             long chunk_position)
 {
-  g_assert (check_magic_sequence (file, MAGIC_VALUES) != FAILURE);
-
+  skip_to_chunk (file, chunk_position);
   read_map_value_planes (file, map);
 }
+
 
 /* Reads the map value planes from a file. */
 static void
@@ -340,10 +653,11 @@ read_map_value_plane (FILE *file, map_t *map, layer_index_t layer)
 
 /* Reads the map zone plane chunk from a file. */
 static void
-read_map_zone_planes_chunk (FILE *file, map_t *map)
+read_map_zone_planes_chunk (FILE *file,
+                            map_t *map,
+                            long chunk_position)
 {
-  g_assert (check_magic_sequence (file, MAGIC_VALUES) != FAILURE);
-
+  skip_to_chunk (file, chunk_position);
   read_map_zone_planes (file, map);
 }
 
@@ -381,10 +695,11 @@ read_layer_zone_plane (FILE *file, map_t *map, unsigned short layer)
 
 /* Reads the zone properties chunk from a file. */
 static void
-read_map_zone_properties_chunk (FILE *file, map_t *map)
+read_map_zone_properties_chunk (FILE *file,
+                                map_t *map,
+                                long chunk_position)
 {
-  g_assert (check_magic_sequence (file, MAGIC_VALUES) != FAILURE);
-
+  skip_to_chunk (file, chunk_position);
   read_map_zone_properties (file, map);
 }
 
@@ -410,21 +725,13 @@ check_magic_sequence (FILE *file, const char sequence[])
 
   fread (check, sizeof (char), strlen (sequence), file);
 
-  /*
-   *This causes assertions to fail. Therefore, the magic sequence in the test map is wrong, or
-   * the method of getting the magic sequence is wrong.
-   * Thus, I'm using the hack of just assuming the magic sequence is OK for now, until Matt (or
-   * someone who knows anything about the map format) can comment.
-   */
-
-  /*
   if (strcmp (sequence, check) != 0)
     {
       free (check);
-      error ("MAPLOAD - check_magic_sequence - Magic sequence not present.");
+      error ("MAPLOAD - check_magic_sequence - Expected  %s; got %s",
+             sequence, check);
       return FAILURE;
     }
-  */
 
   free (check);
   return SUCCESS;
@@ -443,4 +750,21 @@ read_uint16 (FILE *file)
   ushort |= (uint16_t) (fgetc (file));      /* Least significant byte */
 
   return ushort;
+}
+
+
+/* Reads an unsigned 32-bit integer from four bytes in 
+ * big-endian format.
+ */
+static uint32_t
+read_uint32 (FILE *file)
+{
+  uint32_t ulong = 0;
+
+  ulong |= (uint32_t) (fgetc (file) << 24); /* Most significant byte  */
+  ulong |= (uint32_t) (fgetc (file) << 16);
+  ulong |= (uint32_t) (fgetc (file) << 8);
+  ulong |= (uint32_t) (fgetc (file));       /* Least significant byte */
+
+  return ulong;
 }
