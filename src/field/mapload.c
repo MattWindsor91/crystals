@@ -338,28 +338,6 @@ static bool_t
 check_magic_sequence (FILE *file, const char sequence[]);
 
 
-/**
- * Read an unsigned 16-bit integer (0-65535) from two bytes in big-endian format.
- *
- * @param  file  The file to read from.
- *
- * @return       the unsigned 16-bit integer.
- */
-static uint16_t
-read_uint16 (FILE *file);
-
-
-/**
- * Read an unsigned 32-bit integer from four bytes in big-endian format.
- *
- * @param  file  The file to read from.
- *
- * @return       the unsigned 32-bit integer.
- */
-static uint32_t
-read_uint32 (FILE *file);
-
-
 /* -- DEFINITIONS -- */
 
 /* Reads a map from a file using the Crystals map format. */
@@ -735,36 +713,4 @@ check_magic_sequence (FILE *file, const char sequence[])
 
   free (check);
   return SUCCESS;
-}
-
-
-/* Reads an unsigned 16-bit integer (0-65535) from two bytes in 
- * big-endian format.
- */
-static uint16_t
-read_uint16 (FILE *file)
-{
-  uint16_t ushort = 0;
-
-  ushort |= (uint16_t) (fgetc (file) << 8); /* Most significant byte  */
-  ushort |= (uint16_t) (fgetc (file));      /* Least significant byte */
-
-  return ushort;
-}
-
-
-/* Reads an unsigned 32-bit integer from four bytes in 
- * big-endian format.
- */
-static uint32_t
-read_uint32 (FILE *file)
-{
-  uint32_t ulong = 0;
-
-  ulong |= (uint32_t) (fgetc (file) << 24); /* Most significant byte  */
-  ulong |= (uint32_t) (fgetc (file) << 16);
-  ulong |= (uint32_t) (fgetc (file) << 8);
-  ulong |= (uint32_t) (fgetc (file));       /* Least significant byte */
-
-  return ulong;
 }

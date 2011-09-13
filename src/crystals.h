@@ -57,6 +57,7 @@
 
 /* Crystals headers */
 #include "types.h"
+#include "file.h"
 #include "events.h"
 #include "graphics.h"
 #include "parser.h"

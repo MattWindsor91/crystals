@@ -195,7 +195,7 @@ DOC      := $(addprefix $(DOCDIR)/,$(DOC))
 
 # The compiler to use.
 
-CC       := gcc
+CC       := @CC@
 
 # The delete command.
 
@@ -227,11 +227,11 @@ WARN     := -Wall -Wextra -Wshadow -Wpointer-arith -Wcast-align \
 
 # Preprocessor defines from configure.
 
-DEFS := -DPACKAGE_NAME=\"CRYSTALS\" -DPACKAGE_TARNAME=\"crystals\" -DPACKAGE_VERSION=\"0.0\" -DPACKAGE_STRING=\"CRYSTALS\ 0.0\" -DPACKAGE_BUGREPORT=\"\" -DPACKAGE_URL=\"\" -DHAVE_LIBSDL=1 -DHAVE_LIBSDL_IMAGE=1 -DHAVE_LIBGLIB_2_0=1 -DHAVE_LIBGMODULE_2_0=1 -DSTDC_HEADERS=1 -DHAVE_SYS_TYPES_H=1 -DHAVE_SYS_STAT_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_MEMORY_H=1 -DHAVE_STRINGS_H=1 -DHAVE_INTTYPES_H=1 -DHAVE_STDINT_H=1 -DHAVE_UNISTD_H=1 -DHAVE__BOOL=1 -DHAVE_STDBOOL_H=1 -DHAVE_LIMITS_H=1 -DHAVE_STDINT_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_STDLIB_H=1 -DHAVE_MALLOC=1 -DHAVE_MEMSET=1 -DHAVE_STRSTR=1
+DEFS := @DEFS@
 
 # Generic compilation flags.
 
-CFLAGS   := -g -O2   -ansi -pedantic -O2 -g3 -ggdb \
+CFLAGS   := @CFLAGS@ @CPPFLAGS@  -ansi -pedantic -O2 -g3 -ggdb \
 	    -DDEFMODPATH="\"$(MODPATH)\"" ${DEFS} $(WARN)
 
 ## >> PLATFORM SPECIFICS << ##
