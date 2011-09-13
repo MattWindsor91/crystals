@@ -69,10 +69,11 @@
 
 #include "bindings/bindings.h"
 
-#include "field/map.h"
-#include "field/mapview.h"
+#include "map/map.h"
+#include "map/mapview.h"
+#include "map/mapload.h"
+
 #include "field/field.h"
-#include "field/mapload.h"
 #include "field/object-image.h"
 #include "field/object.h"
 #include "field/object-api.h"
