@@ -58,25 +58,14 @@
 
 #endif /* PLATFORM_WINDOWS */
 
-
-/* GNU systems */
-
-#ifdef PLATFORM_GNU
-
-#define TYPES_DEFINED
-
-#include "platform/gnu-types.h"
-
-#endif /* PLATFORM_GNU */
-
-
-/* Generic 32-bit types - should work but will break on 16-bit PCs or
- * very exotic systems.
- */
-
 #ifndef TYPES_DEFINED
-
-typedef unsigned char  bool_t;    /**< Boolean (TRUE/FALSE or SUCCESS/FAILURE) type. */
+# ifdef HAVE_STDINT_H
+#  include <stdint.h>
+# else
+/* Hopefully configure will have implemented the types we want to use.
+ * If not, then we'll roll our own.
+ */
+#  ifndef int8_t
 
 typedef unsigned char  uint8_t;   /**< Unsigned 8-bit integer. */
 typedef unsigned short uint16_t;  /**< Unsigned 16-bit integer. */
@@ -85,9 +74,6 @@ typedef unsigned int   uint32_t;  /**< Unsigned 32-bit integer. */
 typedef signed char    int8_t;    /**< Signed 8-bit integer. */
 typedef signed short   int16_t;   /**< Signed 16-bit integer. */
 typedef signed int     int32_t;   /**< Signed 32-bit integer. */
-
-
-/* -- CONSTANTS -- */
 
 enum
   {
@@ -101,7 +87,26 @@ enum
     INT16_MAX  = 32767,       /**< Maximum value of int16_t.  */
     INT32_MAX  = 2147483647   /**< Maximum value of int32_t.  */
   };
+#  endif /* !defined int8_t */
+# endif /* HAVE_STDINT_H */
 
+# ifdef HAVE_STDBOOL_H
+#  include <stdbool.h>
+# else
+#  ifndef HAVE__BOOL
+#   ifdef __cplusplus
+typedef bool _Bool;
+#   else
+#    define _Bool signed char
+#   endif
+#  endif
+#  define bool _Bool
+#  define false 0
+#  define true 1
+#  define __bool_true_false_are_defined 1
+# endif /* HAVE_STDBOOL_H */
+
+typedef _Bool bool_t; /* To be removed later */
 
 #endif /* not TYPES_DEFINED */
 
