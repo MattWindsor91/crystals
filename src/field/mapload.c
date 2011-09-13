@@ -141,7 +141,7 @@ scan_body_for_chunks (FILE *file,
  *
  * @return TRUE if one or more chunks is missing; FALSE otherwise.
  */
-static bool_t
+static bool
 chunks_missing (long *chunk_locations);
 
 
@@ -334,7 +334,7 @@ read_map_zone_properties (FILE *file, map_t *map);
  *
  * @return          TRUE if it is present, FALSE otherwise.
  */
-static bool_t
+static bool
 check_magic_sequence (FILE *file, const char sequence[]);
 
 
@@ -492,7 +492,7 @@ scan_body_for_chunks (FILE *file,
 
 
 /* Checks the required chunks to see if any are missing. */
-static bool_t
+static bool
 chunks_missing (long *chunk_positions)
 {
   int i;
@@ -603,9 +603,9 @@ static void
 read_map_value_planes (FILE *file, map_t *map)
 {
   layer_index_t l;
-  bool_t result = SUCCESS;
+  bool result = true;
 
-  for (l = 0; l <= get_max_layer (map) && result == SUCCESS; l++)
+  for (l = 0; l <= get_max_layer (map) && result == true; l++)
     {
       read_map_value_plane (file, map, l);
     }
@@ -618,10 +618,10 @@ read_map_value_plane (FILE *file, map_t *map, layer_index_t layer)
 {
   dimension_t x;
   dimension_t y;
-  bool_t result = SUCCESS;
+  bool result = true;
   for (x = 0; x < get_map_width (map); x++)
     {
-      for (y = 0; y < get_map_height (map) && result == SUCCESS; y++)
+      for (y = 0; y < get_map_height (map) && result == true; y++)
         {
           set_tile_value (map, layer, x, y, read_uint16 (file));
         }
@@ -645,9 +645,9 @@ static void
 read_map_zone_planes (FILE *file, map_t *map)
 {
   layer_index_t l;
-  bool_t result = SUCCESS;
+  bool result = true;
 
-  for (l = 0; l <= get_max_layer (map) && result == SUCCESS; l++)
+  for (l = 0; l <= get_max_layer (map) && result == true; l++)
     {
       read_layer_zone_plane (file, map, l);
     }
@@ -687,8 +687,7 @@ static void
 read_map_zone_properties (FILE *file, map_t *map)
 {
   zone_index_t i;
-  bool_t result = SUCCESS;
-  for (i = 0; i <= get_max_zone (map) && result == SUCCESS; i++)
+  for (i = 0; i <= get_max_zone (map); i += 1)
     {
       set_zone_properties (map, i, read_uint16 (file));
     }
@@ -696,7 +695,7 @@ read_map_zone_properties (FILE *file, map_t *map)
 
 
 /* Checks that a magic sequence is present. */
-static bool_t
+static bool
 check_magic_sequence (FILE *file, const char sequence[])
 {
   char *check = xcalloc (strlen (sequence) + 1, sizeof (char));
@@ -708,9 +707,9 @@ check_magic_sequence (FILE *file, const char sequence[])
       free (check);
       error ("MAPLOAD - check_magic_sequence - Expected  %s; got %s",
              sequence, check);
-      return FAILURE;
+      return false;
     }
 
   free (check);
-  return SUCCESS;
+  return true;
 }
