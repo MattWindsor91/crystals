@@ -1,7 +1,7 @@
 # Crystals (working title)
 #
-# Copyright (c) 2010 Matt Windsor, Michael Walker and Alexander
-#                    Preisinger.
+# Copyright (c) 2010, 2011 Matt Windsor, Michael Walker and Alexander
+#                          Preisinger.
 #
 # All rights reserved.
 #
@@ -36,14 +36,14 @@
 
 ### MAKEFILE ###
 
-# The following Makefile is set up by default to allow for compilation 
+# The following Makefile is set up by default to allow for compilation
 # to a few common platform targets.
 #
 # For the most part, all users need do is change the PLATFORM
 # definition to refer to the platform they wish to compile for.
 # However, fine-tuning of other variables may be necessary.
 
-# For convenience, anything that you, the user, should consider 
+# For convenience, anything that you, the user, should consider
 # modifying to suit your needs is marked with chevrons (eg >> PLATFORM <<).
 
 # In contrast, anything marked ! is an action performed by the Makefile
@@ -84,7 +84,7 @@ BUILDPREFIX := /usr
 
 SRCDIR   := src
 
-# Subdirectory of this directory and of SRCDIR in which modules and 
+# Subdirectory of this directory and of SRCDIR in which modules and
 # module sources respectively are stored.
 # This probably shouldn't be changed.
 
@@ -123,14 +123,14 @@ TESTS    := $(addprefix $(TESTDIR)/,$(TESTS))
 
 ## CORE OBJECTS ##
 
-# The following object list represents the core of the engine 
+# The following object list represents the core of the engine
 # and thus generally does not need altering by users.
 
 OBJ      := main.o graphics.o events.o file.o
 OBJ      += util.o module.o optionparser.o parser.o state.o
-OBJ      += field/field.o 
+OBJ      += field/field.o
 OBJ      += field/object.o field/object-api.o field/object-image.o
-OBJ      += map/map.o map/mapview.o map/mapload.o
+OBJ      += map/map.o map/mapview.o map/maprender.o map/mapload.o
 
 
 # Note: DO NOT add .so or .dll onto the end of module names!
@@ -140,11 +140,11 @@ OBJ      += map/map.o map/mapview.o map/mapload.o
 
 
 # You will need at least one of these in order to run crystals.
-# The graphics backends interface with graphics libraries in order to 
+# The graphics backends interface with graphics libraries in order to
 # render crystals on screen.
 
 # gfx-sdl | Simple DirectMedia Layer graphics backend.
-#         | This renders in software, but is cross-platform and 
+#         | This renders in software, but is cross-platform and
 #         | likely to be the most stable backend.  (Recommended)
 #         |
 #         | Works on:  windows, gnu and gnu variants.
@@ -155,14 +155,14 @@ SOBJ     := gfx-sdl gfx-dummy
 # Events backends #
 
 # You will need at least one of these in order to run crystals.
-# The events backends interface with events libraries (often part of 
-# graphics libraries) in order to accept input from the user via 
+# The events backends interface with events libraries (often part of
+# graphics libraries) in order to accept input from the user via
 # keyboard, mouse etc.
 
 # event-sdl | Simple DirectMedia Layer events backend.
 #           | This is REQUIRED if using a SDL-based graphics driver.
 #           | (Recommended)
-#           | 
+#           |
 #           | Works on:  windows, gnu and gnu variants.
 
 SOBJ     += event-sdl event-dummy
@@ -190,7 +190,7 @@ DOC      := $(addprefix $(DOCDIR)/,$(DOC))
 ## >> TOOLCHAIN AND COMPILER FLAGS << ##
 
 # Note: the following may be overridden by platform-specific
-# options below.  For example, by default the windows platform 
+# options below.  For example, by default the windows platform
 # overrides gcc with a cross-compiler.
 
 # The compiler to use.
@@ -216,7 +216,7 @@ WARN     := -Wall -Wextra -Wshadow -Wpointer-arith -Wcast-align \
             -Wwrite-strings -Wmissing-prototypes -Wmissing-declarations \
             -Wredundant-decls -Wnested-externs -Winline -Wno-long-long \
             -Wstrict-prototypes
-             
+
 
 # Not possible to use with -ansi cflag
 #ifeq ($(BINDINGS), ruby)
@@ -238,10 +238,10 @@ CFLAGS   := -g -O2   -ansi -pedantic -O2 -g3 -ggdb \
 
 # Flags used:
 
-# NO_STRSAFE | On Windows platforms, do not use strsafe.  At time of writing, 
-#            | this causes snprintf etc. to be used instead, which depends on 
+# NO_STRSAFE | On Windows platforms, do not use strsafe.  At time of writing,
+#            | this causes snprintf etc. to be used instead, which depends on
 #            | C99 or GNU support.
-# USE_STDINT | On Windows platforms, use stdint.h (depends on C99 or 
+# USE_STDINT | On Windows platforms, use stdint.h (depends on C99 or
 #            | GNU support) instead of Windows API types.
 
 GNUFLAGS := -DPLATFORM_GNU
@@ -251,9 +251,9 @@ GNULIBS  := -ldl -lpthread
 
 ifeq ($(PLATFORM),windows-mingw32)
     # Most of this is setting up to use a cross-compiler,
-    # so if using mingw32 natively much of this can be changed 
+    # so if using mingw32 natively much of this can be changed
     # or commented out.
-    
+
 	CC          := i486-mingw32-gcc
 	BUILDPREFIX := /usr/i486-mingw32
 	PKGCONFIG   := i486-mingw32-pkg-config
@@ -365,7 +365,7 @@ clean: clean-tests clean-doc clean-modules clean-bindings
 $(SRCDIR)/$(MODDIR)/gfx-sdl.$(DLLEXT): LIBS   += `$(BUILDPREFIX)/bin/sdl-config --libs` -lSDL_image
 $(SRCDIR)/$(MODDIR)/gfx-sdl.$(DLLEXT): CFLAGS += `$(BUILDPREFIX)/bin/sdl-config --cflags`
 
-$(SRCDIR)/$(MODDIR)/event-sdl.$(DLLEXT): LIBS   += `$(BUILDPREFIX)/bin/sdl-config --libs` 
+$(SRCDIR)/$(MODDIR)/event-sdl.$(DLLEXT): LIBS   += `$(BUILDPREFIX)/bin/sdl-config --libs`
 $(SRCDIR)/$(MODDIR)/event-sdl.$(DLLEXT): CFLAGS += `$(BUILDPREFIX)/bin/sdl-config --cflags`
 
 modules: $(SOBJ)

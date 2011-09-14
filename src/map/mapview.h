@@ -37,29 +37,16 @@
  */
 
 /**
- * @file    src/field/mapview.h
+ * @file    src/map/mapview.h
  * @author  Matt Windsor
- * @brief   Prototypes and declarations for rendering functions.
+ * @brief   Public interface for the map view system.
  *
  * The map renderer makes a distinction between the map data itself
  * and the additional data set tracking the map viewpoint.  Whereas
  * functions and structures related to the former are available in
  * map.c and map.h, the map viewpoint system is described in this
  * and mapview.c.
- *
- * @todo FIXME: Remove recursion in dirty tile rectangle code.
  */
-
-
-/**
- * An object render queue node.
- */
-typedef struct object_rnode
-{
-  struct object   *object;    /**< Pointer to the object. */
-  struct object_rnode *next;  /**< Next node in the queue. */
-} render_node_t;
-
 
 #ifndef _MAPVIEW_H
 #define _MAPVIEW_H
@@ -83,6 +70,9 @@ extern const uint16_t TILE_H;
 
 
 /* -- STRUCTURES -- */
+
+struct object;
+
 
 /**
  * A dirty rectangle queue node.
@@ -174,15 +164,6 @@ init_mapview (map_t *map);
 void
 add_object_image (mapview_t *mapview,
                   struct object *object);
-
-
-/**
- * Render the dirty tiles on a map.
- *
- * @param mapview  Pointer to the map view to render.
- */
-void
-render_map (mapview_t *mapview);
 
 
 /**

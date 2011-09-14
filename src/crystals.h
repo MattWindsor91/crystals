@@ -1,8 +1,8 @@
 /*
  * Crystals (working title)
  *
- * Copyright (c) 2010 Matt Windsor, Michael Walker and Alexander
- * Preisinger.
+ * Copyright (c) 2010, 2011 Matt Windsor, Michael Walker and Alexander
+ *                          Preisinger.
  *
  * All rights reserved.
  *
@@ -72,6 +72,7 @@
 #include "map/map.h"
 #include "map/mapview.h"
 #include "map/mapload.h"
+#include "map/maprender.h"
 
 #include "field/field.h"
 #include "field/object-image.h"
