@@ -128,7 +128,7 @@ TESTS    := $(addprefix $(TESTDIR)/,$(TESTS))
 
 OBJ      := main.o graphics.o events.o file.o
 OBJ      += util.o module.o optionparser.o parser.o state.o
-OBJ      += field/field.o
+OBJ      += field/field.o field/objectset.o
 OBJ      += field/object.o field/object-api.o field/object-image.o
 OBJ      += map/map.o map/mapview.o map/maprender.o map/mapload.o
 

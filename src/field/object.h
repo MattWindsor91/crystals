@@ -1,5 +1,5 @@
 /*
- * Crystals (working title) 
+ * Crystals (working title)
  *
  * Copyright (c) 2010 Matt Windsor, Michael Walker and Alexander
  *                    Preisinger.
@@ -46,6 +46,7 @@
 #ifndef _OBJECT_H
 #define _OBJECT_H
 
+
 /* -- TYPEDEFS -- */
 
 typedef uint8_t reference_t; /**< Reference constant type. */
@@ -53,11 +54,11 @@ typedef uint8_t reference_t; /**< Reference constant type. */
 
 /* -- CONSTANTS -- */
 
-enum
+typedef enum reference_point
   {
     TOP_LEFT = 0,   /**< Top-left of image reference point. */
     BOTTOM_LEFT = 1 /**< Bottom-left of image reference point. */
-  };
+  } reference_point_t;
 
 
 /* -- STRUCTURES -- */
@@ -76,7 +77,7 @@ typedef struct object
 
   char *script_filename;      /**< Filename of the script associated with
                                  the object. */
-  
+
   layer_tag_t tag;            /**< The tag on which to render. */
 
   bool_t is_dirty;            /**< Boolean determining whether or not
@@ -89,31 +90,6 @@ typedef struct object
 
 
 /* -- DECLARATIONS-- */
-
-/**
- * Initialise the object base.
- */
-void
-init_objects (void);
-
-
-/**
- * Create a new object and add it to the object table.
- *
- * @param object_name      The name of the object, used to look it up
- *                         in the object table.
- * @param script_filename  The filename of the script to associate
- *                         with the object. This script's
- *                         initialisation code will be called once
- *                         the object is installed.
- *
- * @return  a pointer to the new object, or NULL if there was an
- *          error while creating it.
- */
-object_t *
-add_object (const char object_name[],
-            const char script_filename[]);
-
 
 /**
  * Change the layer tag associated with an object.
@@ -136,7 +112,7 @@ struct object_image *
 get_object_image (object_t *object);
 
 
-/** 
+/**
  * Change the graphic associated with an object.
  *
  * This will instantly update the object image.
@@ -192,7 +168,7 @@ set_object_image (object_t *object,
  *                   BOTTOM_LEFT). In most cases, BOTTOM_LEFT is
  *                   preferred, as the bottom of the image is the
  *                   reference point for Z-order calculation.
- */ 
+ */
 void
 get_object_coordinates (object_t *object,
                         int32_t *x_pointer,
@@ -215,7 +191,7 @@ get_object_coordinates (object_t *object,
  *
  * @param x          The x co-ordinate, representing the left edge of
  *                   the object, in pixels from the left edge of the
- *                   map. 
+ *                   map.
  *
  * @param y          The y co-ordinate, representing the top or
  *                   bottom edge of the object, in pixels from the
@@ -225,7 +201,7 @@ get_object_coordinates (object_t *object,
  *                   BOTTOM_LEFT). In most cases, BOTTOM_LEFT is
  *                   preferred, as the bottom of the image is the
  *                   reference point for Z-order calculation.
- */ 
+ */
 void
 set_object_coordinates (object_t *object,
                         int32_t x,
@@ -252,38 +228,6 @@ set_object_dirty (object_t *object,
  */
 void
 free_object (void *object);
-
-
-/**
- * Remove an object from the object table.
- *
- * @param object_name  The name of the object to remove from the
- *                     table.
- *
- * @return  SUCCESS for success; FAILURE otherwise (eg if no object
- *          was deleted).
- */ 
-bool_t
-delete_object (const char object_name[]);
-
-
-/**
- * Deletes all objects in the object table.
- */
-void
-clear_objects (void);
-
-
-/**
- * Retrieve an object.
- *
- * @param object_name  The name of the object concerned. 
- *
- * @return  A pointer to the object with the given name if found, or 
- *          NULL otherwise.
- */
-object_t *
-get_object (const char object_name[]);
 
 
 /**

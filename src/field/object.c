@@ -1,8 +1,8 @@
 /*
- * Crystals (working title) 
+ * Crystals (working title)
  *
- * Copyright (c) 2010 Matt Windsor, Michael Walker and Alexander
- *                    Preisinger.
+ * Copyright (c) 2010, 2011 Matt Windsor, Michael Walker and Alexander
+ *                          Preisinger.
  *
  * All rights reserved.
  *
@@ -46,11 +46,6 @@
 #include "../crystals.h"
 
 
-/* -- STATIC GLOBAL VARIABLES -- */
-
-static GHashTable *sg_objects;
-
-
 /* -- STATIC DECLARATIONS -- */
 
 /**
@@ -67,54 +62,8 @@ dirty_object_test_post_check (object_t *object,
 
 /* -- DEFINITIONS -- */
 
-/* Initialise the object base. */
 
-void
-init_objects (void)
-{
-  sg_objects = g_hash_table_new_full (g_str_hash,
-                                      g_str_equal,
-                                      g_free,
-                                      free_object);
-
-  g_assert (sg_objects);
-}
-
-
-/* Create a new object and add it to the object table. */
-
-object_t *
-add_object (const char object_name[],
-            const char script_filename[])
-{
-  object_t *object = xcalloc (1, sizeof (object_t));
-
-  g_assert (object_name != NULL);
-  g_assert (script_filename != NULL);
-
-  /* Try to allocate an object. */
-  object->image = init_object_image ();
-  g_assert (object->image != NULL);
-  
-  object->name = g_strdup (object_name);
-  g_assert (object->name != NULL);
-  
-  object->script_filename = g_strdup (script_filename);
-  g_assert (object->script_filename != NULL);
-
-  /* Finally, nullify everything else. */
-  object->tag = 0;
-  object->is_dirty = FALSE;
-
-  g_hash_table_insert (sg_objects,
-                       g_strdup(object_name),
-                       object);
-  
-  return object;
-}
-
-
-/* Change the tag associated with an object. */
+/* Changes the tag associated with an object. */
 void
 set_object_tag (object_t *object, layer_tag_t tag)
 {
@@ -123,8 +72,7 @@ set_object_tag (object_t *object, layer_tag_t tag)
 }
 
 
-/* Get the graphic associated with an object. */
-
+/* Gets the graphic associated with an object. */
 object_image_t *
 get_object_image (object_t *object)
 {
@@ -133,8 +81,7 @@ get_object_image (object_t *object)
 }
 
 
-/* Change the graphic associated with an object. */
-
+/* Changes the graphic associated with an object. */
 void
 set_object_image (object_t *object,
                   const char filename[],
@@ -160,8 +107,7 @@ set_object_image (object_t *object,
 }
 
 
-/* Retrieve the object's co-ordinates on-map. */
-
+/* Retrieves the object's co-ordinates on-map. */
 void
 get_object_coordinates (object_t *object,
                         int32_t *x_pointer,
@@ -178,7 +124,7 @@ get_object_coordinates (object_t *object,
 }
 
 
-/* Set the object's co-ordinates on map. */
+/* Sets the object's co-ordinates on map. */
 void
 set_object_coordinates (object_t *object,
                         int32_t x,
@@ -207,7 +153,7 @@ set_object_coordinates (object_t *object,
 }
 
 
-/* Mark an object as being dirty on the given map view. */
+/* Marks an object as being dirty on the given map view. */
 void
 set_object_dirty (object_t *object,
                   mapview_t *mapview)
@@ -226,12 +172,10 @@ set_object_dirty (object_t *object,
 
   /* Ensure the object's co-ordinates don't go over the map
      width/height! */
-
   g_assert ((object->image->map_x + object->image->width <= mapview->map->width * TILE_W)
             && (object->image->map_y + object->image->height <= mapview->map->height * TILE_H));
 
   /* And now, the business end. */
-
   if (object->tag != 0)
     {
       add_object_image (mapview, object);
@@ -240,8 +184,9 @@ set_object_dirty (object_t *object,
 }
 
 
+/* Frees an object and all associated data. */
 void
-free_object (void *object)
+free_object (gpointer object)
 {
   object_t *objectc = (object_t *) object;
   if (objectc)
@@ -258,22 +203,6 @@ free_object (void *object)
       free (objectc);
     }
 }
-
-
-/* Remove an object from the object table. */
-bool_t
-delete_object (const char object_name[])
-{
-  return g_hash_table_remove (sg_objects, object_name);
-}
-
-
-/* Retrieve an object. */
-object_t *
-get_object (const char object_name[])
-{
-  return g_hash_table_lookup (sg_objects, object_name);
-} 
 
 
 /* Check to see whether the given object falls within the given dirty
@@ -294,7 +223,7 @@ dirty_object_test (gpointer key_ptr,
 
   if (object->is_dirty)
     return;
-    
+
   dirty_object_test_post_check (object, rect);
 }
 
@@ -307,17 +236,17 @@ dirty_object_test_post_check (object_t *object,
                               dirty_rectangle_t *rect)
 {
   mapview_t *mapview = rect->parent;
-      
+
   int rect_left = rect->start_x;
   int rect_top = rect->start_y;
   int rect_right = rect->start_x + rect->width - 1;
   int rect_bottom = rect->start_y + rect->height - 1;
-      
+
   int object_left = object->image->map_x;
   int object_top = object->image->map_y;
   int object_right = object->image->map_x + object->image->width - 1;
   int object_bottom = object->image->map_y + object->image->height - 1;
-      
+
   /* Use separating axis theorem, sort of, to decide whether the
    * object rect and the dirty rect intersect.
    */
@@ -325,26 +254,5 @@ dirty_object_test_post_check (object_t *object,
       && (object_top <= rect_bottom && object_bottom > rect_top))
     {
       set_object_dirty (object, mapview);
-    }      
-}
-
-
-/** Apply the given function to all objects. */
-
-void
-apply_to_objects (GHFunc function,
-                  void *data)
-{
-  g_hash_table_foreach (sg_objects, 
-                        function, 
-                        data);
-}
-
-
-/** Clean up the objects subsystem. */
-
-void
-cleanup_objects (void)
-{
-  g_hash_table_destroy (sg_objects);
+    }
 }

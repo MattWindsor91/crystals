@@ -56,12 +56,12 @@
 /**
  * Structure of data needed during a rectangle layer render pass.
  */
-typedef struct render_rect_layer_data
+typedef struct render_map_layer_tile_rect_data
 {
   mapview_t *mapview;
   image_t *tileset;
   layer_index_t layer;
-} render_rect_layer_data_t;
+} render_map_layer_tile_rect_data_t;
 
 /* -- STATIC DECLARATIONS -- */
 
@@ -76,12 +76,21 @@ static void
 handle_dirty_rectangle (gpointer rectangle,
                         gpointer mapview);
 
+
 /**
- * Renders a given layer on a map.
+ * Renders the map layers, one by one, in order.
  *
  * @param mapview    Pointer to the map view to render.
+ */
+static void
+render_map_layers (mapview_t *mapview);
+
+
+/**
+ * Renders the tile compnent of a given layer on a map.
  *
- * @param layer      The layer to render.
+ * @param mapview    A pointer to the map view to render.
+ * @param layer      The index of the layer to render.
  */
 static void
 render_map_layer_tiles (mapview_t *mapview,
@@ -96,8 +105,8 @@ render_map_layer_tiles (mapview_t *mapview,
  *                   render.
  */
 static void
-render_rect_layer (gpointer rectangle,
-                   gpointer data);
+render_map_layer_tile_rect (gpointer rectangle,
+                            gpointer data);
 
 
 /**
@@ -112,7 +121,7 @@ render_rect_layer (gpointer rectangle,
  */
 static void
 render_map_layer_objects (mapview_t *mapview,
-                    layer_index_t layer);
+                          layer_index_t layer);
 
 
 /**
@@ -122,8 +131,8 @@ render_map_layer_objects (mapview_t *mapview,
  * @param object   The object to render.
  */
 static void
-render_map_object (mapview_t *mapview,
-                   object_t *object);
+render_map_layer_object (mapview_t *mapview,
+                         object_t *object);
 
 
 /**
@@ -133,8 +142,8 @@ render_map_object (mapview_t *mapview,
  * @param image    The object image to render.
  */
 static void
-render_map_object_image (mapview_t *mapview,
-                         object_image_t *image);
+render_map_layer_object_image (mapview_t *mapview,
+                               object_image_t *image);
 
 
 /* -- GLOBAL DEFINITIONS -- */
@@ -143,8 +152,6 @@ render_map_object_image (mapview_t *mapview,
 void
 render_map (mapview_t *mapview)
 {
-  unsigned char l;
-
   g_assert (mapview != NULL);
   g_assert (mapview->map != NULL);
 
@@ -158,12 +165,7 @@ render_map (mapview_t *mapview)
                    handle_dirty_rectangle,
                    mapview);
 
-  /* Render a layer, then the objects tagged with that layer. */
-  for (l = 0; l <= get_max_layer (mapview->map); l += 1)
-    {
-      render_map_layer_tiles (mapview, l);
-      render_map_layer_objects (mapview, l);
-    }
+  render_map_layers (mapview);
 
   g_slist_free_full (mapview->dirty_rectangles, free);
   mapview->dirty_rectangles = NULL;
@@ -209,12 +211,25 @@ handle_dirty_rectangle (gpointer rectangle,
 }
 
 
-/* Render a given layer on a map. */
+/* Renders the map layers, one by one, in order. */
+static void
+render_map_layers (mapview_t *mapview)
+{
+  layer_count_t l;
+  for (l = 0; l <= get_max_layer (mapview->map); l += 1)
+    {
+      render_map_layer_tiles (mapview, l);
+      render_map_layer_objects (mapview, l);
+    }
+}
+
+
+/* Renders the tile component of a given layer on a map. */
 static void
 render_map_layer_tiles (mapview_t *mapview,
                         layer_index_t layer)
 {
-  render_rect_layer_data_t data;
+  render_map_layer_tile_rect_data_t data;
   image_t *tileset = load_image (FN_TILESET);
 
   if (tileset == NULL)
@@ -226,18 +241,18 @@ render_map_layer_tiles (mapview_t *mapview,
   data.tileset = tileset;
   data.layer = layer;
   g_slist_foreach (mapview->dirty_rectangles,
-                   render_rect_layer,
+                   render_map_layer_tile_rect,
                    &data);
 }
 
 
-/* Render a given rectangular "slice" of a layer on a map. */
+/* Renders a given rectangular "slice" of a layer on a map. */
 static void
-render_rect_layer (gpointer rectangle,
-                   gpointer data)
+render_map_layer_tile_rect (gpointer rectangle,
+                            gpointer data)
 {
   dirty_rectangle_t *rectanglec = rectangle;
-  render_rect_layer_data_t *datac = data;
+  render_map_layer_tile_rect_data_t *datac = data;
   map_t *map = datac->mapview->map;
   image_t *tileset = datac->tileset;
 
@@ -299,7 +314,7 @@ render_rect_layer (gpointer rectangle,
 }
 
 
-/* Render any map objects to be placed on top of this layer. */
+/* Renders any map objects to be placed on top of the given layer. */
 static void
 render_map_layer_objects (mapview_t *mapview,
                           layer_index_t layer)
@@ -319,7 +334,7 @@ render_map_layer_objects (mapview_t *mapview,
         g_slist_remove (mapview->object_queue[tag - 1],
                         object);
 
-      render_map_object (mapview,
+      render_map_layer_object (mapview,
                          object);
     }
 }
@@ -327,20 +342,20 @@ render_map_layer_objects (mapview_t *mapview,
 
 /* Renders a map object. */
 static void
-render_map_object (mapview_t *mapview,
-                   object_t *object)
+render_map_layer_object (mapview_t *mapview,
+                         object_t *object)
 {
   g_assert (object != NULL && object->image != NULL);
 
-  render_map_object_image (mapview, object->image);
+  render_map_layer_object_image (mapview, object->image);
   object->is_dirty = FALSE;
 }
 
 
 /* Renders a map object image. */
 static void
-render_map_object_image (mapview_t *mapview,
-                         object_image_t *image)
+render_map_layer_object_image (mapview_t *mapview,
+                               object_image_t *image)
 {
   g_assert (image != NULL && image->filename != NULL);
 

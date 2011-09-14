@@ -77,6 +77,7 @@
 #include "field/field.h"
 #include "field/object-image.h"
 #include "field/object.h"
+#include "field/objectset.h"
 #include "field/object-api.h"
 
 #endif /* not _CRYSTALS_H */
