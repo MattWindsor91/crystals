@@ -36,7 +36,7 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/** 
+/**
  * @file     src/field/field.c
  * @author   Matt Windsor
  * @brief    Field state.
@@ -58,6 +58,29 @@ static unsigned char sg_field_held_special_keys[256];
 static event_callback_t *sg_field_skeyupcb;
 static event_callback_t *sg_field_skeydowncb;
 static event_callback_t *sg_field_quitcb;
+
+
+/* -- STATIC DECLARATIONS -- */
+
+/**
+ * Initialises input callbacks.
+ */
+static void
+field_init_callbacks (void);
+
+
+/**
+ * De-initialises input callbacks.
+ */
+static void
+field_cleanup_callbacks (void);
+
+
+/**
+ * Checks to see if certain keys are held and handles the results.
+ */
+static void
+field_handle_held_keys (void);
 
 
 /* -- DEFINITIONS -- */
@@ -118,17 +141,17 @@ init_field (struct state_functions *function_table)
   add_object ("Player", "null");
   add_object ("Test1", "null");
   add_object ("Test2", "null");
-  
+
   tag_object ("Player", 1);
   tag_object ("Test1", 2);
   tag_object ("Test2", 1);
-  
+
   change_object_image ("Player", "testobj.png", 32, 0, 48, 48);
   change_object_image ("Test1", "testobj.png", 0, 0, 16, 48);
   change_object_image ("Test2", "testobj.png", 16, 0, 16, 48);
-  
+
   focus_camera_on_object ("Player");
-  
+
   position_object ("Player",  200, 200, BOTTOM_LEFT);
   position_object ("Test1", 100, 100, BOTTOM_LEFT);
   position_object ("Test2", 90, 90, BOTTOM_LEFT);
@@ -142,7 +165,6 @@ init_field (struct state_functions *function_table)
 
 
 /* Retrieve the map view currently in use. */
-
 mapview_t *
 get_field_mapview (void)
 {
@@ -151,15 +173,12 @@ get_field_mapview (void)
 
 
 /* Retrieve the boundaries of the map currently in use. */
-
 void
 get_field_map_boundaries (int *x0_pointer,
                           int *y0_pointer,
                           int *x1_pointer,
                           int *y1_pointer)
 {
-  /* Sanity-check pointers. */
-
   g_assert (x0_pointer != NULL
             && x1_pointer != NULL
             && y0_pointer != NULL
@@ -173,8 +192,7 @@ get_field_map_boundaries (int *x0_pointer,
 
 
 /* Check to see if certain keys are held and handle the results. */
-
-void
+static void
 field_handle_held_keys (void)
 {
   if (sg_field_held_special_keys[SK_UP])
@@ -197,8 +215,7 @@ field_handle_held_keys (void)
 
 
 /* Initialise input callbacks. */
-
-void
+static void
 field_init_callbacks (void)
 {
   sg_field_skeyupcb = install_callback (field_on_special_key_up, SPECIAL_KEY_UP_EVENT);
@@ -212,10 +229,9 @@ field_init_callbacks (void)
 
 
 /* De-initialise input callbacks. */
-
-void
+static void
 field_cleanup_callbacks (void)
-{ 
+{
   if (sg_field_skeyupcb)
     unload_callback (sg_field_skeyupcb);
 
@@ -230,7 +246,6 @@ field_cleanup_callbacks (void)
 
 
 /* Perform per-frame updates for field. */
-
 void
 update_field (void)
 {
@@ -242,20 +257,18 @@ update_field (void)
 
 /* Handle a dirty rectangle passed from the user interface overlay for
    field. */
-
 void
 field_handle_dirty_rect (short x, short y,
                          unsigned short width, unsigned short height)
 {
   mark_dirty_rect (sg_mapview,
-                   x + sg_mapview->x_offset, 
+                   x + sg_mapview->x_offset,
                    y + sg_mapview->y_offset,
                    width, height);
 }
 
 
 /* De-initialise the field state. */
-
 void
 cleanup_field (void)
 {

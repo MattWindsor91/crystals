@@ -1,5 +1,5 @@
 /*
- * Crystals (working title) 
+ * Crystals (working title)
  *
  * Copyright (c) 2010 Matt Windsor, Michael Walker and Alexander
  *                    Preisinger.
@@ -36,12 +36,13 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/** @file    src/field/field.h
- *  @author  Matt Windsor
- *  @brief   Prototypes and declarations for field state.
+/**
+ * @file    src/field/field.h
+ * @author  Matt Windsor
+ * @brief   Prototypes and declarations for field state.
  *
- *  The field state handles the main game map.  It is composed of a
- *  map rendering engine, an object system, and a map loader.
+ * The field state handles the main game map.  It is composed of a
+ * map rendering engine, an object system, and a map loader.
  */
 
 #ifndef _FIELD_H
@@ -51,96 +52,70 @@
 
 /* - Callbacks - */
 
-/** Callback for quit event.
+/**
+ * Callback for quit event.
  *
- *  @param event  The event produced by the quit.
+ * @param event  The event produced by the quit.
  */
-
-
 void
 field_on_quit (event_t *event);
 
 
-/** Callback for special key up-presses. 
+/**
+ * Callback for special key up-presses.
  *
- *  @param event The event produced by the key press.
+ * @param event The event produced by the key press.
  */
-
-
 void
 field_on_special_key_up (event_t *event);
 
 
-/** Callback for special key down-presses. 
+/**
+ * Callback for special key down-presses.
  *
- *  @param event The event produced by the key press.
+ * @param event The event produced by the key press.
  */
-
 void
 field_on_special_key_down (event_t *event);
 
 
 /* Regular functions */
 
-
 /**
- * Initialise input callbacks.
- */
-
-void
-field_init_callbacks (void);
-
-
-/** De-initialise input callbacks. */
-
-void
-field_cleanup_callbacks (void);
-
-
-/** Initialise the field state.
+ * Initialises the field state.
  *
- *  @param function_table  Pointer to the function pointer to populate.
+ * @param function_table  Pointer to the function pointer to populate.
  */
 void
 init_field (struct state_functions *function_table);
 
 
-/** Retrieve the map view currently in use.
+/**
+ * Retrieves the map view currently in use.
  *
- *  @return  Pointer to the current field map view.
- *
+ * @return  Pointer to the current field map view.
  */
-
 mapview_t *
 get_field_mapview (void);
 
 
-/** Retrieve the boundaries of the map currently in use, in pixels.
+/**
+ * Retrieves the boundaries of the map currently in use, in pixels.
  *
- *  @param  x0_pointer  Pointer to the variable in which to store the
- *                      X co-ordinate of the left edge of the map.
- *
- *  @param  y0_pointer  Pointer to the variable in which to store the
- *                      Y co-ordinate of the top edge of the map.
- *
- *  @param  x1_pointer  Pointer to the variable in which to store the
- *                      X co-ordinate of the right edge of the map.
- *
- *  @param  y1_pointer  Pointer to the variable in which to store the
- *                      Y co-ordinate of the bottom edge of the map.
+ * @param  x0_pointer  Pointer to the variable in which to store the
+ *                     X co-ordinate of the left edge of the map.
+ * @param  y0_pointer  Pointer to the variable in which to store the
+ *                     Y co-ordinate of the top edge of the map.
+ * @param  x1_pointer  Pointer to the variable in which to store the
+ *                     X co-ordinate of the right edge of the map.
+ * @param  y1_pointer  Pointer to the variable in which to store the
+ *                     Y co-ordinate of the bottom edge of the map.
  */
-
 void
 get_field_map_boundaries (int *x0_pointer,
                           int *y0_pointer,
                           int *x1_pointer,
                           int *y1_pointer);
-
-
-/** Check to see if certain keys are held and handle the results. */
-
-void
-field_handle_held_keys (void);
 
 
 /**
@@ -151,25 +126,25 @@ void
 update_field (void);
 
 
-/** Handle a dirty rectangle passed from the user interface overlay for
- *  field.
+/**
+ * Handles a dirty rectangle passed from the user interface overlay for
+ * field.
  *
- *  @param x       X co-ordinate of the left edge of the rectangle.
- *  @param y       Y co-ordinate of the right edge of the rectangle.
- *  @param width   Width of the rectangle, in pixels.
- *  @param height  Height of the rectangle, in pixels.
+ * @param x       X co-ordinate of the left edge of the rectangle.
+ * @param y       Y co-ordinate of the right edge of the rectangle.
+ * @param width   Width of the rectangle, in pixels.
+ * @param height  Height of the rectangle, in pixels.
  */
-
 void
 field_handle_dirty_rect (short x, short y,
                          unsigned short width, unsigned short height);
 
 
 /**
- * De-initialise the field state.
+ * De-initialises the field state.
  */
-
 void
 cleanup_field (void);
+
 
 #endif /* not _FIELD_H */

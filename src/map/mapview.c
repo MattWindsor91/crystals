@@ -1,5 +1,5 @@
 /*
- * Crystals (working title) 
+ * Crystals (working title)
  *
  * Copyright (c) 2010 Matt Windsor, Michael Walker and Alexander
  *                    Preisinger.
@@ -36,9 +36,10 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/** @file    src/field/mapview.c
- *  @author  Matt Windsor
- *  @brief   Map rendering functions.
+/**
+ * @file    src/field/mapview.c
+ * @author  Matt Windsor
+ * @brief   Map rendering functions.
  */
 
 
@@ -47,15 +48,16 @@
 
 /* -- CONSTANTS -- */
 
-const uint16_t TILE_W = 32;
-const uint16_t TILE_H = 32;
+const uint16_t TILE_W = 32;  /**< Width of each tile, in pixels. */
+const uint16_t TILE_H = 32;  /**< Height of each tile, in pixels. */
+const char FN_TILESET[] = "tiles.png";  /**< Tileset filename. */
 
 
 /* -- STATIC DECLARATIONS -- */
 
 /**
  * Handles a dirty map rectangle.
- * 
+ *
  * @param rectangle  A pointer to the dirty rectangle to handle.
  * @param mapview    A pointer to the mapview to enqueue changes to.
  */
@@ -63,7 +65,7 @@ static void
 handle_dirty_rectangle (gpointer rectangle,
                         gpointer mapview);
 
-/** 
+/**
  * Renders a given layer on a map.
  *
  * @param mapview    Pointer to the map view to render.
@@ -76,7 +78,7 @@ render_map_layer (mapview_t *mapview,
 
 /**
  * Renders a given rectangular layer "slice" on a map.
- * 
+ *
  * @param rectangle  A pointer to the dirty rectangle to render.
  * @param data       A pointer to the data required to perform the render.
  */
@@ -84,7 +86,7 @@ static void
 render_rect_layer (gpointer rectangle,
                    gpointer data);
 
-/** 
+/**
  * Render any map objects to be placed on top of this layer.
  *
  * This will, if this layer is the first defined with its tag, blit
@@ -117,23 +119,23 @@ init_mapview (map_t *map)
   mapview_t *mapview = xcalloc (1, sizeof (mapview_t));
   g_assert (map != NULL);
   g_assert (map->width > 0 && map->height > 0);
-  
+
   mapview->map = map;
 
   /* Get the number of object queues to reserve, by finding the
      highest tag number in the map. */
   mapview->num_object_queues = get_max_tag (mapview->map);
-  
+
   /* There should be at least one tag! */
   g_assert (mapview->num_object_queues != 0);
-  
+
   mapview->object_queue = xcalloc (mapview->num_object_queues,
                                    sizeof (object_image_t*));
-  
+
   /* Set all tiles as dirty. */
   mark_dirty_rect (mapview, 0, 0, map->width * TILE_W, map->height * TILE_H);
   render_map (mapview);
-  
+
   return mapview;
 }
 
@@ -148,7 +150,7 @@ add_object_image (mapview_t *mapview,
   object_image_t *image;
   render_node_t *new_rnode = xcalloc (1, sizeof (render_node_t));
   render_node_t *ptr;
- 
+
   g_assert (mapview != NULL);
   g_assert (tag != NULL_TAG);
   g_assert (tag <= mapview->num_object_queues);
@@ -158,7 +160,7 @@ add_object_image (mapview_t *mapview,
    * array, due to the nature of the mapview init.
    */
   image = get_object_image (object);
-  
+
   g_assert (image != NULL);
   g_assert (image->filename != NULL);
   g_assert (image->width != 0 && image->height != 0);
@@ -175,7 +177,7 @@ add_object_image (mapview_t *mapview,
    *  Otherwise, find a space in the queue before the first item with a
    *  screen_y higher (further down the screen) than this object, to
    *  preserve z-order.
-   */  
+   */
   if (mapview->object_queue[tag - 1] == NULL
       || ((mapview->object_queue[tag - 1]->image->map_y
            + mapview->object_queue[tag - 1]->image->height)
@@ -186,16 +188,16 @@ add_object_image (mapview_t *mapview,
     }
   else
     {
-      /* Skip to the first item that either has a null neighbour 
+      /* Skip to the first item that either has a null neighbour
        * or a neighbour whose screen_y + width is bigger.
        */
-      for (ptr = mapview->object_queue[tag - 1]; 
+      for (ptr = mapview->object_queue[tag - 1];
            ptr->next != NULL
              && ((ptr->next->image->map_y + ptr->next->image->height)
-                 <= (image->map_y + image->height)); 
+                 <= (image->map_y + image->height));
            ptr = ptr->next)
         ;
-      
+
       /* Insert the new image here. */
       new_rnode->next = ptr->next;
       ptr->next = new_rnode;
@@ -227,23 +229,22 @@ render_map (mapview_t *mapview)
       render_map_layer (mapview, l);
       render_map_objects (mapview, l);
     }
-    
+
   g_slist_free_full (mapview->dirty_rectangles, free);
   mapview->dirty_rectangles = NULL;
 }
 
 
 /* Handles a dirty map rectangle. */
-
 static void
 handle_dirty_rectangle (gpointer rectangle,
                         gpointer mapview)
 {
   dirty_rectangle_t *rectanglec = (dirty_rectangle_t *) rectangle;
   mapview_t *mapviewc = (mapview_t *) mapview;
-  
+
   /* Check to see if the rectangle is off-screen.  If so, don't
-   * bother rendering it! 
+   * bother rendering it!
    */
   if ((rectanglec->start_x >= SCREEN_W + mapviewc->x_offset)
       || (rectanglec->start_y >= SCREEN_H + mapviewc->y_offset)
@@ -254,8 +255,8 @@ handle_dirty_rectangle (gpointer rectangle,
     {
       return;
     }
-  
-  /* Translate absolute co-ordinates into screen ones, and 
+
+  /* Translate absolute co-ordinates into screen ones, and
    * propagate the dirty rectangle to the graphics subsystem.
    */
   add_update_rectangle (rectanglec->start_x - mapviewc->x_offset,
@@ -264,13 +265,12 @@ handle_dirty_rectangle (gpointer rectangle,
                         rectanglec->height);
 
   /* Check to see if each object in the hash table is going to be dirtied. */
-  apply_to_objects (dirty_object_test, 
+  apply_to_objects (dirty_object_test,
                     rectanglec);
 }
 
 
 /* Render a given layer on a map. */
-
 static void
 render_map_layer (mapview_t *mapview, layer_index_t layer)
 {
@@ -311,7 +311,7 @@ render_rect_layer (gpointer rectangle, gpointer data)
   int screen_y;
   int tileset_x;
   layer_value_t tile;
-  
+
   /* Because the end X and Y round up to the nearest tile, add another tile
    * to them if they don't already line up perfectly with the tile grid.
    * Else we'll have an off-by-one error.
@@ -320,26 +320,26 @@ render_rect_layer (gpointer rectangle, gpointer data)
     {
       tile_end_x += 1;
     }
-  
+
   if ((rectanglec->start_y + rectanglec->height) % TILE_H > 0)
     {
       tile_end_y += 1;
-    }    
+    }
 
   for (x = tile_start_x; x < tile_end_x; x += 1)
     {
       if (x > map->width || x < 0)
         continue;
 
-      screen_x = (x * TILE_W) - datac->mapview->x_offset; 
-      
+      screen_x = (x * TILE_W) - datac->mapview->x_offset;
+
       for (y = tile_start_y; y < tile_end_y; y += 1)
         {
           if (y > map->height || y < 0)
             continue;
 
           screen_y = (y * TILE_H) - datac->mapview->y_offset;
-          
+
           tile = map->value_planes[datac->layer][x + (y * map->height)];
           /* 0 = transparency */
           if (tile > 0)
@@ -357,7 +357,6 @@ render_rect_layer (gpointer rectangle, gpointer data)
 
 
 /* Render any map objects to be placed on top of this layer. */
-
 static void
 render_map_objects (mapview_t *mapview, layer_index_t layer)
 {
@@ -391,12 +390,11 @@ render_map_objects (mapview_t *mapview, layer_index_t layer)
 
           mapview->object_queue[tag - 1] = next;
         }
-    } 
+    }
 }
 
 
 /* Scroll the map on-screen, re-rendering it in its new position. */
-
 void
 scroll_map (mapview_t *mapview,
             int16_t x_offset,
@@ -408,20 +406,18 @@ scroll_map (mapview_t *mapview,
   /* Work out the dirty rectangles to mark. */
 
   /* West scroll. */
-
   if (x_offset < 0)
     {
-       mark_dirty_rect (mapview, 
+       mark_dirty_rect (mapview,
                         mapview->x_offset,
                         mapview->y_offset,
                         (dimension_t) abs (x_offset), SCREEN_H);
     }
 
   /* East scroll. */
-
   else if (x_offset > 0)
     {
-      mark_dirty_rect (mapview, 
+      mark_dirty_rect (mapview,
                        SCREEN_W + mapview->x_offset - x_offset,
                        mapview->y_offset,
                        (dimension_t) x_offset, SCREEN_H);
@@ -429,20 +425,18 @@ scroll_map (mapview_t *mapview,
 
 
   /* North scroll. */
-
-  if (y_offset < 0) 
+  if (y_offset < 0)
     {
-      mark_dirty_rect (mapview, 
+      mark_dirty_rect (mapview,
                        mapview->x_offset,
                        mapview->y_offset,
                        SCREEN_W, (dimension_t) abs (y_offset));
     }
 
   /* South scroll. */
-
   else if (y_offset > 0)
     {
-      mark_dirty_rect (mapview, 
+      mark_dirty_rect (mapview,
                        mapview->x_offset,
                        SCREEN_H + mapview->y_offset - y_offset,
                        SCREEN_W, (dimension_t) y_offset);
@@ -459,7 +453,6 @@ scroll_map (mapview_t *mapview,
 
 
 /** Mark a rectangle of tiles as being dirty. */
-
 void
 mark_dirty_rect (mapview_t *mapview,
                  int32_t start_x,
@@ -467,23 +460,23 @@ mark_dirty_rect (mapview_t *mapview,
                  int32_t width,
                  int32_t height)
 {
-  dirty_rectangle_t *rect = xcalloc (1, sizeof (dirty_rectangle_t));
+  dirty_rectangle_t *rect;
 
   g_assert (mapview != NULL);
   g_assert (width > 0 && height > 0);
 
+  rect = xcalloc (1, sizeof (dirty_rectangle_t));
   rect->parent = mapview;
   rect->start_x = start_x;
   rect->start_y = start_y;
   rect->width = width;
   rect->height = height;
-  
+
   mapview->dirty_rectangles = g_slist_prepend (mapview->dirty_rectangles, rect);
 }
 
 
 /* De-initialise a mapview. */
-
 void
 free_mapview (mapview_t *mapview)
 {
@@ -497,7 +490,7 @@ free_mapview (mapview_t *mapview)
           for (i = 0; i < mapview->num_object_queues; i++)
             {
               while (mapview->object_queue[i] != NULL)
-                {             
+                {
                   next = mapview->object_queue[i]->next;
                   free (mapview->object_queue[i]);
                   mapview->object_queue[i] = next;
@@ -508,7 +501,7 @@ free_mapview (mapview_t *mapview)
         }
 
       if (mapview->dirty_rectangles)
-        {   
+        {
           g_slist_free_full (mapview->dirty_rectangles, free);
           mapview->dirty_rectangles = NULL;
         }

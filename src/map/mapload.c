@@ -36,13 +36,14 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/** 
+/**
  * @file    src/field/mapload.c
  * @author  Matt Windsor
- * @brief   Map loader (ported from CrystalsMapEditor).
+ * @brief   Map loader.
  */
 
 #include "../crystals.h"
+
 
 /* -- CONSTANTS -- */
 
@@ -64,7 +65,7 @@ enum chunk_ids
 
 const size_t ID_LENGTH = 4; /**< Length in bytes of each chunk ID. */
 
-const char CHUNK_IDS[NUM_CHUNKS][5] = 
+const char CHUNK_IDS[NUM_CHUNKS][5] =
   {
     "FORM\0", /* ID_FORM */
     "CMFT\0", /* ID_HEADER */
@@ -76,8 +77,8 @@ const char CHUNK_IDS[NUM_CHUNKS][5] =
     "PROP\0", /* ID_PROPERTIES */
   };
 
-/* -- STATIC DECLARATIONS -- */
 
+/* -- STATIC DECLARATIONS -- */
 
 /**
  * Parses the given file as a map file and attempts to return a map
@@ -87,11 +88,11 @@ const char CHUNK_IDS[NUM_CHUNKS][5] =
  * @param map   The map to populate with the read data.
  */
 static void
-parse_map_file (FILE *file, map_t *map); 
+parse_map_file (FILE *file, map_t *map);
 
 
 /**
- * Finds the locations of the chunks in the map file that the loader 
+ * Finds the locations of the chunks in the map file that the loader
  * is interested in.
  *
  * @param file  The file to read from.  This should be seeked to the
@@ -108,7 +109,7 @@ find_chunks (FILE *file);
 /**
  * Initialises an array to hold the chunk position set.
  *
- * @return  an array suitable for holding the chunk positions, or 
+ * @return  an array suitable for holding the chunk positions, or
  *          NULL if allocation failed.
  */
 static long *
@@ -277,7 +278,7 @@ read_map_value_plane (FILE *file, map_t *map, layer_index_t layer);
  */
 static void
 read_map_zone_planes_chunk (FILE *file,
-                            map_t *map, 
+                            map_t *map,
                             long chunk_position);
 
 
@@ -350,7 +351,7 @@ load_map (const char path[])
   g_assert (file != NULL);
 
   parse_map_file (file, map);
-  
+
   fclose (file);
 
   return map;
@@ -385,7 +386,7 @@ parse_map_file (FILE *file, map_t *map)
 }
 
 
-/* Finds the locations of the chunks in the map file that the loader 
+/* Finds the locations of the chunks in the map file that the loader
  * is interested in.
  */
 static long *
@@ -395,7 +396,7 @@ find_chunks (FILE *file)
   long *chunk_positions;
 
   g_assert (file);
-  
+
   chunk_positions = init_chunk_positions_array ();
   if (chunk_positions == NULL)
     {
@@ -450,7 +451,7 @@ static void
 scan_body_for_chunks (FILE *file,
                       uint32_t file_length,
                       long *chunk_positions)
-{ 
+{
   int i;
   uint32_t chunk_length;
   unsigned int num_bytes;
@@ -555,11 +556,11 @@ read_map_dimensions (FILE *file, map_t *map)
   dimension_t map_height = read_uint16 (file); /* In tiles */
   layer_index_t max_layer_index = read_uint16 (file);
   zone_index_t max_zone_index = read_uint16 (file);
-  
+
   init_map (map,
             map_width,
-            map_height, 
-            max_layer_index, 
+            map_height,
+            max_layer_index,
             max_zone_index);
 }
 
