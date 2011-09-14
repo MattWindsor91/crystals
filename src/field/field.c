@@ -1,7 +1,7 @@
 /*
  * Crystals (working title)
  *
- * Copyright (c) 2010 Matt Windsor, Michael Walker and Alexander
+ * Copyright (c) 2010, 2011 Matt Windsor, Michael Walker and Alexander
  *                    Preisinger.
  *
  * All rights reserved.
@@ -258,8 +258,10 @@ update_field (void)
 /* Handle a dirty rectangle passed from the user interface overlay for
    field. */
 void
-field_handle_dirty_rect (short x, short y,
-                         unsigned short width, unsigned short height)
+field_handle_dirty_rect (int16_t x,
+                         int16_t y,
+                         uint16_t width,
+                         uint16_t height)
 {
   mark_dirty_rect (sg_mapview,
                    x + sg_mapview->x_offset,

@@ -234,7 +234,7 @@ set_object_dirty (object_t *object,
 
   if (object->tag != 0)
     {
-      add_object_image (mapview, object->tag, object);
+      add_object_image (mapview, object);
       object->is_dirty = TRUE;
     }
 }

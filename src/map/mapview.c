@@ -1,7 +1,7 @@
 /*
  * Crystals (working title)
  *
- * Copyright (c) 2010 Matt Windsor, Michael Walker and Alexander
+ * Copyright (c) 2010, 2011 Matt Windsor, Michael Walker and Alexander
  *                    Preisinger.
  *
  * All rights reserved.
@@ -94,12 +94,48 @@ render_rect_layer (gpointer rectangle,
  * z-order.
  *
  * @param mapview  Pointer to the map view to render.
- *
  * @param layer    The layer to render.
  */
-
 static void
-render_map_objects (mapview_t *mapview, layer_index_t layer);
+render_map_objects (mapview_t *mapview,
+                    layer_index_t layer);
+
+
+/**
+ * Renders a map object.
+ *
+ * @param mapview  Pointer to the map view to render.
+ * @param object   The object to render.
+ */
+static void
+render_map_object (mapview_t *mapview,
+                   object_t *object);
+
+
+/**
+ * Renders a map object.
+ *
+ * @param mapview  Pointer to the map view to render.
+ * @param image    The object image to render.
+ */
+static void
+render_map_object_image (mapview_t *mapview,
+                         object_image_t *image);
+
+
+/**
+ * Compares two objects by the position of their image baselines.
+ *
+ * @param a  The first object to be used in the comparison.
+ * @param b  The second object to be used in the comparison.
+ *
+ * @return a positive number if a should be rendered in front of b,
+ *         a negative number if b should be rendered in front of a,
+ *         or 0 if the two are equal in Y-order.
+ */
+static gint
+compare_objects_by_image_y_order (gconstpointer a,
+                                  gconstpointer b);
 
 
 /** Structure of data needed during a rectangle layer render pass. */
@@ -130,7 +166,7 @@ init_mapview (map_t *map)
   g_assert (mapview->num_object_queues != 0);
 
   mapview->object_queue = xcalloc (mapview->num_object_queues,
-                                   sizeof (object_image_t*));
+                                   sizeof (GSList*));
 
   /* Set all tiles as dirty. */
   mark_dirty_rect (mapview, 0, 0, map->width * TILE_W, map->height * TILE_H);
@@ -140,71 +176,50 @@ init_mapview (map_t *map)
 }
 
 
-/* Add an object sprite to the rendering queue. */
-
+/* Adds an object sprite to the rendering queue. */
 void
 add_object_image (mapview_t *mapview,
-                  layer_value_t tag,
                   object_t *object)
 {
-  object_image_t *image;
-  render_node_t *new_rnode = xcalloc (1, sizeof (render_node_t));
-  render_node_t *ptr;
-
   g_assert (mapview != NULL);
-  g_assert (tag != NULL_TAG);
-  g_assert (tag <= mapview->num_object_queues);
   g_assert (object != NULL);
+  g_assert (object->tag != NULL_TAG);
+  g_assert (object->tag <= mapview->num_object_queues);
+  g_assert (object->image != NULL);
+  g_assert (object->image->filename != NULL);
+  g_assert (object->image->width != 0
+            && object->image->height != 0);
 
-  /* Assert that a non-NULL mapview must have a non-NULL render queue
-   * array, due to the nature of the mapview init.
-   */
-  image = get_object_image (object);
-
-  g_assert (image != NULL);
-  g_assert (image->filename != NULL);
-  g_assert (image->width != 0 && image->height != 0);
-
-  /* Now copy the image, if possible. */
-  new_rnode->object = object;
-  new_rnode->image = image;
-  new_rnode->next = NULL;
-
-  /* Finally, add to the proper tag queue.
-   *
-   *  If the queue is empty or the first queue item is in front, then
-   *  just add it to the queue head.
-   *  Otherwise, find a space in the queue before the first item with a
-   *  screen_y higher (further down the screen) than this object, to
-   *  preserve z-order.
-   */
-  if (mapview->object_queue[tag - 1] == NULL
-      || ((mapview->object_queue[tag - 1]->image->map_y
-           + mapview->object_queue[tag - 1]->image->height)
-          > (image->map_y + image->height)))
-    {
-      new_rnode->next = mapview->object_queue[tag - 1];
-      mapview->object_queue[tag - 1] = new_rnode;
-    }
-  else
-    {
-      /* Skip to the first item that either has a null neighbour
-       * or a neighbour whose screen_y + width is bigger.
-       */
-      for (ptr = mapview->object_queue[tag - 1];
-           ptr->next != NULL
-             && ((ptr->next->image->map_y + ptr->next->image->height)
-                 <= (image->map_y + image->height));
-           ptr = ptr->next)
-        ;
-
-      /* Insert the new image here. */
-      new_rnode->next = ptr->next;
-      ptr->next = new_rnode;
-    }
+  mapview->object_queue[object->tag - 1] =
+    g_slist_insert_sorted (mapview->object_queue[object->tag - 1],
+                           object,
+                           compare_objects_by_image_y_order);
 }
 
 
+/* Compares two objects by the position of their image baselines. */
+static gint
+compare_objects_by_image_y_order (gconstpointer a,
+                                  gconstpointer b)
+{
+  object_t *ac = (object_t*) a;
+  object_t *bc = (object_t*) b;
+  uint32_t a_baseline;
+  uint32_t b_baseline;
+
+  g_assert (ac != NULL);
+  g_assert (ac->image != NULL);
+  g_assert (bc != NULL);
+  g_assert (bc->image != NULL);
+
+  a_baseline = ac->image->map_y + ac->image->height;
+  b_baseline = bc->image->map_y + bc->image->height;
+
+  return (a_baseline - b_baseline);
+}
+
+
+/* Renders the map. */
 void
 render_map (mapview_t *mapview)
 {
@@ -272,7 +287,8 @@ handle_dirty_rectangle (gpointer rectangle,
 
 /* Render a given layer on a map. */
 static void
-render_map_layer (mapview_t *mapview, layer_index_t layer)
+render_map_layer (mapview_t *mapview,
+                  layer_index_t layer)
 {
   render_rect_layer_data_t data;
   image_t *tileset = load_image (FN_TILESET);
@@ -290,9 +306,11 @@ render_map_layer (mapview_t *mapview, layer_index_t layer)
                    &data);
 }
 
+
 /* Render a given rectangular "slice" of a layer on a map. */
 static void
-render_rect_layer (gpointer rectangle, gpointer data)
+render_rect_layer (gpointer rectangle,
+                   gpointer data)
 {
   dirty_rectangle_t *rectanglec = rectangle;
   render_rect_layer_data_t *datac = data;
@@ -358,39 +376,56 @@ render_rect_layer (gpointer rectangle, gpointer data)
 
 /* Render any map objects to be placed on top of this layer. */
 static void
-render_map_objects (mapview_t *mapview, layer_index_t layer)
+render_map_objects (mapview_t *mapview,
+                    layer_index_t layer)
 {
   layer_value_t tag = get_layer_tag (mapview->map, layer);
-  render_node_t *next;
-  object_image_t *image;
+  gpointer object;
 
-  if (tag > NULL_TAG)
+  if (tag == NULL_TAG)
     {
-      while (mapview->object_queue[tag - 1] != NULL)
-        {
-          next = mapview->object_queue[tag - 1]->next;
-
-          image = mapview->object_queue[tag - 1]->image;
-
-          g_assert (image != NULL);
-
-          draw_image (image->filename,
-                      image->image_x,
-                      image->image_y,
-                      (short) (image->map_x - mapview->x_offset),
-                      (short) (image->map_y - mapview->y_offset),
-                      image->width,
-                      image->height);
-
-          /* Mark the parent object as no longer dirty. */
-          if (mapview->object_queue[tag - 1] != NULL)
-            mapview->object_queue[tag - 1]->object->is_dirty = FALSE;
-
-          free (mapview->object_queue[tag - 1]);
-
-          mapview->object_queue[tag - 1] = next;
-        }
+      return;  /* Null-tag layers do not have objects on them. */
     }
+
+  while (mapview->object_queue[tag - 1] != NULL)
+    {
+      object = g_slist_nth_data (mapview->object_queue[tag - 1], 0);
+      mapview->object_queue[tag - 1] =
+        g_slist_remove (mapview->object_queue[tag - 1],
+                        object);
+
+      render_map_object (mapview,
+                         object);
+    }
+}
+
+
+/* Renders a map object. */
+static void
+render_map_object (mapview_t *mapview,
+                   object_t *object)
+{
+  g_assert (object != NULL && object->image != NULL);
+
+  render_map_object_image (mapview, object->image);
+  object->is_dirty = FALSE;
+}
+
+
+/* Renders a map object image. */
+static void
+render_map_object_image (mapview_t *mapview,
+                         object_image_t *image)
+{
+  g_assert (image != NULL && image->filename != NULL);
+
+  draw_image (image->filename,
+              image->image_x,
+              image->image_y,
+              (short) (image->map_x - mapview->x_offset),
+              (short) (image->map_y - mapview->y_offset),
+              image->width,
+              image->height);
 }
 
 
@@ -452,7 +487,7 @@ scroll_map (mapview_t *mapview,
 }
 
 
-/** Mark a rectangle of tiles as being dirty. */
+/* Marks a rectangle of tiles as being dirty. */
 void
 mark_dirty_rect (mapview_t *mapview,
                  int32_t start_x,
@@ -476,25 +511,19 @@ mark_dirty_rect (mapview_t *mapview,
 }
 
 
-/* De-initialise a mapview. */
+/* De-initialises a mapview. */
 void
 free_mapview (mapview_t *mapview)
 {
-  unsigned int i;
-  render_node_t *next;
-
   if (mapview)
     {
       if (mapview->object_queue)
         {
+          uint16_t i;
           for (i = 0; i < mapview->num_object_queues; i++)
             {
-              while (mapview->object_queue[i] != NULL)
-                {
-                  next = mapview->object_queue[i]->next;
-                  free (mapview->object_queue[i]);
-                  mapview->object_queue[i] = next;
-                }
+              /* Objects in queue are freed in the object system. */
+              g_slist_free (mapview->object_queue[i]);
             }
 
           free (mapview->object_queue);
