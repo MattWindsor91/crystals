@@ -69,7 +69,7 @@ const char CHUNK_IDS[NUM_CHUNKS][5] =
   {
     "FORM\0", /* ID_FORM */
     "CMFT\0", /* ID_HEADER */
-    "VER \0", /* ID_VERSION */
+    "VERS\0", /* ID_VERSION */
     "DIMS\0", /* ID_DIMENSIONS */
     "TAGS\0", /* ID_TAGS */
     "VALS\0", /* ID_VALUES */
