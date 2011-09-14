@@ -50,6 +50,17 @@
  * @todo FIXME: Remove recursion in dirty tile rectangle code.
  */
 
+
+/**
+ * An object render queue node.
+ */
+typedef struct object_rnode
+{
+  struct object   *object;    /**< Pointer to the object. */
+  struct object_rnode *next;  /**< Next node in the queue. */
+} render_node_t;
+
+
 #ifndef _MAPVIEW_H
 #define _MAPVIEW_H
 
@@ -72,17 +83,6 @@ extern const uint16_t TILE_H;
 
 
 /* -- STRUCTURES -- */
-
-
-/**
- * An object render queue node.
- */
-typedef struct object_rnode
-{
-  struct object   *object;    /**< Pointer to the object. */
-  struct object_rnode *next;  /**< Next node in the queue. */
-} render_node_t;
-
 
 /**
  * A dirty rectangle queue node.
@@ -142,6 +142,7 @@ extern const char FN_TILESET[]; /**< Tileset filename. */
 
 
 /* -- PROTOTYPES -- */
+
 
 /**
  * Initialises a map view.

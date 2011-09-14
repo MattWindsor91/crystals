@@ -80,7 +80,8 @@ render_map_layer (mapview_t *mapview,
  * Renders a given rectangular layer "slice" on a map.
  *
  * @param rectangle  A pointer to the dirty rectangle to render.
- * @param data       A pointer to the data required to perform the render.
+ * @param data       A pointer to the data required to perform the
+ *                   render.
  */
 static void
 render_rect_layer (gpointer rectangle,
@@ -169,7 +170,11 @@ init_mapview (map_t *map)
                                    sizeof (GSList*));
 
   /* Set all tiles as dirty. */
-  mark_dirty_rect (mapview, 0, 0, map->width * TILE_W, map->height * TILE_H);
+  mark_dirty_rect (mapview,
+                   0,
+                   0,
+                   map->width * TILE_W,
+                   map->height * TILE_H);
   render_map (mapview);
 
   return mapview;
@@ -179,7 +184,7 @@ init_mapview (map_t *map)
 /* Adds an object sprite to the rendering queue. */
 void
 add_object_image (mapview_t *mapview,
-                  object_t *object)
+                  struct object *object)
 {
   g_assert (mapview != NULL);
   g_assert (object != NULL);
@@ -239,7 +244,7 @@ render_map (mapview_t *mapview)
                    mapview);
 
   /* Render a layer, then the objects tagged with that layer. */
-  for (l = 0; l <= get_max_layer (mapview->map); l++)
+  for (l = 0; l <= get_max_layer (mapview->map); l += 1)
     {
       render_map_layer (mapview, l);
       render_map_objects (mapview, l);
@@ -279,7 +284,9 @@ handle_dirty_rectangle (gpointer rectangle,
                         rectanglec->width,
                         rectanglec->height);
 
-  /* Check to see if each object in the hash table is going to be dirtied. */
+  /* Check to see if each object in the hash table is going to be
+   * dirtied.
+   */
   apply_to_objects (dirty_object_test,
                     rectanglec);
 }
@@ -330,9 +337,9 @@ render_rect_layer (gpointer rectangle,
   int tileset_x;
   layer_value_t tile;
 
-  /* Because the end X and Y round up to the nearest tile, add another tile
-   * to them if they don't already line up perfectly with the tile grid.
-   * Else we'll have an off-by-one error.
+  /* Because the end X and Y round up to the nearest tile, add another
+   * tile to them if they don't already line up perfectly with the
+   * tile grid.  Else we'll have an off-by-one error.
    */
   if ((rectanglec->start_x + rectanglec->width) % TILE_W > 0)
     {
@@ -358,7 +365,8 @@ render_rect_layer (gpointer rectangle,
 
           screen_y = (y * TILE_H) - datac->mapview->y_offset;
 
-          tile = map->value_planes[datac->layer][x + (y * map->height)];
+          tile
+            = map->value_planes[datac->layer][x + (y * map->height)];
           /* 0 = transparency */
           if (tile > 0)
             {
@@ -507,7 +515,8 @@ mark_dirty_rect (mapview_t *mapview,
   rect->width = width;
   rect->height = height;
 
-  mapview->dirty_rectangles = g_slist_prepend (mapview->dirty_rectangles, rect);
+  mapview->dirty_rectangles =
+    g_slist_prepend (mapview->dirty_rectangles, rect);
 }
 
 
@@ -520,7 +529,7 @@ free_mapview (mapview_t *mapview)
       if (mapview->object_queue)
         {
           uint16_t i;
-          for (i = 0; i < mapview->num_object_queues; i++)
+          for (i = 0; i < mapview->num_object_queues; i += 1)
             {
               /* Objects in queue are freed in the object system. */
               g_slist_free (mapview->object_queue[i]);
