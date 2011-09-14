@@ -62,7 +62,6 @@ dirty_object_test_post_check (object_t *object,
 
 /* -- DEFINITIONS -- */
 
-
 /* Changes the tag associated with an object. */
 void
 set_object_tag (object_t *object, layer_tag_t tag)
@@ -94,7 +93,7 @@ set_object_image (object_t *object,
 
   if (object->image->filename != NULL)
     {
-      free (object->image->filename);
+      g_free (object->image->filename);
     }
 
   object->image->filename = g_strdup (filename);
@@ -172,8 +171,10 @@ set_object_dirty (object_t *object,
 
   /* Ensure the object's co-ordinates don't go over the map
      width/height! */
-  g_assert ((object->image->map_x + object->image->width <= mapview->map->width * TILE_W)
-            && (object->image->map_y + object->image->height <= mapview->map->height * TILE_H));
+  g_assert ((object->image->map_x + object->image->width
+             <= mapview->map->width * TILE_W)
+            && (object->image->map_y + object->image->height
+                <= mapview->map->height * TILE_H));
 
   /* And now, the business end. */
   if (object->tag != 0)
