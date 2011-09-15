@@ -52,6 +52,16 @@
 static GHashTable *sg_objects; /**< Objects base (TODO: remove?) */
 
 
+/* -- STATIC DECLARATIONS -- */
+
+/**
+ * Frees an object and all associated data, given a gpointer to it.
+ *
+ * @param object  gpointer to the object to delete.
+ */
+static void free_object_from_gpointer (gpointer object);
+
+
 /* -- PUBLIC DEFINITIONS -- */
 
 /* Initialises the object base. */
@@ -61,7 +71,7 @@ init_objects (void)
   sg_objects = g_hash_table_new_full (g_str_hash,
                                       g_str_equal,
                                       g_free,
-                                      free_object);
+                                      free_object_from_gpointer);
 
   g_assert (sg_objects);
 }
@@ -131,4 +141,14 @@ void
 cleanup_objects (void)
 {
   g_hash_table_destroy (sg_objects);
+}
+
+
+/* -- STATIC DEFINITIONS -- */
+
+/* Frees an object and all associated data, given a gpointer to it. */
+static void
+free_object_from_gpointer (gpointer object)
+{
+  free_object ((object_t *) object);
 }

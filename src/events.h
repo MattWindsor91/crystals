@@ -42,7 +42,6 @@
  * @brief    Prototypes and declarations for generic events system.
  */
 
-
 #ifndef _EVENTS_H
 #define _EVENTS_H
 
@@ -99,7 +98,7 @@ typedef uint8_t event_key_t;     /**< Type for special key code.      */
 
 typedef struct event_base
 {
-  GSList *callbacks; /**< Linked list of callbacks. */
+  struct GSList *callbacks; /**< Linked list of callbacks. */
 } event_base_t;
 
 

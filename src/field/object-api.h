@@ -36,7 +36,7 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/** 
+/**
  * @file    src/field/object-api.h
  * @author  Matt Windsor
  * @brief   Prototypes and declarations for exposed object API.
@@ -62,8 +62,7 @@
  * @return  SUCCESS for success; FAILURE otherwise (eg if the object
  *          doesn't exist).
  */
-void
-focus_camera_on_object (const char object_name[]);
+void focus_camera_on_object (const char object_name[]);
 
 
 /**
@@ -78,10 +77,9 @@ focus_camera_on_object (const char object_name[]);
  * actual physical "base" of the object.
  *
  * @param object_name  Name to the object to move.
- *
  * @param x            The x co-ordinate, representing the left edge
  *                     of the object, in pixels from the left edge of
- *                     the map. 
+ *                     the map.
  * @param y            The y co-ordinate, representing the top or
  *                     bottom edge of the object, in pixels from the
  *                     top edge of the map.
@@ -89,14 +87,14 @@ focus_camera_on_object (const char object_name[]);
  *                     BOTTOM_LEFT). In most cases, BOTTOM_LEFT is
  *                     preferred, as the bottom of the image is the
  *                     reference point for Z-order calculation.
- */ 
+ */
 void
 position_object (const char object_name[], int32_t x, int32_t y,
-                 reference_t reference);
+		 reference_point_t reference);
 
 
 /**
- * Given a non-zero offset, moves an object by that offset from its 
+ * Given a non-zero offset, moves an object by that offset from its
  * current co-ordinates.
  *
  * Either or both of the two offset parameters may be negative, which
@@ -108,13 +106,10 @@ position_object (const char object_name[], int32_t x, int32_t y,
  * @param dy            Change in y co-ordinate, in pixels towards the
  *                      bottom of the map.
  *
- * @return  SUCCESS for success; FAILURE otherwise (eg if the object
+ * @return  true for success; false otherwise (eg if the object
  *          doesn't exist, or the co-ordinates are out of bounds).
  */
-bool_t
-move_object (const char object_name[], 
-             int32_t dx,
-             int32_t dy);
+bool move_object (const char object_name[], int32_t dx, int32_t dy);
 
 
 /**
@@ -123,9 +118,7 @@ move_object (const char object_name[],
  * @param object_name  Name of the object to change the tag of.
  * @param tag          The new tag.
  */
-void
-tag_object (const char object_name[],
-            layer_tag_t tag);
+void tag_object (const char object_name[], layer_tag_t tag);
 
 
 /**
@@ -149,11 +142,10 @@ tag_object (const char object_name[],
  */
 void
 change_object_image (const char object_name[],
-                     const char image_filename[], 
-                     int16_t x_offset,
-                     int16_t y_offset,
-                     uint16_t width,
-                     uint16_t height);
+		     const char image_filename[],
+		     int16_t x_offset,
+		     int16_t y_offset,
+		     uint16_t width, uint16_t height);
 
 
 #endif /* not _OBJECT_API_H */

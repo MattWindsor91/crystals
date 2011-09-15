@@ -1,8 +1,8 @@
 /*
- * Crystals (working title) 
+ * Crystals (working title)
  *
- * Copyright (c) 2010 Matt Windsor, Michael Walker and Alexander
- *                    Preisinger.
+ * Copyright (c) 2010, 2011
+ *               Matt Windsor, Michael Walker and Alexander Preisinger.
  *
  * All rights reserved.
  *
@@ -36,7 +36,7 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/** 
+/**
  * @file    src/field/object-api.c
  * @author  Matt Windsor
  * @brief   Externally exposed API for object manipulation.
@@ -64,21 +64,18 @@ static object_t *sg_camera_focus = NULL; /** Current object with camera focus. *
  * @param dy            Change in y co-ordinate, in pixels towards the
  *                      bottom of the map.
  *
- * @return  SUCCESS for success; FAILURE otherwise (eg if the object
+ * @return  true for success; false otherwise (eg if the object
  *          doesn't exist, or the co-ordinates are out of bounds).
  */
-static bool_t
-move_object_post_check (const char object_name[], 
-                        int32_t dx,
-                        int32_t dy);
+static bool move_object_post_check (const char object_name[],
+				    int32_t dx, int32_t dy);
 
 /**
  * Marks an object's drawing rectangle on the field as dirty.
  *
  * @param object  The object whose rectangle is to be marked dirty.
  */
-static void
-mark_object_field_location_dirty (object_t *object);
+static void mark_object_field_location_dirty (object_t *object);
 
 
 /**
@@ -103,11 +100,10 @@ mark_object_field_location_dirty (object_t *object);
  */
 static void
 change_object_image_post_check (const char object_name[],
-                                const char image_filename[], 
-                                int16_t x_offset,
-                                int16_t y_offset,
-                                uint16_t width,
-                                uint16_t height);
+				const char image_filename[],
+				int16_t x_offset,
+				int16_t y_offset,
+				uint16_t width, uint16_t height);
 
 
 /**
@@ -120,9 +116,9 @@ change_object_image_post_check (const char object_name[],
  * @param width   The width of the rectangle, in pixels.
  * @param height  The height of the rectangle, in pixels.
  *
- * @return TRUE if the rectangle is out of bounds, FALSE if not.
+ * @return true if the rectangle is out of bounds, false if not.
  */
-static bool_t
+static bool
 rectangle_out_of_bounds (int x, int y, int width, int height);
 
 
@@ -132,16 +128,15 @@ rectangle_out_of_bounds (int x, int y, int width, int height);
  * Either or both of the two offset parameters may be negative, which
  * has the effect of moving the object in the opposite direction.
  *
- * @param dx            Change in x co-ordinate, in pixels towards the
- *                      rightmost edge of the map.
- * @param dy            Change in y co-ordinate, in pixels towards the
- *                      bottom of the map.
+ * @param dx  Change in x co-ordinate, in pixels towards the rightmost
+ *            edge of the map.
+ * @param dy  Change in y co-ordinate, in pixels towards the bottom of
+ *            the map.
  *
- * @return  SUCCESS if the camera was moved successfully;
- *          FAILURE otherwise.
+ * @return  true if the camera was moved successfully;
+ *          false otherwise.
  */
-static bool_t
-move_field_camera (int32_t dx, int32_t dy);
+static bool_t move_field_camera (int32_t dx, int32_t dy);
 
 
 /* -- DEFINITIONS -- */
@@ -157,7 +152,7 @@ focus_camera_on_object (const char object_name[])
 }
 
 
-/* Given a non-zero offset, moves an object by that offset from its 
+/* Given a non-zero offset, moves an object by that offset from its
  * current co-ordinates.
  */
 bool_t
@@ -165,9 +160,7 @@ move_object (const char object_name[], int32_t dx, int32_t dy)
 {
   /* No point moving by (0, 0). */
   if (dx == 0 && dy == 0)
-    {
-      return SUCCESS;
-    }
+    return true;
 
   return move_object_post_check (object_name, dx, dy);
 }
@@ -175,7 +168,8 @@ move_object (const char object_name[], int32_t dx, int32_t dy)
 
 /* Move an object by an offset from its current co-ordinates. */
 static bool_t
-move_object_post_check (const char object_name[], int32_t dx, int32_t dy)
+move_object_post_check (const char object_name[], int32_t dx,
+			int32_t dy)
 {
   object_t *object = get_object (object_name);
 
@@ -183,36 +177,32 @@ move_object_post_check (const char object_name[], int32_t dx, int32_t dy)
   g_assert (object->image != NULL);
 
   g_assert (!rectangle_out_of_bounds (object->image->map_x + dx,
-                                      object->image->map_y + dy,
-                                      (object->image->map_x + dx
-                                       + object->image->width), 
-                                      (object->image->map_y + dy
-                                       + object->image->height)));
-    
+				      object->image->map_y + dy,
+				      (object->image->map_x + dx
+				       + object->image->width),
+				      (object->image->map_y + dy
+				       + object->image->height)));
+
   /* Mark old location as dirty. */
   mark_object_field_location_dirty (object);
 
   /* Try to move object. */
-  set_object_coordinates (object, 
-                          object->image->map_x + dx,
-                          object->image->map_y + dy, TOP_LEFT) ;
+  set_object_coordinates (object,
+			  object->image->map_x + dx,
+			  object->image->map_y + dy, TOP_LEFT);
 
   /* Mark new location as dirty. */
   mark_object_field_location_dirty (object);
 
   if (object == sg_camera_focus)
-    {
-      return move_field_camera (dx, dy);
-    }
+    return move_field_camera (dx, dy);
   else
-    {
-      return SUCCESS;
-    }
+    return true;
 }
 
 
 /* Moves the camera by the given offset. */
-static bool_t
+static bool
 move_field_camera (int32_t dx, int32_t dy)
 {
   mapview_t *mapview = get_field_mapview ();
@@ -223,42 +213,36 @@ move_field_camera (int32_t dx, int32_t dy)
    * It looks to me that this case not arising would be a logic error,
    * rather than a user error.
    */
-  if (dx <= SCREEN_W 
-      || dy <= SCREEN_H
-      || dx >= -SCREEN_W
-      || dy >= -SCREEN_H)
+  if (dx <= SCREEN_W
+      || dy <= SCREEN_H || dx >= -SCREEN_W || dy >= -SCREEN_H)
     {
       scroll_map (mapview, (int16_t) dx, (int16_t) dy);
-      return SUCCESS;
+      return true;
     }
 
-  return FAILURE;
+  return false;
 }
 
 
 /* Move an object to a new absolute position. */
 void
 position_object (const char object_name[],
-                 int32_t x,
-                 int32_t y,
-                 reference_t reference)
+		 int32_t x, int32_t y, reference_point_t reference)
 {
   object_t *object = get_object (object_name);
 
   g_assert (object != NULL);
   g_assert (object->image != NULL);
   g_assert (!rectangle_out_of_bounds (x,
-                                      y,
-                                      x + object->image->width, 
-                                      y + object->image->height));
+				      y,
+				      x + object->image->width,
+				      y + object->image->height));
 
   /* Mark old location as dirty. */
   mark_object_field_location_dirty (object);
-  
+
   /* Try to move object. */
-  set_object_coordinates (object, 
-                          x,
-                          y, reference) ;
+  set_object_coordinates (object, x, y, reference);
 
   /* Mark new location as dirty. */
   mark_object_field_location_dirty (object);
@@ -270,8 +254,9 @@ void
 tag_object (const char object_name[], layer_tag_t tag)
 {
   object_t *object = get_object (object_name);
+
   g_assert (object != NULL);
-  
+
   /* Mark location as dirty - object may have moved up or down. */
   mark_object_field_location_dirty (object);
 
@@ -282,20 +267,16 @@ tag_object (const char object_name[], layer_tag_t tag)
 /* Changes the image associated with an object. */
 void
 change_object_image (const char object_name[],
-                     const char image_filename[], 
-                     int16_t x_offset,
-                     int16_t y_offset,
-                     uint16_t width,
-                     uint16_t height)
+		     const char image_filename[],
+		     int16_t x_offset,
+		     int16_t y_offset,
+		     uint16_t width, uint16_t height)
 {
   g_assert (image_filename != NULL);
 
   change_object_image_post_check (object_name,
-                                  image_filename,
-                                  x_offset,
-                                  y_offset,
-                                  width,
-                                  height);
+				  image_filename,
+				  x_offset, y_offset, width, height);
 }
 
 /* Given a valid image filename, changes the image associated with an
@@ -303,28 +284,24 @@ change_object_image (const char object_name[],
  */
 static void
 change_object_image_post_check (const char object_name[],
-                                const char image_filename[], 
-                                int16_t x_offset,
-                                int16_t y_offset,
-                                uint16_t width,
-                                uint16_t height)
+				const char image_filename[],
+				int16_t x_offset,
+				int16_t y_offset,
+				uint16_t width, uint16_t height)
 {
   object_t *object = get_object (object_name);
 
   g_assert (object != NULL);
   g_assert (object->image != NULL);
   g_assert (!rectangle_out_of_bounds (object->image->map_x,
-                                      object->image->map_y,
-                                      object->image->map_x + width, 
-                                      object->image->map_y + height));
+				      object->image->map_y,
+				      object->image->map_x + width,
+				      object->image->map_y + height));
 
-  set_object_image (object, 
-                    image_filename,
-                    x_offset,
-                    y_offset,
-                    width,
-                    height);
-  
+  set_object_image (object,
+		    image_filename,
+		    x_offset, y_offset, width, height);
+
   mark_object_field_location_dirty (object);
 }
 
@@ -339,17 +316,13 @@ mark_object_field_location_dirty (object_t *object)
   /* No point marking a dirty rectangle if the object is currently
    * invisible.
    */
-  if (object->image->width == 0
-      || object->image->height == 0)
-    {
-      return;
-    }
+  if (object->image->width == 0 || object->image->height == 0)
+    return;
 
   mark_dirty_rect (mapview,
-                   object->image->map_x, 
-                   object->image->map_y, 
-                   object->image->width, 
-                   object->image->height);  
+		   object->image->map_x,
+		   object->image->map_y,
+		   object->image->width, object->image->height);
 }
 
 
@@ -362,20 +335,11 @@ rectangle_out_of_bounds (int x, int y, int width, int height)
   int end_x;
   int end_y;
 
-  get_field_map_boundaries (&start_x, 
-                            &start_y,
-                            &end_x,
-                            &end_y);
+  get_field_map_boundaries (&start_x, &start_y, &end_x, &end_y);
 
   if (x < start_x
-      || y < start_y
-      || x + width >= end_x
-      || y + height >= end_y)
-    {
-      return TRUE;
-    }
+      || y < start_y || x + width >= end_x || y + height >= end_y)
+    return true;
   else
-    {
-      return FALSE;
-    }
+    return false;
 }

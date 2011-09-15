@@ -53,8 +53,7 @@
 /**
  * Initialises the object base.
  */
-void
-init_objects (void);
+void init_objects (void);
 
 
 /**
@@ -70,9 +69,8 @@ init_objects (void);
  * @return  a pointer to the new object, or NULL if there was an
  *          error while creating it.
  */
-object_t *
-add_object (const char object_name[],
-            const char script_filename[]);
+object_t *add_object (const char object_name[],
+		      const char script_filename[]);
 
 
 /**
@@ -84,15 +82,13 @@ add_object (const char object_name[],
  * @return  SUCCESS for success; FAILURE otherwise (eg if no object
  *          was deleted).
  */
-bool_t
-delete_object (const char object_name[]);
+bool_t delete_object (const char object_name[]);
 
 
 /**
  * Deletes all objects in the object table.
  */
-void
-clear_objects (void);
+void clear_objects (void);
 
 
 /**
@@ -103,8 +99,25 @@ clear_objects (void);
  * @return  A pointer to the object with the given name if found, or
  *          NULL otherwise.
  */
-object_t *
-get_object (const char object_name[]);
+object_t *get_object (const char object_name[]);
+
+
+/**
+ * Apply the given function to all objects.
+ *
+ * @param function  Pointer to the function to apply to the
+ *                  object.  The function must take the object
+ *                  as first parameter followed by a void pointer for
+ *                  data.
+ * @param data      gpointer to the data to pass to the function.
+ */
+void apply_to_objects (void (*function) (gpointer key, gpointer value, gpointer user_data), gpointer data);
+
+
+/**
+ * Clean up the objects subsystem.
+ */
+void cleanup_objects (void);
 
 
 #endif /* not __OBJECTSET_H */

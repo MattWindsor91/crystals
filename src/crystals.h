@@ -52,8 +52,9 @@
 #include <stdio.h>
 
 #include <glib-2.0/glib.h>
-#include <glib-2.0/glib/gslist.h>
+#ifndef S_SPLINT_S
 #include <glib-2.0/gmodule.h>
+#endif
 
 /* Crystals headers */
 #include "types.h"

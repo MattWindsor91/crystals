@@ -42,7 +42,6 @@
  * @brief   Low-level object functions.
  */
 
-
 #include "../crystals.h"
 
 
@@ -56,7 +55,7 @@
  * @param rect_pointer  Pointer to the dirty rectangle to test.
  */
 static void dirty_object_test_post_check (object_t *object,
-                                          dirty_rectangle_t *rect);
+					  dirty_rectangle_t *rect);
 
 
 /* -- DEFINITIONS -- */
@@ -107,7 +106,8 @@ set_object_image (object_t *object,
 void
 get_object_coordinates (object_t *object,
 			int32_t *x_pointer,
-			int32_t *y_pointer, reference_t reference)
+			int32_t *y_pointer,
+			reference_point_t reference)
 {
   g_assert (object && object->image);
 
@@ -122,7 +122,8 @@ get_object_coordinates (object_t *object,
 /* Sets the object's co-ordinates on map. */
 void
 set_object_coordinates (object_t *object,
-			int32_t x, int32_t y, reference_t reference)
+			int32_t x, int32_t y,
+			reference_point_t reference)
 {
   g_assert (object && object->image);
 
@@ -153,7 +154,7 @@ set_object_dirty (object_t *object, mapview_t *mapview)
 
   /* If we're already dirty, no need to run this again. */
 
-  if (object->is_dirty == TRUE)
+  if (object->is_dirty == true)
     return;
 
   /* If the object has no image (the filename is NULL) then ignore the
@@ -172,28 +173,27 @@ set_object_dirty (object_t *object, mapview_t *mapview)
   if (object->tag != 0)
     {
       add_object_image (mapview, object);
-      object->is_dirty = TRUE;
+      object->is_dirty = true;
     }
 }
 
 
 /* Frees an object and all associated data. */
 void
-free_object (gpointer object)
+free_object (object_t *object)
 {
-  object_t *objectc = (object_t *) object;
-  if (objectc)
+  if (object)
     {
-      if (objectc->name)
-	g_free (objectc->name);
+      if (object->name)
+	g_free (object->name);
 
-      if (objectc->script_filename)
-	g_free (objectc->script_filename);
+      if (object->script_filename)
+	g_free (object->script_filename);
 
-      if (objectc->image)
-	free_object_image (objectc->image);
+      if (object->image)
+	free_object_image (object->image);
 
-      free (objectc);
+      free (object);
     }
 }
 

@@ -47,7 +47,7 @@
 
 /* -- TYPEDEFS -- */
 
-typedef GKeyFile dict_t; /**< Node type for the key-value tree. */
+typedef struct GKeyFile dict_t; /**< Node type for the key-value tree. */
 
 /* -- FUNCTION PROTOTYPES -- */
 

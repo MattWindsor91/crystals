@@ -116,13 +116,13 @@ typedef struct mapview
                                      (equal to the highest tag used
                                      by the map). */
 
-  GSList **object_queue; /**< The head array of queues of
+  struct GSList **object_queue; /**< The head array of queues of
                               object pointers to be rendered
                               on the next pass.  There will
                               be num_object_queues heads in
                               this block.*/
 
-  GSList *dirty_rectangles; /**< Stack of dirty rectangles. */
+  struct GSList *dirty_rectangles; /**< Stack of dirty rectangles. */
 } mapview_t;
 
 
