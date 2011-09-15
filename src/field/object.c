@@ -55,9 +55,8 @@
  * @param object        The object to test.
  * @param rect_pointer  Pointer to the dirty rectangle to test.
  */
-static void
-dirty_object_test_post_check (object_t *object,
-                              dirty_rectangle_t *rect);
+static void dirty_object_test_post_check (object_t *object,
+                                          dirty_rectangle_t *rect);
 
 
 /* -- DEFINITIONS -- */
@@ -83,11 +82,9 @@ get_object_image (object_t *object)
 /* Changes the graphic associated with an object. */
 void
 set_object_image (object_t *object,
-                  const char filename[],
-                  int16_t image_x,
-                  int16_t image_y,
-                  uint16_t width,
-                  uint16_t height)
+		  const char filename[],
+		  int16_t image_x,
+		  int16_t image_y, uint16_t width, uint16_t height)
 {
   g_assert (object && object->image && filename);
 
@@ -109,9 +106,8 @@ set_object_image (object_t *object,
 /* Retrieves the object's co-ordinates on-map. */
 void
 get_object_coordinates (object_t *object,
-                        int32_t *x_pointer,
-                        int32_t *y_pointer,
-                        reference_t reference)
+			int32_t *x_pointer,
+			int32_t *y_pointer, reference_t reference)
 {
   g_assert (object && object->image);
 
@@ -126,16 +122,13 @@ get_object_coordinates (object_t *object,
 /* Sets the object's co-ordinates on map. */
 void
 set_object_coordinates (object_t *object,
-                        int32_t x,
-                        int32_t y,
-                        reference_t reference)
+			int32_t x, int32_t y, reference_t reference)
 {
   g_assert (object && object->image);
 
   /* No point setting coordinates if they're the same. */
 
-  if (object->image->map_x == x
-      && object->image->map_y == y)
+  if (object->image->map_x == x && object->image->map_y == y)
     return;
 
   object->image->map_x = x;
@@ -154,8 +147,7 @@ set_object_coordinates (object_t *object,
 
 /* Marks an object as being dirty on the given map view. */
 void
-set_object_dirty (object_t *object,
-                  mapview_t *mapview)
+set_object_dirty (object_t *object, mapview_t *mapview)
 {
   g_assert (object && mapview);
 
@@ -172,9 +164,9 @@ set_object_dirty (object_t *object,
   /* Ensure the object's co-ordinates don't go over the map
      width/height! */
   g_assert ((object->image->map_x + object->image->width
-             <= mapview->map->width * TILE_W)
-            && (object->image->map_y + object->image->height
-                <= mapview->map->height * TILE_H));
+	     <= mapview->map->width * TILE_W)
+	    && (object->image->map_y + object->image->height
+		<= mapview->map->height * TILE_H));
 
   /* And now, the business end. */
   if (object->tag != 0)
@@ -193,13 +185,13 @@ free_object (gpointer object)
   if (objectc)
     {
       if (objectc->name)
-        g_free (objectc->name);
+	g_free (objectc->name);
 
       if (objectc->script_filename)
-        g_free (objectc->script_filename);
+	g_free (objectc->script_filename);
 
       if (objectc->image)
-        free_object_image (objectc->image);
+	free_object_image (objectc->image);
 
       free (objectc);
     }
@@ -212,13 +204,12 @@ free_object (gpointer object)
  */
 void
 dirty_object_test (gpointer key_ptr,
-                   gpointer object_ptr,
-                   gpointer rect_ptr)
+		   gpointer object_ptr, gpointer rect_ptr)
 {
   object_t *object = (object_t *) object_ptr;
   dirty_rectangle_t *rect = (dirty_rectangle_t *) rect_ptr;
 
-  (void) key_ptr; /* Avoid unused warnings */
+  (void) key_ptr;		/* Avoid unused warnings */
 
   g_assert (object && rect);
 
@@ -234,7 +225,7 @@ dirty_object_test (gpointer key_ptr,
  */
 static void
 dirty_object_test_post_check (object_t *object,
-                              dirty_rectangle_t *rect)
+			      dirty_rectangle_t *rect)
 {
   mapview_t *mapview = rect->parent;
 
@@ -246,7 +237,8 @@ dirty_object_test_post_check (object_t *object,
   int object_left = object->image->map_x;
   int object_top = object->image->map_y;
   int object_right = object->image->map_x + object->image->width - 1;
-  int object_bottom = object->image->map_y + object->image->height - 1;
+  int object_bottom =
+    object->image->map_y + object->image->height - 1;
 
   /* Use separating axis theorem, sort of, to decide whether the
    * object rect and the dirty rect intersect.

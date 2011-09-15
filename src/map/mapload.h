@@ -57,7 +57,6 @@
  *
  * @return      the new map_t, or NULL if an error occurred.
  */
-map_t *
-load_map (const char path[]);
+map_t *load_map (const char path[]);
 
 #endif /* not _MAPLOAD_H */

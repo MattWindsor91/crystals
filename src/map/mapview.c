@@ -50,7 +50,7 @@
 
 const uint16_t TILE_W = 32;  /**< Width of each tile, in pixels. */
 const uint16_t TILE_H = 32;  /**< Height of each tile, in pixels. */
-const char FN_TILESET[] = "tiles.png";  /**< Tileset filename. */
+const char FN_TILESET[] = "tiles.png";	/**< Tileset filename. */
 
 
 /* -- STATIC DECLARATIONS -- */
@@ -66,8 +66,7 @@ const char FN_TILESET[] = "tiles.png";  /**< Tileset filename. */
  *         or 0 if the two are equal in Y-order.
  */
 static gint
-compare_objects_by_image_y_order (gconstpointer a,
-                                  gconstpointer b);
+compare_objects_by_image_y_order (gconstpointer a, gconstpointer b);
 
 
 /* -- DEFINITIONS -- */
@@ -89,14 +88,11 @@ init_mapview (map_t *map)
   g_assert (mapview->num_object_queues != 0);
 
   mapview->object_queue = xcalloc (mapview->num_object_queues,
-                                   sizeof (GSList*));
+				   sizeof (GSList *));
 
   /* Set all tiles as dirty. */
   mark_dirty_rect (mapview,
-                   0,
-                   0,
-                   map->width * TILE_W,
-                   map->height * TILE_H);
+		   0, 0, map->width * TILE_W, map->height * TILE_H);
   render_map (mapview);
 
   return mapview;
@@ -105,8 +101,7 @@ init_mapview (map_t *map)
 
 /* Adds an object sprite to the rendering queue. */
 void
-add_object_image (mapview_t *mapview,
-                  struct object *object)
+add_object_image (mapview_t *mapview, struct object *object)
 {
   g_assert (mapview != NULL);
   g_assert (object != NULL);
@@ -114,21 +109,17 @@ add_object_image (mapview_t *mapview,
   g_assert (object->tag <= mapview->num_object_queues);
   g_assert (object->image != NULL);
   g_assert (object->image->filename != NULL);
-  g_assert (object->image->width != 0
-            && object->image->height != 0);
+  g_assert (object->image->width != 0 && object->image->height != 0);
 
   mapview->object_queue[object->tag - 1] =
     g_slist_insert_sorted (mapview->object_queue[object->tag - 1],
-                           object,
-                           compare_objects_by_image_y_order);
+			   object, compare_objects_by_image_y_order);
 }
 
 
 /* Scroll the map on-screen, re-rendering it in its new position. */
 void
-scroll_map (mapview_t *mapview,
-            int16_t x_offset,
-            int16_t y_offset)
+scroll_map (mapview_t *mapview, int16_t x_offset, int16_t y_offset)
 {
   g_assert (mapview != NULL);
   g_assert (x_offset != SHRT_MIN && y_offset != SHRT_MIN);
@@ -138,19 +129,19 @@ scroll_map (mapview_t *mapview,
   /* West scroll. */
   if (x_offset < 0)
     {
-       mark_dirty_rect (mapview,
-                        mapview->x_offset,
-                        mapview->y_offset,
-                        (dimension_t) abs (x_offset), SCREEN_H);
+      mark_dirty_rect (mapview,
+		       mapview->x_offset,
+		       mapview->y_offset,
+		       (dimension_t) abs (x_offset), SCREEN_H);
     }
 
   /* East scroll. */
   else if (x_offset > 0)
     {
       mark_dirty_rect (mapview,
-                       SCREEN_W + mapview->x_offset - x_offset,
-                       mapview->y_offset,
-                       (dimension_t) x_offset, SCREEN_H);
+		       SCREEN_W + mapview->x_offset - x_offset,
+		       mapview->y_offset,
+		       (dimension_t) x_offset, SCREEN_H);
     }
 
 
@@ -158,25 +149,24 @@ scroll_map (mapview_t *mapview,
   if (y_offset < 0)
     {
       mark_dirty_rect (mapview,
-                       mapview->x_offset,
-                       mapview->y_offset,
-                       SCREEN_W, (dimension_t) abs (y_offset));
+		       mapview->x_offset,
+		       mapview->y_offset,
+		       SCREEN_W, (dimension_t) abs (y_offset));
     }
 
   /* South scroll. */
   else if (y_offset > 0)
     {
       mark_dirty_rect (mapview,
-                       mapview->x_offset,
-                       SCREEN_H + mapview->y_offset - y_offset,
-                       SCREEN_W, (dimension_t) y_offset);
+		       mapview->x_offset,
+		       SCREEN_H + mapview->y_offset - y_offset,
+		       SCREEN_W, (dimension_t) y_offset);
     }
 
   mapview->x_offset += x_offset;
   mapview->y_offset += y_offset;
 
-  scroll_screen ((short) -(x_offset),
-                 (short) -(y_offset));
+  scroll_screen ((short) -(x_offset), (short) -(y_offset));
 
   render_map (mapview);
 }
@@ -185,10 +175,8 @@ scroll_map (mapview_t *mapview,
 /* Marks a rectangle of tiles as being dirty. */
 void
 mark_dirty_rect (mapview_t *mapview,
-                 int32_t start_x,
-                 int32_t start_y,
-                 int32_t width,
-                 int32_t height)
+		 int32_t start_x,
+		 int32_t start_y, int32_t width, int32_t height)
 {
   dirty_rectangle_t *rect;
 
@@ -214,22 +202,22 @@ free_mapview (mapview_t *mapview)
   if (mapview)
     {
       if (mapview->object_queue)
-        {
-          uint16_t i;
-          for (i = 0; i < mapview->num_object_queues; i += 1)
-            {
-              /* Objects in queue are freed in the object system. */
-              g_slist_free (mapview->object_queue[i]);
-            }
+	{
+	  uint16_t i;
+	  for (i = 0; i < mapview->num_object_queues; i += 1)
+	    {
+	      /* Objects in queue are freed in the object system. */
+	      g_slist_free (mapview->object_queue[i]);
+	    }
 
-          free (mapview->object_queue);
-        }
+	  free (mapview->object_queue);
+	}
 
       if (mapview->dirty_rectangles)
-        {
-          g_slist_free_full (mapview->dirty_rectangles, free);
-          mapview->dirty_rectangles = NULL;
-        }
+	{
+	  g_slist_free_full (mapview->dirty_rectangles, free);
+	  mapview->dirty_rectangles = NULL;
+	}
 
       free (mapview);
     }
@@ -240,11 +228,10 @@ free_mapview (mapview_t *mapview)
 
 /* Compares two objects by the position of their image baselines. */
 static gint
-compare_objects_by_image_y_order (gconstpointer a,
-                                  gconstpointer b)
+compare_objects_by_image_y_order (gconstpointer a, gconstpointer b)
 {
-  object_t *ac = (object_t*) a;
-  object_t *bc = (object_t*) b;
+  object_t *ac = (object_t *) a;
+  object_t *bc = (object_t *) b;
   uint32_t a_baseline;
   uint32_t b_baseline;
 

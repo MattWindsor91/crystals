@@ -102,15 +102,15 @@ typedef struct dirty_rectangle
 
 typedef struct mapview
 {
-  int32_t x_offset;           /**< Offset of the left edge of the
+  int32_t x_offset;	      /**< Offset of the left edge of the
                                  screen, in pixels from the left edge
                                  of the map.  Can be negative. */
 
-  int32_t y_offset;           /**< Offset of the top edge of the
+  int32_t y_offset;	      /**< Offset of the top edge of the
                                  screen, in pixels from the top edge
                                  of the map. Can be negative.*/
 
-  map_t *map;                 /**< Pointer to the map being viewed. */
+  map_t *map;		      /**< Pointer to the map being viewed. */
 
   unsigned int num_object_queues; /**< Number of object queues reserved
                                      (equal to the highest tag used
@@ -128,7 +128,7 @@ typedef struct mapview
 
 /* -- GLOBAL VARIABLES -- */
 
-extern const char FN_TILESET[]; /**< Tileset filename. */
+extern const char FN_TILESET[];	/**< Tileset filename. */
 
 
 /* -- PROTOTYPES -- */
@@ -142,8 +142,7 @@ extern const char FN_TILESET[]; /**< Tileset filename. */
  * @return  a pointer to the map view, or NULL for allocation
  *          failure.
  */
-mapview_t *
-init_mapview (map_t *map);
+mapview_t *init_mapview (map_t *map);
 
 
 /**
@@ -161,9 +160,7 @@ init_mapview (map_t *map);
  * @param object    Pointer to the object whose image should be
  *                  rendered.
  */
-void
-add_object_image (mapview_t *mapview,
-                  struct object *object);
+void add_object_image (mapview_t *mapview, struct object *object);
 
 
 /**
@@ -174,9 +171,7 @@ add_object_image (mapview_t *mapview,
  * @param y_offset  The Y co-ordinate offset to scroll by, in pixels.
  */
 void
-scroll_map (mapview_t *mapview,
-            int16_t x_offset,
-            int16_t y_offset);
+scroll_map (mapview_t *mapview, int16_t x_offset, int16_t y_offset);
 
 
 /**
@@ -203,10 +198,8 @@ scroll_map (mapview_t *mapview,
  */
 void
 mark_dirty_rect (mapview_t *mapview,
-                 int32_t start_x,
-                 int32_t start_y,
-                 int32_t width,
-                 int32_t height);
+		 int32_t start_x,
+		 int32_t start_y, int32_t width, int32_t height);
 
 
 /**
@@ -217,8 +210,7 @@ mark_dirty_rect (mapview_t *mapview,
  *
  * @param mapview  Pointer to the map view to de-allocate.
  */
-void
-free_mapview (mapview_t *mapview);
+void free_mapview (mapview_t *mapview);
 
 
 #endif /* _MAPVIEW_H */

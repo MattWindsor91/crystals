@@ -1,8 +1,8 @@
 /*
- * Crystals (working title) 
+ * Crystals (working title)
  *
- * Copyright (c) 2010 Matt Windsor, Michael Walker and Alexander
- *                    Preisinger.
+ * Copyright (c) 2010, 2011 Matt Windsor, Michael Walker and Alexander
+ *                          Preisinger.
  *
  * All rights reserved.
  *
@@ -36,10 +36,11 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/** @file    src/field/map.h
- *  @author  Matt Windsor
- *  @brief   Prototypes and declarations for low-level map handling
- *           functions.
+/**
+ * @file    src/field/map.h
+ * @author  Matt Windsor
+ * @brief   Prototypes and declarations for low-level map handling
+ *          functions.
  */
 
 
@@ -49,26 +50,26 @@
 
 /* -- TYPEDEFS -- */
 
-typedef uint16_t dimension_t;    /**< Type for tile-based map dimensions. */
+typedef uint16_t dimension_t;	 /**< Type for tile-based map dimensions. */
 
-typedef uint16_t layer_tag_t;    /**< Type for layer tags. */
+typedef uint16_t layer_tag_t;	 /**< Type for layer tags. */
 
-typedef int32_t  layer_count_t;  /**< Type large enough to hold a layer count. */
-typedef uint16_t layer_index_t;  /**< Type for layer indices. */
-typedef uint16_t layer_value_t;  /**< Type for layer value data. */
-typedef uint16_t layer_zone_t;   /**< Type for layer zone data. */
+typedef int32_t layer_count_t;	 /**< Type large enough to hold a layer count. */
+typedef uint16_t layer_index_t;	 /**< Type for layer indices. */
+typedef uint16_t layer_value_t;	 /**< Type for layer value data. */
+typedef uint16_t layer_zone_t;	 /**< Type for layer zone data. */
 
-typedef int32_t  zone_count_t;   /**< Type large enough to hold a zone count. */
-typedef uint16_t zone_index_t;   /**< Type for zone indices. */
-typedef uint16_t zone_prop_t;    /**< Type for zone properties bitfields. */
+typedef int32_t zone_count_t;	 /**< Type large enough to hold a zone count. */
+typedef uint16_t zone_index_t;	 /**< Type for zone indices. */
+typedef uint16_t zone_prop_t;	 /**< Type for zone properties bitfields. */
 
 
 /* -- CONSTANTS -- */
 
-enum 
-  {
-    NULL_TAG = 0 /**< The tag ID reserved as a null value. */
-  };
+enum
+{
+  NULL_TAG = 0	 /**< The tag ID reserved as a null value. */
+};
 
 
 /* -- STRUCTURES -- */
@@ -84,16 +85,16 @@ enum
 
 typedef struct map
 {
-  dimension_t width;                /**< Width of the map, in tiles. */
-  dimension_t height;               /**< Height of the map, in tiles. */
+  dimension_t width;		    /**< Width of the map, in tiles. */
+  dimension_t height;		    /**< Height of the map, in tiles. */
 
-  zone_index_t    max_zone_index;   /**< Highest zone index in the map. */
-  zone_prop_t    *zone_properties;  /**< Array of zone property bitfields. */
+  zone_index_t max_zone_index;	    /**< Highest zone index in the map. */
+  zone_prop_t *zone_properties;	    /**< Array of zone property bitfields. */
 
-  layer_index_t   max_layer_index;  /**< Highest layer index in the map. */
-  layer_tag_t    *layer_tags;       /**< Array of map layer tags. */
-  layer_value_t **value_planes;     /**< Pointers to map layer value planes. */
-  layer_zone_t  **zone_planes;      /**< Pointers to map layer value planes. */
+  layer_index_t max_layer_index;    /**< Highest layer index in the map. */
+  layer_tag_t *layer_tags;	    /**< Array of map layer tags. */
+  layer_value_t **value_planes;	    /**< Pointers to map layer value planes. */
+  layer_zone_t **zone_planes;	    /**< Pointers to map layer value planes. */
 
 } map_t;
 
@@ -104,7 +105,7 @@ extern struct map *g_map; /**< The map currently in use. (FIXME: is
                              global necessary?) */
 
 
-/* -- PROTOTYPES -- */
+/* -- DECLARATIONS -- */
 
 /**
  * Initialise a map.
@@ -124,12 +125,11 @@ extern struct map *g_map; /**< The map currently in use. (FIXME: is
  * @param max_zone_index   The maximum zone index in the map
  *                         (number of zones to reserve, minus one).
  */
-void
-init_map (map_t *map,
-          dimension_t width,
-          dimension_t height,
-          layer_index_t max_layer_index,
-          zone_index_t max_zone_index);
+void init_map (map_t *map,
+	       dimension_t width,
+	       dimension_t height,
+	       layer_index_t max_layer_index,
+	       zone_index_t max_zone_index);
 
 
 /**
@@ -139,8 +139,7 @@ init_map (map_t *map,
  * @param layer  Index of the layer on the map to modify.
  * @param tag    The new layer tag.
  */
-void
-set_layer_tag (map_t *map, layer_index_t layer, layer_tag_t tag);
+void set_layer_tag (map_t *map, layer_index_t layer, layer_tag_t tag);
 
 
 /**
@@ -150,8 +149,8 @@ set_layer_tag (map_t *map, layer_index_t layer, layer_tag_t tag);
  * @param zone        Index of the zone on the map to modify.
  * @param properties  The new properties bitfield.
  */
-void
-set_zone_properties (map_t *map, zone_index_t zone, zone_prop_t properties);
+void set_zone_properties (map_t *map, zone_index_t zone,
+			  zone_prop_t properties);
 
 
 /**
@@ -163,9 +162,8 @@ set_zone_properties (map_t *map, zone_index_t zone, zone_prop_t properties);
  * @param y      Y co-ordinate, in tiles, of the tile to modify.
  * @param value  The new value of the tile.
  */
-void
-set_tile_value (map_t *map, layer_index_t layer, dimension_t x, dimension_t y,
-                layer_value_t value);
+void set_tile_value (map_t *map, layer_index_t layer, dimension_t x,
+		     dimension_t y, layer_value_t value);
 
 
 /**
@@ -177,9 +175,8 @@ set_tile_value (map_t *map, layer_index_t layer, dimension_t x, dimension_t y,
  * @param y      Y co-ordinate, in tiles, of the tile to modify.
  * @param zone   The new zone of the tile.
  */
-void
-set_tile_zone (map_t *map, layer_index_t layer, dimension_t x, dimension_t y,
-               layer_zone_t zone);
+void set_tile_zone (map_t *map, layer_index_t layer, dimension_t x,
+		    dimension_t y, layer_zone_t zone);
 
 
 /**
@@ -191,9 +188,7 @@ set_tile_zone (map_t *map, layer_index_t layer, dimension_t x, dimension_t y,
  *             If the map is NULL, an error will be raised and 0
  *             will be returned.
  */
-
-dimension_t
-get_map_width (map_t *map);
+dimension_t get_map_width (map_t *map);
 
 
 /**
@@ -205,79 +200,67 @@ get_map_width (map_t *map);
  *             If the map is NULL, an error will be raised and 0
  *             will be returned.
  */
-
-dimension_t
-get_map_height (map_t *map);
+dimension_t get_map_height (map_t *map);
 
 
-/** 
- * Get the tag number assigned to a particular layer.
+/**
+ * Gets the tag number assigned to a particular layer.
  *
  * @param map    Pointer to the map to query.
  *
  * @param layer  ID of the layer to retrieve the tag number for.
  *
- * @return  the highest tag number allocated on the map.
- *          If the map pointer given is NULL, or the layer does not 
+ * @return  the tag number allocated for the given layer.
+ *          If the map pointer given is NULL, or the layer does not
  *          exist in the given map, 0 is returned and an error is raised.
  */
-
-layer_tag_t
-get_layer_tag (map_t *map, layer_index_t layer);
-
-
-/** 
- * Get the highest tag number allocated on a map.
- *
- * @param map  Pointer to the map to query.
- *
- * @return     the highest tag number allocated on the map.
- *             If the map pointer given is NULL, 0 is returned and an
- *             error is raised.
- */
-
-layer_tag_t
-get_max_tag (map_t *map);
+layer_tag_t get_layer_tag (map_t *map, layer_index_t layer);
 
 
 /**
- * Get the highest layer index allocated on a map.
+ * Gets the highest tag number allocated on a map.
  *
  * @param map  Pointer to the map to query.
  *
- * @return     the highest layer index allocated on the map.
- *             If the map pointer given is NULL, 0 is returned and an
- *             error is raised.
+ * @return  the highest tag number allocated on the map.
+ *          If the map pointer given is NULL, 0 is returned and an
+ *          error is raised.
  */
-
-layer_index_t
-get_max_layer (map_t *map);
+layer_tag_t get_max_tag (map_t *map);
 
 
 /**
- * Get the highest zone index allocated on a map.
+ * Gets the highest layer index allocated on a map.
  *
  * @param map  Pointer to the map to query.
  *
- * @return     the highest zone index allocated on the map.
- *             If the map pointer given is NULL, 0 is returned and an
- *             error is raised.
+ * @return  the highest layer index allocated on the map.
+ *          If the map pointer given is NULL, 0 is returned and an
+ *          error is raised.
  */
-
-zone_index_t
-get_max_zone (map_t *map);
+layer_index_t get_max_layer (map_t *map);
 
 
 /**
- * De-initialise a map.
+ * Gets the highest zone index allocated on a map.
+ *
+ * @param map  Pointer to the map to query.
+ *
+ * @return  the highest zone index allocated on the map.
+ *          If the map pointer given is NULL, 0 is returned and an
+ *          error is raised.
+ */
+zone_index_t get_max_zone (map_t *map);
+
+
+/**
+ * De-initialises a map.
  *
  * This de-allocates all memory consumed by the given map structure.
  *
  * @param map  A pointer to the map to deallocate.
  */
-
-void
-free_map (map_t *map);
+void free_map (map_t *map);
 
 
 #endif /* _MAP_H */
