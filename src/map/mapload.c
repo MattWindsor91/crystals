@@ -48,8 +48,8 @@
 
 /* -- CONSTANTS -- */
 
-const uint16_t MAP_VERSION = 1;	 /**< Expected map version. */
-const long CHUNK_NOT_FOUND = -1; /**< Sentinel chunk position. */
+static const uint16_t MAP_VERSION = 1;	 /**< Expected map version. */
+static const long CHUNK_NOT_FOUND = -1;	/**< Sentinel chunk position. */
 
 enum chunk_ids
 {
@@ -64,17 +64,25 @@ enum chunk_ids
   NUM_CHUNKS
 };
 
-const size_t ID_LENGTH = 4; /**< Length in bytes of each chunk ID. */
 
-const char CHUNK_IDS[NUM_CHUNKS][5] = {
-  "FORM\0",			/* ID_FORM */
-  "CMFT\0",			/* ID_HEADER */
-  "VERS\0",			/* ID_VERSION */
-  "DIMS\0",			/* ID_DIMENSIONS */
-  "TAGS\0",			/* ID_TAGS */
-  "VALS\0",			/* ID_VALUES */
-  "ZONE\0",			/* ID_ZONES */
-  "PROP\0",			/* ID_PROPERTIES */
+/**
+ * Length in bytes of each chunk ID.
+ */
+static const size_t ID_LENGTH = 4;
+
+
+/**
+ * Array of ChunkID identifiers.
+ */
+static const char CHUNK_IDS[NUM_CHUNKS][5] = {
+  "FORM",			/* ID_FORM */
+  "CMFT",			/* ID_HEADER */
+  "VERS",			/* ID_VERSION */
+  "DIMS",			/* ID_DIMENSIONS */
+  "TAGS",			/* ID_TAGS */
+  "VALS",			/* ID_VALUES */
+  "ZONE",			/* ID_ZONES */
+  "PROP",			/* ID_PROPERTIES */
 };
 
 
@@ -125,9 +133,8 @@ static long *init_chunk_positions_array (void);
  * @param chunk_positions  The array to populate with the chunk
  *                         positions.
  */
-static void
-scan_body_for_chunks (FILE *file,
-		      uint32_t file_length, long *chunk_positions);
+static void scan_body_for_chunks (FILE *file, uint32_t file_length,
+				  long *chunk_positions);
 
 
 /**
@@ -159,8 +166,8 @@ static void skip_to_chunk (FILE *file, long chunk_position);
  *
  * @return  the version number.
  */
-static uint16_t
-read_map_version_chunk (FILE *file, long chunk_position);
+static uint16_t read_map_version_chunk (FILE *file,
+					long chunk_position);
 
 
 /**
@@ -181,9 +188,8 @@ static uint16_t read_map_version (FILE *file);
  * @param chunk_position  The position within the file, in bytes from
  *                        the file start, of the chunk.
  */
-static void
-read_map_dimensions_chunk (FILE *file,
-			   map_t *map, long chunk_positions);
+static void read_map_dimensions_chunk (FILE *file, map_t *map,
+				       long chunk_positions);
 
 
 /**
@@ -324,6 +330,7 @@ static bool check_magic_sequence (FILE *file, const char sequence[]);
 map_t *
 load_map (const char path[])
 {
+  int close_result;
   map_t *map = xcalloc (1, sizeof (map_t));
   FILE *file = fopen (path, "rb");
 
@@ -331,7 +338,8 @@ load_map (const char path[])
 
   parse_map_file (file, map);
 
-  fclose (file);
+  close_result = fclose (file);
+  g_assert (close_result == 0);
 
   return map;
 }
@@ -372,6 +380,7 @@ static long *
 find_chunks (FILE *file)
 {
   uint32_t file_length;
+  int seek_result;
   long *chunk_positions;
 
   g_assert (file);
@@ -382,7 +391,8 @@ find_chunks (FILE *file)
       fatal ("MAPLOAD - find_chunks - Could not allocate memory.");
     }
 
-  fseek (file, 0, SEEK_SET);
+  seek_result = fseek (file, 0, SEEK_SET);
+  g_assert (seek_result == 0);
 
   /* We expect the file to start with "FORM", as it should be an
    * IFF containing only one CMFT file.
@@ -431,11 +441,12 @@ scan_body_for_chunks (FILE *file,
 		      uint32_t file_length, long *chunk_positions)
 {
   int i;
+  int seek_result;
   uint32_t chunk_length;
-  unsigned int num_bytes;
+  size_t num_bytes;
   char *chunk_name = xcalloc (ID_LENGTH + 1, sizeof (char));
 
-  while (!feof (file))
+  while (feof (file) == 0)
     {
       num_bytes = fread (chunk_name, sizeof (char), ID_LENGTH, file);
       if (num_bytes != ID_LENGTH)
@@ -454,7 +465,8 @@ scan_body_for_chunks (FILE *file,
 	      chunk_positions[i] = ftell (file);
 	    }
 	}
-      fseek (file, chunk_length, SEEK_CUR);
+      seek_result = fseek (file, (long) chunk_length, SEEK_CUR);
+      g_assert (seek_result == 0);
     }
 
   /* Length of file body + FORM chunk ID + size mark */
@@ -475,14 +487,13 @@ static bool
 chunks_missing (long *chunk_positions)
 {
   int i;
+
   for (i = 0; i < NUM_CHUNKS; i += 1)
     {
       if (chunk_positions[i] == CHUNK_NOT_FOUND)
-	{
-	  return TRUE;
-	}
+	return true;
     }
-  return FALSE;
+  return false;
 }
 
 
@@ -490,10 +501,13 @@ chunks_missing (long *chunk_positions)
 static void
 skip_to_chunk (FILE *file, long chunk_position)
 {
+  int seek_result;
+
   g_assert (chunk_position >= 0);
 
   g_debug ("Skipping to chunk at %lx...", chunk_position);
-  fseek (file, chunk_position, SEEK_SET);
+  seek_result = fseek (file, chunk_position, SEEK_SET);
+  g_assert (seek_result == 0);
 }
 
 
@@ -574,9 +588,8 @@ static void
 read_map_value_planes (FILE *file, map_t *map)
 {
   layer_index_t l;
-  bool result = true;
 
-  for (l = 0; l <= get_max_layer (map) && result == true; l++)
+  for (l = 0; l <= get_max_layer (map); l += 1)
     {
       read_map_value_plane (file, map, l);
     }
@@ -589,10 +602,10 @@ read_map_value_plane (FILE *file, map_t *map, layer_index_t layer)
 {
   dimension_t x;
   dimension_t y;
-  bool result = true;
-  for (x = 0; x < get_map_width (map); x++)
+
+  for (x = 0; x < get_map_width (map); x += 1)
     {
-      for (y = 0; y < get_map_height (map) && result == true; y++)
+      for (y = 0; y < get_map_height (map); y += 1)
 	{
 	  set_tile_value (map, layer, x, y, read_uint16 (file));
 	}
@@ -615,9 +628,8 @@ static void
 read_map_zone_planes (FILE *file, map_t *map)
 {
   layer_index_t l;
-  bool result = true;
 
-  for (l = 0; l <= get_max_layer (map) && result == true; l++)
+  for (l = 0; l <= get_max_layer (map); l += 1)
     {
       read_layer_zone_plane (file, map, l);
     }
@@ -626,7 +638,7 @@ read_map_zone_planes (FILE *file, map_t *map)
 
 /* Reads layer zone data from a file. */
 static void
-read_layer_zone_plane (FILE *file, map_t *map, unsigned short layer)
+read_layer_zone_plane (FILE *file, map_t *map, layer_index_t layer)
 {
   dimension_t x;
   dimension_t y;
@@ -668,14 +680,16 @@ static bool
 check_magic_sequence (FILE *file, const char sequence[])
 {
   char *check = xcalloc (strlen (sequence) + 1, sizeof (char));
+  size_t count =
+    fread (check, sizeof (char), strlen (sequence), file);
 
-  fread (check, sizeof (char), strlen (sequence), file);
+  g_assert (count == strlen (sequence));
 
   if (strcmp (sequence, check) != 0)
     {
-      free (check);
       error ("MAPLOAD - check_magic_sequence - Expected  %s; got %s",
 	     sequence, check);
+      free (check);
       return false;
     }
 
