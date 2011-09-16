@@ -48,8 +48,18 @@
 
 /* -- CONSTANTS -- */
 
-const uint16_t TILE_W = 32;  /**< Width of each tile, in pixels. */
-const uint16_t TILE_H = 32;  /**< Height of each tile, in pixels. */
+/**
+ * Width of each tile, in pixels.
+ */
+const uint16_t TILE_W = 32;
+
+
+/**
+ * Height of each tile, in pixels.
+ */
+const uint16_t TILE_H = 32;
+
+
 const char FN_TILESET[] = "tiles.png";	/**< Tileset filename. */
 
 
@@ -88,11 +98,13 @@ init_mapview (map_t *map)
   g_assert (mapview->num_object_queues != 0);
 
   mapview->object_queue = xcalloc (mapview->num_object_queues,
-				   sizeof (GSList *));
+				   sizeof (struct GSList *));
 
   /* Set all tiles as dirty. */
   mark_dirty_rect (mapview,
-		   0, 0, map->width * TILE_W, map->height * TILE_H);
+		   0, 0,
+                   (int32_t) map->width * TILE_W,
+                   (int32_t) map->height * TILE_H);
   render_map (mapview);
 
   return mapview;
@@ -122,7 +134,8 @@ void
 scroll_map (mapview_t *mapview, int16_t x_offset, int16_t y_offset)
 {
   g_assert (mapview != NULL);
-  g_assert (x_offset != SHRT_MIN && y_offset != SHRT_MIN);
+  g_assert (x_offset != (int16_t) SHRT_MIN);
+  g_assert (y_offset != (int16_t) SHRT_MIN);
 
   /* Work out the dirty rectangles to mark. */
 
@@ -132,7 +145,8 @@ scroll_map (mapview_t *mapview, int16_t x_offset, int16_t y_offset)
       mark_dirty_rect (mapview,
 		       mapview->x_offset,
 		       mapview->y_offset,
-		       (dimension_t) abs (x_offset), SCREEN_H);
+		       (dimension_t) abs ((int) x_offset),
+                       SCREEN_H);
     }
 
   /* East scroll. */
@@ -151,7 +165,8 @@ scroll_map (mapview_t *mapview, int16_t x_offset, int16_t y_offset)
       mark_dirty_rect (mapview,
 		       mapview->x_offset,
 		       mapview->y_offset,
-		       SCREEN_W, (dimension_t) abs (y_offset));
+		       SCREEN_W,
+                       (dimension_t) abs ((int) y_offset));
     }
 
   /* South scroll. */
@@ -166,7 +181,7 @@ scroll_map (mapview_t *mapview, int16_t x_offset, int16_t y_offset)
   mapview->x_offset += x_offset;
   mapview->y_offset += y_offset;
 
-  scroll_screen ((short) -(x_offset), (short) -(y_offset));
+  scroll_screen ((int16_t) -(x_offset), (int16_t) -(y_offset));
 
   render_map (mapview);
 }
@@ -203,7 +218,7 @@ free_mapview (mapview_t *mapview)
     {
       if (mapview->object_queue)
 	{
-	  uint16_t i;
+	  layer_tag_t i;
 	  for (i = 0; i < mapview->num_object_queues; i += 1)
 	    {
 	      /* Objects in queue are freed in the object system. */
@@ -240,8 +255,8 @@ compare_objects_by_image_y_order (gconstpointer a, gconstpointer b)
   g_assert (bc != NULL);
   g_assert (bc->image != NULL);
 
-  a_baseline = ac->image->map_y + ac->image->height;
-  b_baseline = bc->image->map_y + bc->image->height;
+  a_baseline = (uint32_t) (ac->image->map_y + ac->image->height);
+  b_baseline = (uint32_t) (bc->image->map_y + bc->image->height);
 
-  return (a_baseline - b_baseline);
+  return (gint)(a_baseline - b_baseline);
 }

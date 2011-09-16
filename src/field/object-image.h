@@ -80,9 +80,9 @@ typedef struct object_image
                             on-map rectangle in which to render the
                             image, in pixels. */
 
-  unsigned short width;  /**< Width of the object image, in pixels. */
+  uint16_t width;  /**< Width of the object image, in pixels. */
 
-  unsigned short height;     /**<
+  uint16_t height;     /**<
                               * Height of the object image, in pixels.
                               */
 

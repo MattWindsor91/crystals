@@ -93,9 +93,11 @@ static const char CHUNK_IDS[NUM_CHUNKS][5] = {
  * created from its contents.
  *
  * @param file  The file to read from.
- * @param map   The map to populate with the read data.
+ *
+ * @return  A pointer to a map created from the given map file, or
+ *          NULL if there were errors during the parsing.
  */
-static void parse_map_file (FILE *file, map_t *map);
+static map_t *parse_map_file (FILE *file);
 
 
 /**
@@ -183,23 +185,51 @@ static uint16_t read_map_version (FILE *file);
  * Reads the map dimensions chunk from the file, initialising the map
  * using the results.
  *
- * @param file            The file to read from.
- * @param map             The map to populate with the read data.
- * @param chunk_position  The position within the file, in bytes from
- *                        the file start, of the chunk.
+ * @param file                 The file to read from.
+ * @param chunk_position       The position within the file, in bytes
+ *                             from the file start, of the chunk.
+ * @param out_width            Pointer to a variable in which the
+ *                             width of the map, in tiles, is to be
+ *                             stored.
+ * @param out_height           Pointer to a variable in which the
+ *                             height of the map, in tiles, is to be
+ *                             stored.
+ * @param out_max_layer_index  Pointer to a variable in which the
+ *                             maximum layer index is to be stored.
+ * @param out_max_zone_index   Pointer to a variable in which the
+ *                             maximum zone index is to be stored.
  */
-static void read_map_dimensions_chunk (FILE *file, map_t *map,
-				       long chunk_positions);
+static void read_map_dimensions_chunk (FILE *file,
+				       long chunk_position,
+				       dimension_t *out_width,
+				       dimension_t *out_height,
+				       layer_index_t
+				       *out_max_layer_index,
+				       zone_index_t
+				       *out_max_zone_index);
 
 
 /**
  * Reads the map dimensions from the file, initialising the map using
  * the results.
  *
- * @param file  The file pointer to read from.
- * @param map   The map to populate with the read data.
+ * @param file                 The file pointer to read from.
+ * @param out_width            Pointer to a variable in which the
+ *                             width of the map, in tiles, is to be
+ *                             stored.
+ * @param out_height           Pointer to a variable in which the
+ *                             height of the map, in tiles, is to be
+ *                             stored.
+ * @param out_max_layer_index  Pointer to a variable in which the
+ *                             maximum layer index is to be stored.
+ * @param out_max_zone_index   Pointer to a variable in which the
+ *                             maximum zone index is to be stored.
  */
-static void read_map_dimensions (FILE *file, map_t *map);
+static void read_map_dimensions (FILE *file,
+				 dimension_t *out_width,
+				 dimension_t *out_height,
+				 layer_index_t *out_max_layer_index,
+				 zone_index_t *out_max_zone_index);
 
 
 /**
@@ -331,12 +361,12 @@ map_t *
 load_map (const char path[])
 {
   int close_result;
-  map_t *map = xcalloc (1, sizeof (map_t));
+  map_t *map;
   FILE *file = fopen (path, "rb");
 
   g_assert (file != NULL);
 
-  parse_map_file (file, map);
+  map = parse_map_file (file);
 
   close_result = fclose (file);
   g_assert (close_result == 0);
@@ -348,10 +378,15 @@ load_map (const char path[])
 /* Parses the given file as a map file and attempts to return a map
  * created from its contents.
  */
-static void
-parse_map_file (FILE *file, map_t *map)
+static map_t *
+parse_map_file (FILE *file)
 {
   long *chunks = find_chunks (file);
+  dimension_t new_map_width;
+  dimension_t new_map_height;
+  layer_index_t new_max_layer_index;
+  zone_index_t new_max_zone_index;
+  map_t *map;
 
   if (chunks_missing (chunks))
     {
@@ -363,13 +398,23 @@ parse_map_file (FILE *file, map_t *map)
       fatal ("MAPLOAD - parse_map_file - Incorrect version.");
     }
 
-  read_map_dimensions_chunk (file, map, chunks[ID_DIMENSIONS]);
+  read_map_dimensions_chunk (file, chunks[ID_DIMENSIONS],
+			     &new_map_width, &new_map_height,
+			     &new_max_layer_index,
+			     &new_max_zone_index);
+
+  map =
+    init_map (new_map_width, new_map_height, new_max_layer_index,
+	      new_max_zone_index);
+
   read_map_tags_chunk (file, map, chunks[ID_TAGS]);
   read_map_value_planes_chunk (file, map, chunks[ID_VALUES]);
   read_map_zone_planes_chunk (file, map, chunks[ID_ZONES]);
   read_map_zone_properties_chunk (file, map, chunks[ID_PROPERTIES]);
 
   free (chunks);
+
+  return map;
 }
 
 
@@ -531,24 +576,35 @@ read_map_version (FILE *file)
 /* Reads the map dimensions chunk from the file. */
 static void
 read_map_dimensions_chunk (FILE *file,
-			   map_t *map, long chunk_position)
+			   long chunk_position,
+			   dimension_t *out_width,
+			   dimension_t *out_height,
+			   layer_index_t *out_max_layer_index,
+			   zone_index_t *out_max_zone_index)
 {
   skip_to_chunk (file, chunk_position);
-  read_map_dimensions (file, map);
+  read_map_dimensions (file, out_width, out_height,
+		       out_max_layer_index, out_max_zone_index);
 }
 
 
 /* Reads the map dimensions from the file. */
 static void
-read_map_dimensions (FILE *file, map_t *map)
+read_map_dimensions (FILE *file,
+		     dimension_t *out_width,
+		     dimension_t *out_height,
+		     layer_index_t *out_max_layer_index,
+		     zone_index_t *out_max_zone_index)
 {
-  dimension_t map_width = read_uint16 (file);	/* In tiles */
-  dimension_t map_height = read_uint16 (file);	/* In tiles */
-  layer_index_t max_layer_index = read_uint16 (file);
-  zone_index_t max_zone_index = read_uint16 (file);
+  g_assert (out_width != NULL);
+  g_assert (out_height != NULL);
+  g_assert (out_max_layer_index != NULL);
+  g_assert (out_max_zone_index != NULL);
 
-  init_map (map,
-	    map_width, map_height, max_layer_index, max_zone_index);
+  *out_width = read_uint16 (file);	/* In tiles */
+  *out_height = read_uint16 (file);	/* In tiles */
+  *out_max_layer_index = read_uint16 (file);
+  *out_max_zone_index = read_uint16 (file);
 }
 
 

@@ -62,7 +62,7 @@ typedef void* mod_function_ptr; /**< Function pointer type used for SOs. */
 
 typedef struct
 {
-  struct GModule *lib_handle; /**< The dynamic loading handle for the module. */
+  GModule *lib_handle; /**< The dynamic loading handle for the module. */
 
   void
   (*init) (void); /**< Pointer to the module's initialisation

@@ -241,7 +241,7 @@ draw_rectangle (int16_t x,
                 uint8_t blue)
 {
   return (*g_modules.gfx.draw_rect_internal)
-    (x, y, width, height, red, green, blue);  
+    (x, y, width, height, red, green, blue);
 }
 
 
@@ -405,10 +405,10 @@ find_image (const char filename[])
 
 /* Adds a rectangle to the next update run. */
 void
-add_update_rectangle (uint16_t x,
-                      uint16_t y,
-                      int16_t width,
-                      int16_t height)
+add_update_rectangle (int16_t x,
+                      int16_t y,
+                      uint16_t width,
+                      uint16_t height)
 {
   (*g_modules.gfx.add_update_rectangle_internal) (x,
                                                   y,

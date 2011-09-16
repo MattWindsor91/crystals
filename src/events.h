@@ -98,7 +98,7 @@ typedef uint8_t event_key_t;     /**< Type for special key code.      */
 
 typedef struct event_base
 {
-  struct GSList *callbacks; /**< Linked list of callbacks. */
+  GSList *callbacks; /**< Linked list of callbacks. */
 } event_base_t;
 
 

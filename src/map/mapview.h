@@ -51,6 +51,7 @@
 #ifndef _MAPVIEW_H
 #define _MAPVIEW_H
 
+
 /* -- CONSTANTS -- */
 
 /**
@@ -79,15 +80,12 @@ struct object;
  */
 typedef struct dirty_rectangle
 {
-  int start_x; /**< X co-ordinate of the left edge of the rectangle
-                    (in pixels from left side of map). */
-
-  int start_y; /**< Y co-ordinate of the top edge of the rectangle
-                    (in pixels from top side of map). */
-
-  int width;   /**< Width of the rectangle (in pixels). */
-  int height;  /**< Height of the rectangle (in pixels). */
-
+  int32_t start_x; /**< X co-ordinate of the left edge of the
+                      rectangle (in pixels from left side of map). */
+  int32_t start_y; /**< Y co-ordinate of the top edge of the rectangle
+                      (in pixels from top side of map). */
+  int32_t width;   /**< Width of the rectangle (in pixels). */
+  int32_t height;  /**< Height of the rectangle (in pixels). */
   struct mapview *parent;  /**< The parent map view of this rectangle. */
 } dirty_rectangle_t;
 
@@ -112,17 +110,17 @@ typedef struct mapview
 
   map_t *map;		      /**< Pointer to the map being viewed. */
 
-  unsigned int num_object_queues; /**< Number of object queues reserved
-                                     (equal to the highest tag used
-                                     by the map). */
+  layer_tag_t num_object_queues; /**< Number of object queues reserved
+                                      (equal to the highest tag used
+                                      by the map). */
 
-  struct GSList **object_queue; /**< The head array of queues of
+  GSList **object_queue; /**< The head array of queues of
                               object pointers to be rendered
                               on the next pass.  There will
                               be num_object_queues heads in
                               this block.*/
 
-  struct GSList *dirty_rectangles; /**< Stack of dirty rectangles. */
+  GSList *dirty_rectangles; /**< Stack of dirty rectangles. */
 } mapview_t;
 
 

@@ -67,21 +67,28 @@ static void allocate_planes (map_t *map);
 /**
  * Frees the map planes.
  *
- * @param map  The map whose planes are to be freed.
+ * @param max_layer_index  The maximum layer index in the map.
+ * @param value_planes     The array of layer value planes.
+ * @param zone_planes      The array of layer zone planes.
  */
-static void free_planes (map_t *map);
+static void free_planes (layer_index_t max_layer_index,
+			 layer_value_t **value_planes,
+			 layer_zone_t ** zone_planes);
 
 
 /* -- DECLARATIONS -- */
 
-/* Initialise a map. */
-void
-init_map (map_t *map,
-	  dimension_t width,
+/* Allocates and initialises a map. */
+map_t *
+init_map (dimension_t width,
 	  dimension_t height,
 	  layer_index_t max_layer_index, zone_index_t max_zone_index)
 {
+  map_t *map;
+
   g_assert (width > 0 && height > 0);
+
+  map = xcalloc (1, sizeof (map_t));
 
   /* Set parameters and nullify pointers. */
   map->width = width;
@@ -89,10 +96,6 @@ init_map (map_t *map,
   map->max_layer_index = max_layer_index;
   map->max_zone_index = max_zone_index;
 
-  map->layer_tags = NULL;
-  map->zone_properties = NULL;
-  map->value_planes = NULL;
-  map->zone_planes = NULL;
 
   /* Allocate tag array. */
   map->layer_tags =
@@ -104,6 +107,8 @@ init_map (map_t *map,
 
   allocate_plane_arrays (map);
   allocate_planes (map);
+
+  return map;
 }
 
 
@@ -125,7 +130,7 @@ allocate_plane_arrays (map_t *map)
 static void
 allocate_planes (map_t *map)
 {
-  int i;
+  layer_index_t i;
   for (i = 0; i <= map->max_layer_index; i++)
     {
       map->value_planes[i] =
@@ -280,7 +285,8 @@ free_map (map_t *map)
 	  free (map->zone_properties);
 	}
 
-      free_planes (map);
+      free_planes (map->max_layer_index, map->value_planes,
+		   map->zone_planes);
 
       free (map);
     }
@@ -289,23 +295,22 @@ free_map (map_t *map)
 
 /* Frees the map planes. */
 static void
-free_planes (map_t *map)
+free_planes (layer_index_t max_layer_index,
+	     layer_value_t **value_planes,
+	     layer_zone_t ** zone_planes)
 {
-  int i;
+  layer_index_t i;
 
-  for (i = 0; i <= map->max_layer_index; i += 1)
+  for (i = 0; i <= max_layer_index; i += 1)
     {
-      if (map->value_planes && map->value_planes[i])
+      if (value_planes != NULL && value_planes[i] != NULL)
 	{
-	  free (map->value_planes[i]);
+	  free (value_planes[i]);
 	}
 
-      if (map->zone_planes && map->zone_planes[i])
+      if (zone_planes != NULL && zone_planes[i] != NULL)
 	{
-	  free (map->zone_planes[i]);
+	  free (zone_planes[i]);
 	}
     }
-
-  map->value_planes = NULL;
-  map->zone_planes = NULL;
 }

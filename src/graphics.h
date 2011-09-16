@@ -1,5 +1,5 @@
 /*
- * Crystals (working title) 
+ * Crystals (working title)
  *
  * Copyright (c) 2010 Matt Windsor, Michael Walker and Alexander
  *                    Preisinger.
@@ -145,7 +145,7 @@ write_string (int16_t x,
  *
  * Depending on the graphics module, the colour displayed on screen
  * may not exactly match the desired colour.
- * 
+ *
  * @param x      X position of the left edge of the rectangle,
  *               in pixels from the left edge of the screen.
  * @param y      Y position of the top edge of the rectangle,
@@ -211,7 +211,7 @@ scroll_screen (int16_t x_offset, int16_t y_offset);
  * @note            It is safe to directly use the pointer returned,
  *                  for example as an argument to draw_image_direct,
  *                  so long as the image is known to still be loaded.
- *                  This can be used to speed up successive drawing 
+ *                  This can be used to speed up successive drawing
  *                  calls after an image load check.
  *
  * @param filename  The filename of the image to load, relative from
@@ -312,7 +312,7 @@ draw_image_direct (image_t *data,
  *
  * @param filename  Filename of the image.
  *
- * @return          SUCCESS if the deletion succeeded; 
+ * @return          SUCCESS if the deletion succeeded;
  *                  FAILURE otherwise.
  */
 bool_t
@@ -331,7 +331,7 @@ clear_images (void);
  *
  * @param filename  The filename of the image to retrieve.
  *
- * @return          A pointer to the image if found, 
+ * @return          A pointer to the image if found,
  *                  or NULL otherwise.
  */
 image_t *
@@ -340,7 +340,7 @@ find_image (const char filename[]);
 
 /**
  * Adds a rectangle to the next update run.
- * 
+ *
  * @param x       The X co-ordinate of the left side of the rectangle,
  *                in pixels from the left side of the screen.
  * @param y       The Y co-ordinate of the top side of the rectangle,
@@ -349,10 +349,10 @@ find_image (const char filename[]);
  * @param height  The height of the rectangle, in pixels.
  */
 void
-add_update_rectangle (uint16_t x,
-                      uint16_t y,
-                      int16_t width,
-                      int16_t height);
+add_update_rectangle (int16_t x,
+                      int16_t y,
+                      uint16_t width,
+                      uint16_t height);
 
 
 /**

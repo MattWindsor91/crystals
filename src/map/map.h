@@ -54,12 +54,10 @@ typedef uint16_t dimension_t;	 /**< Type for tile-based map dimensions. */
 
 typedef uint16_t layer_tag_t;	 /**< Type for layer tags. */
 
-typedef int32_t layer_count_t;	 /**< Type large enough to hold a layer count. */
 typedef uint16_t layer_index_t;	 /**< Type for layer indices. */
 typedef uint16_t layer_value_t;	 /**< Type for layer value data. */
 typedef uint16_t layer_zone_t;	 /**< Type for layer zone data. */
 
-typedef int32_t zone_count_t;	 /**< Type large enough to hold a zone count. */
 typedef uint16_t zone_index_t;	 /**< Type for zone indices. */
 typedef uint16_t zone_prop_t;	 /**< Type for zone properties bitfields. */
 
@@ -108,28 +106,28 @@ extern struct map *g_map; /**< The map currently in use. (FIXME: is
 /* -- DECLARATIONS -- */
 
 /**
- * Initialise a map.
+ * Allocates and initialises a map.
  *
  * In addition to populating the map with the given quantities, this
  * allocates enough internal space in the map structure for a map with
  * the specified width, height and number of layers, returning a blank
  * map that can then be populated with tile information.
  *
- * @param map              The map to initialise.  The map should not
- *                         have been previously initialised, but must
- *                         have been malloc'd.
  * @param width            The width of the map, in tiles.
  * @param height           The height of the map, in tiles.
  * @param max_layer_index  The maximum layer index in the map
  *                         (number of layers to reserve, minus one).
  * @param max_zone_index   The maximum zone index in the map
  *                         (number of zones to reserve, minus one).
+ *
+ * @return a pointer to a map_t containing the given parameters and
+ *         enough space for the layer planes, tags and zones, or NULL
+ *         if the allocation failed.
  */
-void init_map (map_t *map,
-	       dimension_t width,
-	       dimension_t height,
-	       layer_index_t max_layer_index,
-	       zone_index_t max_zone_index);
+map_t *init_map (dimension_t width,
+                 dimension_t height,
+                 layer_index_t max_layer_index,
+                 zone_index_t max_zone_index);
 
 
 /**
