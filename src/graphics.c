@@ -74,13 +74,13 @@ static const char FONT_FILENAME[] = "font.png";
 /**
  * Font character width, in pixels.
  */
-static const uint16_t FONT_W = 10;
+const uint16_t FONT_W = 10;
 
 
 /**
  * Font character height, in pixels.
  */
-static const uint16_t FONT_H = 10;
+const uint16_t FONT_H = 10;
 
 
 /* -- STATIC GLOBAL VARIABLES -- */
@@ -188,19 +188,18 @@ get_absolute_path (const char path[])
 }
 
 
-/* Writes a string on the screen, using the standard font. */
+/* Writes a string on the screen, using the standard font and given
+   alignment. */
 void
-write_string (int16_t x,
-              int16_t y,
-              uint16_t box_width,
-              alignment_t alignment,
-              const char string[])
+write_string_aligned (int16_t x,
+                      int16_t y,
+                      uint16_t box_width,
+                      alignment_t alignment,
+                      const char string[])
 {
   size_t slength;    /* Length of the string, in characters. */
   int16_t x1;
   uint16_t length;   /* Length of the string on-screen, in pixels. */
-  char chr;
-  uint16_t i;
 
   slength = strlen (string);
   length = ulong_to_uint16 (FONT_W * slength);
@@ -224,25 +223,47 @@ write_string (int16_t x,
     }
 
 
-  /* Draw each character using the font image. */
-  for (i = 0; i < slength; i++)
-    {
-      chr = string[i];
-      draw_image (FONT_FILENAME,
-                  long_to_int16 ((chr % 16) * FONT_W),
-                  long_to_int16 (((chr - (chr % 16))/16) * FONT_H),
-                  long_to_int16 (x1),
-                  long_to_int16 (y),
-                  FONT_W,
-                  FONT_H);
+  write_string (x1, y, string);
+}
 
-      x1 = long_to_int16 (x1 + FONT_W);
+
+/* Writes a string on the screen, using the standard font and given
+   alignment. */
+void
+write_string (int16_t x,
+              int16_t y,
+              const char string[])
+{
+  uint8_t chr;
+  int16_t current_x = x;
+  size_t i;
+  size_t slength = strlen (string);
+  image_t *font = load_image (FONT_FILENAME);
+
+  if (font == NULL)
+    {
+      error ("Couldn't load font!");
+      return;
+    }
+
+  for (i = 0; i < slength; i+= 1)
+    {
+      chr = (uint8_t) string[i];
+      draw_image_direct (font,
+                         long_to_int16 ((chr % 16) * FONT_W),
+                         long_to_int16 (((chr - (chr % 16))/16) * FONT_H),
+                         current_x,
+                         y,
+                         FONT_W,
+                         FONT_H);
+
+      current_x += FONT_W;
     }
 
 
   /* Instruct the current state to update the screen. */
-  add_update_rectangle (x, y, length, FONT_H);
-  state_handle_dirty_rect (x, y, length, FONT_H);
+  add_update_rectangle (x, y, current_x - x + 1, FONT_H);
+  state_handle_dirty_rect (x, y, current_x - x + 1, FONT_H);
 }
 
 

@@ -69,7 +69,7 @@ enum
 
 
 /**
- * Width of the screen (in pixels).
+ * Width of the screen, in pixels.
  *
  * @todo FIXME: Make this changeable at runtime.
  */
@@ -77,12 +77,23 @@ extern const uint16_t SCREEN_W;
 
 
 /**
- * Height of the screen (in pixels).
+ * Height of the screen, in pixels.
  *
  * @todo FIXME: Make this changeable at runtime.
  */
 extern const uint16_t SCREEN_H;
 
+
+/**
+ * Font character width, in pixels.
+ */
+extern const uint16_t FONT_W;
+
+
+/**
+ * Font character height, in pixels.
+ */
+extern const uint16_t FONT_H;
 
 /* -- DECLARATIONS -- */
 
@@ -106,9 +117,10 @@ char *get_absolute_path (const char path[]);
 
 
 /**
- * Writes a string on the screen, using the standard font.
+ * Writes a string on the screen, using the standard font and the
+ * given alignment.
  *
- * A wrapper to the image drawing functions that allows text to be
+ * A wrapper to the standard writing function that allows text to be
  * left, centre, or right-aligned on a line of length box_width
  * starting at (x, y).
  *
@@ -123,10 +135,25 @@ char *get_absolute_path (const char path[]);
  *                   ALIGN_RIGHT).
  * @param string     The string to write.
  */
+void write_string_aligned (int16_t x,
+                           int16_t y,
+                           uint16_t box_width,
+                           alignment_t alignment,
+                           const char string[]);
+
+
+/**
+ * Writes a string on the screen, using the standard font.
+ *
+ * @param x          X position of the left edge of the text box,
+ *                   in pixels from the left edge of the screen.
+ * @param y          Y position of the top edge of the text box,
+ *                   in pixels from the top edge of the screen.
+ * @param string     The string to write.
+ */
 void write_string (int16_t x,
 		   int16_t y,
-		   uint16_t box_width,
-		   alignment_t alignment, const char string[]);
+		   const char string[]);
 
 
 /**

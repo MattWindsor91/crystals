@@ -251,7 +251,8 @@ update_field (void)
 {
   field_handle_held_keys ();
   render_map (sg_mapview);
-  write_string (5, 5, 0, ALIGN_LEFT, "Test");
+  write_string (5, 5, "Test");
+  write_string (5, SCREEN_H - FONT_H - 5, "Crystals");
 }
 
 
