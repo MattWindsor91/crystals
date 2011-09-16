@@ -69,8 +69,8 @@ void init_objects (void);
  * @return  a pointer to the new object, or NULL if there was an
  *          error while creating it.
  */
-object_t *add_object (const char object_name[],
-		      const char script_filename[]);
+/*@dependent@*/ object_t *add_object (const char object_name[],
+                                      const char script_filename[]);
 
 
 /**
@@ -111,7 +111,7 @@ object_t *get_object (const char object_name[]);
  *                  data.
  * @param data      gpointer to the data to pass to the function.
  */
-void apply_to_objects (void (*function) (gpointer key, gpointer value, gpointer user_data), gpointer data);
+void apply_to_objects (GHFunc function, gpointer data);
 
 
 /**

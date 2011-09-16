@@ -141,6 +141,28 @@ static void render_map_layer_tile_rect (gpointer rectangle,
 
 
 /**
+ * Renders a given rectangular "slice" of a layer on a map,
+ * after said slice has been transformed into tile boundaries.
+ *
+ * @param tile_start_x  The leftmost tile X co-ordinate.
+ * @param tile_start_y  The uppermost tile Y co-ordinate.
+ * @param tile_end_x    The rightmost tile X co-ordinate.
+ * @param tile_end_y    The lowermost tile Y co-ordinate.
+ * @param mapview       Pointer to the map view to render with.
+ * @param tileset       Pointer to the tileset to render with.
+ * @param layer         The index of the layer to render.
+ */
+static void
+render_map_layer_tile_rect_body (dimension_t tile_start_x,
+                                 dimension_t tile_start_y,
+                                 dimension_t tile_end_x,
+                                 dimension_t tile_end_y,
+                                 mapview_t *mapview,
+                                 image_t *tileset,
+                                 layer_index_t layer);
+
+
+/**
  * Render any map objects to be placed on top of this layer.
  *
  * This will, if this layer is the first defined with its tag, blit
@@ -338,7 +360,7 @@ render_map_layers (mapview_t *mapview)
 
 /* Renders the tile component of a given layer on a map. */
 static void
-render_map_layer_tiles (mapview_t *mapview, layer_index_t layer)
+render_map_layer_tiles (/*@temp@*/ mapview_t *mapview, layer_index_t layer)
 {
   render_map_layer_tile_rect_data_t data;
   image_t *tileset = load_image (FN_TILESET);
@@ -365,8 +387,7 @@ render_map_layer_tile_rect (gpointer rectangle, gpointer data)
 {
   dirty_rectangle_t *rectanglec = rectangle;
   render_map_layer_tile_rect_data_t *datac = data;
-  map_t *map = datac->mapview->map;
-  image_t *tileset = datac->tileset;
+  mapview_t *mapview = datac->mapview;
 
   /* Convert per-pixel dimensions into per-tile */
   dimension_t tile_start_x =
@@ -380,13 +401,6 @@ render_map_layer_tile_rect (gpointer rectangle, gpointer data)
     (dimension_t) ((rectanglec->start_y +
 		    rectanglec->height) / TILE_H);
 
-  dimension_t x;
-  dimension_t y;
-  int screen_x;
-  int screen_y;
-  int tileset_x;
-  layer_value_t tile;
-
 
   /* Because the end X and Y round up to the nearest tile, add another
    * tile to them if they don't already line up perfectly with the
@@ -399,10 +413,10 @@ render_map_layer_tile_rect (gpointer rectangle, gpointer data)
     tile_end_y += 1;
 
   /* Ensure rectangle doesn't go out of map bounds. */
-  if (map->width <= tile_end_x)
-    tile_end_x = map->width - 1;
-  if (map->height <= tile_end_y)
-    tile_end_y = map->height - 1;
+  if (mapview->map->width <= tile_end_x)
+    tile_end_x = mapview->map->width - 1;
+  if (mapview->map->height <= tile_end_y)
+    tile_end_y = mapview->map->height - 1;
 
   /* Ensure rectangle is still a rectangle */
   if (tile_start_x >= tile_end_x)
@@ -410,20 +424,53 @@ render_map_layer_tile_rect (gpointer rectangle, gpointer data)
   if (tile_start_y >= tile_end_y)
     return;
 
+  render_map_layer_tile_rect_body (tile_start_x,
+                                   tile_start_y,
+                                   tile_end_x,
+                                   tile_end_y,
+                                   mapview,
+                                   datac->tileset,
+                                   datac->layer);
+}
+
+
+/* Renders a given rectangular "slice" of a layer on a map,
+   after said slice has been transformed into tile boundaries. */
+static void
+render_map_layer_tile_rect_body (dimension_t tile_start_x,
+                                 dimension_t tile_start_y,
+                                 dimension_t tile_end_x,
+                                 dimension_t tile_end_y,
+                                 mapview_t *mapview,
+                                 image_t *tileset,
+                                 layer_index_t layer)
+{
+  map_t *map = mapview->map;
+
+  int16_t screen_x;
+  int16_t screen_y;
+
+  layer_value_t tile;
+  uint32_t tileset_x;
+
+  dimension_t x;
+  dimension_t y;
+
   for (x = tile_start_x; x < tile_end_x; x += 1)
     {
-      screen_x = (x * TILE_W) - datac->mapview->x_offset;
+      screen_x = (int16_t) ((x * TILE_W) - mapview->x_offset);
 
       for (y = tile_start_y; y < tile_end_y; y += 1)
 	{
-	  screen_y = (y * TILE_H) - datac->mapview->y_offset;
+	  screen_y
+            = (int16_t) ((y * TILE_H) - mapview->y_offset);
 
 	  tile
-	    = map->value_planes[datac->layer][x + (y * map->height)];
+	    = map->value_planes[layer][x + (y * map->height)];
 	  /* 0 = transparency */
 	  if (tile > 0)
 	    {
-	      tileset_x = TILE_W * tile;
+	      tileset_x = (uint32_t) (TILE_W * tile);
 	      draw_image_direct (tileset,
 				 (int16_t) tileset_x, 0,
 				 (int16_t) screen_x,
