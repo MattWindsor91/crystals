@@ -77,6 +77,20 @@ static void handle_dirty_rectangle (gpointer rectangle,
 
 
 /**
+ * Checks whether or not a dirty rectangle lies outside the given
+ * viewport.
+ *
+ * @param rectangle  Pointer to the rectangle to check.
+ * @param mapview    Pointer to the map viewport to check against.
+ *
+ * @return  true if the rectangle lies completely outside the
+ *          viewport; false otherwise.
+ */
+static bool rectangle_outside_viewport (dirty_rectangle_t *rectangle,
+                                        mapview_t *mapview);
+
+
+/**
  * Propagates a dirty rectangle to the graphics subsystem.
  *
  * @param rectangle  Pointer to the rectangle to propagate.
@@ -194,28 +208,50 @@ handle_dirty_rectangle (gpointer rectangle, gpointer mapview)
   dirty_rectangle_t *rectanglec = (dirty_rectangle_t *) rectangle;
   mapview_t *mapviewc = (mapview_t *) mapview;
 
-  /* Check to see if the rectangle is off-screen.  If so, don't
-   * bother rendering it!
-   */
-  if ((rectanglec->start_x
-       >= (int32_t) (SCREEN_W + mapviewc->x_offset))
-      || (rectanglec->start_y
-	  >= (int32_t) (SCREEN_H + mapviewc->y_offset))
-      || (mapviewc->x_offset >= 0
-	  && ((uint32_t) (rectanglec->start_x + rectanglec->width)
-	      <= (uint32_t) mapviewc->x_offset))
-      || (mapviewc->y_offset >= 0
-	  && ((uint32_t) (rectanglec->start_y + rectanglec->height)
-	      <= (uint32_t) mapviewc->y_offset)))
-    return;
+  if (rectangle_outside_viewport (rectanglec, mapviewc))
+      return;
 
-  propagate_rectangle_to_screen (rectanglec, mapview);
+  propagate_rectangle_to_screen (rectanglec, mapviewc);
   clamp_rectangle (rectanglec);
 
   /* Check to see if each object in the hash table is going to be
    * dirtied.
    */
   apply_to_objects (dirty_object_test, rectanglec);
+}
+
+
+/* Checks whether or not a dirty rectangle lies outside the given
+   viewport. */
+static bool
+rectangle_outside_viewport (dirty_rectangle_t *rectangle,
+                            mapview_t *mapview)
+{
+  /* TODO: There are lots of possible casting errors here.
+     This could do with a good fine-toothed combing later. */
+  int32_t viewport_left_edge = (int32_t) mapview->x_offset;
+  int32_t viewport_right_edge =
+    (int32_t) (mapview->x_offset + SCREEN_W - 1);
+  int32_t viewport_top_edge = (int32_t) mapview->y_offset;
+  int32_t viewport_bottom_edge =
+    (int32_t) (mapview->y_offset + SCREEN_H - 1);
+
+  int32_t rectangle_left_edge = (int32_t) rectangle->start_x;
+  int32_t rectangle_right_edge =
+    (int32_t) (rectangle->start_x + rectangle->width - 1);
+  int32_t rectangle_top_edge = (int32_t) rectangle->start_y;
+  int32_t rectangle_bottom_edge =
+    (int32_t) (rectangle->start_y + rectangle->height - 1);
+
+
+  /* Separating axis theorem */
+  if (rectangle_left_edge > viewport_right_edge
+      || rectangle_right_edge < viewport_left_edge
+      || rectangle_top_edge > viewport_bottom_edge
+      || rectangle_bottom_edge < viewport_top_edge)
+    return true;
+  else
+    return false;
 }
 
 
@@ -286,6 +322,7 @@ clamp_rectangle (dirty_rectangle_t *rectangle)
     }
 }
 
+
 /* Renders the map layers, one by one, in order. */
 static void
 render_map_layers (mapview_t *mapview)
@@ -315,8 +352,10 @@ render_map_layer_tiles (mapview_t *mapview, layer_index_t layer)
   data.mapview = mapview;
   data.tileset = tileset;
   data.layer = layer;
-  g_slist_foreach (mapview->dirty_rectangles,
-		   render_map_layer_tile_rect, &data);
+
+  if (mapview->dirty_rectangles != NULL)
+    g_slist_foreach (mapview->dirty_rectangles,
+                     render_map_layer_tile_rect, &data);
 }
 
 
@@ -400,7 +439,6 @@ static void
 render_map_layer_objects (mapview_t *mapview, layer_index_t layer)
 {
   layer_value_t tag = get_layer_tag (mapview->map, layer);
-  gpointer object;
 
   /* Null-tag layers do not have objects on them. */
   if (tag == NULL_TAG)
@@ -408,7 +446,8 @@ render_map_layer_objects (mapview_t *mapview, layer_index_t layer)
 
   while (mapview->object_queue[tag - 1] != NULL)
     {
-      object = g_slist_nth_data (mapview->object_queue[tag - 1], 0);
+      gpointer object =
+        g_slist_nth_data (mapview->object_queue[tag - 1], 0);
       mapview->object_queue[tag - 1] =
 	g_slist_remove (mapview->object_queue[tag - 1], object);
 

@@ -120,7 +120,10 @@ typedef struct mapview
                               be num_object_queues heads in
                               this block.*/
 
-  GSList *dirty_rectangles; /**< Stack of dirty rectangles. */
+ /**
+  * Stack of dirty rectangles.
+  */
+  GSList /*@null@*/ *dirty_rectangles;
 } mapview_t;
 
 
