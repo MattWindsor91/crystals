@@ -49,32 +49,39 @@
 
 /* -- TYPEDEFS -- */
 
-typedef void image_t;         /**< Generic image data type. */
-typedef uint8_t alignment_t;  /**< Text alignment modifier type. */
+typedef void image_t;	      /**< Generic image data type. */
 
 
 /* -- CONSTANTS -- */
 
+typedef enum alignment
+{
+  ALIGN_LEFT,	   /**< Left alignment for text. */
+  ALIGN_CENTRE,	   /**< Centre alignment for text. */
+  ALIGN_RIGHT	   /**< Right alignment for text. */
+} alignment_t;
+
+
 enum
-  {
-    ALIGN_LEFT   = 0,   /**< Left alignment for text. */
-    ALIGN_CENTRE = 1,   /**< Centre alignment for text. */
-    ALIGN_RIGHT  = 2,   /**< Right alignment for text. */
+{
+  SCREEN_D = 32		/**< Screen colour depth (in bits per pixel). */
+};
 
-    SCREEN_W     = 640, /**<
-                         * Width of the screen (in pixels).
-                         *
-                         * @todo FIXME: Make this changeable at runtime.
-                         */
 
-    SCREEN_H     = 480, /**<
-                         * Height of the screen (in pixels).
-                         *
-                         * @todo FIXME: Make this changeable at runtime.
-                         */
+/**
+ * Width of the screen (in pixels).
+ *
+ * @todo FIXME: Make this changeable at runtime.
+ */
+extern const uint16_t SCREEN_W;
 
-    SCREEN_D     = 32   /**< Screen colour depth (in bits per pixel). */
-  };
+
+/**
+ * Height of the screen (in pixels).
+ *
+ * @todo FIXME: Make this changeable at runtime.
+ */
+extern const uint16_t SCREEN_H;
 
 
 /* -- DECLARATIONS -- */
@@ -82,8 +89,7 @@ enum
 /**
  * Initialise the graphics subsystem.
  */
-void
-init_graphics (void);
+void init_graphics (void);
 
 
 /**
@@ -96,8 +102,7 @@ init_graphics (void);
  * @return      The absolute path to the image file, for example
  *              "/usr/share/crystals/gfx/bob.png".
  */
-char *
-get_absolute_path (const char path[]);
+char *get_absolute_path (const char path[]);
 
 
 /**
@@ -118,12 +123,10 @@ get_absolute_path (const char path[]);
  *                   ALIGN_RIGHT).
  * @param string     The string to write.
  */
-void
-write_string (int16_t x,
-              int16_t y,
-              uint16_t box_width,
-              alignment_t alignment,
-              const char string[]);
+void write_string (int16_t x,
+		   int16_t y,
+		   uint16_t box_width,
+		   alignment_t alignment, const char string[]);
 
 
 /**
@@ -141,17 +144,12 @@ write_string (int16_t x,
  * @param red    The red component of the fill colour (0-255).
  * @param green  The green component of the fill colour (0-255).
  * @param blue   The blue component of the fill colour (0-255).
- *
- * @return       true for success; false otherwise.
  */
-bool
-draw_rectangle (int16_t x,
-                int16_t y,
-                uint16_t width,
-                uint16_t height,
-                uint8_t red,
-                uint8_t green,
-                uint8_t blue);
+void draw_rectangle (int16_t x,
+		     int16_t y,
+		     uint16_t width,
+		     uint16_t height,
+		     uint8_t red, uint8_t green, uint8_t blue);
 
 
 /**
@@ -163,11 +161,8 @@ draw_rectangle (int16_t x,
  * @param red    The red component of the fill colour (0-255).
  * @param green  The green component of the fill colour (0-255).
  * @param blue   The blue component of the fill colour (0-255).
- *
- * @return       true for success; false otherwise.
  */
-bool
-fill_screen (uint8_t red, uint8_t green, uint8_t blue);
+void fill_screen (uint8_t red, uint8_t green, uint8_t blue);
 
 
 /**
@@ -175,14 +170,10 @@ fill_screen (uint8_t red, uint8_t green, uint8_t blue);
  *
  * @param x_offset  The X co-ordinate offset in which to scroll the
  *                  screen, in pixels towards the right.
- *
  * @param y_offset  The Y co-ordinate offset in which to scroll the
  *                  screen, in pixels downwards.
- *
- * @return          true for success; false otherwise.
  */
-bool
-scroll_screen (int16_t x_offset, int16_t y_offset);
+void scroll_screen (int16_t x_offset, int16_t y_offset);
 
 
 /**
@@ -207,8 +198,7 @@ scroll_screen (int16_t x_offset, int16_t y_offset);
  *          successfully loaded and stored in the image cache;
  *          NULL otherwise.
  */
-image_t *
-load_image (const char filename[]);
+image_t *load_image (const char filename[]);
 
 
 /**
@@ -219,8 +209,7 @@ load_image (const char filename[]);
  *
  * @param image  Pointer to the image data to free.
  */
-void
-free_image (image_t *image);
+void free_image (image_t * image);
 
 
 /**
@@ -249,14 +238,11 @@ free_image (image_t *image);
  *                  cases, a failure will simply cause the image to
  *                  not appear.
  */
-bool
-draw_image (const char filename[],
-            int16_t image_x,
-            int16_t image_y,
-            int16_t screen_x,
-            int16_t screen_y,
-            uint16_t width,
-            uint16_t height);
+void draw_image (const char filename[],
+		 int16_t image_x,
+		 int16_t image_y,
+		 int16_t screen_x,
+		 int16_t screen_y, uint16_t width, uint16_t height);
 
 
 /**
@@ -283,14 +269,12 @@ draw_image (const char filename[],
  *                  cases, a failure will simply cause the image to
  *                  not appear.
  */
-bool
-draw_image_direct (image_t *data,
-                   int16_t image_x,
-                   int16_t image_y,
-                   int16_t screen_x,
-                   int16_t screen_y,
-                   uint16_t width,
-                   uint16_t height);
+void draw_image_direct (image_t * data,
+			int16_t image_x,
+			int16_t image_y,
+			int16_t screen_x,
+			int16_t screen_y,
+			uint16_t width, uint16_t height);
 
 
 /**
@@ -301,15 +285,13 @@ draw_image_direct (image_t *data,
  * @return          true if the deletion succeeded;
  *                  false otherwise.
  */
-bool
-delete_image (const char filename[]);
+bool delete_image (const char filename[]);
 
 
 /**
  * Deletes all images in the image cache.
  */
-void
-clear_images (void);
+void clear_images (void);
 
 
 /**
@@ -320,8 +302,7 @@ clear_images (void);
  * @return          A pointer to the image if found,
  *                  or NULL otherwise.
  */
-image_t *
-find_image (const char filename[]);
+image_t *find_image (const char filename[]);
 
 
 /**
@@ -334,27 +315,21 @@ find_image (const char filename[]);
  * @param width   The width of the rectangle, in pixels.
  * @param height  The height of the rectangle, in pixels.
  */
-void
-add_update_rectangle (int16_t x,
-                      int16_t y,
-                      uint16_t width,
-                      uint16_t height);
+void add_update_rectangle (int16_t x,
+			   int16_t y,
+			   uint16_t width, uint16_t height);
 
 
 /**
  * Updates the screen.
- *
- * @return  true for success, false otherwise.
  */
-bool
-update_screen (void);
+void update_screen (void);
 
 
 /**
  * Cleans up the graphics subsystem.
  */
-void
-cleanup_graphics (void);
+void cleanup_graphics (void);
 
 
 #endif /* not _GRAPHICS_H */

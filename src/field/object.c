@@ -154,7 +154,7 @@ set_object_dirty (object_t *object, mapview_t *mapview)
 
   /* If we're already dirty, no need to run this again. */
 
-  if (object->is_dirty == true)
+  if (object->is_dirty)
     return;
 
   /* If the object has no image (the filename is NULL) then ignore the
@@ -229,15 +229,15 @@ dirty_object_test_post_check (object_t *object,
 {
   mapview_t *mapview = rect->parent;
 
-  int rect_left = rect->start_x;
-  int rect_top = rect->start_y;
-  int rect_right = rect->start_x + rect->width - 1;
-  int rect_bottom = rect->start_y + rect->height - 1;
+  int32_t rect_left = rect->start_x;
+  int32_t rect_top = rect->start_y;
+  int32_t rect_right = rect->start_x + rect->width - 1;
+  int32_t rect_bottom = rect->start_y + rect->height - 1;
 
-  int object_left = object->image->map_x;
-  int object_top = object->image->map_y;
-  int object_right = object->image->map_x + object->image->width - 1;
-  int object_bottom =
+  int32_t object_left = object->image->map_x;
+  int32_t object_top = object->image->map_y;
+  int32_t object_right = object->image->map_x + object->image->width - 1;
+  int32_t object_bottom =
     object->image->map_y + object->image->height - 1;
 
   /* Use separating axis theorem, sort of, to decide whether the

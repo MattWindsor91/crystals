@@ -197,15 +197,17 @@ handle_dirty_rectangle (gpointer rectangle, gpointer mapview)
   /* Check to see if the rectangle is off-screen.  If so, don't
    * bother rendering it!
    */
-  if ((rectanglec->start_x >= SCREEN_W + mapviewc->x_offset)
-      || (rectanglec->start_y >= SCREEN_H + mapviewc->y_offset)
-      || (rectanglec->start_x + rectanglec->width
-	  <= mapviewc->x_offset)
-      || (rectanglec->start_y + rectanglec->height
-	  <= mapviewc->y_offset))
-    {
-      return;
-    }
+  if ((rectanglec->start_x
+       >= (int32_t) (SCREEN_W + mapviewc->x_offset))
+      || (rectanglec->start_y
+	  >= (int32_t) (SCREEN_H + mapviewc->y_offset))
+      || (mapviewc->x_offset >= 0
+	  && ((uint32_t) (rectanglec->start_x + rectanglec->width)
+	      <= (uint32_t) mapviewc->x_offset))
+      || (mapviewc->y_offset >= 0
+	  && ((uint32_t) (rectanglec->start_y + rectanglec->height)
+	      <= (uint32_t) mapviewc->y_offset)))
+    return;
 
   propagate_rectangle_to_screen (rectanglec, mapview);
   clamp_rectangle (rectanglec);
@@ -239,7 +241,7 @@ propagate_rectangle_to_screen (dirty_rectangle_t *rectangle,
     }
   else
     {
-      screen_x = (uint16_t) (rectangle->start_x - mapview->x_offset);
+      screen_x = (int16_t) (rectangle->start_x - mapview->x_offset);
       screen_width = rectangle->width;
     }
   if (rectangle->start_y < mapview->y_offset)
@@ -251,7 +253,7 @@ propagate_rectangle_to_screen (dirty_rectangle_t *rectangle,
     }
   else
     {
-      screen_y = (uint16_t) (rectangle->start_y - mapview->y_offset);
+      screen_y = (int16_t) (rectangle->start_y - mapview->y_offset);
       screen_height = rectangle->height;
     }
 
@@ -382,14 +384,11 @@ render_map_layer_tile_rect (gpointer rectangle, gpointer data)
 	  /* 0 = transparency */
 	  if (tile > 0)
 	    {
-	      bool success;
 	      tileset_x = TILE_W * tile;
-	      success = draw_image_direct (tileset,
-					   (int16_t) tileset_x, 0,
-					   (int16_t) screen_x,
-					   (int16_t) screen_y, TILE_W,
-					   TILE_H);
-	      g_assert (success);
+	      draw_image_direct (tileset,
+				 (int16_t) tileset_x, 0,
+				 (int16_t) screen_x,
+				 (int16_t) screen_y, TILE_W, TILE_H);
 	    }
 	}
     }
@@ -434,15 +433,12 @@ static void
 render_map_layer_object_image (mapview_t *mapview,
 			       object_image_t *image)
 {
-  bool success;
-
   g_assert (image != NULL && image->filename != NULL);
 
-  success = draw_image (image->filename,
-			image->image_x,
-			image->image_y,
-			(int16_t) (image->map_x - mapview->x_offset),
-			(int16_t) (image->map_y - mapview->y_offset),
-			image->width, image->height);
-  g_assert (success);
+  draw_image (image->filename,
+	      image->image_x,
+	      image->image_y,
+	      (int16_t) (image->map_x - mapview->x_offset),
+	      (int16_t) (image->map_y - mapview->y_offset),
+	      image->width, image->height);
 }

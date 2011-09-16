@@ -1,8 +1,8 @@
 /*
- * Crystals (working title) 
+ * Crystals (working title)
  *
- * Copyright (c) 2010 Matt Windsor, Michael Walker and Alexander
- *                    Preisinger.
+ * Copyright (c) 2010, 2011
+ *               Matt Windsor, Michael Walker and Alexander Preisinger.
  *
  * All rights reserved.
  *
@@ -81,7 +81,6 @@ typedef struct
  * This contains function pointers for the graphics class of modules,
  * along with module metadata.
  */
-
 typedef struct
 {
   module_data metadata; /**< Metadata for the graphics module. */
@@ -99,14 +98,12 @@ typedef struct
    * @param height  Height of the screen, in pixels.
    * @param depth   Colour depth of the screen, in bits per pixel.
    *
-   * @return  SUCCESS for success; FAILURE otherwise.
+   * @return  true for success; false otherwise.
    */
+  bool (*init_screen_internal) (uint16_t width,
+                                uint16_t height,
+                                uint8_t depth);
 
-
-  bool_t
-  (*init_screen_internal) (uint16_t width,
-                           uint16_t height,
-                           uint8_t depth);
 
   /**
    * Draw a rectangle of colour on-screen.
@@ -115,29 +112,20 @@ typedef struct
    * may not exactly match the desired colour.
    *
    * @param x       X co-ordinate of the left edge of the rectangle.
-   *
    * @param y       Y co-ordinate of the top edge of the rectangle.
-   *
    * @param width   The width of the rectangle, in pixels.
-   *
    * @param height  The height of the rectangle, in pixels.
-   *
    * @param red     The red component of the fill colour (0-255).
-   *
    * @param green   The green component of the fill colour (0-255).
-   *
    * @param blue    The blue component of the fill colour (0-255).
    */
-
-
-  bool_t
-  (*draw_rect_internal) (int16_t x,
-                         int16_t y,
-                         uint16_t width,
-                         uint16_t height,
-                         uint8_t red,
-                         uint8_t green,
-                         uint8_t blue);
+  void (*draw_rect_internal) (int16_t x,
+                              int16_t y,
+                              uint16_t width,
+                              uint16_t height,
+                              uint8_t red,
+                              uint8_t green,
+                              uint8_t blue);
 
   /**
    * Load an image and return its data in the module's native
@@ -154,9 +142,7 @@ typedef struct
    * which can eventually be passed to the module's draw_image
    * function.
    */
-
-  void *
-  (*load_image_data) (const char filename[]);
+  void *(*load_image_data) (const char filename[]);
 
 
   /**
@@ -170,9 +156,7 @@ typedef struct
    * @param data  A pointer to a memory location containing image
    *              data (in the module's native format) to be freed.
    */
-
-  void
-  (*free_image_data) (void *data);
+  void (*free_image_data) (void *data);
 
 
   /**
@@ -183,40 +167,29 @@ typedef struct
    *
    * @param image     The image data, in the graphics module-specific
    *                  format returned by load_image_data.
-   *
    * @param image_x   The X-coordinate of the left edge of the
    *                  on-image rectangle to display.
-   *
    * @param image_y   The Y-coordinate of the top edge of the
    *                  on-image rectangle to display.
-   *
    * @param screen_x  The X-coordinate of the left edge of the
    *                  on-screen rectangle to place the image in.
-   *
    * @param screen_y  The Y-coordinate of the top edge of the
    *                  on-screen rectangle to place the image in.
-   *
    * @param width     The width of the rectangle.
-   *
    * @param height    The height of the rectangle.
-   *
-   * @return  SUCCESS for success, FAILURE otherwise. In most
-   *          cases, a failure will simply cause the image to not appear.
    */
+  void (*draw_image_internal) (void *image,
+                               int16_t image_x,
+                               int16_t image_y,
+                               int16_t screen_x,
+                               int16_t screen_y,
+                               uint16_t width,
+                               uint16_t height);
 
-  bool_t
-  (*draw_image_internal) (void *image,
-                          int16_t image_x,
-                          int16_t image_y,
-                          int16_t screen_x,
-                          int16_t screen_y,
-                          uint16_t width,
-                          uint16_t height);
 
-  
   /**
    * Adds a rectangle to the next update run.
-   * 
+   *
    * @param x       The X co-ordinate of the left side of the rectangle,
    *                in pixels from the left side of the screen.
    * @param y       The Y co-ordinate of the top side of the rectangle,
@@ -224,18 +197,16 @@ typedef struct
    * @param width   The width of the rectangle, in pixels.
    * @param height  The height of the rectangle, in pixels.
    */
-
-  void
-  (*add_update_rectangle_internal) (int16_t x,
-                                    int16_t y,
-                                    uint16_t width,
-                                    uint16_t height);
+  void (*add_update_rectangle_internal) (int16_t x,
+                                         int16_t y,
+                                         uint16_t width,
+                                         uint16_t height);
 
 
-  /** Update the screen. */
-
-  bool_t
-  (*update_screen_internal) (void);
+  /**
+   * Update the screen.
+   */
+  void (*update_screen_internal) (void);
 
 
   /**
@@ -243,13 +214,10 @@ typedef struct
    *
    * @param x_offset  The X co-ordinate offset in which to scroll the
    *                  screen.
-   *
    * @param y_offset  The Y co-ordinate offset in which to scroll the
    *                  screen.
    */
-
-  bool_t
-  (*scroll_screen_internal) (int16_t x_offset, int16_t y_offset);
+  void (*scroll_screen_internal) (int16_t x_offset, int16_t y_offset);
 
 
 } module_gfx;
@@ -467,7 +435,7 @@ load_module_bindings (const char* name, module_set* modules);
 
 /**
  * Raise the last DLL-acquisition error message, if any.
- * 
+ *
  * @param function_name The name of the calling function.
  */
 void

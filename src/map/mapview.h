@@ -84,8 +84,8 @@ typedef struct dirty_rectangle
                       rectangle (in pixels from left side of map). */
   int32_t start_y; /**< Y co-ordinate of the top edge of the rectangle
                       (in pixels from top side of map). */
-  int32_t width;   /**< Width of the rectangle (in pixels). */
-  int32_t height;  /**< Height of the rectangle (in pixels). */
+  uint32_t width;   /**< Width of the rectangle (in pixels). */
+  uint32_t height;  /**< Height of the rectangle (in pixels). */
   struct mapview *parent;  /**< The parent map view of this rectangle. */
 } dirty_rectangle_t;
 
@@ -197,7 +197,7 @@ scroll_map (mapview_t *mapview, int16_t x_offset, int16_t y_offset);
 void
 mark_dirty_rect (mapview_t *mapview,
 		 int32_t start_x,
-		 int32_t start_y, int32_t width, int32_t height);
+		 int32_t start_y, uint32_t width, uint32_t height);
 
 
 /**

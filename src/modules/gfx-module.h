@@ -42,7 +42,6 @@
  * @brief   Prototypes and declarations for graphics module.
  */
 
-
 #ifndef _GFX_MODULE_H
 #define _GFX_MODULE_H
 
@@ -50,7 +49,6 @@
 /* All outward-facing functions MUST be preceded with
  * EXPORT so that they are exposed correctly in the Windows DLL.
  */
-
 #ifdef PLATFORM_WINDOWS
 #define EXPORT __declspec(dllexport)
 #else
@@ -63,7 +61,7 @@
 /**
  * Initialises the module.
  */
-EXPORT bool_t
+EXPORT bool
 init (void);
 
 
@@ -82,15 +80,15 @@ term (void);
  * when the module is unloaded (ie, via the module's term
  * function).
  *
- * @todo          Fullscreen option?
+ * @todo  Fullscreen option?
  *
  * @param width   Width of the screen, in pixels.
  * @param height  Height of the screen, in pixels.
  * @param depth   Colour depth of the screen, in bits per pixel.
  *
- * @return        SUCCESS for success; FAILURE otherwise.
+ * @return  true for success; false otherwise.
  */
-EXPORT bool_t
+EXPORT bool
 init_screen_internal (uint16_t width, uint16_t height,
                       uint8_t depth);
 
@@ -109,10 +107,8 @@ init_screen_internal (uint16_t width, uint16_t height,
  * @param red     The red component of the fill colour (0-255).
  * @param green   The green component of the fill colour (0-255).
  * @param blue    The blue component of the fill colour (0-255).
- *
- * @return        SUCCESS for success; FAILURE otherwise.
  */
-EXPORT bool_t
+EXPORT void
 draw_rect_internal (int16_t x,
                     int16_t y,
                     uint16_t width,
@@ -174,12 +170,8 @@ free_image_data (void *data);
  *                  on-screen rectangle to place the image in.
  * @param width     The width of the rectangle.
  * @param height    The height of the rectangle.
- *
- * @return          SUCCESS for success, FAILURE otherwise. In most
- *                  cases, a failure will simply cause the image to
- *                  not appear.
  */
-EXPORT bool_t
+EXPORT void
 draw_image_internal (void *image,
                      int16_t image_x,
                      int16_t image_y,
@@ -208,10 +200,8 @@ add_update_rectangle_internal (int16_t x,
 
 /**
  * Updates the screen.
- *
- * @return  SUCCESS for success; FAILURE otherwise.
  */
-EXPORT bool_t
+EXPORT void
 update_screen_internal (void);
 
 
@@ -222,10 +212,9 @@ update_screen_internal (void);
  *                  screen.
  * @param y_offset  The Y co-ordinate offset in which to scroll the
  *                  screen.
- *
- * @return          SUCCESS for success; FAILURE otherwise.
  */
-EXPORT bool_t
+EXPORT void
 scroll_screen_internal (int16_t x_offset, int16_t y_offset);
+
 
 #endif /* _GFX_MODULE_H */

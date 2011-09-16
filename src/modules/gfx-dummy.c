@@ -42,22 +42,21 @@
  * @brief   Dummy graphics backend.
  */
 
-
 #include "module.h"
 #include "gfx-module.h"  /* Module header file. */
 
 
 /* -- DEFINITIONS -- */
 
-/* Initialise the module. */
-EXPORT bool_t
+/* Initialises the module. */
+EXPORT bool
 init (void)
 {
-  return SUCCESS;
+  return true;
 }
 
 
-/* Terminate the module, freeing any remaining data dynamically
+/* Terminates the module, freeing any remaining data dynamically
    allocated by the module. */
 EXPORT void
 term (void)
@@ -65,8 +64,8 @@ term (void)
 }
 
 
-/* Initialise a screen of a given width, height and depth. */
-EXPORT bool_t
+/* Initialises a screen of a given width, height and depth. */
+EXPORT bool
 init_screen_internal (uint16_t width,
                       uint16_t height,
                       uint8_t depth)
@@ -75,13 +74,12 @@ init_screen_internal (uint16_t width,
   (void) height;
   (void) depth;
 
-
-  return SUCCESS;
+  return true;
 }
 
 
-/* Draw a rectangle of colour on-screen. */
-EXPORT bool_t
+/* Draws a rectangle of colour on-screen. */
+EXPORT void
 draw_rect_internal (int16_t x,
                     int16_t y,
                     uint16_t width,
@@ -97,13 +95,10 @@ draw_rect_internal (int16_t x,
   (void) red;
   (void) green;
   (void) blue;
-
-  return SUCCESS;
 }
 
 
-/* Load an image and return its data in the module's native format. */
-
+/* Loads an image and returns its data in the module's native format. */
 EXPORT void *
 load_image_data (const char filename[])
 {
@@ -113,7 +108,7 @@ load_image_data (const char filename[])
 }
 
 
-/* Free image data retrieved by load_image_data. */
+/* Frees image data retrieved by load_image_data. */
 EXPORT void
 free_image_data (void *data)
 {
@@ -121,8 +116,8 @@ free_image_data (void *data)
 }
 
 
-/* Draw a rectangular portion of an image on-screen. */
-EXPORT bool_t
+/* Draws a rectangular portion of an image on-screen. */
+EXPORT void
 draw_image_internal (void *image,
                      int16_t image_x,
                      int16_t image_y,
@@ -138,9 +133,6 @@ draw_image_internal (void *image,
   (void) screen_y;
   (void) width;
   (void) height;
-
-
-  return SUCCESS;
 }
 
 
@@ -160,21 +152,17 @@ add_update_rectangle_internal (int16_t x,
 
 /* Update the screen. */
 
-EXPORT bool_t
+EXPORT void
 update_screen_internal (void)
 {
-  return SUCCESS;
 }
 
 
 /* Translate the screen by a co-ordinate pair, leaving damage. */
 
-EXPORT bool_t
+EXPORT void
 scroll_screen_internal (int16_t x_offset, int16_t y_offset)
 {
   (void) x_offset;
   (void) y_offset;
-
-
-  return SUCCESS;
 }

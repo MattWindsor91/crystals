@@ -50,6 +50,14 @@
 
 /* -- CONSTANTS -- */
 
+/* Width of the screen (in pixels). */
+const uint16_t SCREEN_W = 640;
+
+
+/* Height of the screen (in pixels). */
+const uint16_t SCREEN_H = 480;
+
+
 /**
  * Default root path for graphics, to be invoked if the root path
  * cannot be found in the configuration file.
@@ -220,13 +228,13 @@ write_string (int16_t x,
   for (i = 0; i < slength; i++)
     {
       chr = string[i];
-      (void) draw_image (FONT_FILENAME,
-                         long_to_int16 ((chr % 16) * FONT_W),
-                         long_to_int16 (((chr - (chr % 16))/16) * FONT_H),
-                         long_to_int16 (x1),
-                         long_to_int16 (y),
-                         FONT_W,
-                         FONT_H);
+      draw_image (FONT_FILENAME,
+                  long_to_int16 ((chr % 16) * FONT_W),
+                  long_to_int16 (((chr - (chr % 16))/16) * FONT_H),
+                  long_to_int16 (x1),
+                  long_to_int16 (y),
+                  FONT_W,
+                  FONT_H);
 
       x1 = long_to_int16 (x1 + FONT_W);
     }
@@ -239,15 +247,15 @@ write_string (int16_t x,
 
 
 /* Updates the screen. */
-bool
+void
 update_screen (void)
 {
-  return (*g_modules.gfx.update_screen_internal) ();
+  (*g_modules.gfx.update_screen_internal) ();
 }
 
 
 /* Draws a rectangle on the screen of the given colour. */
-bool
+void
 draw_rectangle (int16_t x,
                 int16_t y,
                 uint16_t width,
@@ -256,24 +264,24 @@ draw_rectangle (int16_t x,
                 uint8_t green,
                 uint8_t blue)
 {
-  return (*g_modules.gfx.draw_rect_internal)
+  (*g_modules.gfx.draw_rect_internal)
     (x, y, width, height, red, green, blue);
 }
 
 
 /* Fills the screen with the given colour. */
-bool
+void
 fill_screen (uint8_t red, uint8_t green, uint8_t blue)
 {
-  return draw_rectangle (0, 0, SCREEN_W, SCREEN_H, red, green, blue);
+  draw_rectangle (0, 0, SCREEN_W, SCREEN_H, red, green, blue);
 }
 
 
 /* Translates the screen by a co-ordinate pair, leaving damage. */
-bool
+void
 scroll_screen (int16_t x_offset, int16_t y_offset)
 {
-  return (*g_modules.gfx.scroll_screen_internal)
+  (*g_modules.gfx.scroll_screen_internal)
     (x_offset, y_offset);
 }
 
@@ -289,16 +297,12 @@ load_image (const char filename[])
 
   cache_data = load_image_from_cache (filename);
   if (cache_data != NULL)
-    {
-      return cache_data;
-    }
+    return cache_data;
 
   /* Cache miss */
   file_data = load_image_from_file (filename);
   if (file_data != NULL)
-    {
-      return file_data;
-    }
+    return file_data;
 
   fatal ("GFX - load_image - Couldn't load image data for %s.",
          filename);
@@ -351,7 +355,7 @@ free_image (image_t *image)
 
 
 /* Draws a rectangular portion of an image on-screen. */
-bool
+void
 draw_image (const char filename[],
             int16_t image_x,
             int16_t image_y,
@@ -365,33 +369,32 @@ draw_image (const char filename[],
     {
       error ("GFX - draw_image - Image load failure for %s.",
              filename);
-      return false;
     }
 
-  return draw_image_direct (img,
-                            image_x,
-                            image_y,
-                            screen_x,
-                            screen_y,
-                            width,
-                            height);
+  draw_image_direct (img,
+                     image_x,
+                     image_y,
+                     screen_x,
+                     screen_y,
+                     width,
+                     height);
 }
 
 
 /* Draws a rectangular portion of an image on-screen, using a direct
    pointer to the driver-specific image data. */
-bool
+void
 draw_image_direct (void *data, int16_t image_x, int16_t image_y,
                    int16_t screen_x, int16_t screen_y, uint16_t width,
                    uint16_t height)
 {
-  return (*g_modules.gfx.draw_image_internal) (data,
-                                               image_x,
-                                               image_y,
-                                               screen_x,
-                                               screen_y,
-                                               width,
-                                               height);
+  (*g_modules.gfx.draw_image_internal) (data,
+                                        image_x,
+                                        image_y,
+                                        screen_x,
+                                        screen_y,
+                                        width,
+                                        height);
 }
 
 

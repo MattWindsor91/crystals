@@ -47,7 +47,11 @@
 
 /* -- STATIC GLOBAL VARIABLES -- */
 
-static object_t *sg_camera_focus = NULL; /** Current object with camera focus. */
+
+/**
+ * Current object with camera focus.
+ */
+static object_t *sg_camera_focus = NULL;
 
 
 /* -- STATIC DECLARATIONS -- */
@@ -58,11 +62,11 @@ static object_t *sg_camera_focus = NULL; /** Current object with camera focus. *
  * Either or both of the two offset parameters may be negative, which
  * has the effect of moving the object in the opposite direction.
  *
- * @param object_name   Name of the object to move.
- * @param dx            Change in x co-ordinate, in pixels towards the
- *                      rightmost edge of the map.
- * @param dy            Change in y co-ordinate, in pixels towards the
- *                      bottom of the map.
+ * @param object_name  Name of the object to move.
+ * @param dx           Change in x co-ordinate, in pixels towards the
+ *                     rightmost edge of the map.
+ * @param dy           Change in y co-ordinate, in pixels towards the
+ *                     bottom of the map.
  *
  * @return  true for success; false otherwise (eg if the object
  *          doesn't exist, or the co-ordinates are out of bounds).
@@ -330,10 +334,10 @@ mark_object_field_location_dirty (object_t *object)
 static bool_t
 rectangle_out_of_bounds (int x, int y, int width, int height)
 {
-  int start_x;
-  int start_y;
-  int end_x;
-  int end_y;
+  int start_x = 0;
+  int start_y = 0;
+  int end_x = 0;
+  int end_y = 0;
 
   get_field_map_boundaries (&start_x, &start_y, &end_x, &end_y);
 

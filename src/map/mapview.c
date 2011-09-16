@@ -103,8 +103,8 @@ init_mapview (map_t *map)
   /* Set all tiles as dirty. */
   mark_dirty_rect (mapview,
 		   0, 0,
-                   (int32_t) map->width * TILE_W,
-                   (int32_t) map->height * TILE_H);
+                   (uint32_t) (map->width * TILE_W),
+                   (uint32_t) (map->height * TILE_H));
   render_map (mapview);
 
   return mapview;
@@ -145,17 +145,18 @@ scroll_map (mapview_t *mapview, int16_t x_offset, int16_t y_offset)
       mark_dirty_rect (mapview,
 		       mapview->x_offset,
 		       mapview->y_offset,
-		       (dimension_t) abs ((int) x_offset),
-                       SCREEN_H);
+		       (uint32_t) abs ((int) x_offset),
+                       (uint32_t) SCREEN_H);
     }
 
   /* East scroll. */
   else if (x_offset > 0)
     {
       mark_dirty_rect (mapview,
-		       SCREEN_W + mapview->x_offset - x_offset,
+		       (int32_t) (SCREEN_W + mapview->x_offset - x_offset),
 		       mapview->y_offset,
-		       (dimension_t) x_offset, SCREEN_H);
+		       (uint32_t) x_offset,
+                       (uint32_t) SCREEN_H);
     }
 
 
@@ -165,8 +166,8 @@ scroll_map (mapview_t *mapview, int16_t x_offset, int16_t y_offset)
       mark_dirty_rect (mapview,
 		       mapview->x_offset,
 		       mapview->y_offset,
-		       SCREEN_W,
-                       (dimension_t) abs ((int) y_offset));
+		       (uint32_t) SCREEN_W,
+                       (uint32_t) abs ((int) y_offset));
     }
 
   /* South scroll. */
@@ -174,14 +175,14 @@ scroll_map (mapview_t *mapview, int16_t x_offset, int16_t y_offset)
     {
       mark_dirty_rect (mapview,
 		       mapview->x_offset,
-		       SCREEN_H + mapview->y_offset - y_offset,
-		       SCREEN_W, (dimension_t) y_offset);
+		       (int32_t) (SCREEN_H + mapview->y_offset - y_offset),
+		       (uint32_t) SCREEN_W, (uint32_t) y_offset);
     }
 
   mapview->x_offset += x_offset;
   mapview->y_offset += y_offset;
 
-  scroll_screen ((int16_t) -(x_offset), (int16_t) -(y_offset));
+  (void) scroll_screen ((int16_t) -(x_offset), (int16_t) -(y_offset));
 
   render_map (mapview);
 }
@@ -191,7 +192,7 @@ scroll_map (mapview_t *mapview, int16_t x_offset, int16_t y_offset)
 void
 mark_dirty_rect (mapview_t *mapview,
 		 int32_t start_x,
-		 int32_t start_y, int32_t width, int32_t height)
+		 int32_t start_y, uint32_t width, uint32_t height)
 {
   dirty_rectangle_t *rect;
 
