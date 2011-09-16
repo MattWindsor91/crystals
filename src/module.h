@@ -226,11 +226,11 @@ typedef struct
    */
 
   void
-  (*add_update_rectangle_internal) (uint16_t x,
-                                    uint16_t y,
-                                    int16_t width,
-                                    int16_t height);
-  
+  (*add_update_rectangle_internal) (int16_t x,
+                                    int16_t y,
+                                    uint16_t width,
+                                    uint16_t height);
+
 
   /** Update the screen. */
 

@@ -1,5 +1,5 @@
 /*
- * Crystals (working title) 
+ * Crystals (working title)
  *
  * Copyright (c) 2010 Matt Windsor, Michael Walker and Alexander
  *                    Preisinger.
@@ -36,7 +36,7 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/** 
+/**
  * @file    src/modules/gfx-dummy.c
  * @author  Alexander Preisinger
  * @brief   Dummy graphics backend.
@@ -75,8 +75,8 @@ init_screen_internal (uint16_t width,
                       uint8_t depth)
 {
   (void) width;
-  (void) height;  
-  (void) depth;  
+  (void) height;
+  (void) depth;
 
 
   return SUCCESS;
@@ -111,7 +111,7 @@ draw_rect_internal (int16_t x,
 
 EXPORT void *
 load_image_data (const char filename[])
-{ 
+{
   (void) filename;
 
 
@@ -158,10 +158,10 @@ draw_image_internal (void *image,
 /* Adds a rectangle to the next update run. */
 
 EXPORT void
-add_update_rectangle_internal (uint16_t x,
-                               uint16_t y,
-                               int16_t width,
-                               int16_t height)
+add_update_rectangle_internal (int16_t x,
+                               int16_t y,
+                               uint16_t width,
+                               uint16_t height)
 {
   (void) x;
   (void) y;

@@ -129,7 +129,7 @@ draw_rect_internal (int16_t x,
                     uint8_t blue);
 
 
-/** 
+/**
  * Loads an image and return its data in the module's native
  * format.
  *
@@ -209,7 +209,7 @@ draw_image_internal (void *image,
 
 /**
  * Adds a rectangle to the next update run.
- * 
+ *
  * @param x       The X co-ordinate of the left side of the rectangle,
  *                in pixels from the left side of the screen.
  * @param y       The Y co-ordinate of the top side of the rectangle,
@@ -219,10 +219,10 @@ draw_image_internal (void *image,
  */
 
 EXPORT void
-add_update_rectangle_internal (uint16_t x,
-                               uint16_t y,
-                               int16_t width,
-                               int16_t height);
+add_update_rectangle_internal (int16_t x,
+                               int16_t y,
+                               uint16_t width,
+                               uint16_t height);
 
 
 /**

@@ -1,5 +1,5 @@
 /*
- * Crystals (working title) 
+ * Crystals (working title)
  *
  * Copyright (c) 2010 Matt Windsor, Michael Walker and Alexander
  *                    Preisinger.
@@ -60,13 +60,13 @@ static SDL_Surface *sg_screen; /**< The main screen surface. */
 static SDL_Surface *sg_shadow; /**< The screen surface everything is
                                  * drawn onto. */
 
-static GSList *sg_blit_stack; /**< The stack of rectangles to 
+static GSList *sg_blit_stack; /**< The stack of rectangles to
                                  update on the screen. */
 
-static bool_t sg_update_full_screen; /**< If true then the entire 
+static bool_t sg_update_full_screen; /**< If true then the entire
                                       * screen must be flipped on the
                                       * next frame.
-                                      */ 
+                                      */
 
 static void
 update_rect_internal (void *rect, void *ignore);
@@ -106,7 +106,7 @@ term (void)
           g_slist_free_full (sg_blit_stack, free);
           sg_blit_stack = NULL;
         }
-      
+
       SDL_Quit ();
     }
 }
@@ -178,7 +178,7 @@ draw_rect_internal (int16_t x,
 
 EXPORT void *
 load_image_data (const char filename[])
-{ 
+{
   SDL_Surface *surface;
 
 
@@ -247,13 +247,13 @@ draw_image_internal (void *image,
 /* Adds a rectangle to the next update run. */
 
 EXPORT void
-add_update_rectangle_internal (uint16_t x,
-                               uint16_t y,
-                               int16_t width,
-                               int16_t height)
+add_update_rectangle_internal (int16_t x,
+                               int16_t y,
+                               uint16_t width,
+                               uint16_t height)
 {
   SDL_Rect *rect;
-  
+
   rect = calloc (1, sizeof (SDL_Rect));
   if (rect == NULL)
     {
@@ -264,7 +264,7 @@ add_update_rectangle_internal (uint16_t x,
   rect->y = y;
   rect->w = width;
   rect->h = height;
-  
+
   sg_blit_stack = g_slist_prepend (sg_blit_stack, rect);
 }
 
@@ -275,7 +275,7 @@ EXPORT bool_t
 update_screen_internal (void)
 {
   g_slist_foreach (sg_blit_stack, update_rect_internal, NULL);
-  
+
   if (sg_update_full_screen)
     {
       sg_update_full_screen = FALSE;
@@ -288,7 +288,7 @@ update_screen_internal (void)
       void *current;
       int i;
       int len;
-      
+
       len = g_slist_length (sg_blit_stack);
       rectlist = calloc (len, sizeof (SDL_Rect));
       for (i = 0; i < len; i += 1)
@@ -298,15 +298,15 @@ update_screen_internal (void)
                   current,
                   sizeof (SDL_Rect));
         }
-      
+
       SDL_UpdateRects (sg_screen, len, rectlist);
-      
+
       free (rectlist);
     }
-  
+
   g_slist_free_full (sg_blit_stack, free);
   sg_blit_stack = NULL;
-  
+
   SDL_Delay (15); /* TODO: remove <-- */
 
   return SUCCESS;
@@ -317,7 +317,7 @@ update_screen_internal (void)
 
 static void
 update_rect_internal (void *rect, void *ignore)
-{ 
+{
   SDL_Rect *rectc = (SDL_Rect *) rect;
   SDL_BlitSurface (sg_shadow, rectc, sg_screen, rectc);
 
@@ -333,7 +333,7 @@ scroll_screen_internal (int16_t x_offset, int16_t y_offset)
   SDL_Rect source, dest;
 
 
-  /* These are all temporary variables, which are 
+  /* These are all temporary variables, which are
    * used for boundary-checking before populating the SDL rects.
    */
 
