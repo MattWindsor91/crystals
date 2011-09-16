@@ -181,6 +181,7 @@ static uint16_t read_map_version_chunk (FILE *file,
  */
 static uint16_t read_map_version (FILE *file);
 
+
 /**
  * Reads the map dimensions chunk from the file, initialising the map
  * using the results.
