@@ -1,5 +1,5 @@
 /*
- * Crystals (working title) 
+ * Crystals (working title)
  *
  * Copyright (c) 2010 Matt Windsor, Michael Walker and Alexander
  *                    Preisinger.
@@ -50,26 +50,44 @@
 
 /* -- CONSTANTS -- */
 
-const char DEFGFXPATH[] = "gfx/";
-const char FONT_FILENAME[] = "font.png";
+/**
+ * Default root path for graphics, to be invoked if the root path
+ * cannot be found in the configuration file.
+ */
+static const char DEFGFXPATH[] = "gfx/";
 
-const uint16_t FONT_W = 10;
-const uint16_t FONT_H = 10;
+
+/**
+ * Filename of the default font.
+ */
+static const char FONT_FILENAME[] = "font.png";
+
+
+/**
+ * Font character width, in pixels.
+ */
+static const uint16_t FONT_W = 10;
+
+
+/**
+ * Font character height, in pixels.
+ */
+static const uint16_t FONT_H = 10;
 
 
 /* -- STATIC GLOBAL VARIABLES -- */
 
-static GHashTable *sg_images = NULL;
+static GHashTable *sg_images;
 
 
 /* -- STATIC DECLARATIONS -- */
 
 /**
  * Attempts to load an image from the image cache.
- * 
+ *
  * @param filename  The filename of the image to load, relative from
  *                  the graphics path.
- * 
+ *
  * @return A pointer to the raw data of the image if
  *         successfully loaded and stored in the image cache;
  *         NULL otherwise.
@@ -79,11 +97,11 @@ load_image_from_cache (const char filename[]);
 
 
 /**
- * Loads an image from its resource file. 
- * 
+ * Loads an image from its resource file.
+ *
  * @param filename  The filename of the image to load, relative from
  *                  the graphics path.
- * 
+ *
  * @return A pointer to the raw data of the image if
  *         successfully loaded and stored in the image cache;
  *         NULL otherwise.
@@ -99,26 +117,24 @@ load_image_from_file (const char filename[]);
 void
 init_graphics (void)
 {
-  if (load_module_gfx (cfg_get_str ("modules",
+  if (!load_module_gfx (cfg_get_str ("modules",
                                     "graphics_module",
                                     g_config),
-                       &g_modules) == FAILURE)
+                        &g_modules))
     {
       fatal ("GRAPHICS - init_graphics - Could not load graphics module.");
     }
 
 
   /* Call on the graphics backend to create a screen. */
-
-  if ((*g_modules.gfx.init_screen_internal)
-      (SCREEN_W, SCREEN_H, SCREEN_D) == FAILURE)
+  if (!(*g_modules.gfx.init_screen_internal)
+      (SCREEN_W, SCREEN_H, SCREEN_D))
     {
       fatal ("GRAPHICS - init_graphics - Could not init screen.");
     }
 
 
   /* Initialise the image list. */
- 
   sg_images = g_hash_table_new_full(g_str_hash,
                                     g_str_equal,
                                     free,
@@ -144,7 +160,7 @@ get_absolute_path (const char path[])
       error ("GRAPHICS - get_absolute_path - No graphics_path in config.");
       error ("Using default path instead.");
 
-      absolute_path = xcalloc (strlen (path) + strlen (DEFGFXPATH) + 1, 
+      absolute_path = xcalloc (strlen (path) + strlen (DEFGFXPATH) + 1,
                                sizeof (char));
 
       strncat (absolute_path, DEFGFXPATH, strlen (DEFGFXPATH));
@@ -152,7 +168,7 @@ get_absolute_path (const char path[])
   else
     {
       /* Using configuration path. */
-      absolute_path = xcalloc (strlen (path) + strlen (root_path) + 1, 
+      absolute_path = xcalloc (strlen (path) + strlen (root_path) + 1,
                                sizeof (char));
 
       strncat (absolute_path, root_path, strlen (root_path));
@@ -204,16 +220,16 @@ write_string (int16_t x,
   for (i = 0; i < slength; i++)
     {
       chr = string[i];
-      draw_image (FONT_FILENAME, 
-                  long_to_int16 ((chr % 16) * FONT_W),
-                  long_to_int16 (((chr - (chr % 16))/16) * FONT_H),
-                  long_to_int16 (x1),
-                  long_to_int16 (y),
-                  FONT_W,
-                  FONT_H);
-      
+      (void) draw_image (FONT_FILENAME,
+                         long_to_int16 ((chr % 16) * FONT_W),
+                         long_to_int16 (((chr - (chr % 16))/16) * FONT_H),
+                         long_to_int16 (x1),
+                         long_to_int16 (y),
+                         FONT_W,
+                         FONT_H);
+
       x1 = long_to_int16 (x1 + FONT_W);
-    }  
+    }
 
 
   /* Instruct the current state to update the screen. */
@@ -223,7 +239,7 @@ write_string (int16_t x,
 
 
 /* Updates the screen. */
-bool_t
+bool
 update_screen (void)
 {
   return (*g_modules.gfx.update_screen_internal) ();
@@ -231,7 +247,7 @@ update_screen (void)
 
 
 /* Draws a rectangle on the screen of the given colour. */
-bool_t
+bool
 draw_rectangle (int16_t x,
                 int16_t y,
                 uint16_t width,
@@ -246,7 +262,7 @@ draw_rectangle (int16_t x,
 
 
 /* Fills the screen with the given colour. */
-bool_t
+bool
 fill_screen (uint8_t red, uint8_t green, uint8_t blue)
 {
   return draw_rectangle (0, 0, SCREEN_W, SCREEN_H, red, green, blue);
@@ -254,7 +270,7 @@ fill_screen (uint8_t red, uint8_t green, uint8_t blue)
 
 
 /* Translates the screen by a co-ordinate pair, leaving damage. */
-bool_t
+bool
 scroll_screen (int16_t x_offset, int16_t y_offset)
 {
   return (*g_modules.gfx.scroll_screen_internal)
@@ -276,15 +292,15 @@ load_image (const char filename[])
     {
       return cache_data;
     }
-  
+
   /* Cache miss */
   file_data = load_image_from_file (filename);
   if (file_data != NULL)
     {
       return file_data;
     }
-  
-  fatal ("GFX - load_image - Couldn't load image data for %s.", 
+
+  fatal ("GFX - load_image - Couldn't load image data for %s.",
          filename);
   return NULL;
 }
@@ -305,9 +321,9 @@ load_image_from_file (const char filename[])
 {
   char *path;
   image_t *data;
-  
+
   g_assert (filename != NULL);
-  
+
   path = get_absolute_path (filename);
 
   data = (*g_modules.gfx.load_image_data) (path);
@@ -315,7 +331,7 @@ load_image_from_file (const char filename[])
 
   if (data == NULL)
     {
-      fatal ("GFX - load_image - Couldn't load image data for %s.", 
+      fatal ("GFX - load_image - Couldn't load image data for %s.",
              filename);
       return NULL;
     }
@@ -335,7 +351,7 @@ free_image (image_t *image)
 
 
 /* Draws a rectangular portion of an image on-screen. */
-bool_t
+bool
 draw_image (const char filename[],
             int16_t image_x,
             int16_t image_y,
@@ -347,15 +363,15 @@ draw_image (const char filename[],
   image_t *img = load_image (filename);
   if (img == NULL)
     {
-      error ("GFX - draw_image - Image load failure for %s.", 
+      error ("GFX - draw_image - Image load failure for %s.",
              filename);
-      return FAILURE;
+      return false;
     }
 
-  return draw_image_direct (img, 
-                            image_x, 
-                            image_y, 
-                            screen_x, 
+  return draw_image_direct (img,
+                            image_x,
+                            image_y,
+                            screen_x,
                             screen_y,
                             width,
                             height);
@@ -364,7 +380,7 @@ draw_image (const char filename[],
 
 /* Draws a rectangular portion of an image on-screen, using a direct
    pointer to the driver-specific image data. */
-bool_t
+bool
 draw_image_direct (void *data, int16_t image_x, int16_t image_y,
                    int16_t screen_x, int16_t screen_y, uint16_t width,
                    uint16_t height)
@@ -380,10 +396,14 @@ draw_image_direct (void *data, int16_t image_x, int16_t image_y,
 
 
 /* Deletes an image previously loaded into the image cache. */
-bool_t
+bool
 delete_image (const char filename[])
 {
-  return g_hash_table_remove (sg_images, filename);
+  gboolean success = g_hash_table_remove (sg_images, filename);
+  if (success == TRUE)
+    return true;
+  else
+    return false;
 }
 
 

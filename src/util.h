@@ -1,5 +1,5 @@
 /*
- * Crystals (working title) 
+ * Crystals (working title)
  *
  * Copyright (c) 2010 Matt Windsor, Michael Walker and Alexander
  *                    Preisinger.
@@ -142,59 +142,59 @@ enum
 
 /* ~~ Safe type conversions */
 
-/** Safely convert a long integer to an unsigned short. 
+/** Safely convert a long integer to a uint16_t.
  *
  *  This will raise an error and return a truncated value if the
- *  integer lies outside the bounds of the unsigned short range.
+ *  integer lies outside the bounds of the uint16_t range.
  *
  *  @param integer  The integer to attempt to convert.
  *
- *  @return  The converted integer in unsigned short form.
+ *  @return  The converted integer in uint16_t form.
  */
 
-unsigned short
+uint16_t
 long_to_uint16 (long integer);
 
 
-/** Safely convert a long integer to signed short. 
+/** Safely convert a long integer to int16_t.
  *
  *  This will raise an error and return a truncated value if the
- *  integer lies outside the bounds of the signed short range.
+ *  integer lies outside the bounds of the int16_t range.
  *
  *  @param integer  The integer to attempt to convert.
  *
- *  @return  The converted integer in signed short form.
+ *  @return  The converted integer in int16_t form.
  */
 
-short
+int16_t
 long_to_int16 (long integer);
 
 
-/** Safely convert an unsigned long integer to an unsigned short. 
+/** Safely convert an unsigned long integer to an uint16_t.
  *
  *  This will raise an error and return a truncated value if the
- *  integer lies outside the bounds of the unsigned short range.
+ *  integer lies outside the bounds of the uint16_t range.
  *
  *  @param integer  The integer to attempt to convert.
  *
- *  @return  The converted integer in unsigned short form.
+ *  @return  The converted integer in uint16_t form.
  */
 
-unsigned short
+uint16_t
 ulong_to_uint16 (unsigned long integer);
 
 
-/** Safely convert an unsigned long integer to signed short. 
+/** Safely convert an unsigned long integer to int16_t.
  *
  *  This will raise an error and return a truncated value if the
- *  integer lies outside the bounds of the signed short range.
+ *  integer lies outside the bounds of the int16_t range.
  *
  *  @param integer  The integer to attempt to convert.
  *
- *  @return  The converted integer in signed short form.
+ *  @return  The converted integer in int16_t form.
  */
 
-short
+int16_t
 ulong_to_int16 (unsigned long integer);
 
 
@@ -218,22 +218,22 @@ xcalloc (size_t nmemb, size_t size);
  *
  * This shows an error message and attempts to immediately shut down
  * the game.
- * 
+ *
  * @param message  Message to print.  This function automatically
- *                 prepends and appends FATAL: and a newline respectively. 
+ *                 prepends and appends FATAL: and a newline respectively.
  */
 
 void
 fatal (const char message[], ...);
 
 
-/** 
+/**
  * Non-fatal error.
  *
  * This shows an error message only.
- * 
+ *
  * @param message  Message to print.  This function automatically
- *                 prepends and appends ERROR: and a newline respectively. 
+ *                 prepends and appends ERROR: and a newline respectively.
  */
 
 void
@@ -241,7 +241,7 @@ error (const char message[], ...);
 
 
 /**
- * Standard error reporting procedure. 
+ * Standard error reporting procedure.
  *
  * This prints the error message to standard error.
  *
@@ -250,7 +250,7 @@ error (const char message[], ...);
  *
  * @param message   The error message/format string.
  * @param ap        The variadic arguments list passed from fatal or error.
- * @param is_fatal  Whether or not the error is fatal.  If the error is 
+ * @param is_fatal  Whether or not the error is fatal.  If the error is
  *                  fatal, the program will be halted.
  */
 

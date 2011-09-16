@@ -75,7 +75,6 @@ update_rect_internal (void *rect, void *ignore);
 /* -- DEFINITIONS -- */
 
 /* Initialises the module. */
-
 EXPORT bool_t
 init (void)
 {
@@ -90,7 +89,6 @@ init (void)
 
 /* Terminates the module, freeing any remaining data dynamically
    allocated by the module. */
-
 EXPORT void
 term (void)
 {
@@ -113,7 +111,6 @@ term (void)
 
 
 /* Initialises a screen of a given width, height and depth. */
-
 EXPORT bool_t
 init_screen_internal (uint16_t width, uint16_t height, uint8_t depth)
 {
@@ -123,9 +120,7 @@ init_screen_internal (uint16_t width, uint16_t height, uint8_t depth)
       return FAILURE;
     }
 
-
    sg_screen = SDL_SetVideoMode (width, height, depth, SDL_HWSURFACE);
-
    if (sg_screen == NULL)
      {
        g_critical ("Could not init screen.");
@@ -133,9 +128,7 @@ init_screen_internal (uint16_t width, uint16_t height, uint8_t depth)
        return FAILURE;
      }
 
-
    sg_shadow = SDL_DisplayFormat (sg_screen);
-
    if (sg_shadow == NULL)
      {
        g_critical ("Could not make shadowbuf.");
@@ -143,13 +136,11 @@ init_screen_internal (uint16_t width, uint16_t height, uint8_t depth)
        return FAILURE;
      }
 
-
   return SUCCESS;
 }
 
 
 /* Draws a rectangle of colour on-screen. */
-
 EXPORT bool_t
 draw_rect_internal (int16_t x,
                     int16_t y,
@@ -160,7 +151,6 @@ draw_rect_internal (int16_t x,
                     uint8_t blue)
 {
   SDL_Rect rect;
-
 
   rect.x = x;
   rect.y = y;
@@ -181,9 +171,7 @@ load_image_data (const char filename[])
 {
   SDL_Surface *surface;
 
-
   surface = IMG_Load (filename);
-
   if (surface == NULL)
     {
       g_critical ("Couldn't load %s!", filename);
@@ -194,19 +182,15 @@ load_image_data (const char filename[])
 
 
 /* Frees image data retrieved by load_image_data. */
-
-EXPORT bool_t
+EXPORT void
 free_image_data (void *data)
 {
   if (data)
     SDL_FreeSurface(data);
-
-  return SUCCESS;
 }
 
 
 /* Draws a rectangular portion of an image on-screen. */
-
 EXPORT bool_t
 draw_image_internal (void *image,
                      int16_t image_x,
@@ -245,7 +229,6 @@ draw_image_internal (void *image,
 
 
 /* Adds a rectangle to the next update run. */
-
 EXPORT void
 add_update_rectangle_internal (int16_t x,
                                int16_t y,
@@ -270,7 +253,6 @@ add_update_rectangle_internal (int16_t x,
 
 
 /* Updates the screen. */
-
 EXPORT bool_t
 update_screen_internal (void)
 {
@@ -314,7 +296,6 @@ update_screen_internal (void)
 
 
 /* Updates one rectangle. */
-
 static void
 update_rect_internal (void *rect, void *ignore)
 {
@@ -326,7 +307,6 @@ update_rect_internal (void *rect, void *ignore)
 
 
 /* Translates the screen by a co-ordinate pair, leaving damage. */
-
 EXPORT bool_t
 scroll_screen_internal (int16_t x_offset, int16_t y_offset)
 {
@@ -376,7 +356,6 @@ scroll_screen_internal (int16_t x_offset, int16_t y_offset)
 
 
   /* Now check for overflows. */
-
   if (source_x > SHRT_MAX
       || source_y > SHRT_MAX
       || dest_x > SHRT_MAX
@@ -402,7 +381,6 @@ scroll_screen_internal (int16_t x_offset, int16_t y_offset)
 
 
   /* Convert down. */
-
   source.x = (int16_t) source_x;
   source.y = (int16_t) source_y;
   dest.x   = (int16_t) dest_x;

@@ -49,14 +49,13 @@
 static state_t sg_state = STATE_NULL;          /**< Current state. */
 static state_t sg_enqueued_state = STATE_NULL; /**< Enqueued state. */
 static struct state_functions sg_functions = {NULL,
-                                              NULL, 
+                                              NULL,
                                               NULL};  /**< Function table. */
 
 
 /* -- DEFINITIONS -- */
 
 /* Retrieve the current game state. */
-
 state_t
 get_state (void)
 {
@@ -65,7 +64,6 @@ get_state (void)
 
 
 /* Change the current state. */
-
 void
 set_state (state_t new_state)
 {
@@ -82,7 +80,6 @@ set_state (state_t new_state)
 
 
 /* Process an enqueued state change, if any, and return the current state. */
-
 state_t
 update_state (void)
 {
@@ -102,7 +99,6 @@ update_state (void)
 
 
 /* Initialise a state. */
-
 void
 init_state (state_t state)
 {
@@ -120,7 +116,6 @@ init_state (state_t state)
 
 
 /* Perform frame updates for the current state. */
-
 void
 state_frame_updates (void)
 {
@@ -132,10 +127,11 @@ state_frame_updates (void)
 
 
 /* Instruct the current state to handle a dirty rectangle. */
-
 void
-state_handle_dirty_rect (short x, short y,
-                         unsigned short width, unsigned short height)
+state_handle_dirty_rect (int16_t x,
+                         int16_t y,
+                         uint16_t width,
+                         uint16_t height)
 {
   g_assert (sg_functions.dirty_rect != NULL);
 
@@ -144,7 +140,6 @@ state_handle_dirty_rect (short x, short y,
 
 
 /* Clean up a state. */
-
 void
 cleanup_state (void)
 {
@@ -155,9 +150,9 @@ cleanup_state (void)
   if (sg_functions.cleanup != NULL)
     {
       sg_functions.cleanup ();
-      
+
       /* Clean up the function pointers. */
-      
+
       sg_functions.cleanup    = NULL;
       sg_functions.update     = NULL;
       sg_functions.dirty_rect = NULL;

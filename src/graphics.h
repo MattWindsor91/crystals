@@ -77,20 +77,6 @@ enum
   };
 
 
-extern const char DEFGFXPATH[];     /**<
-                                     * Default root path for graphics,
-                                     * to be invoked if the root path
-                                     * cannot be found in the
-                                     * configuration file.
-                                     */
-
-extern const char FONT_FILENAME[];  /**< Filename of the default font. */
-
-extern const uint16_t FONT_W;        /**< Font character width, in pixels. */
-
-extern const uint16_t FONT_H;        /**< Font character height, in pixels. */
-
-
 /* -- DECLARATIONS -- */
 
 /**
@@ -156,9 +142,9 @@ write_string (int16_t x,
  * @param green  The green component of the fill colour (0-255).
  * @param blue   The blue component of the fill colour (0-255).
  *
- * @return       SUCCESS for success; FAILURE otherwise.
+ * @return       true for success; false otherwise.
  */
-bool_t
+bool
 draw_rectangle (int16_t x,
                 int16_t y,
                 uint16_t width,
@@ -178,9 +164,9 @@ draw_rectangle (int16_t x,
  * @param green  The green component of the fill colour (0-255).
  * @param blue   The blue component of the fill colour (0-255).
  *
- * @return       SUCCESS for success; FAILURE otherwise.
+ * @return       true for success; false otherwise.
  */
-bool_t
+bool
 fill_screen (uint8_t red, uint8_t green, uint8_t blue);
 
 
@@ -193,9 +179,9 @@ fill_screen (uint8_t red, uint8_t green, uint8_t blue);
  * @param y_offset  The Y co-ordinate offset in which to scroll the
  *                  screen, in pixels downwards.
  *
- * @return          SUCCESS for success; FAILURE otherwise.
+ * @return          true for success; false otherwise.
  */
-bool_t
+bool
 scroll_screen (int16_t x_offset, int16_t y_offset);
 
 
@@ -259,11 +245,11 @@ free_image (image_t *image);
  * @param width     The width of the rectangle, in pixels.
  * @param height    The height of the rectangle, in pixels.
  *
- * @return          SUCCESS for success, FAILURE otherwise.  In most
+ * @return          true for success, false otherwise.  In most
  *                  cases, a failure will simply cause the image to
  *                  not appear.
  */
-bool_t
+bool
 draw_image (const char filename[],
             int16_t image_x,
             int16_t image_y,
@@ -293,11 +279,11 @@ draw_image (const char filename[],
  * @param width     The width of the rectangle, in pixels.
  * @param height    The height of the rectangle, in pixels. *
  *
- * @return          SUCCESS for success, FAILURE otherwise. In most
+ * @return          true for success, false otherwise. In most
  *                  cases, a failure will simply cause the image to
  *                  not appear.
  */
-bool_t
+bool
 draw_image_direct (image_t *data,
                    int16_t image_x,
                    int16_t image_y,
@@ -312,10 +298,10 @@ draw_image_direct (image_t *data,
  *
  * @param filename  Filename of the image.
  *
- * @return          SUCCESS if the deletion succeeded;
- *                  FAILURE otherwise.
+ * @return          true if the deletion succeeded;
+ *                  false otherwise.
  */
-bool_t
+bool
 delete_image (const char filename[]);
 
 
@@ -358,9 +344,9 @@ add_update_rectangle (int16_t x,
 /**
  * Updates the screen.
  *
- * @return  SUCCESS for success, FAILURE otherwise.
+ * @return  true for success, false otherwise.
  */
-bool_t
+bool
 update_screen (void);
 
 

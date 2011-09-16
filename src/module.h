@@ -171,7 +171,7 @@ typedef struct
    *              data (in the module's native format) to be freed.
    */
 
-  bool_t
+  void
   (*free_image_data) (void *data);
 
 

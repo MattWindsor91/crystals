@@ -50,7 +50,6 @@
 /* -- DEFINITIONS -- */
 
 /* Initialise the module. */
-
 EXPORT bool_t
 init (void)
 {
@@ -60,7 +59,6 @@ init (void)
 
 /* Terminate the module, freeing any remaining data dynamically
    allocated by the module. */
-
 EXPORT void
 term (void)
 {
@@ -68,7 +66,6 @@ term (void)
 
 
 /* Initialise a screen of a given width, height and depth. */
-
 EXPORT bool_t
 init_screen_internal (uint16_t width,
                       uint16_t height,
@@ -84,7 +81,6 @@ init_screen_internal (uint16_t width,
 
 
 /* Draw a rectangle of colour on-screen. */
-
 EXPORT bool_t
 draw_rect_internal (int16_t x,
                     int16_t y,
@@ -102,7 +98,6 @@ draw_rect_internal (int16_t x,
   (void) green;
   (void) blue;
 
-
   return SUCCESS;
 }
 
@@ -114,25 +109,19 @@ load_image_data (const char filename[])
 {
   (void) filename;
 
-
   return (void *) 1; /* pretend you didn't see it */
 }
 
 
 /* Free image data retrieved by load_image_data. */
-
-EXPORT bool_t
+EXPORT void
 free_image_data (void *data)
 {
   (void) data;
-
-
-  return SUCCESS;
 }
 
 
 /* Draw a rectangular portion of an image on-screen. */
-
 EXPORT bool_t
 draw_image_internal (void *image,
                      int16_t image_x,
@@ -156,7 +145,6 @@ draw_image_internal (void *image,
 
 
 /* Adds a rectangle to the next update run. */
-
 EXPORT void
 add_update_rectangle_internal (int16_t x,
                                int16_t y,
