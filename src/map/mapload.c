@@ -51,7 +51,7 @@
 static const uint16_t MAP_VERSION = 1;	 /**< Expected map version. */
 static const long CHUNK_NOT_FOUND = -1;	/**< Sentinel chunk position. */
 
-enum chunk_ids
+typedef enum chunk_id
 {
   ID_FORM,
   ID_HEADER,
@@ -61,8 +61,9 @@ enum chunk_ids
   ID_VALUES,
   ID_ZONES,
   ID_PROPERTIES,
-  NUM_CHUNKS
-};
+  NUM_CHUNKS,
+  UNKNOWN_CHUNK = -1
+} chunk_id_t;
 
 
 /**
@@ -137,6 +138,20 @@ static long *init_chunk_positions_array (void);
  */
 static void scan_body_for_chunks (FILE *file, uint32_t file_length,
 				  long *chunk_positions);
+
+
+/**
+ * Checks the given chunkID against the known chunkIDs.
+ *
+ * @param chunk_name  The chunkID to look up.
+ *
+ * @return  the index of the chunk if it matches a known chunk,
+ *          or -1 if it matches none of them.  ChunkIDs that
+ *          return -1 are ideally to be ignored by the parser
+ *          as they are usually extraneous data the parser
+ *          doesn't need to know about.
+ */
+static chunk_id_t get_chunk_of_id (const char chunk_name[]);
 
 
 /**
@@ -345,14 +360,15 @@ static void read_map_zone_properties (FILE *file, map_t *map);
 
 
 /**
- * Check that a magic sequence is present.
+ * Reads the next ID_LENGTH bytes from the file and checks
+ * whether they match a given chunkID.
  *
- * @param file      The file pointer to read from.
- * @param sequence  The byte sequence (one of the chunk IDs).
+ * @param file         The file pointer to read from.
+ * @param chunk_index  The index in
  *
- * @return          TRUE if it is present, FALSE otherwise.
+ * @return  true if the chunkID is present; false otherwise.
  */
-static bool check_magic_sequence (FILE *file, const char sequence[]);
+static bool next_chunk_is (FILE *file, chunk_id_t chunk_index);
 
 
 /* -- DEFINITIONS -- */
@@ -443,14 +459,14 @@ find_chunks (FILE *file)
   /* We expect the file to start with "FORM", as it should be an
    * IFF containing only one CMFT file.
    */
-  if (!(check_magic_sequence (file, CHUNK_IDS[ID_FORM])))
+  if (!(next_chunk_is (file, ID_FORM)))
     {
       fatal ("MAPLOAD - find_chunks - Missing form header.");
     }
   file_length = read_uint32 (file);
 
   /* The type of file, which is expected here, should be CMFT. */
-  if (!(check_magic_sequence (file, CHUNK_IDS[ID_HEADER])))
+  if (!(next_chunk_is (file, ID_HEADER)))
     {
       fatal ("MAPLOAD - find_chunks - Incorrect file type.");
     }
@@ -486,7 +502,7 @@ static void
 scan_body_for_chunks (FILE *file,
 		      uint32_t file_length, long *chunk_positions)
 {
-  int i;
+  int chunk_found;
   int seek_result;
   uint32_t chunk_length;
   size_t num_bytes;
@@ -502,15 +518,14 @@ scan_body_for_chunks (FILE *file,
 
       chunk_length = read_uint32 (file);
 
-      for (i = 0; i < NUM_CHUNKS; i++)
-	{
-	  if (strcmp (chunk_name, CHUNK_IDS[i]) == 0)
-	    {
-	      g_debug ("Found %s chunk in map at position %lx",
-		       chunk_name, ftell (file));
-	      chunk_positions[i] = ftell (file);
-	    }
-	}
+      chunk_found = get_chunk_of_id (chunk_name);
+      if (chunk_found != UNKNOWN_CHUNK)
+        {
+          g_debug ("Found %s chunk in map at position %lx",
+                   chunk_name, ftell (file));
+          chunk_positions[chunk_found] = ftell (file);
+        }
+
       seek_result = fseek (file, (long) chunk_length, SEEK_CUR);
       g_assert (seek_result == 0);
     }
@@ -525,6 +540,23 @@ scan_body_for_chunks (FILE *file,
     }
 
   free (chunk_name);
+}
+
+
+/* Checks the given chunkID against the known chunkIDs. */
+static int
+get_chunk_of_id (const char chunk_name[])
+{
+  chunk_id_t i;
+
+  for (i = 0; i < NUM_CHUNKS; i++)
+    {
+      if (strcmp (chunk_name, CHUNK_IDS[i]) == 0)
+        {
+          return i;
+        }
+    }
+  return UNKNOWN_CHUNK;
 }
 
 
@@ -732,20 +764,20 @@ read_map_zone_properties (FILE *file, map_t *map)
 }
 
 
-/* Checks that a magic sequence is present. */
+/* Checks that a given chunk ID is present. */
 static bool
-check_magic_sequence (FILE *file, const char sequence[])
+next_chunk_is (FILE *file, chunk_id_t chunk_index)
 {
-  char *check = xcalloc (strlen (sequence) + 1, sizeof (char));
+  char *check = xcalloc (ID_LENGTH + 1, sizeof (char));
   size_t count =
-    fread (check, sizeof (char), strlen (sequence), file);
+    fread (check, sizeof (char), ID_LENGTH, file);
 
-  g_assert (count == strlen (sequence));
+  g_assert (count == ID_LENGTH);
 
-  if (strcmp (sequence, check) != 0)
+  if (get_chunk_of_id (check) != chunk_index)
     {
-      error ("MAPLOAD - check_magic_sequence - Expected  %s; got %s",
-	     sequence, check);
+      error ("MAPLOAD - next_chunk_is - Expected %s; got %s",
+	     CHUNK_IDS[chunk_index], check);
       free (check);
       return false;
     }

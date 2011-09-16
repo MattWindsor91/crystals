@@ -60,8 +60,9 @@
 
 /* -- DECLARATIONS -- */
 
-/** Initialises the module. */
-
+/**
+ * Initialises the module.
+ */
 EXPORT bool_t
 init (void);
 
@@ -70,7 +71,6 @@ init (void);
  * Terminates the module, freeing any remaining data dynamically
  * allocated by the module.
  */
-
 EXPORT void
 term (void);
 
@@ -90,7 +90,6 @@ term (void);
  *
  * @return        SUCCESS for success; FAILURE otherwise.
  */
-
 EXPORT bool_t
 init_screen_internal (uint16_t width, uint16_t height,
                       uint8_t depth);
@@ -105,20 +104,14 @@ init_screen_internal (uint16_t width, uint16_t height,
  * @param x       X co-ordinate of the left edge of the rectangle.
  *
  * @param y       Y co-ordinate of the top edge of the rectangle.
- *
  * @param width   The width of the rectangle, in pixels.
- *
  * @param height  The height of the rectangle, in pixels.
- *
  * @param red     The red component of the fill colour (0-255).
- *
  * @param green   The green component of the fill colour (0-255).
- *
  * @param blue    The blue component of the fill colour (0-255).
  *
  * @return        SUCCESS for success; FAILURE otherwise.
  */
-
 EXPORT bool_t
 draw_rect_internal (int16_t x,
                     int16_t y,
@@ -144,7 +137,6 @@ draw_rect_internal (int16_t x,
  *          which can eventually be passed to the module's draw_image
  *          function.
  */
-
 EXPORT void *
 load_image_data (const char filename[]);
 
@@ -159,11 +151,8 @@ load_image_data (const char filename[]);
  *
  * @param data  A pointer to a memory location containing image
  *              data (in the module's native format) to be freed.
- *
- * @return      SUCCESS for success; FAILURE otherwise.
  */
-
-EXPORT bool_t
+EXPORT void
 free_image_data (void *data);
 
 
@@ -175,28 +164,21 @@ free_image_data (void *data);
  *
  * @param image     The image data, in the graphics module-specific
  *                  format returned by load_image_data.
- *
  * @param image_x   The X-coordinate of the left edge of the
  *                  on-image rectangle to display.
- *
  * @param image_y   The Y-coordinate of the top edge of the
  *                  on-image rectangle to display.
- *
  * @param screen_x  The X-coordinate of the left edge of the
  *                  on-screen rectangle to place the image in.
- *
  * @param screen_y  The Y-coordinate of the top edge of the
  *                  on-screen rectangle to place the image in.
- *
  * @param width     The width of the rectangle.
- *
  * @param height    The height of the rectangle.
  *
  * @return          SUCCESS for success, FAILURE otherwise. In most
  *                  cases, a failure will simply cause the image to
  *                  not appear.
  */
-
 EXPORT bool_t
 draw_image_internal (void *image,
                      int16_t image_x,
@@ -217,7 +199,6 @@ draw_image_internal (void *image,
  * @param width   The width of the rectangle, in pixels.
  * @param height  The height of the rectangle, in pixels.
  */
-
 EXPORT void
 add_update_rectangle_internal (int16_t x,
                                int16_t y,
@@ -230,7 +211,6 @@ add_update_rectangle_internal (int16_t x,
  *
  * @return  SUCCESS for success; FAILURE otherwise.
  */
-
 EXPORT bool_t
 update_screen_internal (void);
 
@@ -240,13 +220,11 @@ update_screen_internal (void);
  *
  * @param x_offset  The X co-ordinate offset in which to scroll the
  *                  screen.
- *
  * @param y_offset  The Y co-ordinate offset in which to scroll the
  *                  screen.
  *
  * @return          SUCCESS for success; FAILURE otherwise.
  */
-
 EXPORT bool_t
 scroll_screen_internal (int16_t x_offset, int16_t y_offset);
 
