@@ -60,6 +60,7 @@ typedef struct render_map_layer_tile_rect_data
 {
   mapview_t *mapview;
   image_t *tileset;
+  bool *tile_rendered;
   layer_index_t layer;
 } render_map_layer_tile_rect_data_t;
 
@@ -144,13 +145,16 @@ static void render_map_layer_tile_rect (gpointer rectangle,
  * Renders a given rectangular "slice" of a layer on a map,
  * after said slice has been transformed into tile boundaries.
  *
- * @param tile_start_x  The leftmost tile X co-ordinate.
- * @param tile_start_y  The uppermost tile Y co-ordinate.
- * @param tile_end_x    The rightmost tile X co-ordinate.
- * @param tile_end_y    The lowermost tile Y co-ordinate.
- * @param mapview       Pointer to the map view to render with.
- * @param tileset       Pointer to the tileset to render with.
- * @param layer         The index of the layer to render.
+ * @param tile_start_x   The leftmost tile X co-ordinate.
+ * @param tile_start_y   The uppermost tile Y co-ordinate.
+ * @param tile_end_x     The rightmost tile X co-ordinate.
+ * @param tile_end_y     The lowermost tile Y co-ordinate.
+ * @param mapview        Pointer to the map view to render with.
+ * @param tileset        Pointer to the tileset to render with.
+ * @param tile_rendered  Boolean array of all tiles in the map,
+ *                       marking those already rendered for
+ *                       this layer as true.
+ * @param layer          The index of the layer to render.
  */
 static void
 render_map_layer_tile_rect_body (dimension_t tile_start_x,
@@ -159,6 +163,7 @@ render_map_layer_tile_rect_body (dimension_t tile_start_x,
                                  dimension_t tile_end_y,
                                  mapview_t *mapview,
                                  image_t *tileset,
+                                 bool *tile_rendered,
                                  layer_index_t layer);
 
 
@@ -360,10 +365,14 @@ render_map_layers (mapview_t *mapview)
 
 /* Renders the tile component of a given layer on a map. */
 static void
-render_map_layer_tiles (/*@temp@*/ mapview_t *mapview, layer_index_t layer)
+render_map_layer_tiles (mapview_t *mapview, layer_index_t layer)
 {
   render_map_layer_tile_rect_data_t data;
   image_t *tileset = load_image (FN_TILESET);
+  /* TODO: find better way of doing this? */
+  bool *tile_rendered =
+    xcalloc (mapview->map->width * mapview->map->height,
+             sizeof (bool));
 
   if (tileset == NULL)
     {
@@ -373,11 +382,14 @@ render_map_layer_tiles (/*@temp@*/ mapview_t *mapview, layer_index_t layer)
 
   data.mapview = mapview;
   data.tileset = tileset;
+  data.tile_rendered = tile_rendered;
   data.layer = layer;
 
   if (mapview->dirty_rectangles != NULL)
     g_slist_foreach (mapview->dirty_rectangles,
                      render_map_layer_tile_rect, &data);
+
+  free (tile_rendered);
 }
 
 
@@ -430,6 +442,7 @@ render_map_layer_tile_rect (gpointer rectangle, gpointer data)
                                    tile_end_y,
                                    mapview,
                                    datac->tileset,
+                                   datac->tile_rendered,
                                    datac->layer);
 }
 
@@ -443,6 +456,7 @@ render_map_layer_tile_rect_body (dimension_t tile_start_x,
                                  dimension_t tile_end_y,
                                  mapview_t *mapview,
                                  image_t *tileset,
+                                 bool *tile_rendered,
                                  layer_index_t layer)
 {
   map_t *map = mapview->map;
@@ -462,6 +476,11 @@ render_map_layer_tile_rect_body (dimension_t tile_start_x,
 
       for (y = tile_start_y; y < tile_end_y; y += 1)
 	{
+          /* Don't render a tile twice */
+          if (tile_rendered[x + (y * map->height)])
+            continue;
+          tile_rendered[x + (y * map->height)] = true;
+
 	  screen_y
             = (int16_t) ((y * TILE_H) - mapview->y_offset);
 

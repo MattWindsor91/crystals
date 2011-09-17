@@ -100,8 +100,7 @@ static GHashTable *sg_images;
  *         successfully loaded and stored in the image cache;
  *         NULL otherwise.
  */
-static image_t *
-load_image_from_cache (const char filename[]);
+static image_t *load_image_from_cache (const char filename[]);
 
 
 /**
@@ -114,8 +113,7 @@ load_image_from_cache (const char filename[]);
  *         successfully loaded and stored in the image cache;
  *         NULL otherwise.
  */
-static image_t *
-load_image_from_file (const char filename[]);
+static image_t *load_image_from_file (const char filename[]);
 
 
 /* -- DEFINITIONS -- */
@@ -269,9 +267,17 @@ write_string (int16_t x,
 
 /* Updates the screen. */
 void
-update_screen (void)
+update_screen (uint32_t delta)
 {
-  (*g_modules.gfx.update_screen_internal) ();
+  static uint32_t total_useconds;
+
+  total_useconds += delta;
+
+  if (total_useconds >= USECONDS_PER_FRAME)
+    {
+      (*g_modules.gfx.update_screen_internal) ();
+      total_useconds = 0;
+    }
 }
 
 

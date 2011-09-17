@@ -88,11 +88,13 @@ struct state_functions
 
   /** Perform frame updates for the current state.
    *
+   *  @param useconds  Elapsed microseconds.
+   *
    *  @return  SUCCESS if no errors occurred, FAILURE otherwise.
    */
 
   void
-  (*update) (void);
+  (*update) (uint32_t useconds);
 
 
   /** Handle a dirty rectangle (eg from the user interface layer).
@@ -165,10 +167,11 @@ init_state (state_t state);
 
 /**
  * Perform per-frame updates for the current state.
+ *
+ * @param useconds  Elapsed microseconds.
  */
-
 void
-state_frame_updates (void);
+state_frame_updates (uint32_t useconds);
 
 
 /** Instruct the current state to handle a dirty rectangle.

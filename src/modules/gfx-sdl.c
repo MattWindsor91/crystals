@@ -277,7 +277,7 @@ update_screen_internal (void)
   g_slist_free_full (sg_blit_stack, free);
   sg_blit_stack = NULL;
 
-  SDL_Delay (15); /* TODO: remove <-- */
+  SDL_Delay (1); /* TODO: remove <-- */
 }
 
 

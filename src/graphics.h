@@ -95,6 +95,7 @@ extern const uint16_t FONT_W;
  */
 extern const uint16_t FONT_H;
 
+
 /* -- DECLARATIONS -- */
 
 /**
@@ -349,8 +350,10 @@ void add_update_rectangle (int16_t x,
 
 /**
  * Updates the screen.
+ *
+ * @param useconds  Elapsed microseconds in the frame.
  */
-void update_screen (void);
+void update_screen (uint32_t useconds);
 
 
 /**

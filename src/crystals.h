@@ -65,6 +65,7 @@
 #include "optionparser.h"
 #include "state.h"
 #include "util.h"
+#include "timer.h"
 
 #include "bindings/bindings.h"
 

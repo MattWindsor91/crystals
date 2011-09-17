@@ -117,11 +117,11 @@ init_state (state_t state)
 
 /* Perform frame updates for the current state. */
 void
-state_frame_updates (void)
+state_frame_updates (uint32_t useconds)
 {
   g_assert (sg_functions.update != NULL);
 
-  sg_functions.update ();
+  sg_functions.update (useconds);
 }
 
 

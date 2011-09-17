@@ -196,21 +196,13 @@ static void
 field_handle_held_keys (void)
 {
   if (sg_field_held_special_keys[SK_UP])
-    {
-      move_object ("Player", 0, -1);
-    }
+    move_object ("Player", 0, -1);
   else if (sg_field_held_special_keys[SK_RIGHT])
-    {
-      move_object ("Player", 1, 0);
-    }
+    move_object ("Player", 1, 0);
   else if (sg_field_held_special_keys[SK_DOWN])
-    {
-      move_object ("Player", 0, 1);
-    }
+    move_object ("Player", 0, 1);
   else if (sg_field_held_special_keys[SK_LEFT])
-    {
-      move_object ("Player", -1, 0);
-    }
+    move_object ("Player", -1, 0);
 }
 
 
@@ -232,13 +224,13 @@ field_init_callbacks (void)
 static void
 field_cleanup_callbacks (void)
 {
-  if (sg_field_skeyupcb)
+  if (sg_field_skeyupcb != NULL)
     unload_callback (sg_field_skeyupcb);
 
-  if (sg_field_skeydowncb)
+  if (sg_field_skeydowncb != NULL)
     unload_callback (sg_field_skeydowncb);
 
-  if (sg_field_quitcb)
+  if (sg_field_quitcb != NULL)
     unload_callback (sg_field_quitcb);
 
   sg_field_skeyupcb = sg_field_skeydowncb = sg_field_quitcb = NULL;
@@ -247,12 +239,30 @@ field_cleanup_callbacks (void)
 
 /* Perform per-frame updates for field. */
 void
-update_field (void)
+update_field (uint32_t delta)
 {
+  static uint32_t total_useconds;
+
+  total_useconds += delta;
+
   field_handle_held_keys ();
-  render_map (sg_mapview);
-  write_string (5, 5, "Test");
-  write_string (5, SCREEN_H - FONT_H - 5, "Crystals");
+
+  if (total_useconds >= USECONDS_PER_FRAME)
+    {
+      gchar *fps_indication;
+
+      render_map (sg_mapview);
+
+      fps_indication = g_strdup_printf ("%05ufps",
+                                        (USECONDS_PER_SECOND
+                                         / total_useconds));
+      write_string (5, 5, fps_indication);
+      g_free (fps_indication);
+
+      write_string (5, SCREEN_H - FONT_H - 5, "Crystals");
+
+      total_useconds = 0;
+    }
 }
 
 

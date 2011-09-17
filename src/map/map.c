@@ -304,13 +304,13 @@ free_planes (layer_index_t max_layer_index,
   for (i = 0; i <= max_layer_index; i += 1)
     {
       if (value_planes != NULL && value_planes[i] != NULL)
-	{
-	  free (value_planes[i]);
-	}
-
+        free (value_planes[i]);
       if (zone_planes != NULL && zone_planes[i] != NULL)
-	{
-	  free (zone_planes[i]);
-	}
+        free (zone_planes[i]);
     }
+
+  if (value_planes != NULL)
+    free (value_planes);
+  if (zone_planes != NULL)
+    free (zone_planes);
 }

@@ -126,11 +126,11 @@ TESTS    := $(addprefix $(TESTDIR)/,$(TESTS))
 # The following object list represents the core of the engine 
 # and thus generally does not need altering by users.
 
-OBJ      := main.o graphics.o events.o file.o
+OBJ      := main.o graphics.o events.o file.o timer.o
 OBJ      += util.o module.o optionparser.o parser.o state.o
-OBJ      += field/field.o 
+OBJ      += field/field.o field/objectset.o
 OBJ      += field/object.o field/object-api.o field/object-image.o
-OBJ      += map/map.o map/mapview.o map/mapload.o
+OBJ      += map/map.o map/mapview.o map/mapload.o map/maprender.o
 
 
 # Note: DO NOT add .so or .dll onto the end of module names!

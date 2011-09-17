@@ -48,8 +48,29 @@
 
 /* -- CONSTANTS -- */
 
+/**
+ * The expected map version.
+ */
 static const uint16_t MAP_VERSION = 1;	 /**< Expected map version. */
-static const long CHUNK_NOT_FOUND = -1;	/**< Sentinel chunk position. */
+
+
+/**
+ * The position of the FORM chunk header in map files.
+ */
+static const long FORM_POSITION = 0;
+
+
+/**
+ * The position of the CMFT chunk header in map files.
+ */
+static const long HEADER_POSITION = 4;
+
+
+/**
+ * The chunk position used to signify chunks that have not been found.
+ */
+static const long CHUNK_NOT_FOUND = -1;
+
 
 typedef enum chunk_id
 {
@@ -490,8 +511,8 @@ init_chunk_positions_array (void)
 	}
 
       /* These two are in the same place in all well-formed maps. */
-      result[ID_FORM] = 0;
-      result[ID_HEADER] = 4;
+      result[ID_FORM] = FORM_POSITION;
+      result[ID_HEADER] = HEADER_POSITION;
     }
   return result;
 }
@@ -512,9 +533,7 @@ scan_body_for_chunks (FILE *file,
     {
       num_bytes = fread (chunk_name, sizeof (char), ID_LENGTH, file);
       if (num_bytes != ID_LENGTH)
-	{
-	  break;
-	}
+        break;
 
       chunk_length = read_uint32 (file);
 
@@ -533,11 +552,9 @@ scan_body_for_chunks (FILE *file,
   /* Length of file body + FORM chunk ID + size mark */
   if (ftell (file) != (long) (file_length
 			      + ID_LENGTH + sizeof (uint32_t)))
-    {
-      error ("MAPLOAD - find_chunks - Size mismatch. %lx %lx",
-	     file_length + ID_LENGTH + sizeof (uint32_t),
-	     ftell (file));
-    }
+    error ("MAPLOAD - find_chunks - Size mismatch. %lx %lx",
+           file_length + ID_LENGTH + sizeof (uint32_t),
+           ftell (file));
 
   free (chunk_name);
 }
@@ -549,12 +566,10 @@ get_chunk_of_id (const char chunk_name[])
 {
   chunk_id_t i;
 
-  for (i = 0; i < NUM_CHUNKS; i++)
+  for (i = 0; i < NUM_CHUNKS; i += 1)
     {
       if (strcmp (chunk_name, CHUNK_IDS[i]) == 0)
-        {
-          return i;
-        }
+        return i;
     }
   return UNKNOWN_CHUNK;
 }
@@ -564,7 +579,7 @@ get_chunk_of_id (const char chunk_name[])
 static bool
 chunks_missing (long *chunk_positions)
 {
-  int i;
+  chunk_id_t i;
 
   for (i = 0; i < NUM_CHUNKS; i += 1)
     {
@@ -654,10 +669,11 @@ read_map_tags_chunk (FILE *file, map_t *map, long chunk_position)
 static void
 read_map_tags (FILE *file, map_t *map)
 {
-  layer_index_t l;
-  for (l = 0; l <= get_max_layer (map); l++)
+  layer_index_t i;
+
+  for (i = 0; i <= get_max_layer (map); i += 1)
     {
-      set_layer_tag (map, l, read_uint16 (file));
+      set_layer_tag (map, i, read_uint16 (file));
     }
 }
 
@@ -676,11 +692,11 @@ read_map_value_planes_chunk (FILE *file,
 static void
 read_map_value_planes (FILE *file, map_t *map)
 {
-  layer_index_t l;
+  layer_index_t i;
 
-  for (l = 0; l <= get_max_layer (map); l += 1)
+  for (i = 0; i <= get_max_layer (map); i += 1)
     {
-      read_map_value_plane (file, map, l);
+      read_map_value_plane (file, map, i);
     }
 }
 
@@ -716,11 +732,11 @@ read_map_zone_planes_chunk (FILE *file,
 static void
 read_map_zone_planes (FILE *file, map_t *map)
 {
-  layer_index_t l;
+  layer_index_t i;
 
-  for (l = 0; l <= get_max_layer (map); l += 1)
+  for (i = 0; i <= get_max_layer (map); i += 1)
     {
-      read_layer_zone_plane (file, map, l);
+      read_layer_zone_plane (file, map, i);
     }
 }
 
@@ -732,9 +748,9 @@ read_layer_zone_plane (FILE *file, map_t *map, layer_index_t layer)
   dimension_t x;
   dimension_t y;
 
-  for (x = 0; x < get_map_width (map); x++)
+  for (x = 0; x < get_map_width (map); x += 1)
     {
-      for (y = 0; y < get_map_height (map); y++)
+      for (y = 0; y < get_map_height (map); y += 1)
 	{
 	  set_tile_zone (map, layer, x, y, read_uint16 (file));
 	}
@@ -757,6 +773,7 @@ static void
 read_map_zone_properties (FILE *file, map_t *map)
 {
   zone_index_t i;
+
   for (i = 0; i <= get_max_zone (map); i += 1)
     {
       set_zone_properties (map, i, read_uint16 (file));

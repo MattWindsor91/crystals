@@ -1,8 +1,8 @@
 /*
  * Crystals (working title)
  *
- * Copyright (c) 2010 Matt Windsor, Michael Walker and Alexander
- *                    Preisinger.
+ * Copyright (c) 2010, 2011
+ *               Matt Windsor, Michael Walker and Alexander Preisinger.
  *
  * All rights reserved.
  *
@@ -37,9 +37,9 @@
  */
 
 /**
- * @file     src/main.c
+ * @file     src/timer.c
  * @author   Matt Windsor
- * @brief    Main functions.
+ * @brief    The internal timer.
  */
 
 #include "crystals.h"
@@ -47,95 +47,63 @@
 
 /* -- CONSTANTS -- */
 
-const char *DEFAULT_CONFIG_PATH = "config/default.cfg";
+/* Number of microseconds in a second. */
+const uint32_t USECONDS_PER_SECOND = 1000000;
+
+/* Desired framerate, in frames per second. */
+const uint32_t FRAMES_PER_SECOND = 60;
 
 
-/* -- GLOBAL VARIABLES -- */
+/* -- STATIC GLOBAL VARIABLES -- */
 
-dict_t *g_config = NULL;
-
-
-/* -- DEFINITIONS -- */
-
-/* NB: For the Windows code entry point, see platform/w32-main.c. */
-
-/* The main function. */
-
-int
-main (int argc, char **argv)
-{
-  /* Placeholder for command line stuff. */
-
-  (void) argc;
-  (void) argv;
-
-  init ();
-  main_loop ();
-
-  cleanup ();
-  return 0;
-}
+/**
+ * Timing source.
+ */
+static GTimer *sg_timer = NULL;
 
 
-/* Initialise all engine subsystems. */
-
+/* Initialises and starts the timer. */
 void
-init (void)
+init_timer (void)
 {
-  char *module_path = NULL;
-
-
-  /* -- Configuration -- */
-
-  g_config = init_config (DEFAULT_CONFIG_PATH);
-
-  /* -- Module loader ("kernel") -- */
-
-  get_module_root_path (&module_path);
-
-  init_modules (module_path);
-  init_graphics ();
-  init_bindings ();
-  init_events ();
-  init_timer ();
-
-  set_state (STATE_FIELD);
-
-  run_script ("tests/lua.lua");
+  sg_timer = g_timer_new ();
 }
 
 
-/* Execute the main loop of the program. */
+/* Gets the elapsed microseconds since the last call. */
+uint32_t
+timer_get_delta (void)
+{
+  static gulong previous_useconds = 0;
 
+  gulong useconds;
+  uint32_t result;
+
+  (void) g_timer_elapsed (sg_timer, &useconds);
+
+  /* Previous useconds will be bigger if the timer has rolled over
+     a second. */
+  if (useconds < previous_useconds)
+    useconds += USECONDS_PER_SECOND;
+
+  result = (uint32_t) (useconds - previous_useconds);
+  previous_useconds = useconds % USECONDS_PER_SECOND;
+
+  return result;
+}
+
+
+/* Resets the timer. */
 void
-main_loop (void)
+reset_timer (void)
 {
-  uint32_t delta;
-
-  while (update_state () != STATE_QUIT)
-    {
-      delta = timer_get_delta ();
-      state_frame_updates (delta);
-      update_screen (delta);
-      process_events (delta);
-    }
+  g_timer_start (sg_timer);
 }
 
 
-/* Clean up all initialised subsystems. */
-
+/* Frees the timer. */
 void
-cleanup (void)
+cleanup_timer (void)
 {
-  if (get_state () != STATE_QUIT)
-    cleanup_state ();
-
-  cleanup_events ();
-  cleanup_graphics ();
-  cleanup_bindings ();
-  cleanup_modules ();
-  cfg_free (g_config);
+  g_timer_destroy (sg_timer);
 }
-
-
-/* vim: set et ts=2 sw=2 softtabstop=2: */

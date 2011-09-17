@@ -89,9 +89,17 @@ init_events (void)
 /* Process any events queued in the events driver. */
 
 void
-process_events (void)
+process_events (uint32_t delta)
 {
-  (*g_modules.event.process_events_internal) ();
+  static uint32_t total_useconds;
+
+  total_useconds += delta;
+
+  if (total_useconds >= USECONDS_PER_FRAME)
+    {
+      (*g_modules.event.process_events_internal) ();
+      total_useconds = 0;
+    }
 }
 
 
@@ -99,7 +107,7 @@ process_events (void)
 
 event_callback_t *
 install_callback (void (*function) (event_t *event), event_type_t types)
-{   
+{
   event_callback_t *callback = xcalloc (1, sizeof (event_callback_t));
 
   callback->function = function;
@@ -123,6 +131,7 @@ unload_callback (event_callback_t *callback)
 
   sg_event_base->callbacks = g_slist_remove (sg_event_base->callbacks,
                                              callback);
+  free (callback);
 }
 
 

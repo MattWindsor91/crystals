@@ -183,8 +183,6 @@ scroll_map (mapview_t *mapview, int16_t x_offset, int16_t y_offset)
   mapview->y_offset += y_offset;
 
   (void) scroll_screen ((int16_t) -(x_offset), (int16_t) -(y_offset));
-
-  render_map (mapview);
 }
 
 

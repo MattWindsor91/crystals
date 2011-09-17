@@ -120,10 +120,11 @@ get_field_map_boundaries (int *x0_pointer,
 
 /**
  * Perform per-frame updates for field.
+ *
+ * @param useconds  Elapsed microseconds.
  */
-
 void
-update_field (void);
+update_field (uint32_t useconds);
 
 
 /**
@@ -135,9 +136,8 @@ update_field (void);
  * @param width   Width of the rectangle, in pixels.
  * @param height  Height of the rectangle, in pixels.
  */
-void
-field_handle_dirty_rect (short x, short y,
-                         unsigned short width, unsigned short height);
+void field_handle_dirty_rect (int16_t x, int16_t y, uint16_t width,
+                              uint16_t height);
 
 
 /**
