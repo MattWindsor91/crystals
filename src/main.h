@@ -58,6 +58,7 @@ extern dict_t *g_config;    /**< Configuration dictionary. */
 
 /* -- DECLARATIONS -- */
 
+#ifndef BUILD_TEST
 /**
  * The main function.
  *
@@ -69,7 +70,7 @@ extern dict_t *g_config;    /**< Configuration dictionary. */
 
 int
 main (int argc, char **argv);
-
+#endif
 
 /**
  * Initialise all engine subsystems.

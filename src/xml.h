@@ -47,7 +47,7 @@
 
 #include <libxml/tree.h>
 
-#include "util.h"
+#include "crystals.h"
 
 /* -- TYPEDEFS -- */
 
