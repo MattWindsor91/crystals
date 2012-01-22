@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<dialog>
+    <!--    <id match='0001'>Ives</id>
+    <id match='0002'>Duster</id> -->
+    
+    <content>
+        <say who="Duster">Hey there, i am new here. Who are you?</say>
+        <say who="Ives">My name is Duster. You are Ives, aren't you?</say>
+        <say who="Duster">Yes, but why do you know me?</say>
+        <say who="Ives">Because everyone is talking about you. It has been sayd that you are one of the best programmers in the world.</say>
+        <say who="Duster">You sure must have a lot of questions since you new here.</say>
+        <goto id="choices" />
+    </content>
+
+    <subcontent id="choices">
+        <choices who="Ives">
+            <choice id="job">What's your job here?</choice>
+            <choice id="skills">There are quite the rumors.</choice>
+            <choice id="end">No questions.</choice>
+        </choices>
+    </subcontent> 
+
+    <subcontent id="job">
+        <say who="Duster">I am system administrator. I have to maintain all our computers.</say>
+        <goto id="choices" />
+    </subcontent>
+
+    <subcontent id="skills">
+        <say who="Duster">You don't have to hide your skills. Everbody knows that you are the best.</say>
+        <goto id="choices" />
+    </subcontent>
+
+    <subcontent id="end">
+        <say who="Ives">Thanks, that's enough.</say>
+        <say who="Duster">You're welcome.</say>
+        <set type="event">E_0001</set>
+    </subcontent> 
+
+</dialog>
