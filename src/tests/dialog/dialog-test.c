@@ -48,35 +48,17 @@
 
 #include "dialog.h"
 
-
-#if 0
-dlg_t*
-dlg_parse_file (const char *p);
-
-dlg_content_t*
-dlg_content_next (dlg_t *dlg, uint8_t choice);
-
-req_t*
-dlg_requirement_next (dlg_t *dlg);
-
-void
-dlg_free (dlg_t *dlg);
-#endif
-
 int main(int argc, const char *argv[])
 {
-    printf("test\n");
     dlg_t * test_dlg = dlg_parse_file ("./test-dialog.dlg.xml");
 
     dlg_content_t * con = NULL;
-
-    printf("test\n");
 
     while ((con = dlg_content_next (test_dlg, 0)) != 0) 
       {
         if (con->type == TEXT)
           {
-            printf("%20s: %s\n", con->action.text.actor_id, con->action.text.text);
+            printf("%10s: %s\n", con->action.text.actor_id, con->action.text.text);
           }
       }
 
